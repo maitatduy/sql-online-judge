@@ -9,7 +9,7 @@
 | Java | Spotless + google-java-format (AOSP, thụt 4 cách) | `./mvnw spotless:apply` |
 | Java tĩnh | Checkstyle (cảnh báo), SpotBugs trong CI | `./mvnw verify` |
 | TypeScript | ESLint (next/core-web-vitals, typescript-eslint strict) | `npm run lint` |
-| TS định dạng | Prettier (+ prettier-plugin-tailwindcss sắp xếp class) | `npm run format` |
+| TS định dạng | Prettier | `npm run format` |
 | SQL migration | Từ khoá viết HOA, 1 cột 1 dòng trong CREATE TABLE | - |
 
 CI chạy kiểm tra định dạng; PR không qua thì không merge.
@@ -24,7 +24,7 @@ CI chạy kiểm tra định dạng; PR không qua thì không merge.
 
 ## TypeScript / React
 
-- Độ dài dòng 100, nháy đơn, có dấu chấm phẩy, dấu phẩy cuối.
+- Độ dài dòng 100, thụt 4 cách, nháy kép, có dấu chấm phẩy, dấu phẩy cuối (cấu hình trong `frontend/.prettierrc`).
 - Component là function, khai báo props bằng `interface`, destructuring ngay tại tham số, export có tên (không `export default` trừ file `page.tsx`, `layout.tsx` theo yêu cầu của Next.js).
 - Thứ tự import: thư viện ngoài → `@/` nội bộ → tương đối → style; ESLint tự sắp xếp.
 - Class Tailwind: dùng token đã khai báo (`bg-brand`, `text-verdict-wa`), không viết mã hex tuỳ ý trong class. Ghép class điều kiện bằng `cn()`.
