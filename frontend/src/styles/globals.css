@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *):not(:where(.light, .light *)));
 
-:root {
+:root,
+.light {
     --brand: #2563eb;
     --brand-soft: #eaf1fe;
     --bg: #ffffff;
@@ -65,7 +66,8 @@
 }
 
 :root,
-.dark {
+.dark,
+.light {
     --background: var(--bg);
     --foreground: var(--text);
     --card: var(--bg);
