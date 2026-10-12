@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV === "development";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+const connectSources = ["'self'", apiUrl, isDevelopment ? "ws:" : ""].filter(Boolean).join(" ");
 
 const contentSecurityPolicy = [
     "default-src 'self'",
@@ -8,7 +10,7 @@ const contentSecurityPolicy = [
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self'",
-    `connect-src 'self'${isDevelopment ? " ws:" : ""}`,
+    `connect-src ${connectSources}`,
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
