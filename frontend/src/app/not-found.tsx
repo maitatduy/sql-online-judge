@@ -3,8 +3,8 @@ import Link from "next/link";
 
 import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
-import { EditorPreview } from "@/features/marketing/components/EditorPreview";
-import { SqlKeyword } from "@/features/marketing/components/SqlKeyword";
+import { EditorPreview } from "@/components/shared/EditorPreview";
+import { SqlKeyword } from "@/components/shared/SqlKeyword";
 import { ROUTES } from "@/lib/routes";
 
 export const metadata: Metadata = {

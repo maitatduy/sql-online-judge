@@ -1,5 +1,5 @@
-import { EditorPreview } from "./EditorPreview";
-import { SqlKeyword } from "./SqlKeyword";
+import { EditorPreview } from "@/components/shared/EditorPreview";
+import { SqlKeyword } from "@/components/shared/SqlKeyword";
 
 const RESULT_COLUMNS = ["department", "name", "salary"];
 
