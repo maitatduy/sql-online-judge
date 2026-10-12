@@ -15,5 +15,13 @@ export default defineConfig({
         testTimeout: 15000,
         setupFiles: ["./vitest.setup.ts"],
         include: ["src/**/*.test.{ts,tsx}"],
+        coverage: {
+            provider: "v8",
+            include: ["src/lib/**", "src/features/*/hooks/**"],
+            exclude: ["**/*.test.{ts,tsx}"],
+            thresholds: {
+                lines: 80,
+            },
+        },
     },
 });
