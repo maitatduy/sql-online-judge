@@ -1,0 +1,15 @@
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+
+import NotFound from "./not-found";
+
+describe("NotFound", () => {
+    it("báo không tìm thấy trang bằng tiếng Việt và có link về trang chủ", () => {
+        render(<NotFound />);
+
+        expect(
+            screen.getByRole("heading", { level: 1, name: "Không tìm thấy trang" }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "Về trang chủ" })).toHaveAttribute("href", "/");
+    });
+});

@@ -2,7 +2,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Token lấy từ canvas thiết kế (project/sqlj.css). Không thêm màu ngoài bộ này. */
 :root {
     --brand: #2563eb;
     --brand-soft: #eaf1fe;
@@ -32,26 +31,6 @@
     --syntax-string: #b45309;
     --syntax-number: #0f766e;
     --syntax-comment: #64748b;
-
-    /* Biến shadcn/ui, ánh xạ sang token ở trên */
-    --background: var(--bg);
-    --foreground: var(--text);
-    --card: var(--bg);
-    --card-foreground: var(--text);
-    --popover: var(--bg);
-    --popover-foreground: var(--text);
-    --primary: var(--brand);
-    --primary-foreground: #ffffff;
-    --secondary: var(--surface-2);
-    --secondary-foreground: var(--text);
-    --muted: var(--surface);
-    --muted-foreground: var(--text-muted);
-    --accent: var(--surface);
-    --accent-foreground: var(--text);
-    --destructive: var(--verdict-wa);
-    --border: var(--line);
-    --input: var(--line);
-    --ring: var(--brand);
 }
 
 .dark {
@@ -85,11 +64,32 @@
     --syntax-comment: #6b7a90;
 }
 
+:root,
+.dark {
+    --background: var(--bg);
+    --foreground: var(--text);
+    --card: var(--bg);
+    --card-foreground: var(--text);
+    --popover: var(--bg);
+    --popover-foreground: var(--text);
+    --primary: var(--brand);
+    --primary-foreground: #ffffff;
+    --secondary: var(--surface-2);
+    --secondary-foreground: var(--text);
+    --muted: var(--surface);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--surface);
+    --accent-foreground: var(--text);
+    --destructive: var(--verdict-wa);
+    --border: var(--line);
+    --input: var(--line);
+    --ring: var(--brand);
+}
+
 @theme inline {
     --font-sans: var(--font-be-vietnam-pro), system-ui, sans-serif;
     --font-mono: var(--font-jetbrains-mono), ui-monospace, Menlo, monospace;
 
-    /* Bo góc: 4 (tag, kbd) / 6 (input, nút) / 10 (thẻ) / 16 (modal) */
     --radius-sm: 4px;
     --radius-md: 6px;
     --radius-lg: 10px;
@@ -143,6 +143,11 @@
 @layer base {
     * {
         @apply border-border outline-ring/50;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
     }
 
     body {
