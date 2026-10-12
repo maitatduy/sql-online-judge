@@ -7,7 +7,7 @@ describe("MarketingHeader", () => {
     it("logo dẫn về trang chủ", () => {
         render(<MarketingHeader />);
 
-        expect(screen.getByRole("link", { name: "SQL Judge" })).toHaveAttribute("href", "/");
+        expect(screen.getByRole("link", { name: "SQL Online Judge" })).toHaveAttribute("href", "/");
     });
 
     it.each([

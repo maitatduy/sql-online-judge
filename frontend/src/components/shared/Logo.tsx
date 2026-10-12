@@ -7,21 +7,39 @@ interface LogoProps {
 export function Logo({ className }: LogoProps) {
     return (
         <span className={cn("inline-flex items-center gap-2.5 text-foreground", className)}>
-            <svg viewBox="0 0 32 32" aria-hidden="true" className="size-8 shrink-0">
-                <rect width="32" height="32" rx="7" className="fill-brand" />
-                <g
+            <svg viewBox="0 -45 512 512" aria-hidden="true" className="size-9 shrink-0">
+                <defs>
+                    <mask id="logo-mark-gaps">
+                        <rect x="0" y="-45" width="512" height="512" fill="#ffffff" />
+                        <g fill="none" stroke="#000000" strokeWidth="12">
+                            <path d="M2 66a155 58 0 0 0 310 0" />
+                            <path d="M2 165a155 58 0 0 0 310 0" />
+                            <path d="M2 265a155 58 0 0 0 310 0" />
+                        </g>
+                        <rect x="158" y="100" width="362" height="332" rx="54" fill="#000000" />
+                    </mask>
+                </defs>
+                <g mask="url(#logo-mark-gaps)" className="fill-brand">
+                    <path d="M2 60V360a155 58 0 0 0 310 0V60Z" />
+                    <ellipse cx="157" cy="60" rx="155" ry="58" />
+                </g>
+                <rect x="170" y="112" width="338" height="308" rx="44" fill="#0f172a" />
+                <text x="218" y="246" fontSize="112" fontWeight="700" fill="#ffffff">
+                    SQL
+                </text>
+                <path
+                    d="M230 300l45 30-45 33"
                     fill="none"
-                    strokeWidth="2.2"
+                    stroke="#ffffff"
+                    strokeWidth="16"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="stroke-white"
-                >
-                    <ellipse cx="16" cy="9" rx="8" ry="3" />
-                    <path d="M8 9v14c0 1.66 3.58 3 8 3s8-1.34 8-3V9" />
-                    <path d="M11.6 18.2l3.1 3 5.7-6.2" />
-                </g>
+                />
+                <rect x="295" y="352" width="107" height="17" rx="8.5" className="fill-brand" />
             </svg>
-            <span className="text-[17px] font-extrabold">SQL Judge</span>
+            <span className="text-[17px] font-extrabold">
+                <span className="text-brand">SQL</span> Online Judge
+            </span>
         </span>
     );
 }

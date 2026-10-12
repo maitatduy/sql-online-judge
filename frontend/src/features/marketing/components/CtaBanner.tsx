@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 
+import { CtaEditorPreview } from "./CtaEditorPreview";
+
 const REASONS = [
     "Hỗ trợ PostgreSQL, MySQL và SQLite",
     "Máy chấm trả kết quả trong vài giây",
@@ -12,50 +14,32 @@ const REASONS = [
 
 export function CtaBanner() {
     return (
-        <section className="mx-auto max-w-7xl px-6 py-16 md:py-24">
-            <div className="grid items-center gap-10 rounded-xl bg-brand p-8 text-white md:p-16 lg:grid-cols-[1fr_auto]">
-                <div>
-                    <p className="text-xs font-semibold tracking-[0.06em] uppercase">
-                        Bắt đầu ngay
-                    </p>
-                    <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.02em] md:text-5xl md:leading-[1.1]">
-                        Câu truy vấn đầu tiên chỉ mất 30 giây.
-                    </h2>
-                    <p className="mt-4 max-w-xl text-[17px] leading-[1.6] text-white/95">
-                        Không cần cài đặt cơ sở dữ liệu. Miễn phí cho người học. Mở trình duyệt,
-                        chọn một bài và viết truy vấn ngay.
-                    </p>
-                    <div className="mt-8 flex flex-wrap gap-3">
-                        <Button
-                            asChild
-                            size="lg"
-                            variant="outline"
-                            className="border-white bg-white text-brand hover:bg-white/90 hover:text-brand focus-visible:outline-white"
-                        >
-                            <Link href={ROUTES.register}>Bắt đầu miễn phí</Link>
-                        </Button>
-                        <Button
-                            asChild
-                            size="lg"
-                            variant="outline"
-                            className="border-white/60 bg-transparent text-white hover:bg-white/10 hover:text-white focus-visible:outline-white"
-                        >
-                            <Link href={ROUTES.problems}>Xem bài tập</Link>
-                        </Button>
-                    </div>
-                </div>
-                <ul className="flex flex-col gap-3">
+        <section className="mx-auto grid max-w-7xl items-start gap-10 px-6 py-16 md:py-24 lg:grid-cols-[3fr_2fr] lg:gap-14">
+            <div className="min-w-0 lg:order-2">
+                <h2 className="text-3xl font-extrabold tracking-[-0.02em] md:text-[40px] md:leading-[1.15]">
+                    Câu truy vấn đầu tiên chỉ mất 30 giây.
+                </h2>
+                <p className="mt-4 text-[17px] leading-[1.6] text-muted-foreground">
+                    Không cần cài đặt cơ sở dữ liệu. Miễn phí cho người học.
+                </p>
+                <ul className="mt-6 flex flex-col gap-3">
                     {REASONS.map((reason) => (
-                        <li
-                            key={reason}
-                            className="flex items-center gap-3 rounded-lg border border-white/30 px-4 py-3.5 font-semibold"
-                        >
-                            <Check aria-hidden="true" className="size-4 shrink-0" />
+                        <li key={reason} className="flex items-center gap-2.5 font-semibold">
+                            <Check aria-hidden="true" className="size-4 shrink-0 text-brand" />
                             {reason}
                         </li>
                     ))}
                 </ul>
+                <div className="mt-8 flex flex-wrap gap-3">
+                    <Button asChild size="lg">
+                        <Link href={ROUTES.register}>Bắt đầu miễn phí</Link>
+                    </Button>
+                    <Button asChild size="lg" variant="outline">
+                        <Link href={ROUTES.problems}>Xem bài tập</Link>
+                    </Button>
+                </div>
             </div>
+            <CtaEditorPreview />
         </section>
     );
 }

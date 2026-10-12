@@ -12,14 +12,10 @@ const AI_FEATURES = [
 
 export function AiSection() {
     return (
-        <section className="dark bg-background text-foreground">
+        <section className="border-y bg-surface">
             <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-14 px-6 py-16 md:py-24">
                 <div className="min-w-0 flex-[1_1_400px]">
-                    <SectionHeading
-                        eyebrow="Trợ lý AI"
-                        title="Gợi ý, không giải hộ."
-                        eyebrowClassName="text-ai"
-                    />
+                    <SectionHeading eyebrow="Trợ lý AI" title="Gợi ý, không giải hộ." />
                     <p className="mt-4 mb-6 text-[17px] leading-[1.65] text-muted-foreground">
                         AI đọc truy vấn và kết quả của bạn, rồi đưa gợi ý theo ba mức - từ hướng suy
                         nghĩ đến khái niệm, đến cấu trúc câu lệnh. Đáp án đầy đủ chỉ mở sau khi bạn
@@ -28,7 +24,7 @@ export function AiSection() {
                     <ul className="flex flex-col gap-4">
                         {AI_FEATURES.map(({ icon: Icon, label }) => (
                             <li key={label} className="flex items-center gap-2.5">
-                                <Icon aria-hidden="true" className="size-4 shrink-0 text-ai" />
+                                <Icon aria-hidden="true" className="size-4 shrink-0" />
                                 {label}
                             </li>
                         ))}
@@ -36,7 +32,7 @@ export function AiSection() {
                 </div>
                 <figure
                     aria-label="Ví dụ hội thoại với trợ lý AI"
-                    className="flex min-w-0 flex-[1_1_480px] flex-col gap-3 rounded-xl border bg-surface p-5"
+                    className="flex min-w-0 flex-[1_1_480px] flex-col gap-3 rounded-xl border bg-background p-5"
                 >
                     <ChatBubble sender="user">Vì sao query của tôi bị WA ở testcase 3?</ChatBubble>
                     <ChatBubble sender="assistant" hintLabel="Gợi ý 1 · Gợi hướng">

@@ -15,7 +15,7 @@ const LEVEL_CLASSES: Record<RoadmapLevel, string> = {
 
 export function RoadmapSection({ stages }: RoadmapSectionProps) {
     return (
-        <section className="border-t bg-surface">
+        <section className="border-y bg-surface">
             <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
                 <SectionHeading
                     eyebrow="Lộ trình mẫu"
