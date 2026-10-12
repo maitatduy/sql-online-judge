@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Token lấy từ canvas thiết kế (project/sqlj.css). Không thêm màu ngoài bộ này. */
+:root {
+    --brand: #2563eb;
+    --brand-soft: #eaf1fe;
+    --bg: #ffffff;
+    --surface: #f6f8fa;
+    --surface-2: #edf0f4;
+    --line: #e3e7ed;
+    --text: #0f172a;
+    --text-muted: #566476;
+    --ai: #6d28d9;
+    --ai-soft: #f3eeff;
+
+    --verdict-ac: #15803d;
+    --verdict-wa: #c81e1e;
+    --verdict-om: #c2410c;
+    --verdict-tle: #9a5b05;
+    --verdict-re: #be185d;
+    --verdict-fs: #475569;
+    --verdict-pending: #2563eb;
+
+    --difficulty-easy: #15803d;
+    --difficulty-medium: #9a5b05;
+    --difficulty-hard: #c81e1e;
+
+    --syntax-keyword: #7c3aed;
+    --syntax-function: #2563eb;
+    --syntax-string: #b45309;
+    --syntax-number: #0f766e;
+    --syntax-comment: #64748b;
+
+    /* Biến shadcn/ui, ánh xạ sang token ở trên */
+    --background: var(--bg);
+    --foreground: var(--text);
+    --card: var(--bg);
+    --card-foreground: var(--text);
+    --popover: var(--bg);
+    --popover-foreground: var(--text);
+    --primary: var(--brand);
+    --primary-foreground: #ffffff;
+    --secondary: var(--surface-2);
+    --secondary-foreground: var(--text);
+    --muted: var(--surface);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--surface);
+    --accent-foreground: var(--text);
+    --destructive: var(--verdict-wa);
+    --border: var(--line);
+    --input: var(--line);
+    --ring: var(--brand);
+}
+
+.dark {
+    --brand: #3b82f6;
+    --brand-soft: #132544;
+    --bg: #0b0f17;
+    --surface: #111827;
+    --surface-2: #182133;
+    --line: #1f2937;
+    --text: #e5e7eb;
+    --text-muted: #94a3b8;
+    --ai: #a78bfa;
+    --ai-soft: #1d1733;
+
+    --verdict-ac: #4ade80;
+    --verdict-wa: #f87171;
+    --verdict-om: #fb923c;
+    --verdict-tle: #facc15;
+    --verdict-re: #f472b6;
+    --verdict-fs: #a3b1c4;
+    --verdict-pending: #60a5fa;
+
+    --difficulty-easy: #4ade80;
+    --difficulty-medium: #facc15;
+    --difficulty-hard: #f87171;
+
+    --syntax-keyword: #c4a5ff;
+    --syntax-function: #7db4ff;
+    --syntax-string: #fdba74;
+    --syntax-number: #5eead4;
+    --syntax-comment: #6b7a90;
+}
+
+@theme inline {
+    --font-sans: var(--font-be-vietnam-pro), system-ui, sans-serif;
+    --font-mono: var(--font-jetbrains-mono), ui-monospace, Menlo, monospace;
+
+    /* Bo góc: 4 (tag, kbd) / 6 (input, nút) / 10 (thẻ) / 16 (modal) */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+    --radius-xl: 16px;
+
+    --color-brand: var(--brand);
+    --color-brand-soft: var(--brand-soft);
+    --color-surface: var(--surface);
+    --color-surface-2: var(--surface-2);
+    --color-ai: var(--ai);
+    --color-ai-soft: var(--ai-soft);
+
+    --color-verdict-ac: var(--verdict-ac);
+    --color-verdict-wa: var(--verdict-wa);
+    --color-verdict-om: var(--verdict-om);
+    --color-verdict-tle: var(--verdict-tle);
+    --color-verdict-re: var(--verdict-re);
+    --color-verdict-fs: var(--verdict-fs);
+    --color-verdict-pending: var(--verdict-pending);
+
+    --color-difficulty-easy: var(--difficulty-easy);
+    --color-difficulty-medium: var(--difficulty-medium);
+    --color-difficulty-hard: var(--difficulty-hard);
+
+    --color-syntax-keyword: var(--syntax-keyword);
+    --color-syntax-function: var(--syntax-function);
+    --color-syntax-string: var(--syntax-string);
+    --color-syntax-number: var(--syntax-number);
+    --color-syntax-comment: var(--syntax-comment);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    body {
+        @apply bg-background text-foreground font-sans;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+}
