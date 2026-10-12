@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 
+import { SITE_NAME } from "@/lib/site";
 import "@/styles/globals.css";
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -18,8 +19,8 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
     title: {
-        default: "SQL Judge",
-        template: "%s | SQL Judge",
+        default: SITE_NAME,
+        template: `%s | ${SITE_NAME}`,
     },
     description: "Nền tảng học SQL có máy chấm tự động.",
 };

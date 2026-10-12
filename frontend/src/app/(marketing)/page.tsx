@@ -15,8 +15,9 @@ import {
     SAMPLE_TOP_RATED_USERS,
     SAMPLE_UPCOMING_CONTESTS,
 } from "@/features/marketing/sample-data";
+import { SITE_NAME } from "@/lib/site";
 
-const PAGE_TITLE = "SQL Judge - Học SQL bằng cách viết SQL";
+const PAGE_TITLE = `${SITE_NAME} - Học SQL bằng cách viết SQL`;
 const PAGE_DESCRIPTION =
     "Viết truy vấn SQL ngay trên trình duyệt, máy chấm trả kết quả trong vài giây, thi đấu hằng tuần với cộng đồng.";
 
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
         description: PAGE_DESCRIPTION,
         type: "website",
         locale: "vi_VN",
-        siteName: "SQL Judge",
+        siteName: SITE_NAME,
     },
 };
 

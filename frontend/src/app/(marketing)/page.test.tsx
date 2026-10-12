@@ -12,7 +12,8 @@ describe("LandingPage", () => {
 
     it("khai báo Open Graph tiếng Việt trùng với tiêu đề và mô tả của trang", () => {
         expect(metadata.openGraph).toMatchObject({
-            title: "SQL Judge - Học SQL bằng cách viết SQL",
+            title: "SQL Online Judge - Học SQL bằng cách viết SQL",
+            siteName: "SQL Online Judge",
             description: metadata.description,
             locale: "vi_VN",
             type: "website",
