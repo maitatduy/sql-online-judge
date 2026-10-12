@@ -1,0 +1,99 @@
+# ---------- env ----------
+.env
+.env.*
+!.env.example
+**/application-secret.yml
+**/application-prod.yml
+**/application-local.yml
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+*.crt
+id_rsa*
+id_ed25519*
+secrets/
+
+# ---------- Claude ----------
+.claude/settings.local.json
+CLAUDE.local.md
+
+# ---------- Java / Maven ----------
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+*.log
+hs_err_pid*
+replay_pid*
+dependency-reduced-pom.xml
+.flattened-pom.xml
+buildNumber.properties
+
+# ---------- Spring Boot ----------
+spring-boot-*.log
+.springBeans
+.sts4-cache/
+HELP.md
+
+# ---------- Node / Next.js ----------
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.npm/
+.pnpm-store/
+.turbo/
+.vercel/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- Test & coverage ----------
+coverage/
+.nyc_output/
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/playwright/.cache/
+**/jacoco.exec
+
+# ---------- Docker / hạ tầng chạy local ----------
+infra/data/
+infra/volumes/
+docker-compose.override.yml
+backups/
+*.sql.gz
+dump*.sql
+
+# ---------- IDE ----------
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+.project
+.classpath
+.settings/
+.factorypath
+bin/
+!**/src/**/bin/
+*.swp
+*.swo
+
+# ---------- Hệ điều hành ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+*~
+
+# ---------- Temp ----------
+tmp/
+temp/
+*.tmp
+*.bak
