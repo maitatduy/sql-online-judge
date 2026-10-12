@@ -25,7 +25,7 @@ description: Khung review code 5 trục (đúng, dễ đọc, kiến trúc, bả
 ## Trục 2 - Dễ đọc
 
 - Tên đúng từ vựng miền; hàm ngắn; ít lồng; không cờ boolean.
-- Không code chết, comment-out, TODO không chủ.
+- Không code chết, không comment trong code (kể cả `TODO`).
 - Frontend: component < ~200 dòng, props rõ kiểu.
 
 ## Trục 3 - Kiến trúc

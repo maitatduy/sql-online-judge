@@ -35,7 +35,7 @@ Lỗi ảnh hưởng dữ liệu đã có (verdict sai, điểm contest sai) →
 Commit theo `git-workflow.md` (không tự push), message dạng:
 
 ```
-fix(<scope>): <mô tả ngắn>
+fix: <mô tả ngắn>
 
 Closes #<số issue>
 ```

@@ -73,9 +73,9 @@ if (contest.isRunningAt(now))
 
 ## Comment
 
-- Comment giải thích **tại sao**, không giải thích code làm gì.
+- Không viết comment trong code, kể cả `TODO`. Tên biến, tên hàm và test phải đủ rõ để không cần giải thích thêm.
+- Lý do của một quyết định ghi trong commit message hoặc mô tả PR; việc còn dở ghi thành issue.
 - Không để code bị comment-out; xoá đi, git đã lưu lịch sử.
-- `TODO` phải kèm việc cụ thể và người/issue phụ trách: `// TODO(#142): hỗ trợ SQL Server`.
 
 ## Xoá code chết
 

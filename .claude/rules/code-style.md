@@ -33,6 +33,7 @@ CI chạy kiểm tra định dạng; PR không qua thì không merge.
 ## Chữ trên giao diện
 
 - Tiếng Việt có dấu đầy đủ, không viết tắt khó hiểu.
+- Dùng dấu gạch nối `-`, không dùng gạch dài `—`.
 - Viết hoa chữ cái đầu câu, không Title Case kiểu tiếng Anh ("Danh sách bài tập", không "Danh Sách Bài Tập").
 - Số dùng dấu chấm phân cách hàng nghìn (`12.380`), dấu phẩy thập phân (`41,2%`). Dùng `Intl.NumberFormat('vi-VN')`.
 - Ngày giờ hiển thị theo giờ Việt Nam; thời gian tương đối dùng "5 phút trước".

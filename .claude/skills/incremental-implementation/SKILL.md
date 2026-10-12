@@ -49,9 +49,9 @@ Với SQL Judge: **máy chấm là rủi ro lớn nhất** - dựng lát cắt c
 ## Commit
 
 ```
-✅ feat(judge): compare single-testcase SELECT result for PostgreSQL
-✅ feat(judge): stop at first failed testcase
-✅ feat(web): show judging progress in workspace
+✅ feat: compare single-testcase SELECT result for PostgreSQL
+✅ feat: stop at first failed testcase
+✅ feat: show judging progress in workspace
 
 ❌ feat: judge system + workspace + contest scoring (2.000 dòng)
 ```

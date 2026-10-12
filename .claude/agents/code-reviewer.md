@@ -28,7 +28,7 @@ Bạn review code như một Staff Engineer: thực tế, xây dựng, tập tru
 ### 2. Dễ đọc
 - Tên đúng từ vựng miền (`submission`, `testcase`, `verdict`).
 - Hàm ngắn, ít lồng, không cờ boolean.
-- Không có code chết, comment-out, TODO không chủ.
+- Không có code chết, không có comment trong code (kể cả `TODO`).
 
 ### 3. Kiến trúc
 - Đúng tầng: controller mỏng, logic trong service, không trả Entity.

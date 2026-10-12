@@ -14,7 +14,7 @@ Nhánh sống ngắn (≤ 3 ngày). Tính năng lớn chia lát cắt dọc nh�
 ## Commit - Conventional Commits, tiếng Anh
 
 ```
-<type>(<scope>): <mô tả ngắn, thể mệnh lệnh, ≤ 72 ký tự>
+<type>: <mô tả ngắn gọn, thể mệnh lệnh, ≤ 72 ký tự>
 
 [thân: vì sao thay đổi, nếu cần]
 
@@ -32,15 +32,15 @@ Nhánh sống ngắn (≤ 3 ngày). Tính năng lớn chia lát cắt dọc nh�
 | `perf` | Cải thiện hiệu năng |
 | `ci` | GitHub Actions |
 
-**scope** là tên service hoặc khu vực: `auth`, `problem`, `learning`, `submission`, `judge`, `contest`, `community`, `ai`, `notification`, `gateway`, `web`, `admin`, `infra`.
+Không dùng scope trong ngoặc (`feat(web): …`). Giữ message ngắn gọn; ưu tiên ít commit, mỗi commit một việc trọn vẹn.
 
 Ví dụ:
 
 ```
-feat(judge): return OM verdict when rows match but order differs
-fix(contest): stop updating public standings after freeze time
-feat(web): add AI hint panel to workspace
-docs(claude): translate rules to Vietnamese
+feat: return OM verdict when rows match but order differs
+fix: stop updating public standings after freeze time
+feat: add landing page
+docs: translate rules to Vietnamese
 ```
 
 Một commit kể một câu chuyện. Không gộp thay đổi không liên quan; stage theo từng file (`git add <path>`), không `git add -A`.
