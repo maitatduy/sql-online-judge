@@ -1,6 +1,6 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
-import { ADMIN_NAVIGATION_COUNTS } from "./admin-fixtures";
+import { ADMIN_NAVIGATION_COUNTS, buildAdminOverview } from "./admin-fixtures";
 import { apiError } from "./api-error";
 import { readMockSession } from "./session";
 
@@ -19,5 +19,10 @@ export const adminHandlers: RequestHandler[] = [
     http.get("*/api/admin/navigation-counts", async () => {
         await delay();
         return HttpResponse.json(ADMIN_NAVIGATION_COUNTS);
+    }),
+
+    http.get("*/api/admin/overview", async () => {
+        await delay();
+        return HttpResponse.json(buildAdminOverview());
     }),
 ];
