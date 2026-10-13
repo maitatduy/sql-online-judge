@@ -25,9 +25,8 @@ Trong component chỉ dùng class token (`bg-brand`, `text-verdict-wa`) hoặc `
 | Cú pháp SQL | `syntax-keyword`, `-function`, `-string`, `-number`, `-comment` | Tô màu code |
 | Chuỗi ngày | `streak` | Bộ đếm chuỗi ngày học, huy hiệu chuỗi ngày |
 | Heatmap hoạt động | `heat-low`, `heat-mid`, `heat-peak` | Mức 1, 2, 4 của lịch hoạt động (mức 0 dùng `surface-2`, mức 3 dùng `brand`) |
-| Biểu đồ | `chart-1`, `chart-2`, `chart-3` | Dải màu của đường và vùng tô trong biểu đồ |
+| Biểu đồ | `chart-1` | Màu đường và vùng tô của biểu đồ; đường gióng và nhãn phụ dùng `text-muted` |
 | Tăng giảm | `trend-up`, `trend-down` | Mức thay đổi của một chỉ số (rating tăng, giảm) |
-| Ngưỡng hạng | `tier-1`, `tier-2` | Đường ngưỡng hạng rating, theo thứ tự hạng tăng dần |
 | Huy hiệu | `badge-contest`, `badge-solved` | Ô huy hiệu về contest và về số bài AC |
 
 Các token của shadcn (`background`, `foreground`, `card`, `primary`, `muted`, `border`, `ring`…) là bí danh trỏ về nhóm trên; đổi giá trị ở token gốc, không đổi ở bí danh.

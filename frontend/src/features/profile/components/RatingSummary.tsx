@@ -19,8 +19,8 @@ function RatingChange({ change }: { change: number }) {
     return (
         <span
             className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
-                isGain ? "bg-trend-up/12 text-trend-up" : "bg-trend-down/12 text-trend-down",
+                "inline-flex items-center gap-1 text-xs font-semibold",
+                isGain ? "text-trend-up" : "text-trend-down",
             )}
         >
             <Icon aria-hidden="true" className="size-3.5" />
@@ -39,7 +39,7 @@ export function RatingSummary({ points, activeIndex }: RatingSummaryProps) {
             <div className="min-w-0">
                 <h2 className="text-xs font-medium text-muted-foreground">Rating contest</h2>
                 <p className="flex flex-wrap items-center gap-x-2.5">
-                    <span className="bg-linear-to-r from-chart-1 via-chart-2 to-chart-3 bg-clip-text font-mono text-[30px] leading-tight font-extrabold text-transparent">
+                    <span className="font-mono text-[28px] leading-tight font-extrabold">
                         {formatNumber(point.rating)}
                     </span>
                     {change ? <RatingChange change={change} /> : null}
