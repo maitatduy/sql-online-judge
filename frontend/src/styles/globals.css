@@ -15,6 +15,18 @@
     --ai: #6d28d9;
     --ai-soft: #f3eeff;
     --streak: #c2410c;
+    --heat-low: #bfd3fb;
+    --heat-mid: #7aa5f6;
+    --heat-peak: #1e3a8a;
+    --chart-1: #2563eb;
+    --chart-2: #6d28d9;
+    --chart-3: #be185d;
+    --trend-up: #15803d;
+    --trend-down: #c81e1e;
+    --tier-1: #15803d;
+    --tier-2: #2563eb;
+    --badge-contest: #9a5b05;
+    --badge-solved: #15803d;
 
     --verdict-ac: #15803d;
     --verdict-wa: #c81e1e;
@@ -47,6 +59,18 @@
     --ai: #a78bfa;
     --ai-soft: #1d1733;
     --streak: #fb923c;
+    --heat-low: #1e3a8a;
+    --heat-mid: #2563eb;
+    --heat-peak: #bfdbfe;
+    --chart-1: #3b82f6;
+    --chart-2: #a78bfa;
+    --chart-3: #f472b6;
+    --trend-up: #4ade80;
+    --trend-down: #f87171;
+    --tier-1: #4ade80;
+    --tier-2: #60a5fa;
+    --badge-contest: #facc15;
+    --badge-solved: #4ade80;
 
     --verdict-ac: #4ade80;
     --verdict-wa: #f87171;
@@ -106,6 +130,18 @@
     --color-ai: var(--ai);
     --color-ai-soft: var(--ai-soft);
     --color-streak: var(--streak);
+    --color-heat-low: var(--heat-low);
+    --color-heat-mid: var(--heat-mid);
+    --color-heat-peak: var(--heat-peak);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-trend-up: var(--trend-up);
+    --color-trend-down: var(--trend-down);
+    --color-tier-1: var(--tier-1);
+    --color-tier-2: var(--tier-2);
+    --color-badge-contest: var(--badge-contest);
+    --color-badge-solved: var(--badge-solved);
 
     --color-verdict-ac: var(--verdict-ac);
     --color-verdict-wa: var(--verdict-wa);

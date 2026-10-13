@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatNumber } from "./format";
+import { formatNumber, formatRelativeTime } from "./format";
 
 describe("formatNumber", () => {
     it.each([
@@ -9,5 +9,25 @@ describe("formatNumber", () => {
         [100000, "100.000"],
     ])("định dạng %d theo vi-VN thành %s", (value, expected) => {
         expect(formatNumber(value)).toBe(expected);
+    });
+});
+
+describe("formatRelativeTime", () => {
+    const now = new Date("2026-10-13T05:00:00Z");
+
+    it.each([
+        ["2026-10-13T04:59:40Z", "Vừa xong"],
+        ["2026-10-13T04:55:00Z", "5 phút trước"],
+        ["2026-10-13T03:00:00Z", "2 giờ trước"],
+        ["2026-10-11T05:00:00Z", "2 ngày trước"],
+        ["2026-10-06T05:00:00Z", "1 tuần trước"],
+        ["2026-08-10T05:00:00Z", "2 tháng trước"],
+        ["2025-09-13T05:00:00Z", "1 năm trước"],
+    ])("%s so với hiện tại là %s", (date, expected) => {
+        expect(formatRelativeTime(date, now)).toBe(expected);
+    });
+
+    it("coi thời điểm lệch về tương lai do đồng hồ máy là vừa xong", () => {
+        expect(formatRelativeTime("2026-10-13T05:00:30Z", now)).toBe("Vừa xong");
     });
 });

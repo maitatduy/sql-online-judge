@@ -4,6 +4,7 @@ import type { AuthResponse, LoginRequest, RegisterRequest } from "@/features/aut
 import type { CurrentUser } from "@/lib/current-user";
 
 import { apiError } from "./api-error";
+import { profileHandlers } from "./profile-handlers";
 import { DEMO_SESSION_USER, readMockSession, writeMockSession } from "./session";
 
 const DEMO_EMAIL = "demo@sqljudge.dev";
@@ -86,4 +87,6 @@ export const handlers: RequestHandler[] = [
         const username = new URL(request.url).searchParams.get("username") ?? "";
         return HttpResponse.json({ available: !UNAVAILABLE_USERNAMES.includes(username) });
     }),
+
+    ...profileHandlers,
 ];
