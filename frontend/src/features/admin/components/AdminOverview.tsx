@@ -5,6 +5,7 @@ import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { ApiRequestError } from "@/lib/api-client";
 
 import { useAdminOverview } from "../hooks/useAdminOverview";
+import { JudgeWorkersCard } from "./JudgeWorkersCard";
 import { OverviewSkeleton } from "./OverviewSkeleton";
 import { OverviewStatTiles } from "./OverviewStatTiles";
 import { StaleDataNotice } from "./StaleDataNotice";
@@ -43,6 +44,9 @@ export function AdminOverview() {
                     onRetry={() => void refetch()}
                 />
             ) : null}
+            <div className="flex flex-wrap items-start gap-5">
+                <JudgeWorkersCard />
+            </div>
         </main>
     );
 }

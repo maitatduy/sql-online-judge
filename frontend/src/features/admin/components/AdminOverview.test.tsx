@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
+import { ToastProvider } from "@/components/shared/ToastProvider";
 import { buildAdminOverview } from "@/mocks/admin-fixtures";
 import { server } from "@/mocks/server";
 import { ADMIN_SESSION_USER, writeMockSession } from "@/mocks/session";
@@ -12,7 +13,11 @@ import { AdminOverview } from "./AdminOverview";
 
 function renderOverview() {
     writeMockSession(ADMIN_SESSION_USER);
-    return renderWithProviders(<AdminOverview />);
+    return renderWithProviders(
+        <ToastProvider>
+            <AdminOverview />
+        </ToastProvider>,
+    );
 }
 
 async function findTile(name: string) {
@@ -56,6 +61,13 @@ describe("AdminOverview", () => {
         expect(
             within(screen.getByRole("group", { name: "Hôm nay" })).getByText("9.807"),
         ).toBeInTheDocument();
+    });
+
+    it("hiện tình trạng máy chấm", async () => {
+        renderOverview();
+
+        expect(screen.getByRole("heading", { level: 2, name: /^Máy chấm/ })).toBeInTheDocument();
+        expect(await screen.findByText("5/6 hoạt động")).toBeInTheDocument();
     });
 
     it("cảnh báo bằng chữ khi hàng đợi chấm đang cao", async () => {
@@ -110,7 +122,9 @@ describe("AdminOverview", () => {
         const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
         render(
             <QueryClientProvider client={queryClient}>
-                <AdminOverview />
+                <ToastProvider>
+                    <AdminOverview />
+                </ToastProvider>
             </QueryClientProvider>,
         );
         await findTile("Tổng người dùng");

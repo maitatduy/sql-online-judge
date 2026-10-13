@@ -1,3 +1,4 @@
+import type { Dialect } from "@/lib/dialect";
 import type { Verdict } from "@/lib/verdict";
 
 export interface MetricSummary {
@@ -42,4 +43,29 @@ export interface AdminOverviewResponse {
     submissionTotals: SubmissionTotals;
     monthlySubmissions: MonthlySubmissions;
     verdictDistribution: VerdictShare[];
+}
+
+export type WorkerStatus = "ONLINE" | "BUSY" | "DISCONNECTED" | "RESTARTING";
+
+export interface JudgeWorker {
+    name: string;
+    dialect: Dialect;
+    status: WorkerStatus;
+    judgedPerHour: number;
+    cpuPercent: number | null;
+    disconnectedAt: string | null;
+}
+
+export interface JudgeWorkersResponse {
+    items: JudgeWorker[];
+}
+
+export interface RestartWorkerRequest {
+    name: string;
+    reason: string;
+}
+
+export interface RestartWorkerResponse {
+    name: string;
+    status: WorkerStatus;
 }

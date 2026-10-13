@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AppProviders } from "@/app/providers";
 import { SkipLink } from "@/components/shared/SkipLink";
+import { ToastProvider } from "@/components/shared/ToastProvider";
 import { AdminShell } from "@/features/admin/components/AdminShell";
 
 export const metadata: Metadata = {
@@ -21,7 +22,9 @@ export default function AdminLayout({
         <AppProviders>
             <div className="min-h-screen bg-surface">
                 <SkipLink />
-                <AdminShell>{children}</AdminShell>
+                <ToastProvider>
+                    <AdminShell>{children}</AdminShell>
+                </ToastProvider>
             </div>
         </AppProviders>
     );
