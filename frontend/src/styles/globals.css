@@ -41,6 +41,28 @@
     --syntax-string: #b45309;
     --syntax-number: #0f766e;
     --syntax-comment: #64748b;
+
+    --sidebar: #ffffff;
+    --sidebar-text: #475569;
+    --sidebar-strong: #0f172a;
+    --sidebar-muted: #566476;
+    --sidebar-hover: #f6f8fa;
+    --sidebar-active: #eaf1fe;
+    --sidebar-line: #e3e7ed;
+
+    --status-ok: #15803d;
+    --status-busy: #9a5b05;
+    --status-down: #c81e1e;
+
+    --meter-normal: #2563eb;
+    --meter-high: #ca8a04;
+    --meter-critical: #c2410c;
+
+    --count-review: #c2410c;
+    --count-report: #c81e1e;
+    --count-ai-flag: #6d28d9;
+    --count-support: #475569;
+    --count-live: #1d4ed8;
 }
 
 .dark {
@@ -81,6 +103,28 @@
     --syntax-string: #fdba74;
     --syntax-number: #5eead4;
     --syntax-comment: #6b7a90;
+
+    --sidebar: #0b0f17;
+    --sidebar-text: #c3ccd8;
+    --sidebar-strong: #f8fafc;
+    --sidebar-muted: #6d7c92;
+    --sidebar-hover: #182133;
+    --sidebar-active: #1d3a73;
+    --sidebar-line: #1f2937;
+
+    --status-ok: #4ade80;
+    --status-busy: #facc15;
+    --status-down: #f87171;
+
+    --meter-normal: #3b82f6;
+    --meter-high: #facc15;
+    --meter-critical: #fb923c;
+
+    --count-review: #c2410c;
+    --count-report: #c81e1e;
+    --count-ai-flag: #6d28d9;
+    --count-support: #475569;
+    --count-live: #1d4ed8;
 }
 
 :root,
@@ -148,6 +192,28 @@
     --color-syntax-string: var(--syntax-string);
     --color-syntax-number: var(--syntax-number);
     --color-syntax-comment: var(--syntax-comment);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-text: var(--sidebar-text);
+    --color-sidebar-strong: var(--sidebar-strong);
+    --color-sidebar-muted: var(--sidebar-muted);
+    --color-sidebar-hover: var(--sidebar-hover);
+    --color-sidebar-active: var(--sidebar-active);
+    --color-sidebar-line: var(--sidebar-line);
+
+    --color-status-ok: var(--status-ok);
+    --color-status-busy: var(--status-busy);
+    --color-status-down: var(--status-down);
+
+    --color-meter-normal: var(--meter-normal);
+    --color-meter-high: var(--meter-high);
+    --color-meter-critical: var(--meter-critical);
+
+    --color-count-review: var(--count-review);
+    --color-count-report: var(--count-report);
+    --color-count-ai-flag: var(--count-ai-flag);
+    --color-count-support: var(--count-support);
+    --color-count-live: var(--count-live);
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);

@@ -6,16 +6,10 @@ import { usePathname } from "next/navigation";
 
 import { Avatar } from "@/components/shared/Avatar";
 import { Button } from "@/components/ui/button";
-import { ApiRequestError } from "@/lib/api-client";
+import { isUnauthenticatedError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-
-const UNAUTHENTICATED_STATUS = 401;
-
-function isUnauthenticated(error: unknown): boolean {
-    return error instanceof ApiRequestError && error.status === UNAUTHENTICATED_STATUS;
-}
 
 export function TopBarAccount() {
     const pathname = usePathname();
@@ -26,7 +20,7 @@ export function TopBarAccount() {
     }
 
     if (!currentUser) {
-        return isUnauthenticated(error) ? (
+        return isUnauthenticatedError(error) ? (
             <Button asChild variant="outline">
                 <Link href={ROUTES.loginWithNext(pathname)}>Đăng nhập</Link>
             </Button>

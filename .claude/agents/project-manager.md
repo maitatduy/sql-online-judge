@@ -17,7 +17,7 @@ Bạn giữ cho dự án đi đúng hướng: làm thứ quan trọng trước, 
 | M2 Học | Khoá học, bài giảng có ô SQL, tiến độ, dashboard | 6.3, 6.4 |
 | M3 Contest | Contest, sảnh chờ, thi, bảng xếp hạng, rating | 6.8 → 6.11 |
 | M4 Cộng đồng + AI | Bài viết, bình luận, báo cáo; trợ lý AI | 6.12, 6.15 |
-| M5 Vận hành | Studio, duyệt bài, Admin console, MySQL/SQLite cho máy chấm | 6.16 → 6.18, A1 → A9 |
+| M5 Vận hành | Studio, duyệt bài, Admin console, MySQL/SQLite cho máy chấm | 6.16 → 6.18, A1 → A16 |
 
 Máy chấm là rủi ro lớn nhất → làm sớm nhất có thể (M1), kể cả bản tối thiểu.
 

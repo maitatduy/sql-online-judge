@@ -28,6 +28,10 @@ Trong component chỉ dùng class token (`bg-brand`, `text-verdict-wa`) hoặc `
 | Biểu đồ | `chart-1` | Màu đường và vùng tô của biểu đồ; đường gióng và nhãn phụ dùng `text-muted` |
 | Tăng giảm | `trend-up`, `trend-down` | Mức thay đổi của một chỉ số (rating tăng, giảm) |
 | Huy hiệu | `badge-contest`, `badge-solved` | Ô huy hiệu về contest và về số bài AC |
+| Sidebar admin | `sidebar`, `sidebar-text`, `sidebar-strong`, `sidebar-muted`, `sidebar-hover`, `sidebar-active`, `sidebar-line` | **Chỉ** sidebar của Admin Console: nền, chữ mục, chữ nhấn, tiêu đề nhóm, nền rê chuột, nền mục đang chọn, viền. Sidebar sáng ở nền sáng, tối ở nền tối |
+| Trạng thái vận hành | `status-ok`, `status-busy`, `status-down` | Trạng thái của worker và dịch vụ: hoạt động, bận hoặc đang khởi động lại, mất kết nối |
+| Mức tải | `meter-normal`, `meter-high`, `meter-critical` | Thanh đo CPU, RAM: dưới 60%, từ 60%, từ 85% |
+| Nhãn đếm admin | `count-review`, `count-report`, `count-ai-flag`, `count-support`, `count-live` | Nền nhãn số việc chờ xử lý trong Admin Console, chữ trắng: bài chờ duyệt, báo cáo vi phạm, hội thoại AI bị gắn cờ, tin nhắn hỗ trợ, contest đang diễn ra |
 
 Các token của shadcn (`background`, `foreground`, `card`, `primary`, `muted`, `border`, `ring`…) là bí danh trỏ về nhóm trên; đổi giá trị ở token gốc, không đổi ở bí danh.
 
