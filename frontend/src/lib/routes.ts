@@ -10,6 +10,7 @@ export const ROUTES = {
     leaderboard: "/leaderboard",
     ai: "/ai",
     settings: "/settings",
+    admin: "/admin",
     loginWithNext: (nextPath: string) => `/login?next=${encodeURIComponent(nextPath)}`,
     profile: (username: string) => `/u/${encodeURIComponent(username)}`,
 } as const;

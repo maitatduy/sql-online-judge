@@ -3,12 +3,21 @@ import { delay, http, HttpResponse, type RequestHandler } from "msw";
 import type { AuthResponse, LoginRequest, RegisterRequest } from "@/features/auth/types";
 import type { CurrentUser } from "@/lib/current-user";
 
+import { adminHandlers } from "./admin-handlers";
 import { apiError } from "./api-error";
 import { profileHandlers } from "./profile-handlers";
-import { DEMO_SESSION_USER, readMockSession, writeMockSession } from "./session";
+import {
+    ADMIN_SESSION_USER,
+    DEMO_SESSION_USER,
+    readMockSession,
+    writeMockSession,
+} from "./session";
 
-const DEMO_EMAIL = "demo@sqljudge.dev";
 const DEMO_PASSWORD = "mock-password";
+const DEMO_ACCOUNTS: Record<string, CurrentUser> = {
+    "demo@sqljudge.dev": DEMO_SESSION_USER,
+    "admin@sqljudge.dev": ADMIN_SESSION_USER,
+};
 const LOCKED_EMAIL = "locked@sqljudge.dev";
 const TAKEN_USERNAME = "taken";
 const TAKEN_EMAIL = "taken@sqljudge.dev";
@@ -45,8 +54,9 @@ export const handlers: RequestHandler[] = [
                 },
             });
         }
-        if (body.email === DEMO_EMAIL && body.password === DEMO_PASSWORD) {
-            return HttpResponse.json(signIn(DEMO_SESSION_USER, DEMO_EMAIL));
+        const demoUser = DEMO_ACCOUNTS[body.email];
+        if (demoUser && body.password === DEMO_PASSWORD) {
+            return HttpResponse.json(signIn(demoUser, body.email));
         }
         return apiError(401, "INVALID_CREDENTIALS", "Email hoặc mật khẩu không đúng");
     }),
@@ -89,4 +99,5 @@ export const handlers: RequestHandler[] = [
     }),
 
     ...profileHandlers,
+    ...adminHandlers,
 ];

@@ -1,5 +1,6 @@
 const NETWORK_ERROR_MESSAGE = "Không kết nối được máy chủ, vui lòng thử lại";
 const UNEXPECTED_ERROR_MESSAGE = "Đã có lỗi xảy ra, vui lòng thử lại sau";
+const UNAUTHENTICATED_STATUS = 401;
 
 export interface ApiFieldError {
     field: string;
@@ -47,6 +48,10 @@ export class ApiRequestError extends Error {
         this.retryAfterSeconds = retryAfterSeconds;
         this.traceId = traceId;
     }
+}
+
+export function isUnauthenticatedError(error: unknown): boolean {
+    return error instanceof ApiRequestError && error.status === UNAUTHENTICATED_STATUS;
 }
 
 type QueryParams = Record<string, string | number | boolean | undefined>;
