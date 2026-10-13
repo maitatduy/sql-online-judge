@@ -8,4 +8,8 @@ export const ROUTES = {
     contests: "/contests",
     community: "/community",
     leaderboard: "/leaderboard",
+    ai: "/ai",
+    settings: "/settings",
+    loginWithNext: (nextPath: string) => `/login?next=${encodeURIComponent(nextPath)}`,
+    profile: (username: string) => `/u/${encodeURIComponent(username)}`,
 } as const;

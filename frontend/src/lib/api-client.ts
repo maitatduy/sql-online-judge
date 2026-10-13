@@ -21,6 +21,7 @@ interface ApiRequestErrorDetails {
     message: string;
     errors?: ApiFieldError[];
     retryAfterSeconds?: number;
+    traceId?: string;
 }
 
 export class ApiRequestError extends Error {
@@ -28,14 +29,23 @@ export class ApiRequestError extends Error {
     readonly code: string;
     readonly errors: ApiFieldError[];
     readonly retryAfterSeconds?: number;
+    readonly traceId?: string;
 
-    constructor({ status, code, message, errors, retryAfterSeconds }: ApiRequestErrorDetails) {
+    constructor({
+        status,
+        code,
+        message,
+        errors,
+        retryAfterSeconds,
+        traceId,
+    }: ApiRequestErrorDetails) {
         super(message);
         this.name = "ApiRequestError";
         this.status = status;
         this.code = code;
         this.errors = errors ?? [];
         this.retryAfterSeconds = retryAfterSeconds;
+        this.traceId = traceId;
     }
 }
 
@@ -89,6 +99,7 @@ async function toRequestError(response: Response): Promise<ApiRequestError> {
             message: body.message,
             errors: body.errors,
             retryAfterSeconds,
+            traceId: body.traceId,
         });
     }
     return new ApiRequestError({

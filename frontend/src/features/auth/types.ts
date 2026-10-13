@@ -1,8 +1,8 @@
+import type { Role } from "@/lib/current-user";
+
 export type AuthMode = "login" | "register";
 
 export type OAuthProvider = "github" | "google";
-
-export type Role = "LEARNER" | "SETTER" | "MODERATOR" | "ADMIN";
 
 export interface AuthUser {
     id: string;

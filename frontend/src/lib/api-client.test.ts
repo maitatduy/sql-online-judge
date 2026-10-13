@@ -80,6 +80,26 @@ describe("apiClient", () => {
         expect(error.errors).toEqual([{ field: "email", message: "Email không hợp lệ" }]);
     });
 
+    it("giữ traceId của ApiError để hiển thị cho người dùng", async () => {
+        server.use(
+            http.get("*/api/problems", () =>
+                HttpResponse.json(
+                    {
+                        status: 500,
+                        code: "INTERNAL_ERROR",
+                        message: "Đã có lỗi xảy ra, vui lòng thử lại sau",
+                        traceId: "4bf92f3577b34da6",
+                    },
+                    { status: 500 },
+                ),
+            ),
+        );
+
+        const error = await captureError(apiClient.get("/api/problems"));
+
+        expect(error.traceId).toBe("4bf92f3577b34da6");
+    });
+
     it("đọc số giây chờ từ header Retry-After khi bị 429", async () => {
         server.use(
             http.post("*/api/auth/login", () =>

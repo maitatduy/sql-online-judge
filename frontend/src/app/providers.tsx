@@ -5,14 +5,15 @@ import { useEffect, useState } from "react";
 
 import { createQueryClient } from "@/lib/query-client";
 
+function isApiMockingEnabled(): boolean {
+    return (
+        process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_API_MOCKING === "enabled"
+    );
+}
+
 async function startMockWorker(): Promise<void> {
-    if (
-        process.env.NODE_ENV !== "production" &&
-        process.env.NEXT_PUBLIC_API_MOCKING === "enabled"
-    ) {
-        const { worker } = await import("@/mocks/browser");
-        await worker.start({ onUnhandledRequest: "bypass", quiet: true });
-    }
+    const { worker } = await import("@/mocks/browser");
+    await worker.start({ onUnhandledRequest: "bypass", quiet: true });
 }
 
 interface AppProvidersProps {
@@ -21,17 +22,27 @@ interface AppProvidersProps {
 
 export function AppProviders({ children }: AppProvidersProps) {
     const [queryClient] = useState(createQueryClient);
+    const [isApiReady, setIsApiReady] = useState(() => !isApiMockingEnabled());
     const [mockingError, setMockingError] = useState<Error | null>(null);
 
     useEffect(() => {
-        startMockWorker().catch((error: unknown) => {
-            setMockingError(error instanceof Error ? error : new Error(String(error)));
-        });
-    }, []);
+        if (isApiReady) {
+            return;
+        }
+        startMockWorker()
+            .then(() => setIsApiReady(true))
+            .catch((error: unknown) => {
+                setMockingError(error instanceof Error ? error : new Error(String(error)));
+            });
+    }, [isApiReady]);
 
     if (mockingError) {
         throw mockingError;
     }
 
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    return (
+        <QueryClientProvider client={queryClient}>
+            {isApiReady ? children : null}
+        </QueryClientProvider>
+    );
 }
