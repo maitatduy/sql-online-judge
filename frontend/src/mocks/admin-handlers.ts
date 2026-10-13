@@ -1,6 +1,11 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
-import { buildAdminOverview, buildJudgeWorkers, buildNavigationCounts } from "./admin-fixtures";
+import {
+    ADMIN_PENDING_TASKS,
+    buildAdminOverview,
+    buildJudgeWorkers,
+    buildNavigationCounts,
+} from "./admin-fixtures";
 import { apiError } from "./api-error";
 import { readMockSession } from "./session";
 import { readWorkerRestarts, recordWorkerRestart } from "./worker-restarts";
@@ -67,5 +72,10 @@ export const adminHandlers: RequestHandler[] = [
         }
         recordWorkerRestart(name, now.getTime());
         return HttpResponse.json({ name, status: "RESTARTING" }, { status: 202 });
+    }),
+
+    http.get("*/api/admin/pending-tasks", async () => {
+        await delay();
+        return HttpResponse.json({ items: ADMIN_PENDING_TASKS });
     }),
 ];

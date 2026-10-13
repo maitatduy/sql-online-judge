@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/api-client";
 import type {
     AdminOverviewResponse,
     JudgeWorkersResponse,
+    PendingTasksResponse,
     RestartWorkerRequest,
     RestartWorkerResponse,
 } from "./types";
@@ -20,4 +21,6 @@ export const adminApi = {
             `/api/admin/judge/workers/${encodeURIComponent(name)}/restart`,
             { reason },
         ),
+    getPendingTasks: (signal?: AbortSignal) =>
+        apiClient.get<PendingTasksResponse>("/api/admin/pending-tasks", { signal }),
 };

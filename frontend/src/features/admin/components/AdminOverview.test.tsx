@@ -63,6 +63,16 @@ describe("AdminOverview", () => {
         ).toBeInTheDocument();
     });
 
+    it("hiện danh sách việc cần xử lý", async () => {
+        renderOverview();
+
+        expect(screen.getByRole("heading", { level: 2, name: "Cần xử lý" })).toBeInTheDocument();
+        expect(await screen.findByRole("link", { name: /^Bài chờ duyệt/ })).toHaveAttribute(
+            "href",
+            "/admin/problem-reviews",
+        );
+    });
+
     it("hiện tình trạng máy chấm", async () => {
         renderOverview();
 

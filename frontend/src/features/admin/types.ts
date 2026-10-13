@@ -45,6 +45,18 @@ export interface AdminOverviewResponse {
     verdictDistribution: VerdictShare[];
 }
 
+export type PendingTaskType = "PROBLEM_REVIEW" | "ABUSE_REPORT" | "AI_FLAG" | "SUPPORT_MESSAGE";
+
+export interface PendingTask {
+    type: PendingTaskType;
+    count: number;
+    detail: string;
+}
+
+export interface PendingTasksResponse {
+    items: PendingTask[];
+}
+
 export type WorkerStatus = "ONLINE" | "BUSY" | "DISCONNECTED" | "RESTARTING";
 
 export interface JudgeWorker {

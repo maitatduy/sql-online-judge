@@ -3,6 +3,7 @@ import type {
     JudgeQueueSummary,
     JudgeWorker,
     MonthlySubmissions,
+    PendingTask,
     WorkerStatus,
 } from "@/features/admin/types";
 import type { AdminNavigationCounts } from "@/lib/admin-navigation";
@@ -18,6 +19,13 @@ const MONTHLY_COUNTS = [
     86420, 79310, 98210, 104560, 112340, 96780, 88150, 101920, 118470, 124630, 109870, 93540,
 ];
 const WEEKLY_CHANGE_NOTE = "so với tuần trước";
+
+export const ADMIN_PENDING_TASKS: PendingTask[] = [
+    { type: "PROBLEM_REVIEW", count: 5, detail: "Cũ nhất gửi 3 ngày trước" },
+    { type: "ABUSE_REPORT", count: 12, detail: "4 báo cáo về cùng một bình luận ở Weekly #37" },
+    { type: "AI_FLAG", count: 3, detail: "Cố lấy đáp án đầy đủ trước khi AC" },
+    { type: "SUPPORT_MESSAGE", count: 3, detail: "Mới nhất lúc 15:20 từ hoa.kieu" },
+];
 
 const DISCONNECTED_FOR_MS = 8 * MINUTE_MS;
 const RESTART_DURATION_MS = 2500;

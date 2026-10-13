@@ -8,6 +8,7 @@ import { useAdminOverview } from "../hooks/useAdminOverview";
 import { JudgeWorkersCard } from "./JudgeWorkersCard";
 import { OverviewSkeleton } from "./OverviewSkeleton";
 import { OverviewStatTiles } from "./OverviewStatTiles";
+import { PendingTasksCard } from "./PendingTasksCard";
 import { StaleDataNotice } from "./StaleDataNotice";
 import { SubmissionTotalCard } from "./SubmissionTotalCard";
 
@@ -46,6 +47,7 @@ export function AdminOverview() {
             ) : null}
             <div className="flex flex-wrap items-start gap-5">
                 <JudgeWorkersCard />
+                <PendingTasksCard />
             </div>
         </main>
     );
