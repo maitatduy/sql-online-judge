@@ -84,7 +84,7 @@ Không tự tạo service mới. Nếu một tính năng không khớp service n
 
 - Trang công khai (landing, danh sách bài, khoá học, bài viết cộng đồng) cần SSR để SEO.
 - Workspace, contest và admin là phần tương tác nặng, chạy dưới dạng Client Component trong cùng app, dùng chung design system và phiên đăng nhập.
-- Admin tách bằng route group `(admin)` và middleware kiểm tra vai trò, không cần codebase riêng.
+- Admin tách bằng route group `(admin)`, không cần codebase riêng. Vai trò được kiểm tra ở client trong khung admin (`AdminShell`, đọc `/api/auth/me`) để không render và không gọi API admin cho người không phải `ADMIN`; đây chỉ là trải nghiệm. Rào chắn thật là `@PreAuthorize` ở từng service. Chưa dùng `middleware.ts` vì access token nằm trong bộ nhớ, middleware không đọc được vai trò; xem lại khi có cookie phiên mà server đọc được.
 
 ### Nguyên tắc
 

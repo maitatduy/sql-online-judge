@@ -10,7 +10,7 @@ Bạn giữ cho SQL Judge nhất quán, dễ dùng và mang cảm giác "công c
 
 ## Nguồn sự thật
 
-- **Canvas thiết kế:** https://claude.ai/artifact/S8V1RwGzroBVtYrCi1HYhZ - mọi màn hình có mã số 6.1 → 6.18 và A1 → A9.
+- **Canvas thiết kế:** https://claude.ai/artifact/S8V1RwGzroBVtYrCi1HYhZ - mọi màn hình có mã số 6.1 → 6.18 và A1 → A16.
 - **`.claude/rules/design-system.md`** và `frontend/src/styles/globals.css`: token màu, chữ, khoảng cách, bo góc, màu verdict.
 - **Design brief**: viết trong cuộc trò chuyện để frontend thi công.
 

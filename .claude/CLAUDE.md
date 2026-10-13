@@ -7,7 +7,7 @@ SQL Judge là nền tảng học SQL có máy chấm tự động - online judge
 - **Backend:** Java 21, Spring Boot 3 microservices, MySQL 8 - mỗi service một database, Kafka, Redis.
 - **Frontend:** một app Next.js 15 (App Router) cho cả site, workspace làm bài và trang admin.
 - **Máy chấm:** `judge-worker` chạy SQL người dùng trong sandbox PostgreSQL 16 / MySQL 8 / SQLite 3 tách biệt hoàn toàn.
-- **Thiết kế giao diện:** canvas https://claude.ai/artifact/S8V1RwGzroBVtYrCi1HYhZ - mỗi màn hình có mã (6.1 → 6.18, A1 → A9), dùng mã này khi trao đổi.
+- **Thiết kế giao diện:** canvas https://claude.ai/artifact/S8V1RwGzroBVtYrCi1HYhZ - mỗi màn hình có mã (6.1 → 6.18, A1 → A16), dùng mã này khi trao đổi.
 
 Package Java gốc: `com.sqljudge.<service>`. Chi tiết stack: `.claude/rules/tech-stack.md`. Cấu trúc repo: `.claude/rules/project-structure.md`.
 
