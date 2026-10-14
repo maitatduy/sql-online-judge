@@ -11,6 +11,9 @@ export const ROUTES = {
     ai: "/ai",
     settings: "/settings",
     admin: "/admin",
+    adminUsers: "/admin/users",
+    adminMessages: "/admin/messages",
+    adminUser: (username: string) => `/admin/users/${encodeURIComponent(username)}`,
     loginWithNext: (nextPath: string) => `/login?next=${encodeURIComponent(nextPath)}`,
     profile: (username: string) => `/u/${encodeURIComponent(username)}`,
 } as const;

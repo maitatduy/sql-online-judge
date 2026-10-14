@@ -51,6 +51,18 @@ describe("apiClient", () => {
         });
     });
 
+    it("patch gửi body dạng JSON bằng phương thức PATCH", async () => {
+        server.use(
+            http.patch("*/api/admin/users/viet.luu", async ({ request }) =>
+                HttpResponse.json({ method: request.method, body: await request.json() }),
+            ),
+        );
+
+        await expect(
+            apiClient.patch("/api/admin/users/viet.luu", { role: "SETTER" }),
+        ).resolves.toEqual({ method: "PATCH", body: { role: "SETTER" } });
+    });
+
     it("trả undefined khi response là 204", async () => {
         server.use(http.post("*/api/logout", () => new HttpResponse(null, { status: 204 })));
 
