@@ -1,5 +1,6 @@
 import { useToast } from "@/components/shared/ToastProvider";
 import { useBanUser } from "@/features/admin/hooks/useBanUser";
+import type { BanDuration } from "@/features/admin/users/types";
 
 import { ActionDialog } from "./ActionDialog";
 import { BanForm } from "./BanForm";
@@ -10,9 +11,10 @@ export const BAN_DESCRIPTION =
 interface BanUserDialogProps {
     username: string;
     onClose: () => void;
+    initialDuration?: BanDuration;
 }
 
-export function BanUserDialog({ username, onClose }: BanUserDialogProps) {
+export function BanUserDialog({ username, onClose, initialDuration }: BanUserDialogProps) {
     const showToast = useToast();
     const banUser = useBanUser();
 
@@ -20,6 +22,7 @@ export function BanUserDialog({ username, onClose }: BanUserDialogProps) {
         <ActionDialog title={`Khoá ${username}`} description={BAN_DESCRIPTION} onClose={onClose}>
             <BanForm
                 isPending={banUser.isPending}
+                initialDuration={initialDuration}
                 submitBan={(values) =>
                     banUser.mutateAsync({ username, ...values }).then(() => {
                         showToast(`Đã khoá ${username}. Thao tác đã được ghi vào nhật ký.`);

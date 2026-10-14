@@ -13,6 +13,10 @@ import { adminUserAccountHandlers } from "./admin-user-account-handlers";
 import { adminUserAvatarHandlers } from "./admin-user-avatar-handlers";
 import { adminUserBanHandlers } from "./admin-user-ban-handlers";
 import { adminUserBulkHandlers } from "./admin-user-bulk-handlers";
+import { adminUserContestHandlers } from "./admin-user-contests";
+import { adminUserNoteHandlers } from "./admin-user-notes";
+import { adminUserRestrictionHandlers } from "./admin-user-restrictions";
+import { adminUserSessionHandlers } from "./admin-user-sessions";
 import { adminUserEmailHandlers } from "./admin-user-email-handlers";
 import { userNotFound, validationFailed } from "./admin-user-errors";
 import { readAdminUserDetail, readAdminUsers, readDeletedAdminUsers } from "./admin-user-store";
@@ -93,6 +97,10 @@ export const adminUserHandlers: RequestHandler[] = [
 
     ...adminUserAccountHandlers,
     ...adminUserAvatarHandlers,
+    ...adminUserContestHandlers,
+    ...adminUserSessionHandlers,
+    ...adminUserRestrictionHandlers,
+    ...adminUserNoteHandlers,
     ...adminUserBulkHandlers,
     ...adminUserBanHandlers,
     ...adminUserEmailHandlers,

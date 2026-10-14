@@ -1,6 +1,7 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import { buildActiveYear, EMPTY_ACTIVITY } from "./activity-fixtures";
+import { adminUserProfile } from "./admin-user-profiles";
 import { apiError } from "./api-error";
 import {
     BROKEN_PROFILE_USERNAME,
@@ -14,13 +15,17 @@ import { buildRecentSubmissions } from "./submission-fixtures";
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
+function findPublicProfile(username: string) {
+    return PROFILES.find((profile) => profile.username === username) ?? adminUserProfile(username);
+}
+
 function unavailableProfileResponse(username: string) {
     if (username === BROKEN_PROFILE_USERNAME) {
         return apiError(500, "INTERNAL_ERROR", "Đã có lỗi xảy ra, vui lòng thử lại sau", {
             traceId: MOCK_TRACE_ID,
         });
     }
-    if (!PROFILES.some((profile) => profile.username === username)) {
+    if (!findPublicProfile(username)) {
         return apiError(404, "USER_NOT_FOUND", "Không tìm thấy người dùng");
     }
     return null;
@@ -31,8 +36,7 @@ export const profileHandlers: RequestHandler[] = [
         await delay();
         const username = String(params.username);
         return (
-            unavailableProfileResponse(username) ??
-            HttpResponse.json(PROFILES.find((profile) => profile.username === username))
+            unavailableProfileResponse(username) ?? HttpResponse.json(findPublicProfile(username))
         );
     }),
 

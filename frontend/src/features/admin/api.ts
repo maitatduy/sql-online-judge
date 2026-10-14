@@ -11,22 +11,31 @@ import type {
 import { USERS_PAGE_SIZE } from "./users/pagination";
 import type { UsersFilters } from "./users/search-params";
 import type {
+    AddUserNoteRequest,
     AdminUserDetail,
     AdminUsersResponse,
     BanUserRequest,
     BulkBanUsersRequest,
     BulkChangeRoleRequest,
     BulkUserActionResponse,
+    ContestHistoryResponse,
     CreateUserRequest,
     DeleteUserRequest,
     ExportUsersRequest,
     ExportUsersResponse,
     UnbanUserRequest,
+    PageRequest,
+    RevokeSessionRequest,
+    UpdateRestrictionsRequest,
     UpdateUserRequest,
     UploadAvatarRequest,
     UserAvatarResponse,
     UserCountsResponse,
     UserEmailResponse,
+    UserNote,
+    UserNotesResponse,
+    UserRestrictions,
+    UserSessionsResponse,
 } from "./users/types";
 import { usersQueryOf } from "./users/users-query";
 
@@ -92,6 +101,40 @@ export const adminApi = {
         apiClient.delete<undefined>(`/api/admin/users/${encodeURIComponent(username)}/avatar`),
     restoreUser: (username: string) =>
         apiClient.post<AdminUserDetail>(`/api/admin/users/${encodeURIComponent(username)}/restore`),
+    getUserContestHistory: (username: string, { page, size }: PageRequest, signal?: AbortSignal) =>
+        apiClient.get<ContestHistoryResponse>(
+            `/api/admin/users/${encodeURIComponent(username)}/contest-history`,
+            { params: { page, size }, signal },
+        ),
+    getUserSessions: (username: string, signal?: AbortSignal) =>
+        apiClient.get<UserSessionsResponse>(
+            `/api/admin/users/${encodeURIComponent(username)}/sessions`,
+            { signal },
+        ),
+    revokeUserSession: ({ username, sessionId }: RevokeSessionRequest) =>
+        apiClient.delete<undefined>(
+            `/api/admin/users/${encodeURIComponent(username)}/sessions/${encodeURIComponent(sessionId)}`,
+        ),
+    revokeAllUserSessions: (username: string) =>
+        apiClient.delete<undefined>(`/api/admin/users/${encodeURIComponent(username)}/sessions`),
+    getUserRestrictions: (username: string, signal?: AbortSignal) =>
+        apiClient.get<UserRestrictions>(
+            `/api/admin/users/${encodeURIComponent(username)}/restrictions`,
+            { signal },
+        ),
+    updateUserRestrictions: ({ username, ...changes }: UpdateRestrictionsRequest) =>
+        apiClient.patch<UserRestrictions>(
+            `/api/admin/users/${encodeURIComponent(username)}/restrictions`,
+            changes,
+        ),
+    getUserNotes: (username: string, signal?: AbortSignal) =>
+        apiClient.get<UserNotesResponse>(`/api/admin/users/${encodeURIComponent(username)}/notes`, {
+            signal,
+        }),
+    addUserNote: ({ username, body }: AddUserNoteRequest) =>
+        apiClient.post<UserNote>(`/api/admin/users/${encodeURIComponent(username)}/notes`, {
+            body,
+        }),
     getNavigationCounts: (signal?: AbortSignal) =>
         apiClient.get<AdminNavigationCounts>("/api/admin/navigation-counts", { signal }),
     getOverview: (signal?: AbortSignal) =>

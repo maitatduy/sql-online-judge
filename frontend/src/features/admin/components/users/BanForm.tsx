@@ -19,9 +19,16 @@ interface BanFormProps {
     onFailure: (error: Error) => void;
     isPending: boolean;
     hasTargets?: boolean;
+    initialDuration?: BanDuration;
 }
 
-export function BanForm({ submitBan, onFailure, isPending, hasTargets = true }: BanFormProps) {
+export function BanForm({
+    submitBan,
+    onFailure,
+    isPending,
+    hasTargets = true,
+    initialDuration = "DAYS_7",
+}: BanFormProps) {
     const {
         control,
         register,
@@ -30,7 +37,7 @@ export function BanForm({ submitBan, onFailure, isPending, hasTargets = true }: 
         formState: { errors },
     } = useForm<BanUserValues>({
         resolver: zodResolver(banUserSchema),
-        defaultValues: { duration: "DAYS_7", reason: "", notifyByEmail: true },
+        defaultValues: { duration: initialDuration, reason: "", notifyByEmail: true },
     });
     const reason = useWatch({ control, name: "reason" });
 

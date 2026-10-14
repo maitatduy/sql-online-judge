@@ -83,6 +83,9 @@
 
     --violation-severe: #c81e1e;
     --violation-minor: #9a5b05;
+
+    --case-open: #c2410c;
+    --case-resolved: #15803d;
 }
 
 .dark {
@@ -165,6 +168,9 @@
 
     --violation-severe: #f87171;
     --violation-minor: #facc15;
+
+    --case-open: #fb923c;
+    --case-resolved: #4ade80;
 }
 
 :root,
@@ -274,6 +280,9 @@
 
     --color-violation-severe: var(--violation-severe);
     --color-violation-minor: var(--violation-minor);
+
+    --color-case-open: var(--case-open);
+    --color-case-resolved: var(--case-resolved);
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
