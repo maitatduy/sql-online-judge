@@ -31,6 +31,10 @@ Trong component chỉ dùng class token (`bg-brand`, `text-verdict-wa`) hoặc `
 | Sidebar admin | `sidebar`, `sidebar-text`, `sidebar-strong`, `sidebar-muted`, `sidebar-hover`, `sidebar-active`, `sidebar-line` | **Chỉ** sidebar của Admin Console: nền, chữ mục, chữ nhấn, tiêu đề nhóm, nền rê chuột, nền mục đang chọn, viền. Sidebar sáng ở nền sáng, tối ở nền tối |
 | Trạng thái vận hành | `status-ok`, `status-busy`, `status-down` | Trạng thái của worker và dịch vụ: hoạt động, bận hoặc đang khởi động lại, mất kết nối |
 | Mức tải | `meter-normal`, `meter-high`, `meter-critical` | Thanh đo CPU, RAM: dưới 60%, từ 60%, từ 85% |
+| Vai trò tài khoản | `role-setter`, `role-moderator`, `role-admin` | **Chỉ** nhãn vai trò của tài khoản trong Admin Console: chữ dùng token, nền dùng độ mờ `/12` của chính token. Vai trò Học viên dùng `surface-2` và `text-muted` |
+| Trạng thái tài khoản | `account-active`, `account-banned`, `account-unverified` | **Chỉ** trạng thái của tài khoản người dùng: hoạt động, bị khoá, chưa xác minh email |
+| Vi phạm của tài khoản | `violation-severe`, `violation-minor` | **Chỉ** lịch sử vi phạm của một tài khoản: chấm mức nghiêm trọng, mức nhẹ; ô đếm vi phạm dùng `violation-severe` |
+| Nền avatar | `avatar-1` … `avatar-8` | Nền avatar chữ cái, chọn theo username, chữ trắng. Giống nhau ở nền sáng và nền tối |
 | Nhãn đếm admin | `count-review`, `count-report`, `count-ai-flag`, `count-support`, `count-live` | Nền nhãn số việc chờ xử lý trong Admin Console, chữ trắng: bài chờ duyệt, báo cáo vi phạm, hội thoại AI bị gắn cờ, tin nhắn hỗ trợ, contest đang diễn ra |
 
 Các token của shadcn (`background`, `foreground`, `card`, `primary`, `muted`, `border`, `ring`…) là bí danh trỏ về nhóm trên; đổi giá trị ở token gốc, không đổi ở bí danh.
