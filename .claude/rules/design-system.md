@@ -34,6 +34,7 @@ Trong component chỉ dùng class token (`bg-brand`, `text-verdict-wa`) hoặc `
 | Vai trò tài khoản | `role-setter`, `role-moderator`, `role-admin` | **Chỉ** nhãn vai trò của tài khoản trong Admin Console: chữ dùng token, nền dùng độ mờ `/12` của chính token. Vai trò Học viên dùng `surface-2` và `text-muted` |
 | Trạng thái tài khoản | `account-active`, `account-banned`, `account-unverified` | **Chỉ** trạng thái của tài khoản người dùng: hoạt động, bị khoá, chưa xác minh email |
 | Vi phạm của tài khoản | `violation-severe`, `violation-minor` | **Chỉ** lịch sử vi phạm của một tài khoản: chấm mức nghiêm trọng, mức nhẹ; ô đếm vi phạm dùng `violation-severe` |
+| Trạng thái xử lý vi phạm | `case-open`, `case-resolved` | **Chỉ** nhãn trạng thái xử lý của một vi phạm hoặc báo cáo: chờ xử lý, đã xử lý |
 | Nền avatar | `avatar-1` … `avatar-8` | Nền avatar chữ cái, chọn theo username, chữ trắng. Giống nhau ở nền sáng và nền tối |
 | Nhãn đếm admin | `count-review`, `count-report`, `count-ai-flag`, `count-support`, `count-live` | Nền nhãn số việc chờ xử lý trong Admin Console, chữ trắng: bài chờ duyệt, báo cáo vi phạm, hội thoại AI bị gắn cờ, tin nhắn hỗ trợ, contest đang diễn ra |
 

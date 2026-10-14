@@ -57,3 +57,27 @@ export const userFormSchema = z.object({
 });
 
 export type UserFormValues = z.infer<typeof userFormSchema>;
+
+export const MAX_AI_DAILY_QUOTA = 200;
+const AI_QUOTA_MESSAGE = `Hạn mức AI từ 0 đến ${MAX_AI_DAILY_QUOTA} tin mỗi ngày`;
+
+export const restrictionsSchema = z.object({
+    role: z.enum(ROLES as [Role, ...Role[]]),
+    aiDailyQuota: z
+        .number({ error: AI_QUOTA_MESSAGE })
+        .int(AI_QUOTA_MESSAGE)
+        .min(0, AI_QUOTA_MESSAGE)
+        .max(MAX_AI_DAILY_QUOTA, AI_QUOTA_MESSAGE),
+    isBannedFromRatedContests: z.boolean(),
+    reason: z.string().trim(),
+});
+
+export type RestrictionsValues = z.infer<typeof restrictionsSchema>;
+
+export const MAX_NOTE_LENGTH = 1000;
+
+export const userNoteSchema = z.object({
+    body: z.string().trim().max(MAX_NOTE_LENGTH, "Ghi chú tối đa 1.000 ký tự"),
+});
+
+export type UserNoteValues = z.infer<typeof userNoteSchema>;

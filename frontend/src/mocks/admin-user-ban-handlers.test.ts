@@ -30,6 +30,9 @@ describe("POST /api/admin/users/{username}/ban", () => {
             severity: "SEVERE",
             title: expect.stringMatching(/^Bị khoá đến \d{2}\/\d{2}\/\d{4}$/),
             detail: "Spam bình luận",
+            status: "RESOLVED",
+            handledBy: "admin.huy",
+            handledAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
         });
     });
 

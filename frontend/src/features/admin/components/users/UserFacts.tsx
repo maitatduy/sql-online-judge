@@ -1,12 +1,7 @@
 import { lastActiveLabel } from "@/features/admin/users/activity";
-import type { AdminUserDetail, SignupProvider } from "@/features/admin/users/types";
-import { formatDate } from "@/lib/format";
+import type { AdminUserDetail } from "@/features/admin/users/types";
+import { joinedLabel } from "@/features/admin/users/user-meta";
 
-const PROVIDER_LABELS: Record<SignupProvider, string> = {
-    EMAIL: "email",
-    GOOGLE: "Google",
-    GITHUB: "GitHub",
-};
 const ROW_CLASS = "flex justify-between gap-3";
 
 interface UserFactsProps {
@@ -31,7 +26,7 @@ export function UserFacts({ user, now }: UserFactsProps) {
             </div>
             <div className={ROW_CLASS}>
                 <dt className="text-muted-foreground">Tham gia</dt>
-                <dd>{`${formatDate(user.joinedAt)} qua ${PROVIDER_LABELS[user.signupProvider]}`}</dd>
+                <dd>{joinedLabel(user)}</dd>
             </div>
         </dl>
     );

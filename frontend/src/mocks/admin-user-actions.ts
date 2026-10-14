@@ -3,6 +3,7 @@ import type { ApiFieldError } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
 
 import { addUserViolation, changeAdminUser } from "./admin-user-store";
+import { readMockSession } from "./session";
 
 const DAY_MS = 24 * 60 * 60_000;
 const MAX_BULK_USERS = 100;
@@ -20,6 +21,9 @@ export function banAdminUser(username: string, duration: BanDuration, reason: st
         severity: "SEVERE",
         title: bannedUntil ? `Bị khoá đến ${formatDate(bannedUntil)}` : "Bị khoá vĩnh viễn",
         detail: reason.trim(),
+        status: "RESOLVED",
+        handledBy: readMockSession()?.username ?? null,
+        handledAt: new Date().toISOString(),
     });
 }
 

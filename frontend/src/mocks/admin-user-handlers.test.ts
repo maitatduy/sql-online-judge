@@ -185,6 +185,9 @@ describe("GET /api/admin/users/{username}", () => {
             displayName: "Lưu Quốc Việt",
             signupProvider: "GITHUB",
             status: "ACTIVE",
+            school: "ĐH Mở Hà Nội",
+            submissionCount: 286,
+            contestCount: 9,
         });
         expect(user.violations).toEqual([
             {
@@ -192,12 +195,18 @@ describe("GET /api/admin/users/{username}", () => {
                 severity: "SEVERE",
                 title: "Nghi đạo code trong contest",
                 detail: "Weekly #37, đang chờ xử lý",
+                status: "OPEN",
+                handledBy: null,
+                handledAt: null,
             },
             {
                 id: "viet.luu-2",
                 severity: "MINOR",
                 title: "Spam bình luận",
                 detail: "12/09, mod.thu đã cảnh cáo",
+                status: "RESOLVED",
+                handledBy: "mod.thu",
+                handledAt: "2026-09-12T03:00:00Z",
             },
         ]);
     });
