@@ -21,8 +21,6 @@ import type {
     DeleteUserRequest,
     ExportUsersRequest,
     ExportUsersResponse,
-    InviteUsersRequest,
-    InviteUsersResponse,
     UnbanUserRequest,
     UpdateUserRequest,
     UploadAvatarRequest,
@@ -74,8 +72,6 @@ export const adminApi = {
         apiClient.post<BulkUserActionResponse>("/api/admin/users/bulk-ban", request),
     bulkChangeRole: (request: BulkChangeRoleRequest) =>
         apiClient.post<BulkUserActionResponse>("/api/admin/users/bulk-role", request),
-    inviteUsers: (request: InviteUsersRequest) =>
-        apiClient.post<InviteUsersResponse>("/api/admin/user-invitations", request),
     exportUsers: (request: ExportUsersRequest) =>
         apiClient.post<ExportUsersResponse>("/api/admin/user-exports", request),
     deleteUser: ({ username, reason }: DeleteUserRequest) =>
@@ -94,6 +90,8 @@ export const adminApi = {
     },
     removeAvatar: (username: string) =>
         apiClient.delete<undefined>(`/api/admin/users/${encodeURIComponent(username)}/avatar`),
+    restoreUser: (username: string) =>
+        apiClient.post<AdminUserDetail>(`/api/admin/users/${encodeURIComponent(username)}/restore`),
     getNavigationCounts: (signal?: AbortSignal) =>
         apiClient.get<AdminNavigationCounts>("/api/admin/navigation-counts", { signal }),
     getOverview: (signal?: AbortSignal) =>

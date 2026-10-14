@@ -18,6 +18,7 @@ export interface AdminUserSummary {
     bannedUntil: string | null;
     isEmailVerified: boolean;
     avatarUrl: string | null;
+    deletedAt: string | null;
 }
 
 export interface AdminUsersResponse {
@@ -92,18 +93,6 @@ export interface BulkChangeRoleRequest {
 export interface BulkUserActionResponse {
     affectedCount: number;
     skippedUsernames: string[];
-}
-
-export type InviteRole = Extract<Role, "SETTER" | "MODERATOR">;
-
-export interface InviteUsersRequest {
-    emails: string[];
-    role: InviteRole;
-    message?: string;
-}
-
-export interface InviteUsersResponse {
-    invitedCount: number;
 }
 
 export type ExportScope = "FILTERED" | "SELECTED" | "ALL";

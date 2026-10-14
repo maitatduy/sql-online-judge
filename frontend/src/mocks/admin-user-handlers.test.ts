@@ -56,6 +56,7 @@ describe("GET /api/admin/users", () => {
             "acceptedCount",
             "avatarUrl",
             "bannedUntil",
+            "deletedAt",
             "email",
             "id",
             "isEmailVerified",

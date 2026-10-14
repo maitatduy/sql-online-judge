@@ -167,6 +167,7 @@ function userFrom(seed: UserSeed, index: number, now: Date): AdminUserSummary {
             : null,
         isEmailVerified: seed.isEmailVerified ?? true,
         avatarUrl: null,
+        deletedAt: null,
     };
 }
 

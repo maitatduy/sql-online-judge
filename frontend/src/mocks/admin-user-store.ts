@@ -10,7 +10,9 @@ import { buildAdminUsers } from "./admin-user-fixtures";
 const CHANGES_STORAGE_KEY = "sqljudge:mock:admin-user-changes";
 const CREATED_STORAGE_KEY = "sqljudge:mock:admin-created-users";
 
-type UserFields = Partial<Pick<AdminUserSummary, "role" | "status" | "bannedUntil" | "avatarUrl">>;
+type UserFields = Partial<
+    Pick<AdminUserSummary, "role" | "status" | "bannedUntil" | "avatarUrl" | "deletedAt">
+>;
 type NewViolation = Omit<UserViolation, "id">;
 
 type UserProfile = Pick<AdminUserDetail, "displayName">;
@@ -18,7 +20,6 @@ type UserProfile = Pick<AdminUserDetail, "displayName">;
 interface UserChange {
     fields?: UserFields;
     profile?: UserProfile;
-    isDeleted?: boolean;
     violations?: NewViolation[];
 }
 
@@ -52,19 +53,29 @@ export function createAdminUser(user: AdminUserSummary, profile: UserProfile): v
     changeAdminUserProfile(user.username, profile);
 }
 
-export function readAdminUsers(now: Date): AdminUserSummary[] {
+function readChangedAdminUsers(now: Date): AdminUserSummary[] {
     const changes = readChanges();
-    return readAllAdminUsers(now)
-        .filter((user) => !changes[user.username]?.isDeleted)
-        .map((user) => ({ ...user, ...changes[user.username]?.fields }));
+    return readAllAdminUsers(now).map((user) => ({ ...user, ...changes[user.username]?.fields }));
+}
+
+export function readAdminUsers(now: Date): AdminUserSummary[] {
+    return readChangedAdminUsers(now).filter((user) => user.deletedAt === null);
+}
+
+export function readDeletedAdminUsers(now: Date): AdminUserSummary[] {
+    return readChangedAdminUsers(now).filter((user) => user.deletedAt !== null);
 }
 
 export function findAdminUser(username: string): AdminUserSummary | undefined {
     return readAdminUsers(new Date()).find((user) => user.username === username);
 }
 
+export function findAnyAdminUser(username: string): AdminUserSummary | undefined {
+    return readChangedAdminUsers(new Date()).find((user) => user.username === username);
+}
+
 export function readAdminUserDetail(username: string): AdminUserDetail | undefined {
-    const user = findAdminUser(username);
+    const user = findAnyAdminUser(username);
     const change = readChanges()[username];
     return user && { ...buildAdminUserDetail(user, change?.violations), ...change?.profile };
 }
@@ -79,7 +90,11 @@ export function changeAdminUserProfile(username: string, profile: UserProfile): 
 }
 
 export function deleteAdminUser(username: string): void {
-    writeChange(username, { ...readChanges()[username], isDeleted: true });
+    changeAdminUser(username, { deletedAt: new Date().toISOString() });
+}
+
+export function restoreAdminUser(username: string): void {
+    changeAdminUser(username, { deletedAt: null });
 }
 
 export function addUserViolation(username: string, violation: NewViolation): void {

@@ -25,14 +25,19 @@ const UnbanUserDialog = dynamic(
 type OpenDialog = "ban" | "unban" | "reset" | null;
 
 interface UserDetailActionsProps {
-    user: Pick<AdminUserDetail, "username" | "email" | "status" | "isEmailVerified">;
+    user: Pick<AdminUserDetail, "username" | "email" | "status" | "isEmailVerified" | "deletedAt">;
 }
 
 export function UserDetailActions({ user }: UserDetailActionsProps) {
     const { data: currentUser } = useCurrentUser();
     const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
-    const isBanned = user.status === "BANNED";
-    const canBan = !isBanned && currentUser !== undefined && currentUser.username !== user.username;
+    const isDeleted = user.deletedAt !== null;
+    const isBanned = !isDeleted && user.status === "BANNED";
+    const canBan =
+        !isDeleted &&
+        !isBanned &&
+        currentUser !== undefined &&
+        currentUser.username !== user.username;
     const closeDialog = () => setOpenDialog(null);
 
     return (
@@ -43,17 +48,19 @@ export function UserDetailActions({ user }: UserDetailActionsProps) {
             <Button asChild size="sm" variant="outline">
                 <Link href={ROUTES.profile(user.username)}>Xem hồ sơ công khai</Link>
             </Button>
-            {user.isEmailVerified ? null : (
+            {isDeleted || user.isEmailVerified ? null : (
                 <ResendVerificationButton username={user.username} email={user.email} />
             )}
-            <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setOpenDialog("reset")}
-            >
-                Gửi email đặt lại mật khẩu
-            </Button>
+            {isDeleted ? null : (
+                <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setOpenDialog("reset")}
+                >
+                    Gửi email đặt lại mật khẩu
+                </Button>
+            )}
             {canBan ? (
                 <Button
                     type="button"

@@ -9,6 +9,7 @@ export interface UsersQuery {
     role?: Role;
     status?: AccountStatus;
     emailVerified?: boolean;
+    deleted?: boolean;
 }
 
 export function usersQueryOf({ q, role, state }: UsersFilters): UsersQuery {

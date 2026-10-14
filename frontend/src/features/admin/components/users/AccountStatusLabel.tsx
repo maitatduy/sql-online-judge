@@ -13,6 +13,7 @@ const STATE_APPEARANCES: Record<AccountState, StateAppearance> = {
         textClassName: "text-account-unverified",
         dotClassName: "bg-account-unverified",
     },
+    DELETED: { textClassName: "text-muted-foreground", dotClassName: "bg-muted-foreground" },
 };
 
 interface AccountStatusLabelProps {

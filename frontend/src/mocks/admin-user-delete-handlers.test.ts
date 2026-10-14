@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import type { AdminUsersResponse, UserCountsResponse } from "@/features/admin/users/types";
+import type {
+    AdminUserDetail,
+    AdminUsersResponse,
+    UserCountsResponse,
+} from "@/features/admin/users/types";
 import { apiClient } from "@/lib/api-client";
 
 import { ADMIN_SESSION_USER, DEMO_SESSION_USER, writeMockSession } from "./session";
@@ -22,9 +26,30 @@ describe("DELETE /api/admin/users/{username}", () => {
 
         expect(list.items).toEqual([]);
         expect(counts).toMatchObject({ total: 61, unverified: 0 });
-        await expect(apiClient.get(DELETE_PATH)).rejects.toMatchObject({
+        await expect(apiClient.get<AdminUserDetail>(DELETE_PATH)).resolves.toMatchObject({
+            username: "tam.nguyen",
+            deletedAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+        });
+    });
+
+    it("chỉ liệt kê tài khoản đã xoá khi lọc deleted=true", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+        await apiClient.delete(DELETE_PATH, { reason: "Tạo nhầm" });
+
+        const deleted = await apiClient.get<AdminUsersResponse>("/api/admin/users", {
+            params: { deleted: true },
+        });
+
+        expect(deleted.items.map((user) => user.username)).toEqual(["tam.nguyen"]);
+        expect(deleted.totalItems).toBe(1);
+    });
+
+    it("không cho thao tác khác trên tài khoản đã xoá", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+        await apiClient.delete(DELETE_PATH, { reason: "Tạo nhầm" });
+
+        await expect(apiClient.patch(DELETE_PATH, { role: "SETTER" })).rejects.toMatchObject({
             status: 404,
-            code: "USER_NOT_FOUND",
         });
     });
 
@@ -62,6 +87,47 @@ describe("DELETE /api/admin/users/{username}", () => {
         await expect(apiClient.delete(DELETE_PATH, { reason: "Thử" })).rejects.toMatchObject({
             status: 403,
             code: "ACCESS_DENIED",
+        });
+    });
+});
+
+describe("POST /api/admin/users/{username}/restore", () => {
+    it("khôi phục tài khoản đã xoá về danh sách", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+        await apiClient.delete(DELETE_PATH, { reason: "Tạo nhầm" });
+
+        await expect(
+            apiClient.post<AdminUserDetail>(`${DELETE_PATH}/restore`),
+        ).resolves.toMatchObject({ username: "tam.nguyen", deletedAt: null });
+
+        const counts = await apiClient.get<UserCountsResponse>("/api/admin/users/summary");
+
+        expect(counts.total).toBe(62);
+    });
+
+    it("trả 409 khi tài khoản chưa bị xoá", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+
+        await expect(apiClient.post(`${DELETE_PATH}/restore`)).rejects.toMatchObject({
+            status: 409,
+            code: "USER_NOT_DELETED",
+        });
+    });
+
+    it("trả 404 khi không có tài khoản", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+
+        await expect(apiClient.post("/api/admin/users/khong.co/restore")).rejects.toMatchObject({
+            status: 404,
+            code: "USER_NOT_FOUND",
+        });
+    });
+
+    it("trả 403 khi không phải quản trị viên", async () => {
+        writeMockSession(DEMO_SESSION_USER);
+
+        await expect(apiClient.post(`${DELETE_PATH}/restore`)).rejects.toMatchObject({
+            status: 403,
         });
     });
 });

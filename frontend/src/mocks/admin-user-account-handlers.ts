@@ -1,6 +1,5 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
-import { invalidEmailsOf } from "@/features/admin/users/email-list";
 import { ROLES } from "@/features/admin/users/role-labels";
 import type { AdminUserSummary } from "@/features/admin/users/types";
 import type { ApiFieldError } from "@/lib/api-client";
@@ -18,8 +17,10 @@ import {
     createAdminUser,
     deleteAdminUser,
     findAdminUser,
+    findAnyAdminUser,
     isTakenByAnyUser,
     readAdminUserDetail,
+    restoreAdminUser,
 } from "./admin-user-store";
 import { apiError } from "./api-error";
 import { readMockSession } from "./session";
@@ -27,6 +28,7 @@ import { readMockSession } from "./session";
 const NO_CONTENT_STATUS = 204;
 const CREATED_STATUS = 201;
 const MAX_DISPLAY_NAME_LENGTH = 60;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface UpdateBody {
     role?: unknown;
@@ -78,7 +80,7 @@ function createFieldError({
     if (typeof username !== "string" || !USERNAME_PATTERN.test(username)) {
         return { field: "username", message: "Tên người dùng không hợp lệ" };
     }
-    if (typeof email !== "string" || invalidEmailsOf([email]).length > 0) {
+    if (typeof email !== "string" || !EMAIL_PATTERN.test(email)) {
         return { field: "email", message: "Email không hợp lệ" };
     }
     if (!ROLES.some((knownRole) => knownRole === role)) {
@@ -113,6 +115,7 @@ function newUser(
         bannedUntil: null,
         isEmailVerified: false,
         avatarUrl: null,
+        deletedAt: null,
     };
 }
 
@@ -179,5 +182,19 @@ export const adminUserAccountHandlers: RequestHandler[] = [
         }
         deleteAdminUser(username);
         return new HttpResponse(null, { status: NO_CONTENT_STATUS });
+    }),
+
+    http.post("*/api/admin/users/:username/restore", async ({ params }) => {
+        await delay();
+        const username = String(params.username);
+        const user = findAnyAdminUser(username);
+        if (!user) {
+            return userNotFound();
+        }
+        if (!user.deletedAt) {
+            return apiError(409, "USER_NOT_DELETED", "Tài khoản chưa bị xoá");
+        }
+        restoreAdminUser(username);
+        return HttpResponse.json(readAdminUserDetail(username));
     }),
 ];

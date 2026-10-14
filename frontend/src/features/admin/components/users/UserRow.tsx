@@ -2,6 +2,7 @@ import { useId } from "react";
 
 import { accountStateOf } from "@/features/admin/users/account-status";
 import type { AdminUserSummary } from "@/features/admin/users/types";
+import { formatDate } from "@/lib/format";
 
 import { AccountStatusLabel } from "./AccountStatusLabel";
 import { RoleBadge } from "./RoleBadge";
@@ -49,10 +50,16 @@ export function UserRow({ user, isSelected, onToggleSelected, canDelete, handler
             </td>
             <td className={BODY_CELL_CLASS}>
                 <AccountStatusLabel state={accountStateOf(user)} />
+                {user.deletedAt ? (
+                    <span className="block text-xs text-muted-foreground">
+                        {`Ngày ${formatDate(user.deletedAt)}`}
+                    </span>
+                ) : null}
             </td>
             <td className={`${BODY_CELL_CLASS} py-1`}>
                 <UserRowActions
                     username={user.username}
+                    isDeleted={user.deletedAt !== null}
                     canDelete={canDelete}
                     handlers={handlers}
                 />

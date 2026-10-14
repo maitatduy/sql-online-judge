@@ -29,7 +29,7 @@ describe("readUsersFilters", () => {
         expect(read(search).role).toBeNull();
     });
 
-    it.each(["status=DELETED", "status=banned"])("bỏ qua trạng thái lạ trong '%s'", (search) => {
+    it.each(["status=REMOVED", "status=banned"])("bỏ qua trạng thái lạ trong '%s'", (search) => {
         expect(read(search).state).toBeNull();
     });
 

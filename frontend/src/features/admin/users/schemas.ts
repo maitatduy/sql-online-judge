@@ -3,7 +3,6 @@ import { z } from "zod";
 import type { Role } from "@/lib/current-user";
 import { USERNAME_PATTERN } from "@/lib/username";
 
-import { invalidEmailsOf, parseEmailList } from "./email-list";
 import { ROLES } from "./role-labels";
 
 export const MAX_REASON_LENGTH = 500;
@@ -34,37 +33,6 @@ export const bulkRoleSchema = z.object({
 });
 
 export type BulkRoleValues = z.infer<typeof bulkRoleSchema>;
-
-export const INVITE_ROLES = ["SETTER", "MODERATOR"] as const;
-export const MAX_INVITE_EMAILS = 50;
-export const MAX_INVITE_MESSAGE_LENGTH = 300;
-
-export const inviteUsersSchema = z.object({
-    emails: z.string().superRefine((text, context) => {
-        const emails = parseEmailList(text);
-        const invalidEmails = invalidEmailsOf(emails);
-        if (emails.length === 0) {
-            context.addIssue({ code: "custom", message: "Vui lòng nhập ít nhất một email" });
-        } else if (invalidEmails.length > 0) {
-            context.addIssue({
-                code: "custom",
-                message: `Email không hợp lệ: ${invalidEmails.join(", ")}`,
-            });
-        } else if (emails.length > MAX_INVITE_EMAILS) {
-            context.addIssue({
-                code: "custom",
-                message: `Tối đa ${MAX_INVITE_EMAILS} email mỗi lần`,
-            });
-        }
-    }),
-    role: z.enum(INVITE_ROLES),
-    message: z
-        .string()
-        .trim()
-        .max(MAX_INVITE_MESSAGE_LENGTH, `Lời nhắn tối đa ${MAX_INVITE_MESSAGE_LENGTH} ký tự`),
-});
-
-export type InviteUsersValues = z.infer<typeof inviteUsersSchema>;
 
 export const MAX_DISPLAY_NAME_LENGTH = 60;
 

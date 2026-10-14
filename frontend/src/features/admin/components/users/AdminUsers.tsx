@@ -31,13 +31,17 @@ const UserDetailDialog = dynamic(
     () => import("./UserDetailDialog").then((dialogModule) => dialogModule.UserDetailDialog),
     { ssr: false },
 );
+const RestoreUserDialog = dynamic(
+    () => import("./RestoreUserDialog").then((dialogModule) => dialogModule.RestoreUserDialog),
+    { ssr: false },
+);
 const EditUserDialog = dynamic(
     () => import("./EditUserDialog").then((dialogModule) => dialogModule.EditUserDialog),
     { ssr: false },
 );
 
 interface RowDialog {
-    kind: "edit" | "delete";
+    kind: "edit" | "delete" | "restore";
     username: string;
 }
 
@@ -59,6 +63,7 @@ export function AdminUsers() {
         onView: openUser,
         onEdit: (username: string) => setRowDialog({ kind: "edit", username }),
         onDelete: (username: string) => setRowDialog({ kind: "delete", username }),
+        onRestore: (username: string) => setRowDialog({ kind: "restore", username }),
     };
     const finishDelete = (username: string) => {
         selection.removeUser(username);
@@ -136,6 +141,9 @@ export function AdminUsers() {
             ) : null}
             {rowDialog?.kind === "edit" ? (
                 <EditUserDialog username={rowDialog.username} onClose={closeRowDialog} />
+            ) : null}
+            {rowDialog?.kind === "restore" ? (
+                <RestoreUserDialog username={rowDialog.username} onClose={closeRowDialog} />
             ) : null}
             {rowDialog?.kind === "delete" ? (
                 <DeleteUserDialog

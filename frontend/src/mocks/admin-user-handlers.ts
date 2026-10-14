@@ -15,7 +15,7 @@ import { adminUserBanHandlers } from "./admin-user-ban-handlers";
 import { adminUserBulkHandlers } from "./admin-user-bulk-handlers";
 import { adminUserEmailHandlers } from "./admin-user-email-handlers";
 import { userNotFound, validationFailed } from "./admin-user-errors";
-import { readAdminUserDetail, readAdminUsers } from "./admin-user-store";
+import { readAdminUserDetail, readAdminUsers, readDeletedAdminUsers } from "./admin-user-store";
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
@@ -44,6 +44,9 @@ function invalidParam(query: URLSearchParams): ApiFieldError | null {
     }
     if (isUnknown(ACCOUNT_STATUSES, query.get("status"))) {
         return { field: "status", message: "Trạng thái không hợp lệ" };
+    }
+    if (isUnknown(BOOLEAN_VALUES, query.get("deleted"))) {
+        return { field: "deleted", message: "Phải là true hoặc false" };
     }
     if (isUnknown(BOOLEAN_VALUES, query.get("emailVerified"))) {
         return { field: "emailVerified", message: "Phải là true hoặc false" };
@@ -103,7 +106,8 @@ export const adminUserHandlers: RequestHandler[] = [
         }
         const page = integerParam(query.get("page"), 1);
         const size = integerParam(query.get("size"), DEFAULT_PAGE_SIZE);
-        const users = readAdminUsers(new Date())
+        const source = query.get("deleted") === "true" ? readDeletedAdminUsers : readAdminUsers;
+        const users = source(new Date())
             .filter((user) => matchesQuery(user, query))
             .sort((first, second) => second.joinedAt.localeCompare(first.joinedAt));
         const firstIndex = (page - 1) * size;
