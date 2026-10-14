@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { USERNAME_PATTERN } from "@/lib/username";
+
 import { MIN_PASSWORD_LENGTH } from "./password-strength";
 
 const emailSchema = z
@@ -15,8 +17,6 @@ export const loginSchema = z.object({
 });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
-
-export const USERNAME_PATTERN = /^[a-z0-9._]{3,30}$/;
 
 export const registerSchema = z.object({
     username: z

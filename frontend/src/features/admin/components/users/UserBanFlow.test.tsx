@@ -25,7 +25,7 @@ async function openPanel(username: string) {
             <AdminUsers />
         </ToastProvider>,
     );
-    const panel = within(await screen.findByRole("complementary", { name: "Chi tiết người dùng" }));
+    const panel = within(await screen.findByRole("dialog", { name: "Chi tiết người dùng" }));
     await panel.findByRole("link", { name: "Mở trang chi tiết" });
     return panel;
 }
@@ -64,7 +64,7 @@ describe("khoá tài khoản từ panel", () => {
 
     it("không cho khoá tài khoản của chính mình", async () => {
         const panel = await openPanel("admin.huy");
-        await panel.findByText(/^Bạn không thể tự đổi vai trò/);
+        await panel.findByRole("button", { name: "Gửi email đặt lại mật khẩu" });
 
         expect(panel.queryByRole("button", { name: BAN_BUTTON })).not.toBeInTheDocument();
     });
@@ -95,13 +95,18 @@ describe("khoá tài khoản từ panel", () => {
         expect(
             await screen.findByText("Đã khoá viet.luu. Thao tác đã được ghi vào nhật ký."),
         ).toBeInTheDocument();
-        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        await waitFor(() =>
+            expect(screen.queryByRole("dialog", { name: "Khoá viet.luu" })).not.toBeInTheDocument(),
+        );
         expect(panel.getByText("Bị khoá")).toBeInTheDocument();
         expect(panel.getByText(/^đến \d{2}\/\d{2}\/\d{4}$/)).toBeInTheDocument();
         expect(panel.getByText(/^Bị khoá đến \d{2}\/\d{2}\/\d{4}$/)).toBeInTheDocument();
         expect(panel.getByText("Đăng đáp án trong lúc contest đang diễn ra")).toBeInTheDocument();
         expect(panel.getByText("Vi phạm").nextElementSibling).toHaveTextContent("3");
         expect(panel.getByRole("button", { name: UNBAN_BUTTON })).toBeInTheDocument();
+
+        fireEvent.click(panel.getByRole("button", { name: "Đóng" }));
+
         await waitFor(() =>
             expect(
                 within(screen.getByRole("button", { name: /^Đang bị khoá/ })).getByText("3"),
@@ -124,7 +129,7 @@ describe("khoá tài khoản từ panel", () => {
         let sentBody: unknown;
         server.use(
             http.post("*/api/admin/users/viet.luu/ban", async ({ request }) => {
-                sentBody = await request.json();
+                sentBody = await request.clone().json();
                 return undefined;
             }),
         );
@@ -143,6 +148,9 @@ describe("khoá tài khoản từ panel", () => {
                 notifyByEmail: false,
             }),
         );
+        expect(
+            await screen.findByText("Đã khoá viet.luu. Thao tác đã được ghi vào nhật ký."),
+        ).toBeInTheDocument();
     });
 
     it("gắn lỗi của máy chủ vào ô lý do và giữ hộp thoại", async () => {
@@ -195,7 +203,9 @@ describe("khoá tài khoản từ panel", () => {
         typeReason(dialog, "Nhầm người");
         fireEvent.click(dialog.getByRole("button", { name: "Huỷ" }));
 
-        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        await waitFor(() =>
+            expect(screen.queryByRole("dialog", { name: "Khoá viet.luu" })).not.toBeInTheDocument(),
+        );
         expect(panel.getByText("Hoạt động")).toBeInTheDocument();
     });
 });
@@ -217,7 +227,11 @@ describe("mở khoá tài khoản từ panel", () => {
         fireEvent.click(dialog.getByRole("button", { name: "Mở khoá" }));
 
         expect(await screen.findByText("Đã mở khoá copy.paste.")).toBeInTheDocument();
-        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        await waitFor(() =>
+            expect(
+                screen.queryByRole("dialog", { name: "Mở khoá copy.paste?" }),
+            ).not.toBeInTheDocument(),
+        );
         expect(panel.getByText("Hoạt động")).toBeInTheDocument();
         expect(panel.getByRole("button", { name: BAN_BUTTON })).toBeInTheDocument();
         expect(panel.getByText("Nộp bài trùng code người khác")).toBeInTheDocument();
@@ -242,6 +256,6 @@ describe("mở khoá tài khoản từ panel", () => {
         expect(
             await screen.findByText("Chưa mở khoá được copy.paste. Đã có lỗi xảy ra"),
         ).toBeInTheDocument();
-        expect(screen.getByRole("dialog")).toBeInTheDocument();
+        expect(screen.getByRole("dialog", { name: "Mở khoá copy.paste?" })).toBeInTheDocument();
     });
 });

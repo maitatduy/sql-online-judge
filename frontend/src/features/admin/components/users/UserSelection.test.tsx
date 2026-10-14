@@ -52,7 +52,7 @@ describe("chọn nhiều tài khoản", () => {
         expect(bar().getByText("Đã chọn 1")).toBeInTheDocument();
         expect(rowCheckbox("tam.nguyen")).toBeChecked();
         expect(window.location.search).toBe("");
-        expect(screen.queryByRole("complementary")).not.toBeInTheDocument();
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
     it("báo trạng thái chọn một phần ở ô chọn cả trang", async () => {
@@ -124,15 +124,5 @@ describe("chọn nhiều tài khoản", () => {
             "href",
             "/admin/messages",
         );
-    });
-
-    it("vẫn mở panel khi bấm vào phần còn lại của dòng đã chọn", async () => {
-        await renderLoadedUsers();
-        fireEvent.click(rowCheckbox("tam.nguyen"));
-
-        fireEvent.click(screen.getByRole("button", { name: "tam.nguyen" }));
-
-        await waitFor(() => expect(window.location.search).toBe("?user=tam.nguyen"));
-        expect(rowCheckbox("tam.nguyen")).toBeChecked();
     });
 });

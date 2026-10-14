@@ -6,7 +6,9 @@ import {
     buildJudgeWorkers,
     buildNavigationCounts,
 } from "./admin-fixtures";
+import { adminUserExportHandlers } from "./admin-user-export-handlers";
 import { adminUserHandlers } from "./admin-user-handlers";
+import { adminUserInviteHandlers } from "./admin-user-invite-handlers";
 import { apiError } from "./api-error";
 import { readMockSession } from "./session";
 import { readWorkerRestarts, recordWorkerRestart } from "./worker-restarts";
@@ -81,4 +83,6 @@ export const adminHandlers: RequestHandler[] = [
     }),
 
     ...adminUserHandlers,
+    ...adminUserInviteHandlers,
+    ...adminUserExportHandlers,
 ];

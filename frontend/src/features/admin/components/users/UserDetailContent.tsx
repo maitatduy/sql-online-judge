@@ -5,10 +5,10 @@ import type { AdminUserDetail } from "@/features/admin/users/types";
 import { formatDate } from "@/lib/format";
 
 import { AccountStatusLabel } from "./AccountStatusLabel";
-import { UserAvatar } from "./UserAvatar";
+import { DetailAvatar } from "./DetailAvatar";
+import { RoleBadge } from "./RoleBadge";
+import { UserDetailActions } from "./UserDetailActions";
 import { UserFacts } from "./UserFacts";
-import { UserPanelActions } from "./UserPanelActions";
-import { UserRoleField } from "./UserRoleField";
 import { UserStats } from "./UserStats";
 import { ViolationList } from "./ViolationList";
 
@@ -26,7 +26,7 @@ export function UserDetailContent({ user }: UserDetailContentProps) {
     return (
         <>
             <div className="flex items-center gap-3 pr-9">
-                <UserAvatar username={user.username} className="size-13 text-lg" />
+                <DetailAvatar username={user.username} avatarUrl={user.avatarUrl} />
                 <div className="min-w-0">
                     <strong className="block text-base break-all">{user.username}</strong>
                     <p className="text-xs text-muted-foreground">
@@ -35,6 +35,7 @@ export function UserDetailContent({ user }: UserDetailContentProps) {
                 </div>
             </div>
             <p className="flex flex-wrap items-center gap-1.5 text-[13px]">
+                <RoleBadge role={user.role} />
                 <AccountStatusLabel state={accountStateOf(user)} />
                 {user.status === "BANNED" ? (
                     <span className="text-muted-foreground">
@@ -45,13 +46,12 @@ export function UserDetailContent({ user }: UserDetailContentProps) {
                 ) : null}
             </p>
             <UserStats user={user} />
-            <UserRoleField user={user} />
             <section>
                 <h2 className={SECTION_LABEL_CLASS}>Lịch sử vi phạm</h2>
                 <ViolationList violations={user.violations} />
             </section>
             <UserFacts user={user} now={mountedAt} />
-            <UserPanelActions user={user} />
+            <UserDetailActions user={user} />
         </>
     );
 }

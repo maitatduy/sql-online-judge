@@ -3,12 +3,10 @@ import { ROUTES } from "@/lib/routes";
 
 import { ACCOUNT_STATES, type AccountState } from "./account-status";
 import { ROLES } from "./role-labels";
-import { formatUsersSort, parseUsersSort, type UsersSort } from "./sort";
 
 const QUERY_PARAM = "q";
 const ROLE_PARAM = "role";
 const STATE_PARAM = "status";
-const SORT_PARAM = "sort";
 const PAGE_PARAM = "page";
 const OPEN_USER_PARAM = "user";
 const FIRST_PAGE = 1;
@@ -17,7 +15,6 @@ export interface UsersFilters {
     q: string;
     role: Role | null;
     state: AccountState | null;
-    sort: UsersSort | null;
     page: number;
     openUsername: string | null;
 }
@@ -26,7 +23,6 @@ export const NO_USERS_FILTERS: UsersFilters = {
     q: "",
     role: null,
     state: null,
-    sort: null,
     page: FIRST_PAGE,
     openUsername: null,
 };
@@ -45,13 +41,12 @@ export function readUsersFilters(searchParams: Pick<URLSearchParams, "get">): Us
         q: searchParams.get(QUERY_PARAM)?.trim() ?? "",
         role: knownValue(ROLES, searchParams.get(ROLE_PARAM)),
         state: knownValue(ACCOUNT_STATES, searchParams.get(STATE_PARAM)),
-        sort: parseUsersSort(searchParams.get(SORT_PARAM)),
         page: readPage(searchParams.get(PAGE_PARAM)),
         openUsername: searchParams.get(OPEN_USER_PARAM) || null,
     };
 }
 
-export function usersHref({ q, role, state, sort, page, openUsername }: UsersFilters): string {
+export function usersHref({ q, role, state, page, openUsername }: UsersFilters): string {
     const query = new URLSearchParams();
     if (q) {
         query.set(QUERY_PARAM, q);
@@ -61,9 +56,6 @@ export function usersHref({ q, role, state, sort, page, openUsername }: UsersFil
     }
     if (state) {
         query.set(STATE_PARAM, state);
-    }
-    if (sort) {
-        query.set(SORT_PARAM, formatUsersSort(sort));
     }
     if (page > FIRST_PAGE) {
         query.set(PAGE_PARAM, String(page));

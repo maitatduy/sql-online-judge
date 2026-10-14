@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { ADMIN_SESSION_USER, writeMockSession } from "@/mocks/session";
 
 import { useAdminUser } from "./useAdminUser";
-import { useChangeUserRole } from "./useChangeUserRole";
+import { useUpdateUser } from "./useUpdateUser";
 import { useUserCounts } from "./useUserCounts";
 
 function renderRoleChange() {
@@ -14,7 +14,7 @@ function renderRoleChange() {
         () => ({
             user: useAdminUser("viet.luu"),
             counts: useUserCounts(),
-            changeRole: useChangeUserRole(),
+            updateUser: useUpdateUser(),
         }),
         {
             wrapper: ({ children }: { children: React.ReactNode }) => (
@@ -24,14 +24,14 @@ function renderRoleChange() {
     );
 }
 
-describe("useChangeUserRole", () => {
+describe("useUpdateUser", () => {
     it("cập nhật chi tiết ngay và làm mới số liệu sau khi đổi vai trò", async () => {
         writeMockSession(ADMIN_SESSION_USER);
         const { result } = renderRoleChange();
         await waitFor(() => expect(result.current.counts.data?.setters).toBe(3));
 
         await act(() =>
-            result.current.changeRole.mutateAsync({ username: "viet.luu", role: "SETTER" }),
+            result.current.updateUser.mutateAsync({ username: "viet.luu", role: "SETTER" }),
         );
 
         expect(result.current.user.data?.role).toBe("SETTER");
@@ -44,7 +44,7 @@ describe("useChangeUserRole", () => {
 
         await act(async () => {
             await expect(
-                result.current.changeRole.mutateAsync({ username: "admin.huy", role: "LEARNER" }),
+                result.current.updateUser.mutateAsync({ username: "admin.huy", role: "LEARNER" }),
             ).rejects.toMatchObject({ status: 422, code: "CANNOT_MODIFY_SELF" });
         });
     });

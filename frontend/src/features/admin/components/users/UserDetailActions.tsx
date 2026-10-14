@@ -24,11 +24,11 @@ const UnbanUserDialog = dynamic(
 
 type OpenDialog = "ban" | "unban" | "reset" | null;
 
-interface UserPanelActionsProps {
+interface UserDetailActionsProps {
     user: Pick<AdminUserDetail, "username" | "email" | "status" | "isEmailVerified">;
 }
 
-export function UserPanelActions({ user }: UserPanelActionsProps) {
+export function UserDetailActions({ user }: UserDetailActionsProps) {
     const { data: currentUser } = useCurrentUser();
     const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
     const isBanned = user.status === "BANNED";

@@ -8,24 +8,14 @@ function read(search: string) {
 
 describe("readUsersFilters", () => {
     it("trả về bộ lọc trống khi URL không có tham số", () => {
-        expect(read("")).toEqual({
-            q: "",
-            role: null,
-            state: null,
-            sort: null,
-            page: 1,
-            openUsername: null,
-        });
+        expect(read("")).toEqual({ q: "", role: null, state: null, page: 1, openUsername: null });
     });
 
-    it("đọc đủ từ khoá, vai trò, trạng thái và trang", () => {
-        expect(
-            read("q=viet&role=SETTER&status=BANNED&sort=rating,asc&page=3&user=viet.luu"),
-        ).toEqual({
+    it("đọc đủ từ khoá, vai trò, trạng thái, trang và tài khoản đang mở", () => {
+        expect(read("q=viet&role=SETTER&status=BANNED&page=3&user=viet.luu")).toEqual({
             q: "viet",
             role: "SETTER",
             state: "BANNED",
-            sort: { field: "rating", direction: "asc" },
             page: 3,
             openUsername: "viet.luu",
         });
@@ -42,13 +32,6 @@ describe("readUsersFilters", () => {
     it.each(["status=DELETED", "status=banned"])("bỏ qua trạng thái lạ trong '%s'", (search) => {
         expect(read(search).state).toBeNull();
     });
-
-    it.each(["sort=rating", "sort=email,desc", "sort=rating,up", "sort=,desc"])(
-        "bỏ qua cách sắp xếp lạ trong '%s'",
-        (search) => {
-            expect(read(search).sort).toBeNull();
-        },
-    );
 
     it.each(["page=0", "page=-2", "page=abc", "page=2.5"])("coi '%s' là trang 1", (search) => {
         expect(read(search).page).toBe(1);
@@ -73,13 +56,10 @@ describe("usersHref", () => {
                 q: "lê anh",
                 role: "LEARNER",
                 state: "ACTIVE",
-                sort: { field: "acceptedCount", direction: "desc" },
                 page: 2,
                 openUsername: "viet.luu",
             }),
-        ).toBe(
-            "/admin/users?q=l%C3%AA+anh&role=LEARNER&status=ACTIVE&sort=acceptedCount%2Cdesc&page=2&user=viet.luu",
-        );
+        ).toBe("/admin/users?q=l%C3%AA+anh&role=LEARNER&status=ACTIVE&page=2&user=viet.luu");
     });
 
     it("đọc lại được đúng bộ lọc đã ghi", () => {
@@ -87,7 +67,6 @@ describe("usersHref", () => {
             q: "a&b=c",
             role: "ADMIN",
             state: "BANNED",
-            sort: { field: "rating", direction: "desc" },
             page: 4,
             openUsername: "an.bui",
         } as const;
@@ -103,12 +82,6 @@ describe("hasActiveFilter", () => {
 
     it("không tính tài khoản đang mở là bộ lọc", () => {
         expect(hasActiveFilter({ ...NO_USERS_FILTERS, openUsername: "viet.luu" })).toBe(false);
-    });
-
-    it("không tính cách sắp xếp là bộ lọc", () => {
-        const sort = { field: "rating", direction: "desc" } as const;
-
-        expect(hasActiveFilter({ ...NO_USERS_FILTERS, sort })).toBe(false);
     });
 
     it.each([{ q: "viet" }, { role: "SETTER" as const }, { state: "BANNED" as const }])(

@@ -8,7 +8,7 @@ import { unbanUserSchema, type UnbanUserValues } from "@/features/admin/users/sc
 
 import { ActionDialog } from "./ActionDialog";
 import { DialogActions } from "./DialogActions";
-import { ReasonField } from "./ReasonField";
+import { TextAreaField } from "./TextAreaField";
 
 interface UnbanUserDialogProps {
     username: string;
@@ -57,8 +57,9 @@ export function UnbanUserDialog({ username, onClose }: UnbanUserDialogProps) {
             onClose={onClose}
         >
             <form noValidate onSubmit={handleSubmit(submitUnban)} className="flex flex-col gap-4">
-                <ReasonField
-                    label="Lý do (ghi vào nhật ký thao tác)"
+                <TextAreaField
+                    label="Lý do"
+                    hint="Lý do được ghi vào nhật ký thao tác."
                     rows={2}
                     error={errors.reason?.message}
                     registration={register("reason")}

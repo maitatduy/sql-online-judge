@@ -22,8 +22,7 @@ function changeFilters(change: UsersFilterChange): void {
 }
 
 function clearFilters(): void {
-    const { sort, openUsername } = currentFilters();
-    replaceUrl({ ...NO_USERS_FILTERS, sort, openUsername });
+    replaceUrl({ ...NO_USERS_FILTERS, openUsername: currentFilters().openUsername });
 }
 
 function openUser(username: string): void {

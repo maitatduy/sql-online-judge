@@ -6,6 +6,7 @@ export interface UserSelection {
     selected: ReadonlySet<string>;
     toggleUser: (username: string) => void;
     togglePage: (pageUsernames: readonly string[]) => void;
+    removeUser: (username: string) => void;
     clearSelection: () => void;
 }
 
@@ -21,7 +22,16 @@ export function useUserSelection(): UserSelection {
             setSelected((current) => togglePageSelection(current, pageUsernames)),
         [],
     );
+    const removeUser = useCallback(
+        (username: string) =>
+            setSelected((current) => {
+                const nextSelected = new Set(current);
+                nextSelected.delete(username);
+                return nextSelected;
+            }),
+        [],
+    );
     const clearSelection = useCallback(() => setSelected(new Set()), []);
 
-    return { selected, toggleUser, togglePage, clearSelection };
+    return { selected, toggleUser, togglePage, removeUser, clearSelection };
 }

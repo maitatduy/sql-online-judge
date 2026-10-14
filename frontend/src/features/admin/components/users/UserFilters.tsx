@@ -62,7 +62,7 @@ export function UserFilters({ filters, onChange, onClear }: UserFiltersProps) {
                 <Input
                     type="search"
                     aria-label="Tìm người dùng"
-                    placeholder="Username hoặc email…"
+                    placeholder="Tên người dùng hoặc email…"
                     value={searchText}
                     onChange={(event) => handleSearchChange(event.target.value)}
                     className="pl-8.5 shadow-none"

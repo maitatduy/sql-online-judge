@@ -166,6 +166,7 @@ function userFrom(seed: UserSeed, index: number, now: Date): AdminUserSummary {
             ? new Date(now.getTime() + bannedForDays * DAY_MS).toISOString()
             : null,
         isEmailVerified: seed.isEmailVerified ?? true,
+        avatarUrl: null,
     };
 }
 

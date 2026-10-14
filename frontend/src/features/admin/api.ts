@@ -8,29 +8,36 @@ import type {
     RestartWorkerRequest,
     RestartWorkerResponse,
 } from "./types";
-import { ACCOUNT_STATE_QUERIES } from "./users/account-status";
 import { USERS_PAGE_SIZE } from "./users/pagination";
 import type { UsersFilters } from "./users/search-params";
-import { formatUsersSort } from "./users/sort";
 import type {
     AdminUserDetail,
     AdminUsersResponse,
     BanUserRequest,
-    ChangeUserRoleRequest,
+    BulkBanUsersRequest,
+    BulkChangeRoleRequest,
+    BulkUserActionResponse,
+    CreateUserRequest,
+    DeleteUserRequest,
+    ExportUsersRequest,
+    ExportUsersResponse,
+    InviteUsersRequest,
+    InviteUsersResponse,
     UnbanUserRequest,
+    UpdateUserRequest,
+    UploadAvatarRequest,
+    UserAvatarResponse,
     UserCountsResponse,
     UserEmailResponse,
 } from "./users/types";
+import { usersQueryOf } from "./users/users-query";
 
 export const adminApi = {
-    getUsers: ({ q, role, state, sort, page }: UsersFilters, signal?: AbortSignal) =>
+    getUsers: (filters: UsersFilters, signal?: AbortSignal) =>
         apiClient.get<AdminUsersResponse>("/api/admin/users", {
             params: {
-                q: q || undefined,
-                role: role ?? undefined,
-                ...(state ? ACCOUNT_STATE_QUERIES[state] : {}),
-                sort: sort ? formatUsersSort(sort) : undefined,
-                page,
+                ...usersQueryOf(filters),
+                page: filters.page,
                 size: USERS_PAGE_SIZE,
             },
             signal,
@@ -41,10 +48,11 @@ export const adminApi = {
         apiClient.get<AdminUserDetail>(`/api/admin/users/${encodeURIComponent(username)}`, {
             signal,
         }),
-    changeUserRole: ({ username, role }: ChangeUserRoleRequest) =>
-        apiClient.patch<AdminUserDetail>(`/api/admin/users/${encodeURIComponent(username)}`, {
-            role,
-        }),
+    updateUser: ({ username, ...changes }: UpdateUserRequest) =>
+        apiClient.patch<AdminUserDetail>(
+            `/api/admin/users/${encodeURIComponent(username)}`,
+            changes,
+        ),
     banUser: ({ username, ...ban }: BanUserRequest) =>
         apiClient.post<AdminUserDetail>(
             `/api/admin/users/${encodeURIComponent(username)}/ban`,
@@ -62,6 +70,30 @@ export const adminApi = {
         apiClient.post<UserEmailResponse>(
             `/api/admin/users/${encodeURIComponent(username)}/verification-email`,
         ),
+    bulkBanUsers: (request: BulkBanUsersRequest) =>
+        apiClient.post<BulkUserActionResponse>("/api/admin/users/bulk-ban", request),
+    bulkChangeRole: (request: BulkChangeRoleRequest) =>
+        apiClient.post<BulkUserActionResponse>("/api/admin/users/bulk-role", request),
+    inviteUsers: (request: InviteUsersRequest) =>
+        apiClient.post<InviteUsersResponse>("/api/admin/user-invitations", request),
+    exportUsers: (request: ExportUsersRequest) =>
+        apiClient.post<ExportUsersResponse>("/api/admin/user-exports", request),
+    deleteUser: ({ username, reason }: DeleteUserRequest) =>
+        apiClient.delete<undefined>(`/api/admin/users/${encodeURIComponent(username)}`, {
+            reason,
+        }),
+    createUser: (request: CreateUserRequest) =>
+        apiClient.post<AdminUserDetail>("/api/admin/users", request),
+    uploadAvatar: ({ username, file }: UploadAvatarRequest) => {
+        const form = new FormData();
+        form.append("file", file);
+        return apiClient.putForm<UserAvatarResponse>(
+            `/api/admin/users/${encodeURIComponent(username)}/avatar`,
+            form,
+        );
+    },
+    removeAvatar: (username: string) =>
+        apiClient.delete<undefined>(`/api/admin/users/${encodeURIComponent(username)}/avatar`),
     getNavigationCounts: (signal?: AbortSignal) =>
         apiClient.get<AdminNavigationCounts>("/api/admin/navigation-counts", { signal }),
     getOverview: (signal?: AbortSignal) =>

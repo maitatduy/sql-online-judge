@@ -53,16 +53,6 @@ describe("useAdminUsers", () => {
         expect(result.current.data?.items.map((user) => user.username)).toEqual(["mod.thu"]);
     });
 
-    it("gửi cách sắp xếp lên máy chủ", async () => {
-        writeMockSession(ADMIN_SESSION_USER);
-
-        const { result } = renderUsers({ sort: { field: "acceptedCount", direction: "desc" } });
-
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-        expect(result.current.data?.items[2].username).toBe("mod.thu");
-    });
-
     it("báo 403 ngay, không thử lại, khi không phải quản trị viên", async () => {
         writeMockSession(DEMO_SESSION_USER);
 

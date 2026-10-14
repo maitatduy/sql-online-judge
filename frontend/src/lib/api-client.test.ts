@@ -63,6 +63,39 @@ describe("apiClient", () => {
         ).resolves.toEqual({ method: "PATCH", body: { role: "SETTER" } });
     });
 
+    it("delete gửi body dạng JSON bằng phương thức DELETE", async () => {
+        server.use(
+            http.delete("*/api/admin/users/viet.luu", async ({ request }) =>
+                HttpResponse.json({ method: request.method, body: await request.json() }),
+            ),
+        );
+
+        await expect(
+            apiClient.delete("/api/admin/users/viet.luu", { reason: "Trùng" }),
+        ).resolves.toEqual({ method: "DELETE", body: { reason: "Trùng" } });
+    });
+
+    it("putForm gửi FormData bằng phương thức PUT, không ép kiểu JSON", async () => {
+        server.use(
+            http.put("*/api/admin/users/viet.luu/avatar", async ({ request }) => {
+                const form = await request.formData();
+                return HttpResponse.json({
+                    method: request.method,
+                    contentType: request.headers.get("Content-Type")?.split(";")[0],
+                    fileType: (form.get("file") as File).type,
+                });
+            }),
+        );
+        const form = new FormData();
+        form.append("file", new File(["png"], "avatar.png", { type: "image/png" }));
+
+        await expect(apiClient.putForm("/api/admin/users/viet.luu/avatar", form)).resolves.toEqual({
+            method: "PUT",
+            contentType: "multipart/form-data",
+            fileType: "image/png",
+        });
+    });
+
     it("trả undefined khi response là 204", async () => {
         server.use(http.post("*/api/logout", () => new HttpResponse(null, { status: 204 })));
 

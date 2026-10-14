@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 
 import { authApi } from "../api";
-import { USERNAME_PATTERN } from "../schemas";
+import { USERNAME_PATTERN } from "@/lib/username";
 
 const DEBOUNCE_DELAY_MS = 400;
 

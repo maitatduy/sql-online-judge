@@ -18,7 +18,9 @@ export function UsersPagination({ filters, result }: UsersPaginationProps) {
 
     return (
         <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 text-[13px]">
-            <span className="text-muted-foreground">{pageRangeLabel(result)}</span>
+            <span aria-live="polite" className="text-muted-foreground">
+                {pageRangeLabel(result)}
+            </span>
             {totalPages > 1 ? (
                 <nav aria-label="Phân trang" className="flex flex-wrap gap-1">
                     <PageStepLink label="Trước" href={hrefOf(page - 1)} isAvailable={page > 1} />

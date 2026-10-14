@@ -1,5 +1,7 @@
 import type { Role } from "@/lib/current-user";
 
+import type { UsersQuery } from "./users-query";
+
 export type AccountStatus = "ACTIVE" | "BANNED";
 
 export interface AdminUserSummary {
@@ -15,6 +17,7 @@ export interface AdminUserSummary {
     status: AccountStatus;
     bannedUntil: string | null;
     isEmailVerified: boolean;
+    avatarUrl: string | null;
 }
 
 export interface AdminUsersResponse {
@@ -49,9 +52,10 @@ export interface AdminUserDetail extends AdminUserSummary {
     violations: UserViolation[];
 }
 
-export interface ChangeUserRoleRequest {
+export interface UpdateUserRequest {
     username: string;
-    role: Role;
+    role?: Role;
+    displayName?: string | null;
 }
 
 export type BanDuration = "DAYS_7" | "DAYS_30" | "PERMANENT";
@@ -70,4 +74,68 @@ export interface UnbanUserRequest {
 
 export interface UserEmailResponse {
     username: string;
+}
+
+export interface BulkBanUsersRequest {
+    usernames: string[];
+    duration: BanDuration;
+    reason: string;
+    notifyByEmail: boolean;
+}
+
+export interface BulkChangeRoleRequest {
+    usernames: string[];
+    role: Role;
+    reason: string;
+}
+
+export interface BulkUserActionResponse {
+    affectedCount: number;
+    skippedUsernames: string[];
+}
+
+export type InviteRole = Extract<Role, "SETTER" | "MODERATOR">;
+
+export interface InviteUsersRequest {
+    emails: string[];
+    role: InviteRole;
+    message?: string;
+}
+
+export interface InviteUsersResponse {
+    invitedCount: number;
+}
+
+export type ExportScope = "FILTERED" | "SELECTED" | "ALL";
+
+export interface ExportUsersRequest {
+    scope: ExportScope;
+    filters?: UsersQuery;
+    usernames?: string[];
+    includeEmail: boolean;
+}
+
+export interface ExportUsersResponse {
+    exportId: string;
+}
+
+export interface DeleteUserRequest {
+    username: string;
+    reason: string;
+}
+
+export interface CreateUserRequest {
+    username: string;
+    email: string;
+    role: Role;
+    displayName?: string;
+}
+
+export interface UploadAvatarRequest {
+    username: string;
+    file: File;
+}
+
+export interface UserAvatarResponse {
+    avatarUrl: string;
 }

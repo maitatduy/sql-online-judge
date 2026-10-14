@@ -54,6 +54,7 @@ describe("GET /api/admin/users", () => {
 
         expect(Object.keys(items[0]).sort()).toEqual([
             "acceptedCount",
+            "avatarUrl",
             "bannedUntil",
             "email",
             "id",
@@ -144,52 +145,6 @@ describe("GET /api/admin/users - lọc", () => {
             errors: [{ field }],
         });
     });
-});
-
-describe("GET /api/admin/users - sắp xếp", () => {
-    async function firstUsernames(sort: string, count: number) {
-        writeMockSession(ADMIN_SESSION_USER);
-        const response = await apiClient.get<AdminUsersResponse>(USERS_PATH, { params: { sort } });
-        return response.items.slice(0, count).map((user) => user.username);
-    }
-
-    it("sắp xếp rating giảm dần", async () => {
-        expect(await firstUsernames("rating,desc", 3)).toEqual([
-            "quang.le",
-            "trang.hoang",
-            "an.bui",
-        ]);
-    });
-
-    it("sắp xếp rating tăng dần, bằng nhau thì mới tham gia đứng trước", async () => {
-        expect(await firstUsernames("rating,asc", 4)).toEqual([
-            "tam.nguyen",
-            "spam.bot88",
-            "datahust",
-            "admin.huy",
-        ]);
-    });
-
-    it("sắp xếp số bài AC giảm dần", async () => {
-        expect(await firstUsernames("acceptedCount,desc", 3)).toEqual([
-            "quang.le",
-            "trang.hoang",
-            "mod.thu",
-        ]);
-    });
-
-    it.each(["email,desc", "rating", "rating,up"])(
-        "trả 400 kèm lỗi ở trường sort khi nhận '%s'",
-        async (sort) => {
-            writeMockSession(ADMIN_SESSION_USER);
-
-            await expect(apiClient.get(USERS_PATH, { params: { sort } })).rejects.toMatchObject({
-                status: 400,
-                code: "VALIDATION_FAILED",
-                errors: [{ field: "sort" }],
-            });
-        },
-    );
 });
 
 describe("GET /api/admin/users/summary", () => {
@@ -297,6 +252,50 @@ describe("PATCH /api/admin/users/{username}", () => {
         expect(detail.role).toBe("SETTER");
         expect(setters.items.map((user) => user.username)).toContain("viet.luu");
         expect(counts.setters).toBe(4);
+    });
+
+    it("đổi tên hiển thị mà không đổi vai trò", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+
+        await apiClient.patch(USER_PATH, { displayName: "  Việt Lưu  " });
+
+        await expect(apiClient.get<AdminUserDetail>(USER_PATH)).resolves.toMatchObject({
+            displayName: "Việt Lưu",
+            role: "LEARNER",
+        });
+    });
+
+    it("xoá tên hiển thị khi gửi null", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+
+        await expect(
+            apiClient.patch<AdminUserDetail>(USER_PATH, { displayName: null }),
+        ).resolves.toMatchObject({ displayName: null });
+    });
+
+    it("cho quản trị viên tự đổi tên hiển thị của mình", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+
+        await expect(
+            apiClient.patch<AdminUserDetail>("/api/admin/users/admin.huy", {
+                displayName: "Huy Trần",
+                role: "ADMIN",
+            }),
+        ).resolves.toMatchObject({ displayName: "Huy Trần", role: "ADMIN" });
+    });
+
+    it.each([
+        ["displayName", { displayName: "a".repeat(61) }],
+        ["displayName", { displayName: "   " }],
+        ["displayName", { displayName: 42 }],
+    ])("trả 400 kèm lỗi ở trường %s", async (field, body) => {
+        writeMockSession(ADMIN_SESSION_USER);
+
+        await expect(apiClient.patch(USER_PATH, body)).rejects.toMatchObject({
+            status: 400,
+            code: "VALIDATION_FAILED",
+            errors: [{ field }],
+        });
     });
 
     it.each([{ role: "BOSS" }, { role: null }, {}])(

@@ -1,8 +1,7 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
-import { ROLES } from "@/features/admin/users/role-labels";
-import { parseUsersSort, type UsersSort } from "@/features/admin/users/sort";
 import { accountStateOf } from "@/features/admin/users/account-status";
+import { ROLES } from "@/features/admin/users/role-labels";
 import type {
     AdminUsersResponse,
     AdminUserSummary,
@@ -10,16 +9,13 @@ import type {
 } from "@/features/admin/users/types";
 import type { ApiFieldError } from "@/lib/api-client";
 
+import { adminUserAccountHandlers } from "./admin-user-account-handlers";
+import { adminUserAvatarHandlers } from "./admin-user-avatar-handlers";
 import { adminUserBanHandlers } from "./admin-user-ban-handlers";
+import { adminUserBulkHandlers } from "./admin-user-bulk-handlers";
 import { adminUserEmailHandlers } from "./admin-user-email-handlers";
-import { cannotModifySelf, userNotFound, validationFailed } from "./admin-user-errors";
-import {
-    changeAdminUser,
-    findAdminUser,
-    readAdminUserDetail,
-    readAdminUsers,
-} from "./admin-user-store";
-import { readMockSession } from "./session";
+import { userNotFound, validationFailed } from "./admin-user-errors";
+import { readAdminUserDetail, readAdminUsers } from "./admin-user-store";
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
@@ -52,21 +48,7 @@ function invalidParam(query: URLSearchParams): ApiFieldError | null {
     if (isUnknown(BOOLEAN_VALUES, query.get("emailVerified"))) {
         return { field: "emailVerified", message: "Phải là true hoặc false" };
     }
-    if (query.has("sort") && !parseUsersSort(query.get("sort"))) {
-        return { field: "sort", message: "Cách sắp xếp không hợp lệ" };
-    }
     return null;
-}
-
-function compareUsers(sort: UsersSort | null) {
-    return (first: AdminUserSummary, second: AdminUserSummary): number => {
-        const newestFirst = second.joinedAt.localeCompare(first.joinedAt);
-        if (!sort) {
-            return newestFirst;
-        }
-        const ascending = first[sort.field] - second[sort.field];
-        return (sort.direction === "asc" ? ascending : -ascending) || newestFirst;
-    };
 }
 
 function matchesQuery(user: AdminUserSummary, query: URLSearchParams): boolean {
@@ -106,24 +88,9 @@ export const adminUserHandlers: RequestHandler[] = [
         return user ? HttpResponse.json(user) : userNotFound();
     }),
 
-    http.patch("*/api/admin/users/:username", async ({ params, request }) => {
-        await delay();
-        const username = String(params.username);
-        const { role } = (await request.json()) as { role?: unknown };
-        const newRole = ROLES.find((knownRole) => knownRole === role);
-        if (!newRole) {
-            return validationFailed({ field: "role", message: "Vai trò không hợp lệ" });
-        }
-        if (!findAdminUser(username)) {
-            return userNotFound();
-        }
-        if (readMockSession()?.username === username) {
-            return cannotModifySelf("Bạn không thể tự đổi vai trò của chính mình");
-        }
-        changeAdminUser(username, { role: newRole });
-        return HttpResponse.json(readAdminUserDetail(username));
-    }),
-
+    ...adminUserAccountHandlers,
+    ...adminUserAvatarHandlers,
+    ...adminUserBulkHandlers,
     ...adminUserBanHandlers,
     ...adminUserEmailHandlers,
 
@@ -138,7 +105,7 @@ export const adminUserHandlers: RequestHandler[] = [
         const size = integerParam(query.get("size"), DEFAULT_PAGE_SIZE);
         const users = readAdminUsers(new Date())
             .filter((user) => matchesQuery(user, query))
-            .sort(compareUsers(parseUsersSort(query.get("sort"))));
+            .sort((first, second) => second.joinedAt.localeCompare(first.joinedAt));
         const firstIndex = (page - 1) * size;
         const response: AdminUsersResponse = {
             items: users.slice(firstIndex, firstIndex + size),

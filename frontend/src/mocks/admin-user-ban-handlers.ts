@@ -1,38 +1,25 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
-import type { BanDuration } from "@/features/admin/users/types";
 import type { ApiFieldError } from "@/lib/api-client";
-import { formatDate } from "@/lib/format";
 
+import { banAdminUser, isBanDuration } from "./admin-user-actions";
 import {
     cannotModifySelf,
     reasonFieldError,
     userNotFound,
     validationFailed,
 } from "./admin-user-errors";
-import {
-    addUserViolation,
-    changeAdminUser,
-    findAdminUser,
-    readAdminUserDetail,
-} from "./admin-user-store";
+import { changeAdminUser, findAdminUser, readAdminUserDetail } from "./admin-user-store";
 import { apiError } from "./api-error";
 import { readMockSession } from "./session";
 
-const DAY_MS = 24 * 60 * 60_000;
-const BAN_DAYS: Record<BanDuration, number | null> = { DAYS_7: 7, DAYS_30: 30, PERMANENT: null };
-
-interface BanBody {
+export interface BanBody {
     duration?: unknown;
     reason?: unknown;
     notifyByEmail?: unknown;
 }
 
-function isBanDuration(duration: unknown): duration is BanDuration {
-    return typeof duration === "string" && duration in BAN_DAYS;
-}
-
-function banFieldError({ duration, reason, notifyByEmail }: BanBody): ApiFieldError | null {
+export function banFieldError({ duration, reason, notifyByEmail }: BanBody): ApiFieldError | null {
     if (!isBanDuration(duration)) {
         return { field: "duration", message: "Thời hạn không hợp lệ" };
     }
@@ -40,11 +27,6 @@ function banFieldError({ duration, reason, notifyByEmail }: BanBody): ApiFieldEr
         return { field: "notifyByEmail", message: "Phải là true hoặc false" };
     }
     return reasonFieldError(reason);
-}
-
-function bannedUntilFor(duration: BanDuration, now: Date): string | null {
-    const days = BAN_DAYS[duration];
-    return days === null ? null : new Date(now.getTime() + days * DAY_MS).toISOString();
 }
 
 export const adminUserBanHandlers: RequestHandler[] = [
@@ -66,13 +48,9 @@ export const adminUserBanHandlers: RequestHandler[] = [
         if (user.status === "BANNED") {
             return apiError(409, "USER_ALREADY_BANNED", "Tài khoản đã bị khoá");
         }
-        const bannedUntil = bannedUntilFor(body.duration as BanDuration, new Date());
-        changeAdminUser(username, { status: "BANNED", bannedUntil });
-        addUserViolation(username, {
-            severity: "SEVERE",
-            title: bannedUntil ? `Bị khoá đến ${formatDate(bannedUntil)}` : "Bị khoá vĩnh viễn",
-            detail: String(body.reason).trim(),
-        });
+        if (isBanDuration(body.duration)) {
+            banAdminUser(username, body.duration, String(body.reason));
+        }
         return HttpResponse.json(readAdminUserDetail(username));
     }),
 

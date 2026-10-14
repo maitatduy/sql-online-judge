@@ -26,7 +26,7 @@ async function openPanel(username: string) {
             <AdminUsers />
         </ToastProvider>,
     );
-    const panel = within(await screen.findByRole("complementary", { name: "Chi tiết người dùng" }));
+    const panel = within(await screen.findByRole("dialog", { name: "Chi tiết người dùng" }));
     await panel.findByRole("button", { name: RESET_BUTTON });
     return panel;
 }
@@ -105,7 +105,9 @@ describe("gửi email đặt lại mật khẩu từ panel", () => {
         expect(
             await screen.findByText("Đã gửi email đặt lại mật khẩu tới viet.luu@example.com."),
         ).toBeInTheDocument();
-        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        await waitFor(() =>
+            expect(screen.queryByRole("dialog", { name: RESET_DIALOG })).not.toBeInTheDocument(),
+        );
     });
 
     it("không gửi gì khi bấm Huỷ", async () => {
@@ -122,7 +124,9 @@ describe("gửi email đặt lại mật khẩu từ panel", () => {
         const dialog = within(await screen.findByRole("dialog", { name: RESET_DIALOG }));
         fireEvent.click(dialog.getByRole("button", { name: "Huỷ" }));
 
-        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        await waitFor(() =>
+            expect(screen.queryByRole("dialog", { name: RESET_DIALOG })).not.toBeInTheDocument(),
+        );
         expect(requestCount).toBe(0);
     });
 

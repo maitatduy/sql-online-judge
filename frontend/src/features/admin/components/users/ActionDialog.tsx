@@ -1,15 +1,23 @@
 import { useState } from "react";
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface ActionDialogProps {
     title: string;
     description: React.ReactNode;
     onClose: () => void;
     children: React.ReactNode;
+    className?: string;
 }
 
-export function ActionDialog({ title, description, onClose, children }: ActionDialogProps) {
+export function ActionDialog({
+    title,
+    description,
+    onClose,
+    children,
+    className,
+}: ActionDialogProps) {
     const [opener] = useState(() => document.activeElement);
 
     return (
@@ -22,7 +30,7 @@ export function ActionDialog({ title, description, onClose, children }: ActionDi
             }}
         >
             <DialogContent
-                className="max-w-[480px]"
+                className={cn("max-w-[480px]", className)}
                 onCloseAutoFocus={(event) => {
                     event.preventDefault();
                     if (opener instanceof HTMLElement && opener.isConnected) {

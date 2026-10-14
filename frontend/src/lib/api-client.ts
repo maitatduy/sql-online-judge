@@ -127,6 +127,10 @@ async function send(url: string, init: RequestInit): Promise<Response> {
     }
 }
 
+function isJsonBody(body: unknown): boolean {
+    return body !== undefined && !(body instanceof FormData);
+}
+
 async function request<T>(
     method: string,
     path: string,
@@ -137,8 +141,8 @@ async function request<T>(
         method,
         credentials: "include",
         signal: options.signal,
-        headers: body === undefined ? undefined : { "Content-Type": "application/json" },
-        body: body === undefined ? undefined : JSON.stringify(body),
+        headers: isJsonBody(body) ? { "Content-Type": "application/json" } : undefined,
+        body: isJsonBody(body) ? JSON.stringify(body) : (body as FormData | undefined),
     });
     if (!response.ok) {
         throw await toRequestError(response);
@@ -156,4 +160,8 @@ export const apiClient = {
         request<T>("POST", path, body, options),
     patch: <T>(path: string, body: unknown, options: RequestOptions = {}) =>
         request<T>("PATCH", path, body, options),
+    delete: <T>(path: string, body?: unknown, options: RequestOptions = {}) =>
+        request<T>("DELETE", path, body, options),
+    putForm: <T>(path: string, form: FormData, options: RequestOptions = {}) =>
+        request<T>("PUT", path, form, options),
 };
