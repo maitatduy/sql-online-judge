@@ -22,7 +22,7 @@ describe("DELETE /api/admin/users/{username}", () => {
         const list = await apiClient.get<AdminUsersResponse>("/api/admin/users", {
             params: { q: "tam.nguyen" },
         });
-        const counts = await apiClient.get<UserCountsResponse>("/api/admin/users/summary");
+        const counts = await apiClient.get<UserCountsResponse>("/api/admin/user-summary");
 
         expect(list.items).toEqual([]);
         expect(counts).toMatchObject({ total: 61, unverified: 0 });
@@ -48,7 +48,9 @@ describe("DELETE /api/admin/users/{username}", () => {
         writeMockSession(ADMIN_SESSION_USER);
         await apiClient.delete(DELETE_PATH, { reason: "Tạo nhầm" });
 
-        await expect(apiClient.patch(DELETE_PATH, { role: "SETTER" })).rejects.toMatchObject({
+        await expect(
+            apiClient.patch(DELETE_PATH, { role: "SETTER", reason: "Thử" }),
+        ).rejects.toMatchObject({
             status: 404,
         });
     });
@@ -100,7 +102,7 @@ describe("POST /api/admin/users/{username}/restore", () => {
             apiClient.post<AdminUserDetail>(`${DELETE_PATH}/restore`),
         ).resolves.toMatchObject({ username: "tam.nguyen", deletedAt: null });
 
-        const counts = await apiClient.get<UserCountsResponse>("/api/admin/users/summary");
+        const counts = await apiClient.get<UserCountsResponse>("/api/admin/user-summary");
 
         expect(counts.total).toBe(62);
     });

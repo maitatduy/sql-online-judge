@@ -56,6 +56,9 @@ export const adminUserBulkHandlers: RequestHandler[] = [
         const invalid =
             usernamesFieldError(body.usernames) ??
             (role ? null : { field: "role", message: "Vai trò không hợp lệ" }) ??
+            (role === "ADMIN"
+                ? { field: "role", message: "Không cấp quyền Quản trị hàng loạt" }
+                : null) ??
             reasonFieldError(body.reason);
         if (invalid || !role) {
             return validationFailed(invalid ?? { field: "role", message: "Vai trò không hợp lệ" });

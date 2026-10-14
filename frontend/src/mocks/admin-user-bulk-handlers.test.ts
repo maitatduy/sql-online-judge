@@ -38,7 +38,7 @@ describe("POST /api/admin/users/bulk-ban", () => {
         });
 
         const user = await apiClient.get<AdminUserDetail>("/api/admin/users/datahust");
-        const counts = await apiClient.get<UserCountsResponse>("/api/admin/users/summary");
+        const counts = await apiClient.get<UserCountsResponse>("/api/admin/user-summary");
 
         expect(user).toMatchObject({ status: "BANNED", bannedUntil: null });
         expect(user.violations.at(-1)).toMatchObject({
@@ -81,7 +81,7 @@ describe("POST /api/admin/users/bulk-role", () => {
             ...VALID_ROLE,
             usernames: ["tam.nguyen", "viet.luu", "admin.huy"],
         });
-        const counts = await apiClient.get<UserCountsResponse>("/api/admin/users/summary");
+        const counts = await apiClient.get<UserCountsResponse>("/api/admin/user-summary");
 
         expect(response).toEqual({ affectedCount: 2, skippedUsernames: ["admin.huy"] });
         expect(counts.setters).toBe(5);
@@ -89,6 +89,7 @@ describe("POST /api/admin/users/bulk-role", () => {
 
     it.each([
         ["role", { ...VALID_ROLE, role: "BOSS", usernames: ["tam.nguyen"] }],
+        ["role", { ...VALID_ROLE, role: "ADMIN", usernames: ["tam.nguyen"] }],
         ["reason", { ...VALID_ROLE, reason: "", usernames: ["tam.nguyen"] }],
         ["usernames", { ...VALID_ROLE, usernames: [] }],
     ])("trả 400 kèm lỗi ở trường %s", async (field, body) => {

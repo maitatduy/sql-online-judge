@@ -22,7 +22,7 @@ function profileChangesOf(user: AdminUserDetail, values: UserFormValues): Update
     return {
         username: user.username,
         ...(displayName === user.displayName ? {} : { displayName }),
-        ...(values.role === user.role ? {} : { role: values.role }),
+        ...(values.role === user.role ? {} : { role: values.role, reason: values.reason }),
     };
 }
 
@@ -64,6 +64,7 @@ export function EditUserDialog({ username, onClose }: EditUserDialogProps) {
                         email: user.email,
                         displayName: user.displayName ?? "",
                         role: user.role,
+                        reason: "",
                     }}
                     currentAvatarUrl={user.avatarUrl}
                     isSelf={currentUser.username === username}

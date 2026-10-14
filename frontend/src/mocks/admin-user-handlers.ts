@@ -80,7 +80,7 @@ function countUsers(users: AdminUserSummary[]): UserCountsResponse {
 }
 
 export const adminUserHandlers: RequestHandler[] = [
-    http.get("*/api/admin/users/summary", async () => {
+    http.get("*/api/admin/user-summary", async () => {
         await delay();
         return HttpResponse.json(countUsers(readAdminUsers(new Date())));
     }),

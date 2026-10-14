@@ -376,7 +376,7 @@ describe("AdminUsers - thẻ số", () => {
     });
 
     it("hiện gạch ngang ở thẻ số và vẫn hiện danh sách khi không tải được số liệu", async () => {
-        server.use(http.get("*/api/admin/users/summary", () => serverError()));
+        server.use(http.get("*/api/admin/user-summary", () => serverError()));
         renderUsers();
 
         expect((await findUserRow("tam.nguyen")).getByText("Học viên")).toBeInTheDocument();

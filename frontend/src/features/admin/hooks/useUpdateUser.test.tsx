@@ -31,7 +31,11 @@ describe("useUpdateUser", () => {
         await waitFor(() => expect(result.current.counts.data?.setters).toBe(3));
 
         await act(() =>
-            result.current.updateUser.mutateAsync({ username: "viet.luu", role: "SETTER" }),
+            result.current.updateUser.mutateAsync({
+                username: "viet.luu",
+                role: "SETTER",
+                reason: "Ra đề",
+            }),
         );
 
         expect(result.current.user.data?.role).toBe("SETTER");
@@ -44,7 +48,11 @@ describe("useUpdateUser", () => {
 
         await act(async () => {
             await expect(
-                result.current.updateUser.mutateAsync({ username: "admin.huy", role: "LEARNER" }),
+                result.current.updateUser.mutateAsync({
+                    username: "admin.huy",
+                    role: "LEARNER",
+                    reason: "Thử",
+                }),
             ).rejects.toMatchObject({ status: 422, code: "CANNOT_MODIFY_SELF" });
         });
     });

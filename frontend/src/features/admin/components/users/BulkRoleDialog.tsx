@@ -6,8 +6,8 @@ import { useToast } from "@/components/shared/ToastProvider";
 import { useBulkChangeRole } from "@/features/admin/hooks/useBulkChangeRole";
 import { accountCountLabel, affectedSummary } from "@/features/admin/users/bulk-result";
 import { fieldErrorOf } from "@/features/admin/users/form-errors";
-import { ROLE_LABELS, ROLES } from "@/features/admin/users/role-labels";
-import { bulkRoleSchema, type BulkRoleValues } from "@/features/admin/users/schemas";
+import { ROLE_LABELS } from "@/features/admin/users/role-labels";
+import { BULK_ROLES, bulkRoleSchema, type BulkRoleValues } from "@/features/admin/users/schemas";
 
 import { ActionDialog } from "./ActionDialog";
 import { DialogActions } from "./DialogActions";
@@ -70,7 +70,7 @@ export function BulkRoleDialog({ usernames, skippedSelf, onClose, onDone }: Bulk
                         Vai trò mới
                     </label>
                     <NativeSelect id={roleId} className="w-full" {...register("role")}>
-                        {ROLES.map((role) => (
+                        {BULK_ROLES.map((role) => (
                             <option key={role} value={role}>
                                 {ROLE_LABELS[role]}
                             </option>

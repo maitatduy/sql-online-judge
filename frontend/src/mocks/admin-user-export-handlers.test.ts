@@ -10,7 +10,12 @@ const EXPORT_PATH = "/api/admin/user-exports";
 describe("POST /api/admin/user-exports", () => {
     it.each([
         { scope: "FILTERED", filters: { role: "SETTER" }, includeEmail: false },
-        { scope: "SELECTED", usernames: ["viet.luu", "an.bui"], includeEmail: true },
+        {
+            scope: "SELECTED",
+            usernames: ["viet.luu", "an.bui"],
+            includeEmail: true,
+            reason: "Khảo sát",
+        },
         { scope: "ALL", includeEmail: false },
     ])("nhận yêu cầu xuất với %j", async (body) => {
         writeMockSession(ADMIN_SESSION_USER);
@@ -25,6 +30,8 @@ describe("POST /api/admin/user-exports", () => {
         ["usernames", { scope: "SELECTED", usernames: [], includeEmail: false }],
         ["filters", { scope: "FILTERED", includeEmail: false }],
         ["includeEmail", { scope: "ALL", includeEmail: "yes" }],
+        ["reason", { scope: "ALL", includeEmail: true }],
+        ["reason", { scope: "ALL", includeEmail: true, reason: "  " }],
     ])("trả 400 kèm lỗi ở trường %s", async (field, body) => {
         writeMockSession(ADMIN_SESSION_USER);
 
@@ -39,7 +46,7 @@ describe("POST /api/admin/user-exports", () => {
         writeMockSession(DEMO_SESSION_USER);
 
         await expect(
-            apiClient.post(EXPORT_PATH, { scope: "ALL", includeEmail: true }),
+            apiClient.post(EXPORT_PATH, { scope: "ALL", includeEmail: false }),
         ).rejects.toMatchObject({ status: 403, code: "ACCESS_DENIED" });
     });
 });

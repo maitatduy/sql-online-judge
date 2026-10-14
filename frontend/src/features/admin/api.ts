@@ -41,7 +41,7 @@ export const adminApi = {
             signal,
         }),
     getUserCounts: (signal?: AbortSignal) =>
-        apiClient.get<UserCountsResponse>("/api/admin/users/summary", { signal }),
+        apiClient.get<UserCountsResponse>("/api/admin/user-summary", { signal }),
     getUser: (username: string, signal?: AbortSignal) =>
         apiClient.get<AdminUserDetail>(`/api/admin/users/${encodeURIComponent(username)}`, {
             signal,

@@ -3,7 +3,7 @@ import { delay, http, HttpResponse, type RequestHandler } from "msw";
 import { ROLES } from "@/features/admin/users/role-labels";
 import type { AdminUserSummary } from "@/features/admin/users/types";
 import type { ApiFieldError } from "@/lib/api-client";
-import { USERNAME_PATTERN } from "@/lib/username";
+import { isReservedUsername, RESERVED_USERNAME_MESSAGE, USERNAME_PATTERN } from "@/lib/username";
 
 import {
     cannotModifySelf,
@@ -33,6 +33,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 interface UpdateBody {
     role?: unknown;
     displayName?: unknown;
+    reason?: unknown;
 }
 
 function isValidDisplayName(displayName: unknown): displayName is string | null {
@@ -79,6 +80,9 @@ function createFieldError({
 }: CreateBody): ApiFieldError | null {
     if (typeof username !== "string" || !USERNAME_PATTERN.test(username)) {
         return { field: "username", message: "Tên người dùng không hợp lệ" };
+    }
+    if (isReservedUsername(username)) {
+        return { field: "username", message: RESERVED_USERNAME_MESSAGE };
     }
     if (typeof email !== "string" || !EMAIL_PATTERN.test(email)) {
         return { field: "email", message: "Email không hợp lệ" };
@@ -154,7 +158,12 @@ export const adminUserAccountHandlers: RequestHandler[] = [
             return userNotFound();
         }
         const newRole = ROLES.find((role) => role === body.role);
-        if (newRole && newRole !== user.role && readMockSession()?.username === username) {
+        const isRoleChanged = newRole !== undefined && newRole !== user.role;
+        const invalidReason = isRoleChanged ? reasonFieldError(body.reason) : null;
+        if (invalidReason) {
+            return validationFailed(invalidReason);
+        }
+        if (isRoleChanged && readMockSession()?.username === username) {
             return cannotModifySelf("Bạn không thể tự đổi vai trò của chính mình");
         }
         if (newRole) {

@@ -173,3 +173,38 @@ describe("tạo người dùng", () => {
         expect(dialog.getByRole("textbox", { name: "Tên người dùng" })).toHaveValue("lan.pham");
     });
 });
+
+describe("tạo người dùng vai trò Quản trị", () => {
+    beforeEach(() => {
+        visit("/admin/users");
+    });
+
+    it("hỏi xác nhận riêng trước khi tạo tài khoản Quản trị", async () => {
+        const dialog = await openCreateDialog();
+
+        fillValidUser(dialog);
+        fireEvent.change(dialog.getByRole("combobox", { name: "Vai trò" }), {
+            target: { value: "ADMIN" },
+        });
+        fireEvent.click(dialog.getByRole("button", { name: SUBMIT }));
+
+        const confirm = within(
+            await screen.findByRole("dialog", { name: "Cấp quyền Quản trị cho lan.pham?" }),
+        );
+        fireEvent.click(confirm.getByRole("button", { name: "Cấp quyền Quản trị" }));
+
+        expect(await screen.findByText(/^Đã tạo tài khoản lan\.pham/)).toBeInTheDocument();
+    });
+
+    it("báo lỗi khi tên người dùng trùng tên dành riêng của hệ thống", async () => {
+        const dialog = await openCreateDialog();
+
+        fill(dialog, "Tên người dùng", "availability");
+        fill(dialog, "Email", "a@example.com");
+        fireEvent.click(dialog.getByRole("button", { name: SUBMIT }));
+
+        expect(
+            await dialog.findByText("Tên người dùng này được hệ thống dành riêng"),
+        ).toBeInTheDocument();
+    });
+});

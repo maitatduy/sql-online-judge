@@ -92,6 +92,15 @@ describe("xuất danh sách người dùng", () => {
 
         fireEvent.click(dialog.getByRole("radio", { name: "Những người đã chọn: 2 người" }));
         fireEvent.click(dialog.getByRole("checkbox", { name: INCLUDE_EMAIL }));
+
+        expect(dialog.getByRole("button", { name: "Tạo file CSV" })).toBeDisabled();
+        expect(
+            dialog.getByText("Lượt xuất có email được ghi vào nhật ký thao tác."),
+        ).toBeInTheDocument();
+
+        fireEvent.change(dialog.getByRole("textbox", { name: "Lý do xuất email" }), {
+            target: { value: "  Gửi thư mời khảo sát  " },
+        });
         fireEvent.click(dialog.getByRole("button", { name: "Tạo file CSV" }));
 
         await waitFor(() =>
@@ -99,6 +108,7 @@ describe("xuất danh sách người dùng", () => {
                 scope: "SELECTED",
                 usernames: ["tam.nguyen", "datahust"],
                 includeEmail: true,
+                reason: "Gửi thư mời khảo sát",
             }),
         );
     });

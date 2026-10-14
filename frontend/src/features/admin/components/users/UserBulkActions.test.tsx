@@ -163,6 +163,12 @@ describe("đổi vai trò hàng loạt", () => {
         const dialog = await openDialog(bar, "Đổi vai trò", "Đổi vai trò 2 tài khoản");
         const roleSelect = dialog.getByRole("combobox", { name: "Vai trò mới" });
 
+        expect(
+            within(roleSelect)
+                .getAllByRole("option")
+                .map((option) => option.textContent),
+        ).toEqual(["Học viên", "Người ra đề", "Kiểm duyệt"]);
+
         expect(roleSelect).toHaveValue("SETTER");
         expect(dialog.getByRole("button", { name: "Đổi vai trò" })).toBeDisabled();
 

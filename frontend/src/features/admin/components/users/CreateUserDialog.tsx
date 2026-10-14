@@ -5,7 +5,13 @@ import { useUploadAvatar } from "@/features/admin/hooks/useUserAvatar";
 import { ActionDialog } from "./ActionDialog";
 import { UserForm, type UserFormSubmission } from "./UserForm";
 
-const EMPTY_USER = { username: "", email: "", displayName: "", role: "LEARNER" } as const;
+const EMPTY_USER = {
+    username: "",
+    email: "",
+    displayName: "",
+    role: "LEARNER",
+    reason: "",
+} as const;
 
 interface CreateUserDialogProps {
     onClose: () => void;
@@ -17,7 +23,8 @@ export function CreateUserDialog({ onClose }: CreateUserDialogProps) {
     const uploadAvatar = useUploadAvatar();
 
     async function submitCreate({ values, avatar }: UserFormSubmission) {
-        const { displayName, ...account } = values;
+        const { username, email, role, displayName } = values;
+        const account = { username, email, role };
         await createUser.mutateAsync({ ...account, ...(displayName ? { displayName } : {}) });
         if (avatar.kind === "replace") {
             await uploadAvatar

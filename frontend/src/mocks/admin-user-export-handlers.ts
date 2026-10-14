@@ -3,7 +3,7 @@ import { delay, http, HttpResponse, type RequestHandler } from "msw";
 import type { ExportUsersResponse } from "@/features/admin/users/types";
 import type { ApiFieldError } from "@/lib/api-client";
 
-import { validationFailed } from "./admin-user-errors";
+import { reasonFieldError, validationFailed } from "./admin-user-errors";
 
 const EXPORT_SCOPES = ["FILTERED", "SELECTED", "ALL"];
 const MAX_EXPORT_USERNAMES = 1000;
@@ -14,6 +14,7 @@ interface ExportBody {
     filters?: unknown;
     usernames?: unknown;
     includeEmail?: unknown;
+    reason?: unknown;
 }
 
 function isUsernameList(usernames: unknown): boolean {
@@ -30,6 +31,7 @@ function exportFieldError({
     filters,
     usernames,
     includeEmail,
+    reason,
 }: ExportBody): ApiFieldError | null {
     if (typeof scope !== "string" || !EXPORT_SCOPES.includes(scope)) {
         return { field: "scope", message: "Phạm vi xuất không hợp lệ" };
@@ -46,7 +48,7 @@ function exportFieldError({
     if (typeof includeEmail !== "boolean") {
         return { field: "includeEmail", message: "Phải là true hoặc false" };
     }
-    return null;
+    return includeEmail ? reasonFieldError(reason) : null;
 }
 
 export const adminUserExportHandlers: RequestHandler[] = [

@@ -8,9 +8,11 @@ import { ROLE_LABELS, ROLES } from "@/features/admin/users/role-labels";
 import { userFormSchema, type UserFormValues } from "@/features/admin/users/schemas";
 import { ApiRequestError } from "@/lib/api-client";
 
+import { AdminGrantConfirmDialog } from "./AdminGrantConfirmDialog";
 import { AvatarField } from "./AvatarField";
 import { DialogActions } from "./DialogActions";
 import { NativeSelect } from "./NativeSelect";
+import { TextAreaField } from "./TextAreaField";
 import { TextInputField } from "./TextInputField";
 
 const FORM_FIELDS = ["username", "email", "displayName"] as const;
@@ -60,11 +62,25 @@ export function UserForm(props: UserFormProps) {
         setError,
         formState: { errors, isDirty },
     } = useForm<UserFormValues>({ resolver: zodResolver(userFormSchema), defaultValues });
-    const [username, email] = useWatch({ control, name: ["username", "email"] });
+    const [pendingAdminGrant, setPendingAdminGrant] = useState<UserFormValues | null>(null);
+    const [username, email, role, reason] = useWatch({
+        control,
+        name: ["username", "email", "role", "reason"],
+    });
     const isEditing = mode === "edit";
+    const isRoleChanged = isEditing && role !== defaultValues.role;
+    const isReasonMissing = isRoleChanged && reason.trim() === "";
     const hasChanges = isEditing
         ? isDirty || avatar.kind !== "keep"
         : username.trim() !== "" && email.trim() !== "";
+
+    const requestSubmit = (values: UserFormValues) => {
+        if (values.role === "ADMIN" && defaultValues.role !== "ADMIN") {
+            setPendingAdminGrant(values);
+            return;
+        }
+        void submitForm(values);
+    };
 
     const submitForm = (values: UserFormValues) => {
         setIsSubmitting(true);
@@ -79,7 +95,7 @@ export function UserForm(props: UserFormProps) {
     };
 
     return (
-        <form noValidate onSubmit={handleSubmit(submitForm)} className="flex flex-col gap-4">
+        <form noValidate onSubmit={handleSubmit(requestSubmit)} className="flex flex-col gap-4">
             <AvatarField currentUrl={currentAvatarUrl} change={avatar} onChange={setAvatar} />
             <div className="grid gap-4 sm:grid-cols-2">
                 <TextInputField
@@ -126,10 +142,29 @@ export function UserForm(props: UserFormProps) {
                     ) : null}
                 </div>
             </div>
+            {isRoleChanged ? (
+                <TextAreaField
+                    label="Lý do đổi vai trò"
+                    hint="Lý do được ghi vào nhật ký thao tác."
+                    rows={2}
+                    error={errors.reason?.message}
+                    registration={register("reason")}
+                />
+            ) : null}
             <DialogActions
                 submitLabel={submitLabel}
-                isSubmitDisabled={!hasChanges || isSubmitting}
+                isSubmitDisabled={!hasChanges || isReasonMissing || isSubmitting}
             />
+            {pendingAdminGrant ? (
+                <AdminGrantConfirmDialog
+                    username={pendingAdminGrant.username}
+                    onCancel={() => setPendingAdminGrant(null)}
+                    onConfirm={() => {
+                        setPendingAdminGrant(null);
+                        void submitForm(pendingAdminGrant);
+                    }}
+                />
+            ) : null}
         </form>
     );
 }

@@ -50,7 +50,7 @@ describe("POST /api/admin/users/{username}/ban", () => {
         await apiClient.post(BAN_PATH, VALID_BAN);
 
         const user = await apiClient.get<AdminUserDetail>("/api/admin/users/viet.luu");
-        const counts = await apiClient.get<UserCountsResponse>("/api/admin/users/summary");
+        const counts = await apiClient.get<UserCountsResponse>("/api/admin/user-summary");
 
         expect(user.status).toBe("BANNED");
         expect(user.violations).toHaveLength(3);

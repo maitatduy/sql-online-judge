@@ -65,11 +65,18 @@ describe("sửa người dùng", () => {
 
         fireEvent.change(nameField(dialog), { target: { value: "  Tâm Nguyễn  " } });
         fireEvent.change(roleField(dialog), { target: { value: "SETTER" } });
+        fireEvent.change(dialog.getByRole("textbox", { name: "Lý do đổi vai trò" }), {
+            target: { value: "  Tham gia ra đề  " },
+        });
         fireEvent.click(dialog.getByRole("button", { name: SAVE }));
 
         expect(await screen.findByText("Đã cập nhật tam.nguyen.")).toBeInTheDocument();
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-        expect(captured.body).toEqual({ displayName: "Tâm Nguyễn", role: "SETTER" });
+        expect(captured.body).toEqual({
+            displayName: "Tâm Nguyễn",
+            role: "SETTER",
+            reason: "Tham gia ra đề",
+        });
         await waitFor(() =>
             expect(
                 within(screen.getByRole("row", { name: "tam.nguyen" })).getByText("Người ra đề"),
@@ -82,9 +89,14 @@ describe("sửa người dùng", () => {
         const dialog = await openEditDialog("tam.nguyen");
 
         fireEvent.change(roleField(dialog), { target: { value: "MODERATOR" } });
+        fireEvent.change(dialog.getByRole("textbox", { name: "Lý do đổi vai trò" }), {
+            target: { value: "Kiểm duyệt cộng đồng" },
+        });
         fireEvent.click(dialog.getByRole("button", { name: SAVE }));
 
-        await waitFor(() => expect(captured.body).toEqual({ role: "MODERATOR" }));
+        await waitFor(() =>
+            expect(captured.body).toEqual({ role: "MODERATOR", reason: "Kiểm duyệt cộng đồng" }),
+        );
         expect(await screen.findByText("Đã cập nhật tam.nguyen.")).toBeInTheDocument();
     });
 
@@ -131,11 +143,88 @@ describe("sửa người dùng", () => {
         const dialog = await openEditDialog("tam.nguyen");
 
         fireEvent.change(roleField(dialog), { target: { value: "SETTER" } });
+        fireEvent.change(dialog.getByRole("textbox", { name: "Lý do đổi vai trò" }), {
+            target: { value: "Ra đề" },
+        });
         fireEvent.click(dialog.getByRole("button", { name: SAVE }));
 
         expect(
             await screen.findByText("Chưa cập nhật được tam.nguyen. Đã có lỗi xảy ra"),
         ).toBeInTheDocument();
         expect(roleField(dialog)).toHaveValue("SETTER");
+    });
+});
+
+describe("lý do và xác nhận khi đổi vai trò", () => {
+    const ADMIN_CONFIRM = "Cấp quyền Quản trị cho tam.nguyen?";
+
+    beforeEach(() => {
+        visit("/admin/users");
+    });
+
+    it("chỉ hỏi lý do khi vai trò thay đổi và bắt buộc nhập", async () => {
+        const dialog = await openEditDialog("tam.nguyen");
+
+        expect(
+            dialog.queryByRole("textbox", { name: "Lý do đổi vai trò" }),
+        ).not.toBeInTheDocument();
+
+        fireEvent.change(nameField(dialog), { target: { value: "Tâm" } });
+
+        expect(
+            dialog.queryByRole("textbox", { name: "Lý do đổi vai trò" }),
+        ).not.toBeInTheDocument();
+        expect(dialog.getByRole("button", { name: SAVE })).toBeEnabled();
+
+        fireEvent.change(roleField(dialog), { target: { value: "SETTER" } });
+
+        expect(dialog.getByText("Lý do được ghi vào nhật ký thao tác.")).toBeInTheDocument();
+        expect(dialog.getByRole("button", { name: SAVE })).toBeDisabled();
+
+        fireEvent.change(dialog.getByRole("textbox", { name: "Lý do đổi vai trò" }), {
+            target: { value: "Ra đề" },
+        });
+
+        expect(dialog.getByRole("button", { name: SAVE })).toBeEnabled();
+    });
+
+    it("hỏi xác nhận riêng trước khi cấp quyền Quản trị", async () => {
+        const captured = captureBody();
+        const dialog = await openEditDialog("tam.nguyen");
+
+        fireEvent.change(roleField(dialog), { target: { value: "ADMIN" } });
+        fireEvent.change(dialog.getByRole("textbox", { name: "Lý do đổi vai trò" }), {
+            target: { value: "Bổ sung quản trị viên" },
+        });
+        fireEvent.click(dialog.getByRole("button", { name: SAVE }));
+
+        const confirm = within(await screen.findByRole("dialog", { name: ADMIN_CONFIRM }));
+
+        expect(captured.body).toBeUndefined();
+
+        fireEvent.click(confirm.getByRole("button", { name: "Cấp quyền Quản trị" }));
+
+        expect(await screen.findByText("Đã cập nhật tam.nguyen.")).toBeInTheDocument();
+        expect(captured.body).toEqual({ role: "ADMIN", reason: "Bổ sung quản trị viên" });
+    });
+
+    it("không lưu gì khi huỷ bước xác nhận cấp quyền Quản trị", async () => {
+        const captured = captureBody();
+        const dialog = await openEditDialog("tam.nguyen");
+
+        fireEvent.change(roleField(dialog), { target: { value: "ADMIN" } });
+        fireEvent.change(dialog.getByRole("textbox", { name: "Lý do đổi vai trò" }), {
+            target: { value: "Thử" },
+        });
+        fireEvent.click(dialog.getByRole("button", { name: SAVE }));
+        const confirm = within(await screen.findByRole("dialog", { name: ADMIN_CONFIRM }));
+        fireEvent.click(confirm.getByRole("button", { name: "Huỷ" }));
+
+        await waitFor(() =>
+            expect(screen.queryByRole("dialog", { name: ADMIN_CONFIRM })).not.toBeInTheDocument(),
+        );
+        expect(captured.body).toBeUndefined();
+        expect(screen.getByRole("dialog", { name: "Sửa tam.nguyen" })).toBeInTheDocument();
+        expect(dialog.getByRole("button", { name: SAVE })).toBeEnabled();
     });
 });

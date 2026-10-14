@@ -57,6 +57,7 @@ export interface UpdateUserRequest {
     username: string;
     role?: Role;
     displayName?: string | null;
+    reason?: string;
 }
 
 export type BanDuration = "DAYS_7" | "DAYS_30" | "PERMANENT";
@@ -102,6 +103,7 @@ export interface ExportUsersRequest {
     filters?: UsersQuery;
     usernames?: string[];
     includeEmail: boolean;
+    reason?: string;
 }
 
 export interface ExportUsersResponse {

@@ -148,8 +148,8 @@ describe("GET /api/admin/users - lọc", () => {
     });
 });
 
-describe("GET /api/admin/users/summary", () => {
-    const SUMMARY_PATH = "/api/admin/users/summary";
+describe("GET /api/admin/user-summary", () => {
+    const SUMMARY_PATH = "/api/admin/user-summary";
 
     it("trả số tài khoản theo từng nhóm", async () => {
         writeMockSession(ADMIN_SESSION_USER);
@@ -236,23 +236,33 @@ describe("PATCH /api/admin/users/{username}", () => {
         writeMockSession(ADMIN_SESSION_USER);
 
         await expect(
-            apiClient.patch<AdminUserDetail>(USER_PATH, { role: "SETTER" }),
+            apiClient.patch<AdminUserDetail>(USER_PATH, { role: "SETTER", reason: "Ra đề" }),
         ).resolves.toMatchObject({ username: "viet.luu", role: "SETTER" });
     });
 
     it("phản ánh vai trò mới ở chi tiết, danh sách và số liệu", async () => {
         writeMockSession(ADMIN_SESSION_USER);
-        await apiClient.patch(USER_PATH, { role: "SETTER" });
+        await apiClient.patch(USER_PATH, { role: "SETTER", reason: "Ra đề" });
 
         const detail = await apiClient.get<AdminUserDetail>(USER_PATH);
         const setters = await apiClient.get<AdminUsersResponse>(USERS_PATH, {
             params: { role: "SETTER" },
         });
-        const counts = await apiClient.get<UserCountsResponse>("/api/admin/users/summary");
+        const counts = await apiClient.get<UserCountsResponse>("/api/admin/user-summary");
 
         expect(detail.role).toBe("SETTER");
         expect(setters.items.map((user) => user.username)).toContain("viet.luu");
         expect(counts.setters).toBe(4);
+    });
+
+    it("trả 400 kèm lỗi ở trường reason khi đổi vai trò mà không có lý do", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+
+        await expect(apiClient.patch(USER_PATH, { role: "SETTER" })).rejects.toMatchObject({
+            status: 400,
+            code: "VALIDATION_FAILED",
+            errors: [{ field: "reason" }],
+        });
     });
 
     it("đổi tên hiển thị mà không đổi vai trò", async () => {
@@ -316,7 +326,7 @@ describe("PATCH /api/admin/users/{username}", () => {
         writeMockSession(ADMIN_SESSION_USER);
 
         await expect(
-            apiClient.patch("/api/admin/users/khong.co", { role: "SETTER" }),
+            apiClient.patch("/api/admin/users/khong.co", { role: "SETTER", reason: "Thử" }),
         ).rejects.toMatchObject({ status: 404, code: "USER_NOT_FOUND" });
     });
 
@@ -324,14 +334,16 @@ describe("PATCH /api/admin/users/{username}", () => {
         writeMockSession(ADMIN_SESSION_USER);
 
         await expect(
-            apiClient.patch("/api/admin/users/admin.huy", { role: "LEARNER" }),
+            apiClient.patch("/api/admin/users/admin.huy", { role: "LEARNER", reason: "Thử" }),
         ).rejects.toMatchObject({ status: 422, code: "CANNOT_MODIFY_SELF" });
     });
 
     it("trả 403 và không đổi gì khi không phải quản trị viên", async () => {
         writeMockSession(DEMO_SESSION_USER);
 
-        await expect(apiClient.patch(USER_PATH, { role: "ADMIN" })).rejects.toMatchObject({
+        await expect(
+            apiClient.patch(USER_PATH, { role: "ADMIN", reason: "Thử" }),
+        ).rejects.toMatchObject({
             status: 403,
             code: "ACCESS_DENIED",
         });

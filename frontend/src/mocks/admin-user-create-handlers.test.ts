@@ -42,7 +42,7 @@ describe("POST /api/admin/users", () => {
         await apiClient.post(USERS_PATH, NEW_USER);
 
         const list = await apiClient.get<AdminUsersResponse>(USERS_PATH);
-        const counts = await apiClient.get<UserCountsResponse>("/api/admin/users/summary");
+        const counts = await apiClient.get<UserCountsResponse>("/api/admin/user-summary");
         const detail = await apiClient.get<AdminUserDetail>("/api/admin/users/lan.pham");
 
         expect(list.items[0].username).toBe("lan.pham");
@@ -65,6 +65,8 @@ describe("POST /api/admin/users", () => {
     it.each([
         ["username", { ...NEW_USER, username: "Lan Pham" }],
         ["username", { ...NEW_USER, username: "ab" }],
+        ["username", { ...NEW_USER, username: "availability" }],
+        ["username", { ...NEW_USER, username: "me" }],
         ["email", { ...NEW_USER, email: "khong-hop-le" }],
         ["role", { ...NEW_USER, role: "BOSS" }],
         ["displayName", { ...NEW_USER, displayName: "a".repeat(61) }],

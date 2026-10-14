@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import type { Role } from "@/lib/current-user";
-import { USERNAME_PATTERN } from "@/lib/username";
+import { isReservedUsername, RESERVED_USERNAME_MESSAGE, USERNAME_PATTERN } from "@/lib/username";
 
 import { ROLES } from "./role-labels";
 
@@ -27,8 +27,10 @@ export type BanUserValues = z.infer<typeof banUserSchema>;
 export type UnbanUserValues = z.infer<typeof unbanUserSchema>;
 export type DeleteUserValues = z.infer<typeof deleteUserSchema>;
 
+export const BULK_ROLES = ROLES.filter((role) => role !== "ADMIN");
+
 export const bulkRoleSchema = z.object({
-    role: z.enum(ROLES as [Role, ...Role[]]),
+    role: z.enum(BULK_ROLES as [Role, ...Role[]]),
     reason,
 });
 
@@ -43,13 +45,15 @@ export const userFormSchema = z.object({
         .regex(
             USERNAME_PATTERN,
             "Tên người dùng gồm 3-30 ký tự: chữ thường, số, dấu chấm hoặc gạch dưới",
-        ),
+        )
+        .refine((username) => !isReservedUsername(username), RESERVED_USERNAME_MESSAGE),
     email: z.string().trim().pipe(z.email("Email không hợp lệ")),
     displayName: z
         .string()
         .trim()
         .max(MAX_DISPLAY_NAME_LENGTH, `Tên hiển thị tối đa ${MAX_DISPLAY_NAME_LENGTH} ký tự`),
     role: z.enum(ROLES as [Role, ...Role[]]),
+    reason: z.string().trim(),
 });
 
 export type UserFormValues = z.infer<typeof userFormSchema>;

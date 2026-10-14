@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 
 import { useToast } from "@/components/shared/ToastProvider";
 import { useExportUsers } from "@/features/admin/hooks/useExportUsers";
@@ -9,6 +10,7 @@ import { formatNumber } from "@/lib/format";
 
 import { ActionDialog } from "./ActionDialog";
 import { DialogActions } from "./DialogActions";
+import { TextAreaField } from "./TextAreaField";
 
 const OPTION_CLASS = "flex items-center gap-2 text-sm has-disabled:text-muted-foreground";
 const RADIO_CLASS = "size-4 accent-brand";
@@ -42,11 +44,14 @@ export function ExportUsersDialog(props: ExportUsersDialogProps) {
     const [scope, setScope] = useState<ExportScope>("FILTERED");
     const [includeEmail, setIncludeEmail] = useState(false);
     const includeEmailHintId = useId();
+    const { control, register } = useForm({ defaultValues: { reason: "" } });
+    const reason = useWatch({ control, name: "reason" }).trim();
+    const isReasonMissing = includeEmail && reason === "";
 
     function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
         exportUsers.mutate(
-            { ...exportRequestOf(scope, props), includeEmail },
+            { ...exportRequestOf(scope, props), includeEmail, ...(includeEmail ? { reason } : {}) },
             {
                 onSuccess: () => {
                     showToast("Đang tạo file CSV, bạn sẽ nhận thông báo khi xong.");
@@ -111,9 +116,17 @@ export function ExportUsersDialog(props: ExportUsersDialogProps) {
                         Email là dữ liệu cá nhân, chỉ dùng nội bộ.
                     </p>
                 </div>
+                {includeEmail ? (
+                    <TextAreaField
+                        label="Lý do xuất email"
+                        hint="Lượt xuất có email được ghi vào nhật ký thao tác."
+                        rows={2}
+                        registration={register("reason")}
+                    />
+                ) : null}
                 <DialogActions
                     submitLabel="Tạo file CSV"
-                    isSubmitDisabled={exportUsers.isPending}
+                    isSubmitDisabled={isReasonMissing || exportUsers.isPending}
                 />
             </form>
         </ActionDialog>
