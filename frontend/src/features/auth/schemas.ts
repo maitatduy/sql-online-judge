@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isReservedUsername, RESERVED_USERNAME_MESSAGE, USERNAME_PATTERN } from "@/lib/username";
+
 import { MIN_PASSWORD_LENGTH } from "./password-strength";
 
 const emailSchema = z
@@ -16,8 +18,6 @@ export const loginSchema = z.object({
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
-export const USERNAME_PATTERN = /^[a-z0-9._]{3,30}$/;
-
 export const registerSchema = z.object({
     username: z
         .string()
@@ -26,7 +26,8 @@ export const registerSchema = z.object({
         .regex(
             USERNAME_PATTERN,
             "Tên người dùng gồm 3-30 ký tự: chữ thường, số, dấu chấm hoặc gạch dưới",
-        ),
+        )
+        .refine((username) => !isReservedUsername(username), RESERVED_USERNAME_MESSAGE),
     email: emailSchema,
     password: z
         .string()

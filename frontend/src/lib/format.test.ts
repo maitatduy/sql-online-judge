@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { formatNumber, formatRelativeTime } from "./format";
+import { formatDate, formatNumber, formatRelativeTime } from "./format";
+
+describe("formatDate", () => {
+    it("định dạng ngày theo dd/MM/yyyy", () => {
+        expect(formatDate("2025-03-14T03:00:00Z")).toBe("14/03/2025");
+    });
+
+    it("đổi sang giờ Việt Nam trước khi lấy ngày", () => {
+        expect(formatDate("2026-10-10T18:30:00Z")).toBe("11/10/2026");
+    });
+});
 
 describe("formatNumber", () => {
     it.each([

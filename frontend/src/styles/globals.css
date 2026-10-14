@@ -63,6 +63,26 @@
     --count-ai-flag: #6d28d9;
     --count-support: #475569;
     --count-live: #1d4ed8;
+
+    --role-setter: #c2410c;
+    --role-moderator: #6d28d9;
+    --role-admin: #1d4ed8;
+
+    --account-active: #15803d;
+    --account-banned: #c81e1e;
+    --account-unverified: #9a5b05;
+
+    --avatar-1: #b45309;
+    --avatar-2: #0f766e;
+    --avatar-3: #6d28d9;
+    --avatar-4: #be185d;
+    --avatar-5: #2563eb;
+    --avatar-6: #475569;
+    --avatar-7: #15803d;
+    --avatar-8: #c2410c;
+
+    --violation-severe: #c81e1e;
+    --violation-minor: #9a5b05;
 }
 
 .dark {
@@ -125,6 +145,26 @@
     --count-ai-flag: #6d28d9;
     --count-support: #475569;
     --count-live: #1d4ed8;
+
+    --role-setter: #fb923c;
+    --role-moderator: #a78bfa;
+    --role-admin: #60a5fa;
+
+    --account-active: #4ade80;
+    --account-banned: #f87171;
+    --account-unverified: #fbbf24;
+
+    --avatar-1: #b45309;
+    --avatar-2: #0f766e;
+    --avatar-3: #6d28d9;
+    --avatar-4: #be185d;
+    --avatar-5: #2563eb;
+    --avatar-6: #475569;
+    --avatar-7: #15803d;
+    --avatar-8: #c2410c;
+
+    --violation-severe: #f87171;
+    --violation-minor: #facc15;
 }
 
 :root,
@@ -214,6 +254,26 @@
     --color-count-ai-flag: var(--count-ai-flag);
     --color-count-support: var(--count-support);
     --color-count-live: var(--count-live);
+
+    --color-role-setter: var(--role-setter);
+    --color-role-moderator: var(--role-moderator);
+    --color-role-admin: var(--role-admin);
+
+    --color-account-active: var(--account-active);
+    --color-account-banned: var(--account-banned);
+    --color-account-unverified: var(--account-unverified);
+
+    --color-avatar-1: var(--avatar-1);
+    --color-avatar-2: var(--avatar-2);
+    --color-avatar-3: var(--avatar-3);
+    --color-avatar-4: var(--avatar-4);
+    --color-avatar-5: var(--avatar-5);
+    --color-avatar-6: var(--avatar-6);
+    --color-avatar-7: var(--avatar-7);
+    --color-avatar-8: var(--avatar-8);
+
+    --color-violation-severe: var(--violation-severe);
+    --color-violation-minor: var(--violation-minor);
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);

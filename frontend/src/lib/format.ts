@@ -11,9 +11,19 @@ const RELATIVE_UNITS: [unit: Intl.RelativeTimeFormatUnit, seconds: number][] = [
 
 const numberFormatter = new Intl.NumberFormat("vi-VN");
 const relativeTimeFormatter = new Intl.RelativeTimeFormat("vi", { numeric: "always" });
+const dateFormatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+});
 
 export function formatNumber(value: number): string {
     return numberFormatter.format(value);
+}
+
+export function formatDate(date: string | Date): string {
+    return dateFormatter.format(new Date(date));
 }
 
 export function formatRelativeTime(date: string | Date, now: Date): string {

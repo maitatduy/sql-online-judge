@@ -6,6 +6,8 @@ import {
     buildJudgeWorkers,
     buildNavigationCounts,
 } from "./admin-fixtures";
+import { adminUserExportHandlers } from "./admin-user-export-handlers";
+import { adminUserHandlers } from "./admin-user-handlers";
 import { apiError } from "./api-error";
 import { readMockSession } from "./session";
 import { readWorkerRestarts, recordWorkerRestart } from "./worker-restarts";
@@ -78,4 +80,7 @@ export const adminHandlers: RequestHandler[] = [
         await delay();
         return HttpResponse.json({ items: ADMIN_PENDING_TASKS });
     }),
+
+    ...adminUserHandlers,
+    ...adminUserExportHandlers,
 ];
