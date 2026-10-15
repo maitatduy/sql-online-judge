@@ -1,6 +1,11 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
-import type { AuthResponse, LoginRequest, RegisterRequest } from "@/features/auth/types";
+import type {
+    AuthResponse,
+    LoginRequest,
+    RegisterRequest,
+    RegisterResponse,
+} from "@/features/auth/types";
 import type { CurrentUser } from "@/lib/current-user";
 
 import { adminHandlers } from "./admin-handlers";
@@ -87,9 +92,7 @@ export const handlers: RequestHandler[] = [
         if (body.email === TAKEN_EMAIL) {
             return apiError(409, "EMAIL_TAKEN", "Email đã được đăng ký");
         }
-        return HttpResponse.json(signIn(newSessionUser(body.username), body.email), {
-            status: 201,
-        });
+        return HttpResponse.json<RegisterResponse>({ email: body.email }, { status: 201 });
     }),
 
     http.get("*/api/users/availability", async ({ request }) => {

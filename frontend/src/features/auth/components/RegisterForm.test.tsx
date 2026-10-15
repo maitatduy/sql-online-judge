@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { server } from "@/mocks/server";
 import { renderWithProviders } from "@/test/render";
 
+import { readPendingVerificationEmail } from "../pending-verification";
+
 import { RegisterForm } from "./RegisterForm";
 
 const push = vi.fn();
@@ -40,6 +42,7 @@ function fillAndSubmit({
 describe("RegisterForm", () => {
     beforeEach(() => {
         push.mockClear();
+        sessionStorage.clear();
     });
 
     it("báo lỗi cạnh từng ô và không gửi request khi để trống", async () => {
@@ -50,7 +53,7 @@ describe("RegisterForm", () => {
                 return HttpResponse.json({}, { status: 201 });
             }),
         );
-        renderWithProviders(<RegisterForm nextPath="/" />);
+        renderWithProviders(<RegisterForm />);
 
         fireEvent.click(screen.getByRole("button", { name: "Tạo tài khoản" }));
 
@@ -64,7 +67,7 @@ describe("RegisterForm", () => {
     it.each(["Minh Anh", "ab", "minh-anh", "MINH"])(
         "từ chối tên người dùng không hợp lệ: %s",
         async (username) => {
-            renderWithProviders(<RegisterForm nextPath="/" />);
+            renderWithProviders(<RegisterForm />);
 
             fillAndSubmit({ username });
 
@@ -78,7 +81,7 @@ describe("RegisterForm", () => {
     );
 
     it("từ chối mật khẩu dưới 8 ký tự", async () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
+        renderWithProviders(<RegisterForm />);
 
         fillAndSubmit({ password: "abc123" });
 
@@ -86,7 +89,7 @@ describe("RegisterForm", () => {
     });
 
     it("yêu cầu đồng ý điều khoản", async () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
+        renderWithProviders(<RegisterForm />);
 
         fillAndSubmit({ acceptTerms: false });
 
@@ -96,19 +99,20 @@ describe("RegisterForm", () => {
         expect(push).not.toHaveBeenCalled();
     });
 
-    it("đăng ký hợp lệ thì gửi đúng dữ liệu và chuyển trang", async () => {
+    it("đăng ký hợp lệ thì gửi đúng dữ liệu và chuyển sang xác thực email", async () => {
         let receivedBody: unknown;
         server.use(
             http.post("*/api/auth/register", async ({ request }) => {
                 receivedBody = await request.json();
-                return HttpResponse.json({ accessToken: "t", user: {} }, { status: 201 });
+                return HttpResponse.json({ email: "minh.anh@sqljudge.dev" }, { status: 201 });
             }),
         );
-        renderWithProviders(<RegisterForm nextPath="/problems" />);
+        renderWithProviders(<RegisterForm />);
 
         fillAndSubmit();
 
-        await waitFor(() => expect(push).toHaveBeenCalledWith("/problems"));
+        await waitFor(() => expect(push).toHaveBeenCalledWith("/verify-email"));
+        expect(readPendingVerificationEmail()).toBe("minh.anh@sqljudge.dev");
         expect(receivedBody).toEqual({
             username: "minh.anh",
             email: "minh.anh@sqljudge.dev",
@@ -118,7 +122,7 @@ describe("RegisterForm", () => {
     });
 
     it("tên người dùng đã có thì báo lỗi ở ô tên người dùng", async () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
+        renderWithProviders(<RegisterForm />);
 
         fillAndSubmit({ username: "taken" });
 
@@ -128,7 +132,7 @@ describe("RegisterForm", () => {
     });
 
     it("email đã đăng ký thì báo lỗi ở ô email", async () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
+        renderWithProviders(<RegisterForm />);
 
         fillAndSubmit({ email: "taken@sqljudge.dev" });
 
@@ -137,7 +141,7 @@ describe("RegisterForm", () => {
     });
 
     it("thanh độ mạnh cập nhật khi gõ mật khẩu", () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
+        renderWithProviders(<RegisterForm />);
         const meter = screen.getByRole("meter", { name: "Độ mạnh mật khẩu" });
 
         expect(meter).toHaveAttribute("aria-valuenow", "0");
@@ -149,13 +153,13 @@ describe("RegisterForm", () => {
     });
 
     it("nói trước độ dài tối thiểu của mật khẩu", () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
+        renderWithProviders(<RegisterForm />);
 
         expect(screen.getByText("Ít nhất 8 ký tự")).toBeInTheDocument();
     });
 
     it("không liệt kê các tiêu chí mật khẩu", () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
+        renderWithProviders(<RegisterForm />);
 
         expect(screen.queryByText("Từ 8 ký tự")).not.toBeInTheDocument();
         expect(screen.queryByText("Có chữ và số")).not.toBeInTheDocument();
@@ -164,7 +168,7 @@ describe("RegisterForm", () => {
 
     it("mất kết nối thì báo lỗi chung và cho gửi lại", async () => {
         server.use(http.post("*/api/auth/register", () => HttpResponse.error()));
-        renderWithProviders(<RegisterForm nextPath="/" />);
+        renderWithProviders(<RegisterForm />);
 
         fillAndSubmit();
 
@@ -176,10 +180,10 @@ describe("RegisterForm", () => {
         server.use(
             http.post("*/api/auth/register", async () => {
                 await delay(200);
-                return HttpResponse.json({ accessToken: "t", user: {} }, { status: 201 });
+                return HttpResponse.json({ email: "minh.anh@sqljudge.dev" }, { status: 201 });
             }),
         );
-        renderWithProviders(<RegisterForm nextPath="/" />);
+        renderWithProviders(<RegisterForm />);
 
         fillAndSubmit();
 

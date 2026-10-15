@@ -29,6 +29,10 @@ export interface RegisterRequest {
     acceptedTerms: boolean;
 }
 
+export interface RegisterResponse {
+    email: string;
+}
+
 export interface UsernameAvailability {
     available: boolean;
 }

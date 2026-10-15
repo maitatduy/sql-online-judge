@@ -34,6 +34,7 @@ public class SecurityConfig {
             throws Exception {
         return http.sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
@@ -47,6 +48,8 @@ public class SecurityConfig {
                                 requests.requestMatchers(PUBLIC_PATHS)
                                         .permitAll()
                                         .requestMatchers(HttpMethod.GET, "/api/users/availability")
+                                        .permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/auth/register")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

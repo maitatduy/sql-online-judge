@@ -1,3 +1,11 @@
+spring:
+  mail:
+    host: localhost
+    port: 1025
+
 sqljudge:
   jwt:
     generate-ephemeral-key: true
+  email:
+    from: no-reply@sqljudge.test
+    frontend-url: http://localhost:3000
