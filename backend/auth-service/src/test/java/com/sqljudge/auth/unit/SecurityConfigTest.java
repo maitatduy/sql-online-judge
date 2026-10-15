@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.nimbusds.jose.jwk.RSAKey;
 import com.sqljudge.auth.config.JwtKeyConfig;
 import com.sqljudge.auth.config.SecurityConfig;
+import com.sqljudge.auth.controller.JwksController;
 import com.sqljudge.common.config.CommonAutoConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest
+@WebMvcTest(JwksController.class)
 @Import({SecurityConfig.class, JwtKeyConfig.class})
 @ImportAutoConfiguration(CommonAutoConfiguration.class)
 @TestPropertySource(properties = "sqljudge.jwt.generate-ephemeral-key=true")
