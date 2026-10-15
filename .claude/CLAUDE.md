@@ -173,7 +173,8 @@ Tra nhanh trong `.claude/references/`:
 ## Lệnh thường dùng
 
 ```bash
-docker compose -f infra/docker-compose.dev.yml up -d   # MySQL, Kafka, Redis, sandbox
+cp infra/.env.example infra/.env                       # lần đầu, rồi đổi mật khẩu
+docker compose -f infra/docker-compose.dev.yml up -d   # MySQL, Redis, Mailpit (UI http://localhost:8025)
 ./mvnw spring-boot:run | ./mvnw test | ./mvnw verify    # trong backend/<service>
 npm run dev | npm run format | npm run lint && npm run typecheck | npm run test | npm run test:e2e   # trong frontend/
 ```
