@@ -5,7 +5,7 @@
 ## Bí mật
 - [ ] 🔴 Không có bí mật trong repo (`git log -p | grep -iE "secret|password|api_key"` sạch; dùng gitleaks trong CI).
 - [ ] 🔴 Không biến bí mật nào mang tiền tố `NEXT_PUBLIC_`.
-- [ ] `.env.example` đầy đủ, giá trị giả.
+- [ ] `.env.example` đủ tên mọi biến, không chứa giá trị thật.
 - [ ] JWT key, khoá LLM, mật khẩu DB lấy từ biến môi trường trên server.
 
 ## Máy chấm (đối chiếu `judge-sandbox.md`)
@@ -24,7 +24,7 @@
 ## Phân quyền
 - [ ] Mọi endpoint có `@PreAuthorize` (rà bằng grep các `@*Mapping` không có annotation đi kèm).
 - [ ] Đã thử IDOR: đổi id xem code bài nộp người khác, sửa bài viết người khác, xem contest riêng tư.
-- [ ] `/admin`, `/studio` chặn ở cả middleware Next.js và API.
+- [ ] `/admin`, `/studio` chặn ở API bằng `@PreAuthorize` (rào chắn thật); khung `AdminShell` ở client chỉ để không render và không gọi API admin cho người thiếu quyền.
 - [ ] Đề contest không trả về trước giờ bắt đầu (giờ server).
 
 ## Đầu vào và nội dung
@@ -43,7 +43,8 @@
 - [ ] CSP, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options` đặt ở gateway/Next.js.
 - [ ] CORS chỉ origin frontend.
 - [ ] Rate limit tại gateway cho đăng nhập, nộp bài, chạy thử, AI.
-- [ ] Swagger UI, actuator, Kafka UI không mở ra Internet.
+- [ ] Swagger UI chỉ bật ở profile `dev`; actuator nằm trên cổng quản trị riêng; Kafka UI không mở ra Internet.
+- [ ] Production không bật profile `dev`; `application.yml` không đặt `spring.profiles.default`.
 - [ ] Container chạy user không phải root; image có tag cố định.
 
 ## Phụ thuộc

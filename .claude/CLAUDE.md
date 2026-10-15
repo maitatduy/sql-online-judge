@@ -4,7 +4,7 @@
 
 SQL Judge là nền tảng học SQL có máy chấm tự động - online judge, contest, cộng đồng và trợ lý AI. Dự án dùng Claude làm agent phát triển với quy trình rõ ràng, các agent chuyên trách và bộ quy tắc code bắt buộc.
 
-- **Backend:** Java 21, Spring Boot 3 microservices, MySQL 8 - mỗi service một database, Kafka, Redis.
+- **Backend:** Java 17, Spring Boot 3 microservices, MySQL 8 - mỗi service một database, Kafka, Redis.
 - **Frontend:** một app Next.js 15 (App Router) cho cả site, workspace làm bài và trang admin.
 - **Máy chấm:** `judge-worker` chạy SQL người dùng trong sandbox PostgreSQL 16 / MySQL 8 / SQLite 3 tách biệt hoàn toàn.
 - **Thiết kế giao diện:** canvas https://claude.ai/artifact/S8V1RwGzroBVtYrCi1HYhZ - mỗi màn hình có mã (6.1 → 6.18, A1 → A16), dùng mã này khi trao đổi.
@@ -173,9 +173,11 @@ Tra nhanh trong `.claude/references/`:
 ## Lệnh thường dùng
 
 ```bash
-docker compose -f infra/docker-compose.dev.yml up -d   # MySQL, Kafka, Redis, sandbox
-./mvnw spring-boot:run | ./mvnw test | ./mvnw verify    # trong backend/<service>
-npm run dev | npm run format | npm run lint && npm run typecheck | npm run test | npm run test:e2e   # trong frontend/
+cp infra/.env.example infra/.env                       # lần đầu, rồi điền đủ mọi biến
+docker compose -f infra/docker-compose.dev.yml up -d   # MySQL, Redis, Mailpit (UI http://localhost:<MAILPIT_UI_PORT>)
+./mvnw verify | ./mvnw spotless:apply                  # trong backend/, mọi module; integration test cần Docker
+./mvnw install -DskipTests && ./mvnw -pl auth-service spring-boot:run   # profile dev; chạy từ IDE thì đặt SPRING_PROFILES_ACTIVE=dev
+npm run dev | npm run format | npm run lint && npm run typecheck | npm run test | npm run test:coverage   # trong frontend/
 ```
 
 Nếu lệnh thật trong repo khác danh sách này, tin repo và cập nhật lại mục này.

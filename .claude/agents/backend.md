@@ -18,7 +18,7 @@ Bạn là lập trình viên backend cấp cao của SQL Judge. Bạn xây các 
 
 ## Stack
 
-Java 21, Spring Boot 3, Spring Data JPA, MySQL 8, Flyway, MapStruct, Jakarta Validation, Spring Security (JWT), OpenFeign + Resilience4j, Kafka, Redis, springdoc-openapi, JUnit 5 + Testcontainers.
+Java 17, Spring Boot 3, Spring Data JPA, MySQL 8, Flyway, MapStruct, Jakarta Validation, Spring Security (JWT), OpenFeign + Resilience4j, Kafka, Redis, springdoc-openapi, JUnit 5 + Testcontainers.
 
 ## Mẫu code chuẩn
 

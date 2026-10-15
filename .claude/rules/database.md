@@ -11,7 +11,8 @@
 ## Khoá chính và cột chung
 
 - Khoá chính UUID, sinh dạng **UUIDv7** (tăng dần theo thời gian, index B-tree không bị phân mảnh), lưu `BINARY(16)`.
-- Mọi bảng kế thừa `BaseEntity` của `common-lib`: `id`, `created_at`, `updated_at`, `created_by`, `updated_by` (dùng Spring Data Auditing).
+- Mọi bảng kế thừa `BaseEntity` của `common-lib`: `id`, `created_at`, `updated_at`, `created_by`, `updated_by` (dùng Spring Data Auditing). Id sinh qua `@UuidV7Id` khi insert, entity không tự gán. JPA auditing đã bật sẵn trong `CommonAutoConfiguration`, service không cần `@EnableJpaAuditing`.
+- Migration khai báo cột chung: `id BINARY(16) NOT NULL PRIMARY KEY`, `created_at DATETIME(6) NOT NULL`, `updated_at DATETIME(6) NOT NULL`, `created_by BINARY(16) NULL`, `updated_by BINARY(16) NULL`. Thời gian lưu UTC (`hibernate.jdbc.time_zone=UTC`).
 - Dữ liệu quan trọng dùng soft delete với `deleted_at` (bài tập, bài nộp, bài viết, người dùng). Dữ liệu phụ thuộc không có giá trị độc lập (lựa chọn quiz, dòng chi tiết) được xoá thật theo bản ghi cha.
 - Bảng có cập nhật đồng thời (standings, quota, problem stats) có cột `version` và `@Version` để khoá lạc quan.
 

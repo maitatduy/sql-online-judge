@@ -1,0 +1,11 @@
+package com.sqljudge.common.error;
+
+public enum ErrorCode {
+    VALIDATION_FAILED,
+    MALFORMED_REQUEST,
+    UNAUTHORIZED,
+    ACCESS_DENIED,
+    RESOURCE_NOT_FOUND,
+    METHOD_NOT_ALLOWED,
+    INTERNAL_ERROR
+}

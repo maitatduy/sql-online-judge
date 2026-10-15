@@ -73,7 +73,7 @@ Mọi khoá cache phải có TTL. Không lưu dữ liệu chỉ tồn tại tron
 - UPPER_SNAKE, tiền tố theo nhóm: `MYSQL_`, `KAFKA_`, `REDIS_`, `JWT_`, `OAUTH_GITHUB_`, `LLM_`, `SANDBOX_`.
 - Ví dụ: `MYSQL_HOST`, `KAFKA_BOOTSTRAP_SERVERS`, `JWT_ACCESS_TTL_MINUTES`, `SANDBOX_PG_URL`, `LLM_API_KEY`.
 - Frontend: chỉ biến không bí mật mới có tiền tố `NEXT_PUBLIC_` (`NEXT_PUBLIC_API_URL`). Không bao giờ đặt khoá bí mật vào biến `NEXT_PUBLIC_`.
-- Mọi biến mới phải thêm vào `.env.example` với giá trị giả và một dòng chú thích.
+- Mọi biến mới phải thêm tên vào `.env.example`, để trống giá trị. Sau khi sao chép thành `.env` phải điền đủ mọi biến, kể cả cổng: biến rỗng không dùng được giá trị mặc định của Spring.
 
 ## Metric Prometheus
 

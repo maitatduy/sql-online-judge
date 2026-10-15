@@ -81,7 +81,7 @@ Nộp bài trả **202** cùng `submissionId`; verdict đến qua SSE hoặc `GE
 
 ## Đặt tên trường
 
-- JSON dùng camelCase. Enum dùng UPPER_SNAKE (`MEDIUM`, `LEARNER`, `POSTGRESQL`). Riêng verdict dùng mã ngắn `AC`, `WA`, `OM`, `TLE`, `RE`, `FS`, `SE` như CLAUDE.md mục 6.
+- JSON dùng camelCase. Enum dùng UPPER_SNAKE (`MEDIUM`, `LEARNER`, `POSTGRESQL`). Riêng verdict dùng mã ngắn `AC`, `WA`, `OM`, `TLE`, `RE`, `FS`, `SE` như mục "Từ vựng miền nghiệp vụ" trong CLAUDE.md.
 - Thời gian: chuỗi ISO-8601 UTC (`2026-10-11T12:30:00Z`). Frontend tự đổi sang giờ Việt Nam.
 - Thời lượng: số nguyên kèm đơn vị trong tên (`runtimeMs`, `durationMinutes`).
 - Id: UUID dạng chuỗi. URL công khai cho bài, khoá học, contest dùng `slug`.
@@ -106,5 +106,5 @@ Nộp bài trả **202** cùng `submissionId`; verdict đến qua SSE hoặc `GE
 
 ## Tài liệu
 
-- Mọi endpoint có chú thích springdoc (`@Operation`, `@ApiResponse`), xem tại `/swagger-ui` của từng service (tắt ở production).
-- Thay đổi phá vỡ hợp đồng (đổi tên trường, đổi kiểu) phải cập nhật frontend plan và báo rõ trong PR.
+- Mọi endpoint có chú thích springdoc (`@Operation`, `@ApiResponse`), xem tại `/swagger-ui.html` của từng service. Swagger chỉ bật ở profile `dev`.
+- Thay đổi phá vỡ hợp đồng (đổi tên trường, đổi kiểu) phải cập nhật kiểu trong `frontend/src/features/*/types.ts` và handler MSW trong `src/mocks/`, và báo rõ trong PR.

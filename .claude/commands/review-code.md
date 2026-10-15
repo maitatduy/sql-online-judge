@@ -13,8 +13,8 @@ Phạm vi: **$ARGUMENTS** (để trống = thay đổi chưa commit và commit t
 4. Chạy kiểm tra tự động của phần bị chạm:
 
 ```bash
-./mvnw verify
-npm run lint && npm run typecheck && npm run test
+cd backend && ./mvnw -pl <service> -am verify
+cd frontend && npm run lint && npm run typecheck && npm run test
 ```
 
 ## Danh sách kiểm tra nhanh
@@ -28,7 +28,7 @@ npm run lint && npm run typecheck && npm run test
 | Máy chấm | Đối chiếu mục 🔴 trong `judge-sandbox.md` |
 | DB | Migration mới (không sửa cũ), index cho cột lọc, không N+1 |
 | API | Đúng `api-conventions.md`, có OpenAPI annotation, mã trạng thái đúng |
-| Frontend | Đủ 4 trạng thái, token đúng DESIGN.md, truy cập bằng bàn phím |
+| Frontend | Đủ 4 trạng thái, token đúng `design-system.md`, truy cập bằng bàn phím |
 
 ## Kết quả
 

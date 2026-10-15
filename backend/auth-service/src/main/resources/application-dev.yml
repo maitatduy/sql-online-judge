@@ -1,0 +1,18 @@
+spring:
+  config:
+    import: optional:file:../../infra/.env[.properties]
+  datasource:
+    url: jdbc:mysql://localhost:${MYSQL_PORT}/sqljudge_auth
+    username: sqljudge_auth
+    password: ${MYSQL_AUTH_PASSWORD}
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

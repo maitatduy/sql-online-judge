@@ -1,6 +1,6 @@
 # Tech stack - danh sách công nghệ đã chốt
 
-> Chỉ dùng công nghệ trong file này. Muốn thêm thư viện hoặc công nghệ mới: nêu lý do, phương án thay thế, rồi **hỏi người dùng trước**. Nếu được duyệt, ghi một ADR vào `docs/adr/`.
+> Chỉ dùng công nghệ trong file này. Muốn thêm thư viện hoặc công nghệ mới: nêu lý do, phương án thay thế, rồi **hỏi người dùng trước**. Nếu được duyệt, ghi lý do vào mô tả PR.
 
 ---
 
@@ -8,7 +8,7 @@
 
 | Tầng | Chọn | Không dùng |
 |---|---|---|
-| Ngôn ngữ backend | Java 21 (LTS) | Kotlin, Node.js cho backend |
+| Ngôn ngữ backend | Java 17 (LTS) | Kotlin, Node.js cho backend |
 | Framework | Spring Boot 3.x | Quarkus, Micronaut |
 | Hạ tầng microservice | Spring Cloud Gateway, Eureka, Config Server | Service mesh (chưa cần) |
 | Bảo mật | Spring Security, JWT (access + refresh), OAuth2 Client (GitHub, Google) | Session server-side |
@@ -25,7 +25,7 @@
 | Parse SQL | JSqlParser (lọc câu lệnh, chuẩn hoá) | Regex |
 | Tài liệu API | springdoc-openapi (OpenAPI 3) | Chỉ có Postman collection |
 | Frontend | Next.js 15 App Router, React 19, TypeScript strict | Vite SPA riêng cho admin, JavaScript thuần |
-| Style | Tailwind CSS v4 + token từ `docs/DESIGN.md` | CSS-in-JS runtime, MUI |
+| Style | Tailwind CSS v4 + token theo `design-system.md` | CSS-in-JS runtime, MUI |
 | Component | shadcn/ui (Radix) | Chakra, Ant Design |
 | Editor SQL | Monaco Editor (`@monaco-editor/react`) | CodeMirror (trừ khi có lý do) |
 | Server state | TanStack Query | SWR, fetch rải rác trong component |
@@ -74,7 +74,7 @@ Không tự tạo service mới. Nếu một tính năng không khớp service n
 
 ### Dependency tối thiểu mỗi service
 
-`spring-boot-starter-web`, `-validation`, `-data-jpa`, `-security`, `-actuator`, `mysql-connector-j`, `flyway-core` + `flyway-mysql`, `mapstruct`, `lombok` (chỉ `@Getter/@Setter/@Builder/@RequiredArgsConstructor`, không `@Data` trên entity), `springdoc-openapi-starter-webmvc-ui`, `micrometer-registry-prometheus`, `common-lib` nội bộ.
+`spring-boot-starter-web`, `-validation`, `-data-jpa`, `-security`, `-actuator`, `mysql-connector-j`, `flyway-core` + `flyway-mysql`, `mapstruct` (thêm khi có mapper đầu tiên, version đã quản lý ở parent POM), `lombok` (chỉ các annotation liệt kê trong `code-style.md`, không `@Data` trên entity), `springdoc-openapi-starter-webmvc-ui`, `micrometer-registry-prometheus`, `common-lib` nội bộ.
 
 ---
 
@@ -100,4 +100,4 @@ Không tự tạo service mới. Nếu một tính năng không khớp service n
 1. Kiểm tra thư viện đã có làm được chưa.
 2. Kiểm tra license (MIT, Apache 2.0, BSD), mức bảo trì (commit trong 6 tháng), số lỗ hổng đã biết.
 3. Frontend: kiểm tra kích thước bundle; thư viện lớn hơn 30 KB gzip cần lý do.
-4. Hỏi người dùng, ghi ADR nếu được duyệt.
+4. Hỏi người dùng, ghi lý do vào mô tả PR nếu được duyệt.
