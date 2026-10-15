@@ -17,6 +17,7 @@
 
     <modules>
         <module>common-lib</module>
+        <module>auth-service</module>
     </modules>
 
     <properties>
