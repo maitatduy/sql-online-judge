@@ -1,5 +1,6 @@
 package com.sqljudge.auth.config;
 
+import com.sqljudge.common.security.JwtCurrentUserConverter;
 import com.sqljudge.common.web.RestAccessDeniedHandler;
 import com.sqljudge.common.web.RestAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +21,8 @@ public class SecurityConfig {
         "/actuator/prometheus",
         "/v3/api-docs/**",
         "/swagger-ui/**",
-        "/swagger-ui.html"
+        "/swagger-ui.html",
+        "/internal/jwks"
     };
 
     @Bean
@@ -45,6 +47,14 @@ public class SecurityConfig {
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())
+                .oauth2ResourceServer(
+                        resourceServer ->
+                                resourceServer
+                                        .authenticationEntryPoint(authenticationEntryPoint)
+                                        .jwt(
+                                                jwt ->
+                                                        jwt.jwtAuthenticationConverter(
+                                                                new JwtCurrentUserConverter())))
                 .build();
     }
 }

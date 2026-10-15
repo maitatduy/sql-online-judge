@@ -1,0 +1,3 @@
+sqljudge:
+  jwt:
+    generate-ephemeral-key: true

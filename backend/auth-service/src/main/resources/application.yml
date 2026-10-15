@@ -29,6 +29,11 @@ management:
         enabled: true
       show-details: never
 
+sqljudge:
+  jwt:
+    private-key-path: ${JWT_PRIVATE_KEY_PATH:}
+    generate-ephemeral-key: false
+
 springdoc:
   api-docs:
     enabled: false

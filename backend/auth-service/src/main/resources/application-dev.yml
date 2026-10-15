@@ -11,6 +11,10 @@ management:
     health:
       show-details: always
 
+sqljudge:
+  jwt:
+    generate-ephemeral-key: true
+
 springdoc:
   api-docs:
     enabled: true
