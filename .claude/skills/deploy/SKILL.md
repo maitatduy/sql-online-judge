@@ -11,6 +11,8 @@ Môi trường và phạm vi: **$ARGUMENTS**
 
 Quy trình đầy đủ (CI/CD, cấu trúc VPS, docker compose, rollback): xem [deploy.md](deploy.md).
 
+Repo hiện chưa có Dockerfile, `infra/docker-compose.prod.yml` và workflow trong `.github/workflows/`. Thiếu thứ nào thì dừng, báo người dùng và đề nghị dựng phần đó trước, không deploy tay theo cách khác.
+
 ## Bước 0: xác nhận
 
 - Production: hỏi người dùng xác nhận rõ ràng trước khi làm bất cứ bước nào có tác dụng.
@@ -28,18 +30,18 @@ Production chỉ deploy từ tag `vX.Y.Z` trên `main`.
 ## Bước 2: kiểm tra
 
 ```bash
-cd backend && ./mvnw verify
-cd frontend && npm run lint && npm run typecheck && npm run test
+(cd backend && ./mvnw verify)
+(cd frontend && npm run format:check && npm run lint && npm run typecheck && npm run test)
 ```
 
 CI trên GitHub phải xanh cho commit sẽ deploy. Không bỏ qua test.
 
 ## Bước 3: build và đẩy image
 
-Thường do workflow `deploy.yml` làm khi push tag. Chạy tay chỉ khi CI lỗi hạ tầng:
+Thường do workflow `deploy.yml` làm khi push tag. Chạy tay chỉ khi CI lỗi hạ tầng. Build context là `backend/` vì service cần parent POM và `common-lib`:
 
 ```bash
-docker build -t ghcr.io/<org>/sqljudge-<service>:<tag> backend/<service>
+docker build -f backend/<service>/Dockerfile -t ghcr.io/<org>/sqljudge-<service>:<tag> backend
 docker push ghcr.io/<org>/sqljudge-<service>:<tag>
 ```
 

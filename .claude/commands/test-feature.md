@@ -44,10 +44,11 @@ Xác định trước: đây là **tính năng mới** hay **bug**?
 ## Chạy
 
 ```bash
-./mvnw test -Dtest=ResultComparatorTest      # một class
-./mvnw verify                                 # đầy đủ + coverage
-npm run test -- src/features/workspace        # một thư mục
-npm run test:e2e -- e2e/submit-flow.spec.ts
+cd backend && ./mvnw -pl judge-worker -am test -Dtest=ResultComparatorTest -Dsurefire.failIfNoSpecifiedTests=false
+cd backend && ./mvnw verify                   # mọi module, kèm Spotless và JaCoCo
+cd frontend && npm run test -- src/features/workspace
+cd frontend && npm run test:coverage
+cd frontend && npx playwright test e2e/submit-flow.spec.ts   # khi đã cài Playwright
 ```
 
 ## Checklist

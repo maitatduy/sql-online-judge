@@ -28,7 +28,7 @@ Lỗi: **$ARGUMENTS**
 Lỗi ảnh hưởng dữ liệu đã có (verdict sai, điểm contest sai) → đề xuất thêm bước chấm lại hoặc migration sửa dữ liệu, chờ người dùng duyệt.
 
 ## 5. Kiểm tra
-- `./mvnw verify` / `npm run lint && npm run typecheck && npm run test`.
+- `cd backend && ./mvnw verify` / `cd frontend && npm run lint && npm run typecheck && npm run test`.
 - Kiểm tra lại đúng kịch bản trong báo cáo.
 
 ## 6. Commit

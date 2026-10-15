@@ -1,23 +1,25 @@
 ---
-description: Lập kế hoạch cho một tính năng từ file IDEA - backend plan, frontend plan và danh sách task theo lát cắt dọc
-argument-hint: <đường dẫn file docs/ideas/...-idea.md>
+description: Lập kế hoạch cho một tính năng từ đặc tả đã duyệt - backend plan, frontend plan và danh sách task theo lát cắt dọc
+argument-hint: <tên tính năng đã có đặc tả trong cuộc trò chuyện>
 ---
 
 # /plan-feature - Lập kế hoạch và chia việc
 
-File đặc tả: **$ARGUMENTS**
+Tính năng: **$ARGUMENTS**
 
-Không có file IDEA → dừng, đề nghị chạy `/spec` trước.
+Chưa có đặc tả được duyệt trong cuộc trò chuyện → dừng, đề nghị chạy `/spec` trước.
+
+Mọi kế hoạch trình bày trong cuộc trò chuyện để người dùng duyệt, không ghi ra file trong repo.
 
 ## Giai đoạn 1: phân tích (chỉ đọc)
 
-- Đọc file IDEA, `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, rule `tech-stack.md`, `api-conventions.md`, `database.md`.
+- Đọc đặc tả, rule `tech-stack.md`, `system-design.md`, `design-system.md`, `api-conventions.md`, `database.md`.
 - Rà code hiện có: service nào sở hữu dữ liệu, entity/endpoint/component nào dùng lại được.
 - Liệt kê rủi ro (đặc biệt: máy chấm, đồng thời trong contest, phân quyền).
 
 ## Giai đoạn 2: backend plan
 
-Tạo `docs/backend-plans/<module>-plan.md` theo `system-design.md`, `database.md`, `api-conventions.md`, `naming-conventions.md` (chạm máy chấm → thêm `judge-sandbox.md`):
+Trình bày backend plan theo `system-design.md`, `database.md`, `api-conventions.md`, `naming-conventions.md` (chạm máy chấm → thêm `judge-sandbox.md`):
 
 ```markdown
 # Backend plan - <module>
@@ -46,7 +48,7 @@ Thiếu thông tin ảnh hưởng thiết kế (ai được xem, có tính đi�
 
 ## Giai đoạn 3: frontend plan
 
-Tạo `docs/frontend-plans/<module>-plan.md`:
+Trình bày frontend plan:
 
 ```markdown
 # Frontend plan - <module>
@@ -75,7 +77,7 @@ Tạo `docs/frontend-plans/<module>-plan.md`:
 
 Mỗi task là một hành vi hoàn chỉnh (migration → API → giao diện → test) chạy được và demo được. Ưu tiên theo thứ tự: đường chính trước, rủi ro cao trước, hợp đồng API trước.
 
-Lưu `docs/tasks/<module>-todo.md`:
+Trình bày danh sách task:
 
 ```markdown
 # TODO - <module>

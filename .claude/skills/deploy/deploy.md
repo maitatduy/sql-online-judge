@@ -24,14 +24,14 @@ Giai đoạn đầu: staging và production mỗi môi trường một VPS. Sand
 ## 1. Môi trường dev
 
 ```bash
-git clone <repo> && cd sql-judge
-cp .env.example .env                          # điền giá trị dev
-docker compose -f infra/docker-compose.dev.yml up -d   # MySQL, Kafka, Redis, sandbox, Prometheus, Grafana
-cd backend/<service> && ./mvnw spring-boot:run
-cd frontend && npm install && npm run dev
+git clone <repo> && cd sql-online-judge
+cp infra/.env.example infra/.env                       # điền đủ mọi biến
+docker compose -f infra/docker-compose.dev.yml up -d   # MySQL, Redis, Mailpit; Kafka và sandbox thêm khi cần
+(cd backend && ./mvnw install -DskipTests && ./mvnw -pl auth-service spring-boot:run)
+(cd frontend && npm install && npm run dev)
 ```
 
-Seed dữ liệu dev: profile `dev` chạy `db/seed/` của từng service (người dùng mẫu, 20 bài, 1 khoá học, 1 contest).
+Seed dữ liệu dev (khi có): profile `dev` chạy `db/seed/` của từng service.
 
 ---
 
@@ -68,7 +68,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22', cache: npm, cache-dependency-path: frontend/package-lock.json }
       - run: npm ci
-      - run: npm run lint && npm run typecheck && npm run test -- --coverage
+      - run: npm run format:check && npm run lint && npm run typecheck && npm run test:coverage
       - run: npm audit --omit=dev --audit-level=high
   security:
     runs-on: ubuntu-latest
@@ -100,7 +100,8 @@ jobs:
         with: { registry: ghcr.io, username: ${{ github.actor }}, password: ${{ secrets.GITHUB_TOKEN }} }
       - uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.service == 'frontend' && 'frontend' || format('backend/{0}', matrix.service) }}
+          context: ${{ matrix.service == 'frontend' && 'frontend' || 'backend' }}
+          file: ${{ matrix.service == 'frontend' && 'frontend/Dockerfile' || format('backend/{0}/Dockerfile', matrix.service) }}
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/sqljudge-${{ matrix.service }}:${{ github.sha }}
@@ -131,7 +132,7 @@ Bí mật (`DEPLOY_HOST`, `DEPLOY_SSH_KEY`, khoá LLM, mật khẩu DB) lưu tro
 
 - Tên: `ghcr.io/<org>/sqljudge-<service>`.
 - Tag: SHA commit (bất biến, dùng để deploy/rollback), `main` (bản staging mới nhất), `vX.Y.Z` (bản phát hành).
-- Dockerfile backend: build nhiều tầng, chạy `eclipse-temurin:21-jre` với user không phải root, `JAVA_OPTS` giới hạn heap theo container.
+- Dockerfile backend: build nhiều tầng với context `backend/` (cần parent POM và `common-lib`), tầng build chạy `./mvnw -pl <service> -am package`, tầng chạy dùng `eclipse-temurin:17-jre` với user không phải root, `JAVA_OPTS` giới hạn heap theo container.
 - Dockerfile frontend: `output: 'standalone'` của Next.js, chạy `node:22-alpine` non-root.
 - Image sandbox (`infra/sandbox/`): build riêng, cấu hình quyền và giới hạn sẵn trong image.
 
@@ -178,7 +179,7 @@ services:
     networks: [app]
     env_file: .env
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health/readiness"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:<management-port>/actuator/health/readiness"]
 
   judge-worker:
     image: ghcr.io/<org>/sqljudge-judge-worker:${IMAGE_TAG}

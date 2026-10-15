@@ -56,7 +56,7 @@ Tránh cache stampede khi contest bắt đầu: làm nóng cache đề bài cont
 
 - Circuit breaker: mở khi ≥ 50% lỗi trong 20 lời gọi gần nhất, nửa mở sau 30 giây.
 - Retry: tối đa 3 lần, backoff mũ có jitter, chỉ cho lỗi tạm thời và thao tác idempotent.
-- Health check: `/actuator/health/liveness` và `/readiness`; readiness kiểm tra DB, Kafka, Redis (và sandbox pool với judge-worker).
+- Health check: `/actuator/health/liveness` và `/readiness` trên cổng quản trị riêng của service; readiness kiểm tra DB, Kafka, Redis (và sandbox pool với judge-worker).
 - Graceful shutdown: worker hoàn tất job đang chấm (tối đa 30 giây) trước khi dừng.
 
 ## Phân trang

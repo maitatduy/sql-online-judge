@@ -48,7 +48,7 @@
 
 ```bash
 npx @axe-core/cli http://localhost:3000/problems
-npx playwright test --project=a11y        # dùng @axe-core/playwright trong E2E
+npx playwright test --project=a11y        # khi đã cài Playwright và @axe-core/playwright
 ```
 
 Kiểm tra thủ công: chỉ dùng bàn phím cho luồng nộp bài; bật NVDA hoặc VoiceOver đọc trang bài tập và nghe thông báo verdict.

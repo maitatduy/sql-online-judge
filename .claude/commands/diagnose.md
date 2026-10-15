@@ -52,10 +52,13 @@ Chạy test của service, build, và kiểm tra lại đúng kịch bản ban �
 ## Công cụ
 
 ```bash
-docker compose -f infra/docker-compose.dev.yml logs -f judge-worker
-docker compose -f infra/docker-compose.dev.yml exec kafka kafka-consumer-groups --bootstrap-server localhost:9092 --describe --group judge-worker
-./mvnw test -Dtest=<TenTest> -Dsurefire.printSummary=true
+docker compose -f infra/docker-compose.dev.yml ps
+docker compose -f infra/docker-compose.dev.yml logs -f mysql redis mailpit
+cd backend && ./mvnw -pl <service> -am test -Dtest=<TenTest> -Dsurefire.failIfNoSpecifiedTests=false
+cd backend && ./mvnw clean verify            # lỗi "Unresolved compilation problem": IDE đã ghi đè target/
 ```
+
+Khi compose dev đã có Kafka và judge-worker: xem lag bằng `kafka-consumer-groups --describe --group judge-worker` trong container Kafka.
 
 Log tạm để gỡ lỗi phải xoá trước khi commit.
 

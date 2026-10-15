@@ -174,10 +174,10 @@ Tra nhanh trong `.claude/references/`:
 
 ```bash
 cp infra/.env.example infra/.env                       # lần đầu, rồi điền đủ mọi biến
-docker compose -f infra/docker-compose.dev.yml up -d   # MySQL, Redis, Mailpit (UI http://localhost:8025)
-./mvnw verify | ./mvnw spotless:apply                  # trong backend/, mọi module
+docker compose -f infra/docker-compose.dev.yml up -d   # MySQL, Redis, Mailpit (UI http://localhost:<MAILPIT_UI_PORT>)
+./mvnw verify | ./mvnw spotless:apply                  # trong backend/, mọi module; integration test cần Docker
 ./mvnw install -DskipTests && ./mvnw -pl auth-service spring-boot:run   # profile dev; chạy từ IDE thì đặt SPRING_PROFILES_ACTIVE=dev
-npm run dev | npm run format | npm run lint && npm run typecheck | npm run test | npm run test:e2e   # trong frontend/
+npm run dev | npm run format | npm run lint && npm run typecheck | npm run test | npm run test:coverage   # trong frontend/
 ```
 
 Nếu lệnh thật trong repo khác danh sách này, tin repo và cập nhật lại mục này.

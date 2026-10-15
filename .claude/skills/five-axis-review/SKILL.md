@@ -9,7 +9,7 @@ description: Khung review code 5 trục (đúng, dễ đọc, kiến trúc, bả
 
 ## Quy trình
 
-1. **Hiểu bối cảnh**: task trong `docs/tasks/`, plan liên quan, mã màn hình nếu là giao diện.
+1. **Hiểu bối cảnh**: task và plan đã duyệt (trong cuộc trò chuyện hoặc mô tả PR), mã màn hình nếu là giao diện.
 2. **Đọc test trước**: test nói lên ý định; thiếu test là phát hiện đầu tiên.
 3. **Đọc code** theo 5 trục.
 4. **Phân loại** phát hiện theo mức độ.

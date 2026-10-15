@@ -27,12 +27,12 @@ Nhánh sống ngắn (≤ 3 ngày). Tính năng lớn chia lát cắt dọc nh�
 | `fix` | Sửa lỗi |
 | `refactor` | Đổi cấu trúc, không đổi hành vi |
 | `test` | Chỉ thêm/sửa test |
-| `docs` | `docs/`, `.claude/`, README |
+| `docs` | `.claude/`, README |
 | `chore` | Build, dependency, cấu hình |
 | `perf` | Cải thiện hiệu năng |
 | `ci` | GitHub Actions |
 
-Không dùng scope trong ngoặc (`feat(web): …`). Giữ message ngắn gọn; ưu tiên ít commit, mỗi commit một việc trọn vẹn.
+Không dùng scope trong ngoặc (`feat(web): …`). Giữ message ngắn gọn; ưu tiên ít commit, mỗi commit một việc trọn vẹn. Không thêm dòng `Co-Authored-By` của Claude.
 
 Ví dụ:
 
@@ -51,7 +51,7 @@ Trước khi commit: `git status`, không stage `.env*` (trừ `.env.example`), 
 
 - Tiêu đề theo định dạng commit. Mô tả gồm: làm gì, vì sao, cách kiểm tra, ảnh chụp nếu đổi giao diện (kèm mã màn hình, ví dụ "6.6 Workspace").
 - Dưới ~400 dòng thay đổi (không tính file sinh tự động). Lớn hơn thì tách.
-- CI bắt buộc xanh: build, lint, test, coverage, kiểm tra bảo mật phụ thuộc.
+- CI bắt buộc xanh: build, lint, test, coverage, kiểm tra bảo mật phụ thuộc. Khi chưa có workflow CI, tự chạy `cd backend && ./mvnw verify` và `cd frontend && npm run format:check && npm run lint && npm run typecheck && npm run test` rồi ghi kết quả vào mô tả PR.
 - Thay đổi chạm `judge-worker`, `security` hoặc migration cần review kỹ trục bảo mật (`/review-code`).
 - Merge bằng **squash**; xoá nhánh sau khi merge.
 

@@ -3,24 +3,24 @@
 ## Toàn repo
 
 ```
-sql-judge/
-├── .claude/                 # cấu hình Claude (CLAUDE.md, rules, agents, commands, skills)
-├── docs/                   # tài liệu dự án
-│   ├── ARCHITECTURE.md  DESIGN.md  FEATURES_DONE.md
-│   ├── ideas/  backend-plans/  frontend-plans/  design-briefs/  tasks/  adr/
+sql-online-judge/
+├── .claude/                 # cấu hình Claude (CLAUDE.md, rules, agents, commands, skills, references)
 ├── backend/
-│   ├── pom.xml              # parent POM, quản lý version chung
+│   ├── pom.xml  mvnw  .mvn/ # parent POM (Java 17, Spring Boot 3), Maven wrapper - chạy mọi lệnh Maven ở đây
 │   ├── common-lib/
-│   ├── api-gateway/  discovery-server/  config-server/
-│   └── <service>/           # auth, problem, learning, submission, judge-worker,
-│                            # contest, community, ai, notification
+│   ├── auth-service/
+│   └── <service>/           # sẽ thêm: api-gateway, discovery-server, config-server, problem, learning,
+│                            # submission, judge-worker, contest, community, ai, notification
 ├── frontend/
 ├── infra/
-│   ├── docker-compose.dev.yml  docker-compose.prod.yml
-│   ├── sandbox/             # Dockerfile + cấu hình các DB sandbox
-│   └── monitoring/          # prometheus.yml, dashboard Grafana, rule cảnh báo
-└── .github/workflows/
+│   ├── docker-compose.dev.yml  .env.example   # MySQL, Redis, Mailpit
+│   ├── mysql/init/          # tạo database + user riêng cho từng service
+│   ├── sandbox/             # sẽ thêm: Dockerfile + cấu hình các DB sandbox
+│   └── monitoring/          # sẽ thêm: prometheus.yml, dashboard Grafana, rule cảnh báo
+└── .github/workflows/       # sẽ thêm: CI và deploy
 ```
+
+Không tạo thư mục tài liệu (`docs/`…) trong repo. Đặc tả, kế hoạch, quyết định kiến trúc trình bày trong cuộc trò chuyện và tóm tắt vào mô tả PR.
 
 ---
 
@@ -44,7 +44,8 @@ backend/problem-service/
     │   ├── event/            # payload Kafka, producer, consumer
     │   └── exception/        # exception riêng của service (nếu common-lib chưa có)
     ├── main/resources/
-    │   ├── application.yml
+    │   ├── application.yml   # cấu hình an toàn, không bật profile nào mặc định
+    │   ├── application-dev.yml   # đọc infra/.env, bật Swagger
     │   └── db/migration/     # V1__init.sql, V2__...
     └── test/java/com/sqljudge/problem/
         ├── unit/             # test service, mapper, logic thuần
@@ -79,7 +80,18 @@ Logic so khớp (`compare/`) phải là code thuần, không phụ thuộc DB, �
 
 ### `common-lib`
 
-Chỉ chứa thứ thật sự dùng chung: `ApiError`, `BaseEntity` (id, audit), `ErrorCode`, các exception gốc, `CurrentUser`, cấu hình Jackson. Không đưa entity hay logic nghiệp vụ của service vào đây.
+Chỉ chứa thứ thật sự dùng chung. Package `com.sqljudge.common`:
+
+| Package | Nội dung |
+|---|---|
+| `error` | `ApiError`, `ErrorCode`, `FieldViolation` |
+| `exception` | `AppException` và các lớp con 404, 409, 422, 403, 429, 503 |
+| `web` | `GlobalExceptionHandler`, entry point 401 và handler 403 trả `ApiError` |
+| `persistence` | `BaseEntity` (id UUIDv7 `BINARY(16)` qua `@UuidV7Id`, cột audit), `UuidV7` |
+| `security` | `CurrentUser`, `Role`, `SecurityUtils` |
+| `config` | `CommonAutoConfiguration`: tự đăng ký các bean trên, `Clock` UTC và JPA auditing |
+
+Service chỉ cần thêm dependency `common-lib`, không khai báo lại các bean này. Không đưa entity hay logic nghiệp vụ của service vào đây.
 
 ---
 
@@ -104,10 +116,13 @@ frontend/src/
 │   ├── components/
 │   ├── hooks/                # useXxxQuery, useXxxMutation (TanStack Query)
 │   ├── api.ts                # gọi api-client
+│   ├── schemas.ts            # zod cho form
 │   └── types.ts
-├── lib/                      # api-client.ts, auth.ts, query-client.ts, utils.ts
-├── stores/                   # Zustand (ít, có lý do)
-└── styles/globals.css        # @theme với token từ DESIGN.md
+├── lib/                      # api-client.ts, query-client.ts, current-user.ts, format.ts, utils.ts
+├── mocks/                    # MSW: handler và fixture cho API giả khi dev và khi test
+├── test/                     # tiện ích test dùng chung (render có provider…)
+├── stores/                   # Zustand - chưa có, chỉ thêm khi thật cần
+└── styles/globals.css        # @theme với token theo design-system.md
 ```
 
 ### Quy tắc import

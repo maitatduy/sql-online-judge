@@ -20,7 +20,7 @@ Giai đoạn đầu chạy gọn trên một VPS: Prometheus + Grafana + Loki tr
 
 ## Metric (Micrometer → Prometheus)
 
-Mọi service bật `/actuator/prometheus` (chỉ mở trong mạng nội bộ). Ngoài metric mặc định của Spring (HTTP, JVM, HikariCP, Kafka), thêm:
+Mọi service bật `/actuator/prometheus` trên cổng quản trị riêng (`management.server.port`, ví dụ `auth-service` là 9081), không publish ra ngoài và gateway không định tuyến tới. Cổng API không phục vụ `/actuator`. Ngoài metric mặc định của Spring (HTTP, JVM, HikariCP, Kafka), thêm:
 
 | Metric | Loại | Nhãn |
 |---|---|---|

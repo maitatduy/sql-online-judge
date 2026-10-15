@@ -25,7 +25,7 @@
 | Parse SQL | JSqlParser (lọc câu lệnh, chuẩn hoá) | Regex |
 | Tài liệu API | springdoc-openapi (OpenAPI 3) | Chỉ có Postman collection |
 | Frontend | Next.js 15 App Router, React 19, TypeScript strict | Vite SPA riêng cho admin, JavaScript thuần |
-| Style | Tailwind CSS v4 + token từ `docs/DESIGN.md` | CSS-in-JS runtime, MUI |
+| Style | Tailwind CSS v4 + token theo `design-system.md` | CSS-in-JS runtime, MUI |
 | Component | shadcn/ui (Radix) | Chakra, Ant Design |
 | Editor SQL | Monaco Editor (`@monaco-editor/react`) | CodeMirror (trừ khi có lý do) |
 | Server state | TanStack Query | SWR, fetch rải rác trong component |
@@ -74,7 +74,7 @@ Không tự tạo service mới. Nếu một tính năng không khớp service n
 
 ### Dependency tối thiểu mỗi service
 
-`spring-boot-starter-web`, `-validation`, `-data-jpa`, `-security`, `-actuator`, `mysql-connector-j`, `flyway-core` + `flyway-mysql`, `mapstruct`, `lombok` (chỉ `@Getter/@Setter/@Builder/@RequiredArgsConstructor`, không `@Data` trên entity), `springdoc-openapi-starter-webmvc-ui`, `micrometer-registry-prometheus`, `common-lib` nội bộ.
+`spring-boot-starter-web`, `-validation`, `-data-jpa`, `-security`, `-actuator`, `mysql-connector-j`, `flyway-core` + `flyway-mysql`, `mapstruct` (thêm khi có mapper đầu tiên, version đã quản lý ở parent POM), `lombok` (chỉ các annotation liệt kê trong `code-style.md`, không `@Data` trên entity), `springdoc-openapi-starter-webmvc-ui`, `micrometer-registry-prometheus`, `common-lib` nội bộ.
 
 ---
 

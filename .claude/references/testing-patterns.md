@@ -41,7 +41,7 @@ static Stream<Arguments> cases() {
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @Testcontainers
-class SubmissionRepositoryIT {
+class SubmissionRepositoryTest {
     @Container @ServiceConnection
     static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.4");
 
@@ -120,7 +120,7 @@ test('thí sinh không dùng được AI khi đang thi', async ({ page }) => {
 
 - Java: `method_condition_expected` + `@DisplayName` tiếng Việt.
 - TS: `it('hiện … khi …')`.
-- File: `XxxTest.java` (unit), `XxxIT.java` (integration), `xxx.test.tsx`, `xxx.spec.ts` (E2E).
+- File: `XxxTest.java` cho cả unit (package `unit`) và integration (package `integration`) - Surefire chỉ chạy `*Test`, chưa cấu hình Failsafe cho `*IT`; `xxx.test.tsx`, `xxx.spec.ts` (E2E).
 
 ## Không nên
 

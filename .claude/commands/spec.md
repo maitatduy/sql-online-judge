@@ -1,5 +1,5 @@
 ---
-description: Viết đặc tả (IDEA) cho một tính năng trước khi code - hỏi rõ yêu cầu rồi lưu vào docs/ideas/
+description: Viết đặc tả cho một tính năng trước khi code - hỏi rõ yêu cầu rồi trình bày trong cuộc trò chuyện để người dùng duyệt
 argument-hint: <tên tính năng hoặc mô tả ngắn>
 ---
 
@@ -9,8 +9,8 @@ Tính năng cần đặc tả: **$ARGUMENTS**
 
 ## Bước 1: nạp ngữ cảnh
 
-- Đọc `docs/ARCHITECTURE.md`, `docs/FEATURES_DONE.md`, và các file trong `docs/ideas/` để tránh trùng hoặc mâu thuẫn.
-- Tìm màn hình liên quan trong canvas (mã 6.x / A.x) - ghi trong `docs/DESIGN.md`.
+- Đọc `CLAUDE.md`, rule `tech-stack.md`, `system-design.md`, `git log` và code hiện có để biết tính năng nào đã làm, tránh trùng hoặc mâu thuẫn.
+- Tìm màn hình liên quan trong canvas thiết kế (mã 6.x / A.x, link trong `CLAUDE.md`).
 
 ## Bước 2: hỏi những gì còn thiếu
 
@@ -22,7 +22,9 @@ Chỉ hỏi điều chưa rõ, tối đa 5 câu một lượt, ưu tiên câu �
 - **Máy chấm**: tính năng có chạy SQL người dùng không? Dialect nào? Có dùng testcase ẩn không?
 - **AI**: AI có tham gia không, bị khoá khi nào?
 
-## Bước 3: viết file `docs/ideas/<module>-idea.md`
+## Bước 3: trình bày đặc tả trong cuộc trò chuyện
+
+Không ghi ra file trong repo.
 
 ```markdown
 # <Tên tính năng>
@@ -54,7 +56,7 @@ Chỉ hỏi điều chưa rõ, tối đa 5 câu một lượt, ưu tiên câu �
 
 Tóm tắt trong 3–5 dòng cho người dùng, liệt kê câu hỏi còn mở. Khi được đồng ý, gợi ý bước tiếp theo:
 
-> Tiếp theo: `/plan-feature docs/ideas/<module>-idea.md`
+> Tiếp theo: `/plan-feature <tên tính năng>`
 
 ## Không làm
 

@@ -24,7 +24,7 @@
 - [ ] Workspace: gõ trong editor không làm render lại panel kết quả và panel đề (tách state, `memo`).
 - [ ] SSE cập nhật bảng xếp hạng được gộp theo nhịp, không render lại cả bảng mỗi sự kiện.
 - [ ] Không import cả thư viện cho một hàm (`date-fns/format` thay vì toàn bộ).
-- [ ] Phân tích bundle: `ANALYZE=true npm run build`.
+- [ ] Phân tích bundle: `ANALYZE=true npm run build` (cần cài `@next/bundle-analyzer` trước; không chạy `npm run build` khi `npm run dev` đang chạy vì build ghi đè `.next`).
 
 ## Backend
 
@@ -53,7 +53,7 @@ npx lighthouse http://localhost:3000/problems --view
 ANALYZE=true npm run build
 
 # Backend
-k6 run infra/load/contest-submit.js          # mô phỏng 2.000 thí sinh
+k6 run infra/load/contest-submit.js          # mô phỏng 2.000 thí sinh - kịch bản chưa có, viết khi làm contest
 EXPLAIN ANALYZE SELECT …;                     # trong MySQL
 ```
 

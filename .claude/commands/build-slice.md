@@ -1,6 +1,6 @@
 ---
 description: Thi công một task theo lát cắt dọc bằng TDD - database, API, giao diện, test - giữ hệ thống luôn chạy được
-argument-hint: <mã task, ví dụ T3, hoặc đường dẫn file todo>
+argument-hint: <mã task trong danh sách của /plan-feature, ví dụ T3>
 ---
 
 # /build-slice - Thi công từng lát cắt
@@ -9,13 +9,13 @@ Task: **$ARGUMENTS**
 
 ## Điều kiện
 
-- Có `docs/tasks/<module>-todo.md` và task này còn chưa xong. Không có → đề nghị `/plan-feature`.
+- Task có trong danh sách task đã duyệt (đầu ra của `/plan-feature` trong cuộc trò chuyện) và còn chưa xong. Không có → đề nghị `/plan-feature`.
 - Các task phụ thuộc đã xong.
 
 ## Với mỗi task
 
 ### 1. Nạp ngữ cảnh
-Đọc mô tả task, backend plan, frontend plan, design brief liên quan. Đọc code sẽ bị chạm.
+Đọc mô tả task, backend plan, frontend plan, design brief liên quan trong cuộc trò chuyện. Đọc code sẽ bị chạm.
 
 ### 2. Viết test trước (RED)
 Theo skill `tdd`: viết test cho tiêu chí "Xong khi" của task, chạy và xác nhận đỏ đúng lý do.
@@ -23,7 +23,7 @@ Theo skill `tdd`: viết test cho tiêu chí "Xong khi" của task, chạy và x
 ### 3. Thi công tối thiểu (GREEN), theo thứ tự
 1. **Dữ liệu** - migration Flyway `V<n>__...sql`, entity kế thừa `BaseEntity`, repository. Theo `database.md`.
 2. **API** - DTO (`record` + validation), mapper MapStruct, service (`@Transactional`, event qua outbox), controller mỏng có `@PreAuthorize`. Theo `api-conventions.md`, `error-handling.md`, `security.md`.
-3. **Giao diện** - trang App Router (Server Component mặc định), component trong `features/<module>/`, hook TanStack Query, form react-hook-form + zod, chỉ dùng token trong `docs/DESIGN.md`, đủ 4 trạng thái tải/trống/lỗi/không quyền. Theo `project-structure.md`, `code-style.md`.
+3. **Giao diện** - trang App Router (Server Component mặc định), component trong `features/<module>/`, hook TanStack Query, form react-hook-form + zod, chỉ dùng token trong `design-system.md` / `src/styles/globals.css`, đủ 4 trạng thái tải/trống/lỗi/không quyền. Theo `project-structure.md`, `code-style.md`.
 
 Bỏ qua tầng nào task không cần.
 
@@ -34,14 +34,13 @@ Chỉ viết đủ để test xanh. Chạm vào chấm bài → đối chiếu `
 
 ### 5. Kiểm tra
 ```bash
-./mvnw verify                                   # service bị chạm
-npm run lint && npm run typecheck && npm run test   # nếu chạm frontend
+cd backend && ./mvnw -pl <service> -am verify         # service bị chạm
+cd frontend && npm run lint && npm run typecheck && npm run test   # nếu chạm frontend
 ```
 
 ### 6. Đánh dấu và báo cáo
-- Tick task trong file todo.
+- Báo task đã xong trong cuộc trò chuyện.
 - Báo người dùng: file đã tạo/sửa, test đã thêm, cách tự kiểm tra (URL, màn hình).
-- Task cuối của module xong → thêm một mục vào đầu `docs/FEATURES_DONE.md` (ngày, tên tính năng, tóm tắt dưới 50 từ, việc còn lại).
 - Gợi ý commit lát cắt này theo `git-workflow.md`; không tự push.
 
 ## Quy tắc
