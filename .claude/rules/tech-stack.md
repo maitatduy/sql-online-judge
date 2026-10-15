@@ -1,6 +1,6 @@
 # Tech stack - danh sách công nghệ đã chốt
 
-> Chỉ dùng công nghệ trong file này. Muốn thêm thư viện hoặc công nghệ mới: nêu lý do, phương án thay thế, rồi **hỏi người dùng trước**. Nếu được duyệt, ghi một ADR vào `docs/adr/`.
+> Chỉ dùng công nghệ trong file này. Muốn thêm thư viện hoặc công nghệ mới: nêu lý do, phương án thay thế, rồi **hỏi người dùng trước**. Nếu được duyệt, ghi lý do vào mô tả PR.
 
 ---
 
@@ -100,4 +100,4 @@ Không tự tạo service mới. Nếu một tính năng không khớp service n
 1. Kiểm tra thư viện đã có làm được chưa.
 2. Kiểm tra license (MIT, Apache 2.0, BSD), mức bảo trì (commit trong 6 tháng), số lỗ hổng đã biết.
 3. Frontend: kiểm tra kích thước bundle; thư viện lớn hơn 30 KB gzip cần lý do.
-4. Hỏi người dùng, ghi ADR nếu được duyệt.
+4. Hỏi người dùng, ghi lý do vào mô tả PR nếu được duyệt.

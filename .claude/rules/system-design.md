@@ -66,4 +66,4 @@ Tránh cache stampede khi contest bắt đầu: làm nóng cache đề bài cont
 
 ## Ghi quyết định
 
-Quyết định kiến trúc mới (thêm service, đổi cách lưu trữ, đổi giao thức) ghi ADR vào `docs/adr/NNN-ten.md` theo mẫu trong agent `systems-architect`.
+Quyết định kiến trúc mới (thêm service, đổi cách lưu trữ, đổi giao thức) trình bày theo mẫu trong agent `systems-architect` để người dùng duyệt, rồi ghi tóm tắt vào mô tả PR. Không tạo thư mục tài liệu trong repo.
