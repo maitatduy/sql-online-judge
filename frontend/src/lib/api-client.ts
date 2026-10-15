@@ -1,3 +1,5 @@
+import { getAccessToken } from "./auth-session";
+
 const NETWORK_ERROR_MESSAGE = "Không kết nối được máy chủ, vui lòng thử lại";
 const UNEXPECTED_ERROR_MESSAGE = "Đã có lỗi xảy ra, vui lòng thử lại sau";
 const UNAUTHENTICATED_STATUS = 401;
@@ -131,6 +133,18 @@ function isJsonBody(body: unknown): boolean {
     return body !== undefined && !(body instanceof FormData);
 }
 
+function buildHeaders(body: unknown): HeadersInit {
+    const headers: Record<string, string> = {};
+    if (isJsonBody(body)) {
+        headers["Content-Type"] = "application/json";
+    }
+    const accessToken = getAccessToken();
+    if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return headers;
+}
+
 async function request<T>(
     method: string,
     path: string,
@@ -141,7 +155,7 @@ async function request<T>(
         method,
         credentials: "include",
         signal: options.signal,
-        headers: isJsonBody(body) ? { "Content-Type": "application/json" } : undefined,
+        headers: buildHeaders(body),
         body: isJsonBody(body) ? JSON.stringify(body) : (body as FormData | undefined),
     });
     if (!response.ok) {

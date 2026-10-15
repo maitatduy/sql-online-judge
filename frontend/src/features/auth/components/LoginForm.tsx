@@ -4,13 +4,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { ApiRequestError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
 
 import { useApiFormErrors } from "../hooks/useApiFormErrors";
 import { useLogin } from "../hooks/useLogin";
+import { useResendVerification } from "../hooks/useResendVerification";
+import { savePendingVerificationEmail } from "../pending-verification";
 import { loginSchema, type LoginFormValues } from "../schemas";
 
 import { FormAlert } from "./FormAlert";
@@ -22,6 +26,7 @@ interface LoginFormProps {
 }
 
 const API_FIELDS = ["email", "password"] as const;
+const EMAIL_NOT_VERIFIED = "EMAIL_NOT_VERIFIED";
 
 export function LoginForm({ nextPath }: LoginFormProps) {
     const router = useRouter();
@@ -36,19 +41,55 @@ export function LoginForm({ nextPath }: LoginFormProps) {
         defaultValues: { email: "", password: "", rememberMe: false },
     });
     const { formError, clearFormError, handleApiError } = useApiFormErrors(setError, API_FIELDS);
+    const resendVerification = useResendVerification();
+    const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
     const isBusy = login.isPending || login.isSuccess;
 
     const submitLogin = (values: LoginFormValues) => {
         clearFormError();
+        setUnverifiedEmail(null);
         login.mutate(values, {
             onSuccess: () => router.push(nextPath),
-            onError: handleApiError,
+            onError: (error) => {
+                if (error instanceof ApiRequestError && error.code === EMAIL_NOT_VERIFIED) {
+                    setUnverifiedEmail(values.email);
+                }
+                handleApiError(error);
+            },
         });
+    };
+
+    const handleResendVerification = (email: string) => {
+        resendVerification.mutate(
+            { email },
+            {
+                onSuccess: () => {
+                    savePendingVerificationEmail(email);
+                    router.push(ROUTES.verifyEmail);
+                },
+            },
+        );
     };
 
     return (
         <form noValidate onSubmit={handleSubmit(submitLogin)} className="flex flex-col gap-4">
-            {formError && <FormAlert message={formError} />}
+            {formError && (
+                <FormAlert
+                    message={formError}
+                    action={
+                        unverifiedEmail && (
+                            <button
+                                type="button"
+                                disabled={resendVerification.isPending}
+                                onClick={() => handleResendVerification(unverifiedEmail)}
+                                className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4 md:min-h-0"
+                            >
+                                Gửi lại mã xác thực
+                            </button>
+                        )
+                    }
+                />
+            )}
             <TextField
                 id="login-email"
                 label="Email"

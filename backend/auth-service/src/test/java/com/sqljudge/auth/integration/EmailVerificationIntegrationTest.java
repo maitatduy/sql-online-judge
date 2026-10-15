@@ -41,7 +41,7 @@ class EmailVerificationIntegrationTest extends MySqlContainerSupport {
         ResponseEntity<Map> first = confirm(Map.of("email", email, "code", code));
         ResponseEntity<Map> reused = confirm(Map.of("email", email, "code", code));
 
-        assertThat(first.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(first.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(isVerified("xac.thuc.ma")).isTrue();
         assertThat(reused.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
         assertThat(reused.getBody()).containsEntry("code", "TOKEN_INVALID_OR_EXPIRED");
@@ -57,7 +57,7 @@ class EmailVerificationIntegrationTest extends MySqlContainerSupport {
 
         ResponseEntity<Map> response = confirm(Map.of("token", token));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(isVerified("xac.thuc.link")).isTrue();
     }
 

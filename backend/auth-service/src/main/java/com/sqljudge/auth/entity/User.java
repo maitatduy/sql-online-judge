@@ -73,6 +73,18 @@ public class User extends BaseEntity {
     @Column(name = "version", nullable = false)
     private long version;
 
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerifiedAt != null;
+    }
+
+    public boolean isBannedAt(Instant now) {
+        return bannedAt != null && (bannedUntil == null || bannedUntil.isAfter(now));
+    }
+
     public boolean isAwaitingEmailVerification() {
         return emailVerifiedAt == null && deletedAt == null;
     }

@@ -10,13 +10,14 @@ import { ApiRequestError } from "@/lib/api-client";
 import { useApiFormErrors } from "../hooks/useApiFormErrors";
 import { useConfirmEmail } from "../hooks/useConfirmEmail";
 import { verificationCodeSchema, type VerificationCodeFormValues } from "../schemas";
+import type { AuthResponse } from "../types";
 
 import { FormAlert } from "./FormAlert";
 import { TextField } from "./TextField";
 
 interface VerificationCodeFormProps {
     email: string;
-    onVerified: () => void;
+    onVerified: (response: AuthResponse) => void;
 }
 
 const INVALID_CODE_ERROR = "TOKEN_INVALID_OR_EXPIRED";

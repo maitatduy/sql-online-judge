@@ -3,28 +3,36 @@ package com.sqljudge.auth.unit;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.sqljudge.auth.config.JwtKeyConfig;
 import com.sqljudge.auth.config.SecurityConfig;
 import com.sqljudge.auth.controller.EmailVerificationController;
+import com.sqljudge.auth.dto.response.AuthResponse;
+import com.sqljudge.auth.dto.response.AuthUserResponse;
 import com.sqljudge.auth.service.EmailVerificationService;
+import com.sqljudge.auth.service.SignInResult;
+import com.sqljudge.auth.service.SignInService;
 import com.sqljudge.common.config.CommonAutoConfiguration;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.BusinessRuleException;
+import com.sqljudge.common.security.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 @WebMvcTest(EmailVerificationController.class)
 @Import({SecurityConfig.class, JwtKeyConfig.class})
@@ -35,22 +43,44 @@ class EmailVerificationControllerTest {
     @Autowired private MockMvc mockMvc;
 
     @MockitoBean private EmailVerificationService emailVerificationService;
+    @MockitoBean private SignInService signInService;
 
-    @Test
-    @DisplayName("Khách xác thực bằng link: 204")
-    void confirm_withToken_returnsNoContent() throws Exception {
-        mockMvc.perform(confirm("{\"token\":\"abc\"}")).andExpect(status().isNoContent());
-
-        verify(emailVerificationService).confirmByToken("abc");
+    private static SignInResult signInResult() {
+        return new SignInResult(
+                new AuthResponse(
+                        "access-token",
+                        new AuthUserResponse(
+                                TestJwts.USER_ID, "minh.anh", "minh.anh@gmail.com", Role.LEARNER)),
+                "refresh-token",
+                false);
     }
 
     @Test
-    @DisplayName("Khách xác thực bằng email và mã 6 số: 204")
-    void confirm_withEmailAndCode_returnsNoContent() throws Exception {
-        mockMvc.perform(confirm("{\"email\":\"a@b.dev\",\"code\":\"482913\"}"))
-                .andExpect(status().isNoContent());
+    @DisplayName("Xác thực bằng link: tự đăng nhập (phiên không ghi nhớ), trả token và cookie")
+    void confirm_withToken_signsInWithSessionCookie() throws Exception {
+        when(emailVerificationService.confirmByToken("abc")).thenReturn(TestJwts.USER_ID);
+        when(signInService.signIn(TestJwts.USER_ID, false, "JUnit")).thenReturn(signInResult());
 
-        verify(emailVerificationService).confirmByCode("a@b.dev", "482913");
+        mockMvc.perform(confirm("{\"token\":\"abc\"}").header(HttpHeaders.USER_AGENT, "JUnit"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("access-token"))
+                .andExpect(jsonPath("$.user.username").value("minh.anh"))
+                .andExpect(cookie().value("sqljudge_refresh", "refresh-token"))
+                .andExpect(cookie().maxAge("sqljudge_refresh", -1));
+    }
+
+    @Test
+    @DisplayName("Xác thực bằng email và mã 6 số: tự đăng nhập")
+    void confirm_withEmailAndCode_signsIn() throws Exception {
+        when(emailVerificationService.confirmByCode("a@b.dev", "482913"))
+                .thenReturn(TestJwts.USER_ID);
+        when(signInService.signIn(TestJwts.USER_ID, false, "JUnit")).thenReturn(signInResult());
+
+        mockMvc.perform(
+                        confirm("{\"email\":\"a@b.dev\",\"code\":\"482913\"}")
+                                .header(HttpHeaders.USER_AGENT, "JUnit"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("access-token"));
     }
 
     @Test
@@ -105,13 +135,13 @@ class EmailVerificationControllerTest {
         verifyNoInteractions(emailVerificationService);
     }
 
-    private static RequestBuilder confirm(String body) {
+    private static MockHttpServletRequestBuilder confirm(String body) {
         return post("/api/auth/email-verification/confirm")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body);
     }
 
-    private static RequestBuilder resend(String body) {
+    private static MockHttpServletRequestBuilder resend(String body) {
         return post("/api/auth/email-verification")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body);

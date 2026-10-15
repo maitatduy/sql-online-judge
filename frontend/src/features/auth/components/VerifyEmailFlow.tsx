@@ -11,6 +11,7 @@ import { ROUTES } from "@/lib/routes";
 import { getFormErrorMessage } from "../form-errors";
 import { useConfirmEmail } from "../hooks/useConfirmEmail";
 import { readPendingVerificationEmail } from "../pending-verification";
+import type { AuthResponse } from "../types";
 
 import { RESEND_COOLDOWN_SECONDS, ResendCodeButton } from "./ResendCodeButton";
 import { VerificationCodeForm } from "./VerificationCodeForm";
@@ -32,14 +33,20 @@ const readOnServer = () => null;
 export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
     const email = useSyncExternalStore(subscribe, readPendingVerificationEmail, readOnServer);
     const [step, setStep] = useState<Step>("sent");
+    const [verifiedUsername, setVerifiedUsername] = useState<string | null>(null);
     const confirmLink = useConfirmEmail();
     const hasRequestedLink = useRef(false);
+
+    const handleVerified = ({ user }: AuthResponse) => {
+        setVerifiedUsername(user.username);
+        setStep("verified");
+    };
 
     const confirmToken = (linkToken: string) => {
         confirmLink.mutate(
             { token: linkToken },
             {
-                onSuccess: () => setStep("verified"),
+                onSuccess: handleVerified,
                 onError: (error) => {
                     if (error instanceof ApiRequestError && error.status === UNPROCESSABLE_STATUS) {
                         setStep("invalid");
@@ -63,10 +70,15 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
                 icon={CircleCheck}
                 tone="brand"
                 title="Email đã được xác thực"
-                description="Tài khoản của bạn đã sẵn sàng. Đăng nhập để bắt đầu học SQL."
+                description={
+                    <>
+                        Tài khoản <strong className="text-foreground">{verifiedUsername}</strong> đã
+                        sẵn sàng. Bắt đầu học SQL cùng máy chấm tự động.
+                    </>
+                }
             >
                 <Button asChild size="lg" className="h-12.5 text-[15px]">
-                    <Link href={ROUTES.login}>Đăng nhập để tiếp tục</Link>
+                    <Link href={ROUTES.home}>Tiếp tục</Link>
                 </Button>
             </VerifyEmailCard>
         );
@@ -138,7 +150,7 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
         >
             {email && (
                 <>
-                    <VerificationCodeForm email={email} onVerified={() => setStep("verified")} />
+                    <VerificationCodeForm email={email} onVerified={handleVerified} />
                     <ResendCodeButton email={email} cooldownSeconds={RESEND_COOLDOWN_SECONDS} />
                 </>
             )}

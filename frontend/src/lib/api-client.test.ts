@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { server } from "@/mocks/server";
 
 import { apiClient, ApiRequestError } from "./api-client";
+import { clearAccessToken, setAccessToken } from "./auth-session";
 
 async function captureError(request: Promise<unknown>): Promise<ApiRequestError> {
     try {
@@ -100,6 +101,23 @@ describe("apiClient", () => {
         server.use(http.post("*/api/logout", () => new HttpResponse(null, { status: 204 })));
 
         await expect(apiClient.post("/api/logout")).resolves.toBeUndefined();
+    });
+
+    it("gắn header Bearer khi đã có access token, không gắn khi chưa đăng nhập", async () => {
+        const authorizations: (string | null)[] = [];
+        server.use(
+            http.get("*/api/auth/me", ({ request }) => {
+                authorizations.push(request.headers.get("Authorization"));
+                return HttpResponse.json({});
+            }),
+        );
+
+        await apiClient.get("/api/auth/me");
+        setAccessToken("access-token");
+        await apiClient.get("/api/auth/me");
+        clearAccessToken();
+
+        expect(authorizations).toEqual([null, "Bearer access-token"]);
     });
 
     it("trả undefined khi response thành công không có body, ví dụ 202", async () => {

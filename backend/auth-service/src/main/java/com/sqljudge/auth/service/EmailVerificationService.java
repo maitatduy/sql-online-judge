@@ -11,6 +11,7 @@ import com.sqljudge.common.exception.BusinessRuleException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -48,18 +49,18 @@ public class EmailVerificationService {
     }
 
     @Transactional
-    public void confirmByToken(String token) {
+    public UUID confirmByToken(String token) {
         Instant now = clock.instant();
         EmailToken emailToken =
                 emailTokenRepository
                         .findByTokenHash(SecureTokens.sha256(token))
                         .filter(found -> found.getPurpose() == PURPOSE && found.isActiveAt(now))
                         .orElseThrow(EmailVerificationService::invalidToken);
-        markVerified(emailToken, now);
+        return markVerified(emailToken, now);
     }
 
     @Transactional(noRollbackFor = BusinessRuleException.class)
-    public void confirmByCode(String email, String code) {
+    public UUID confirmByCode(String email, String code) {
         Instant now = clock.instant();
         EmailToken emailToken =
                 emailTokenRepository
@@ -71,7 +72,7 @@ public class EmailVerificationService {
             emailToken.recordFailedAttempt(now, MAX_FAILED_ATTEMPTS);
             throw invalidToken();
         }
-        markVerified(emailToken, now);
+        return markVerified(emailToken, now);
     }
 
     @Transactional
@@ -96,9 +97,10 @@ public class EmailVerificationService {
                 .orElse(true);
     }
 
-    private static void markVerified(EmailToken emailToken, Instant now) {
+    private static UUID markVerified(EmailToken emailToken, Instant now) {
         emailToken.markUsed(now);
         emailToken.getUser().markEmailVerified(now);
+        return emailToken.getUser().getId();
     }
 
     private static BusinessRuleException invalidToken() {

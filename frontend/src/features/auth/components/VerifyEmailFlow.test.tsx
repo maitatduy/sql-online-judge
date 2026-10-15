@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { clearAccessToken, getAccessToken } from "@/lib/auth-session";
 import { server } from "@/mocks/server";
 import { renderWithProviders } from "@/test/render";
 
@@ -20,6 +21,7 @@ function submitCode(code: string) {
 describe("VerifyEmailFlow", () => {
     beforeEach(() => {
         sessionStorage.clear();
+        clearAccessToken();
         savePendingVerificationEmail(EMAIL);
     });
 
@@ -40,12 +42,15 @@ describe("VerifyEmailFlow", () => {
         );
     });
 
-    it("nhập đúng mã thì báo đã xác thực và dẫn tới đăng nhập", async () => {
+    it("nhập đúng mã thì đăng nhập luôn và cho tiếp tục vào trang chính", async () => {
         let receivedBody: unknown;
         server.use(
             http.post("*/api/auth/email-verification/confirm", async ({ request }) => {
                 receivedBody = await request.json();
-                return new HttpResponse(null, { status: 204 });
+                return HttpResponse.json({
+                    accessToken: "fresh-access-token",
+                    user: { id: "u1", username: "minh.anh", email: EMAIL, role: "LEARNER" },
+                });
             }),
         );
         renderWithProviders(<VerifyEmailFlow />);
@@ -56,10 +61,9 @@ describe("VerifyEmailFlow", () => {
             await screen.findByRole("heading", { level: 1, name: "Email đã được xác thực" }),
         ).toBeInTheDocument();
         expect(receivedBody).toEqual({ email: EMAIL, code: VALID_CODE });
-        expect(screen.getByRole("link", { name: "Đăng nhập để tiếp tục" })).toHaveAttribute(
-            "href",
-            "/login",
-        );
+        expect(screen.getByText("minh.anh")).toBeInTheDocument();
+        expect(getAccessToken()).toBe("fresh-access-token");
+        expect(screen.getByRole("link", { name: "Tiếp tục" })).toHaveAttribute("href", "/");
     });
 
     it("mã không đủ 6 chữ số thì báo lỗi và không gửi request", async () => {

@@ -25,6 +25,7 @@ const DEMO_ACCOUNTS: Record<string, CurrentUser> = {
     "admin@sqljudge.dev": ADMIN_SESSION_USER,
 };
 const LOCKED_EMAIL = "locked@sqljudge.dev";
+const UNVERIFIED_EMAIL = "unverified@sqljudge.dev";
 const TAKEN_USERNAME = "taken";
 const TAKEN_EMAIL = "taken@sqljudge.dev";
 const UNAVAILABLE_USERNAMES = [TAKEN_USERNAME, "admin", "demo"];
@@ -61,6 +62,13 @@ export const handlers: RequestHandler[] = [
                     "Retry-After": String(RETRY_AFTER_SECONDS),
                 },
             });
+        }
+        if (body.email === UNVERIFIED_EMAIL) {
+            return apiError(
+                403,
+                "EMAIL_NOT_VERIFIED",
+                "Email chưa được xác thực. Hãy nhập mã đã gửi tới email của bạn",
+            );
         }
         const demoUser = DEMO_ACCOUNTS[body.email];
         if (demoUser && body.password === DEMO_PASSWORD) {
@@ -106,7 +114,8 @@ export const handlers: RequestHandler[] = [
         if (!isValid) {
             return apiError(422, "TOKEN_INVALID_OR_EXPIRED", "Mã không hợp lệ hoặc đã hết hạn");
         }
-        return new HttpResponse(null, { status: 204 });
+        const email = "email" in body ? body.email : "verified@sqljudge.dev";
+        return HttpResponse.json(signIn(newSessionUser(email.split("@")[0]), email));
     }),
 
     http.post("*/api/auth/email-verification", async () => {

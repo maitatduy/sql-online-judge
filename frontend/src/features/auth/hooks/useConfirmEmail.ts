@@ -2,6 +2,9 @@ import { useMutation } from "@tanstack/react-query";
 
 import { authApi } from "../api";
 
+import { useCompleteSignIn } from "./useCompleteSignIn";
+
 export function useConfirmEmail() {
-    return useMutation({ mutationFn: authApi.confirmEmail });
+    const completeSignIn = useCompleteSignIn();
+    return useMutation({ mutationFn: authApi.confirmEmail, onSuccess: completeSignIn });
 }

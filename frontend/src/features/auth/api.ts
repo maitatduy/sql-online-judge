@@ -18,7 +18,7 @@ export const authApi = {
     register: (body: RegisterRequest) =>
         apiClient.post<RegisterResponse>("/api/auth/register", body),
     confirmEmail: (body: ConfirmEmailRequest) =>
-        apiClient.post<undefined>("/api/auth/email-verification/confirm", body),
+        apiClient.post<AuthResponse>("/api/auth/email-verification/confirm", body),
     resendVerification: (body: ResendVerificationRequest) =>
         apiClient.post<undefined>("/api/auth/email-verification", body),
     checkUsername: (username: string, signal?: AbortSignal) =>
