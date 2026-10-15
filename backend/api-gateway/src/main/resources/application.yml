@@ -5,6 +5,12 @@ server:
 spring:
   application:
     name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      timeout: 2s
   security:
     oauth2:
       resourceserver:
@@ -28,6 +34,22 @@ spring:
                 exposed-headers: Location,Retry-After
                 allow-credentials: true
                 max-age: 3600
+
+sqljudge:
+  rate-limit:
+    policies:
+      - name: login
+        path: /api/auth/login
+        limit: 10
+        window: 1m
+      - name: register
+        path: /api/auth/register
+        limit: 5
+        window: 1m
+      - name: email-verification
+        path: /api/auth/email-verification/**
+        limit: 10
+        window: 1m
 
 management:
   server:

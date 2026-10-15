@@ -24,7 +24,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class RegistrationIntegrationTest extends MySqlContainerSupport {
+class RegistrationIntegrationTest extends ContainerSupport {
 
     @Autowired private TestRestTemplate restTemplate;
     @Autowired private UserRepository userRepository;

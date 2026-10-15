@@ -16,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureObservability
 @ActiveProfiles("test")
-class AuthServiceApplicationTest extends MySqlContainerSupport {
+class AuthServiceApplicationTest extends ContainerSupport {
 
     @Autowired private TestRestTemplate restTemplate;
 

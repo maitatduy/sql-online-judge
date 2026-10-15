@@ -20,7 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ImportAutoConfiguration(CommonAutoConfiguration.class)
-class UserRepositoryTest extends MySqlContainerSupport {
+class UserRepositoryTest extends ContainerSupport {
 
     @Autowired private UserRepository userRepository;
 

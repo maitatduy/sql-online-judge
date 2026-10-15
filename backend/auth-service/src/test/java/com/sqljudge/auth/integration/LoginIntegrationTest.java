@@ -24,7 +24,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class LoginIntegrationTest extends MySqlContainerSupport {
+class LoginIntegrationTest extends ContainerSupport {
 
     private static final String PASSWORD = "matkhau-manh-2026";
 
@@ -103,6 +103,29 @@ class LoginIntegrationTest extends MySqlContainerSupport {
         assertThat(wrongPassword.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(wrongPassword.getBody()).containsEntry("code", "INVALID_CREDENTIALS");
         assertThat(wrongPassword.getHeaders().get(HttpHeaders.SET_COOKIE)).isNull();
+    }
+
+    @Test
+    @DisplayName(
+            "Sai 10 lần: lần sau bị 429 LOGIN_RATE_LIMITED kèm Retry-After, kể cả mật khẩu đúng")
+    void login_tenFailures_locksEmail() throws Exception {
+        String email = "bi.khoa@gmail.com";
+        String code = registerAndReadCode("bi.khoa", email);
+        restTemplate.postForEntity(
+                "/api/auth/email-verification/confirm",
+                Map.of("email", email, "code", code),
+                Map.class);
+        for (int attempt = 0; attempt < 10; attempt++) {
+            assertThat(login(email, "sai-mat-khau-roi", false).getStatusCode())
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
+        }
+
+        ResponseEntity<Map> locked = login(email, PASSWORD, false);
+
+        assertThat(locked.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+        assertThat(locked.getBody()).containsEntry("code", "LOGIN_RATE_LIMITED");
+        assertThat(Long.parseLong(locked.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)))
+                .isBetween(1L, 15L * 60);
     }
 
     private String registerAndReadCode(String username, String email) throws Exception {

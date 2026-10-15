@@ -20,7 +20,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class SessionIntegrationTest extends MySqlContainerSupport {
+class SessionIntegrationTest extends ContainerSupport {
 
     private static final String FRONTEND_ORIGIN = "http://localhost:3000";
 

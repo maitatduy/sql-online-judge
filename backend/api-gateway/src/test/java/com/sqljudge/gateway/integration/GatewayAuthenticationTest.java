@@ -8,22 +8,18 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class GatewayAuthenticationTest {
+class GatewayAuthenticationTest extends GatewayIntegrationSupport {
 
     private static final String FRONTEND_ORIGIN = "http://localhost:3000";
     private static final RSAKey SIGNING_KEY = TestJwts.newKey();
     private static final AuthServiceStub AUTH_SERVICE =
             AuthServiceStub.start(TestJwts.jwksOf(SIGNING_KEY), 200);
-
-    @Autowired private WebTestClient webTestClient;
 
     @DynamicPropertySource
     static void gatewayProperties(DynamicPropertyRegistry registry) {

@@ -13,12 +13,15 @@ import static org.mockito.Mockito.when;
 import com.sqljudge.auth.dto.request.LoginRequest;
 import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.repository.UserRepository;
+import com.sqljudge.auth.service.LoginAttemptLimiter;
 import com.sqljudge.auth.service.LoginService;
 import com.sqljudge.auth.service.SignInResult;
 import com.sqljudge.auth.service.SignInService;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.AppException;
+import com.sqljudge.common.exception.QuotaExceededException;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Optional;
@@ -45,6 +48,7 @@ class LoginServiceTest {
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private SignInService signInService;
     @Mock private SignInResult signInResult;
+    @Mock private LoginAttemptLimiter loginAttemptLimiter;
 
     private LoginService loginService;
     private User user;
@@ -56,6 +60,7 @@ class LoginServiceTest {
                         userRepository,
                         passwordEncoder,
                         signInService,
+                        loginAttemptLimiter,
                         Clock.fixed(NOW, ZoneOffset.UTC));
         user = new User();
         ReflectionTestUtils.setField(user, "id", UUID.randomUUID());
@@ -76,6 +81,42 @@ class LoginServiceTest {
                         new LoginRequest(" Minh.Anh@Gmail.com ", PASSWORD, true), USER_AGENT);
 
         assertThat(result).isSameAs(signInResult);
+        verify(loginAttemptLimiter).reset(EMAIL);
+    }
+
+    @Test
+    @DisplayName(
+            "Đang bị khoá vì sai nhiều lần: 429 LOGIN_RATE_LIMITED kèm thời gian chờ, không chạy"
+                    + " BCrypt")
+    void login_lockedEmail_rejectsBeforeCheckingPassword() {
+        when(loginAttemptLimiter.lockRemaining(EMAIL))
+                .thenReturn(Optional.of(Duration.ofSeconds(90)));
+
+        assertThatThrownBy(
+                        () ->
+                                loginService.login(
+                                        new LoginRequest(EMAIL, PASSWORD, false), USER_AGENT))
+                .isInstanceOf(QuotaExceededException.class)
+                .satisfies(
+                        exception -> {
+                            QuotaExceededException quota = (QuotaExceededException) exception;
+                            assertThat(quota.getCode()).isEqualTo(ErrorCode.LOGIN_RATE_LIMITED);
+                            assertThat(quota.retryAfterSeconds()).isEqualTo(90);
+                        });
+        verify(passwordEncoder, never()).matches(any(), any());
+        verify(userRepository, never()).findByEmail(any());
+    }
+
+    @Test
+    @DisplayName("Sai thông tin thì ghi nhận một lần sai cho email đó")
+    void login_invalidCredentials_recordsFailure() {
+        stubUser();
+        when(passwordEncoder.matches(PASSWORD, "hash")).thenReturn(false);
+
+        assertRejected(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_CREDENTIALS);
+
+        verify(loginAttemptLimiter).recordFailure(EMAIL);
+        verify(loginAttemptLimiter, never()).reset(any());
     }
 
     @Test

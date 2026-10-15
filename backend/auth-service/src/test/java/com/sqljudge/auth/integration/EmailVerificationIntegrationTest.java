@@ -18,7 +18,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class EmailVerificationIntegrationTest extends MySqlContainerSupport {
+class EmailVerificationIntegrationTest extends ContainerSupport {
 
     private static final String CONFIRM_PATH = "/api/auth/email-verification/confirm";
 

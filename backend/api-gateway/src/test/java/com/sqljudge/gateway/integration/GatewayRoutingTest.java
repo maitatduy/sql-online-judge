@@ -2,11 +2,11 @@ package com.sqljudge.gateway.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalManagementPort;
@@ -18,12 +18,10 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureObservability
-class GatewayRoutingTest {
+class GatewayRoutingTest extends GatewayIntegrationSupport {
 
     private static final String FRONTEND_ORIGIN = "http://localhost:3000";
     private static final AuthServiceStub AUTH_SERVICE = AuthServiceStub.start("{\"keys\":[]}", 401);
-
-    @Autowired private WebTestClient webTestClient;
 
     @LocalManagementPort private int managementPort;
 
@@ -138,6 +136,7 @@ class GatewayRoutingTest {
     @DisplayName("Metric Prometheus chỉ có ở cổng quản trị, không có ở cổng API")
     void prometheus_isServedOnlyOnManagementPort() {
         WebTestClient.bindToServer()
+                .responseTimeout(Duration.ofSeconds(30))
                 .baseUrl("http://localhost:" + managementPort)
                 .build()
                 .get()
