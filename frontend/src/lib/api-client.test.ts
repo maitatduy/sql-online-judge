@@ -102,6 +102,12 @@ describe("apiClient", () => {
         await expect(apiClient.post("/api/logout")).resolves.toBeUndefined();
     });
 
+    it("trả undefined khi response thành công không có body, ví dụ 202", async () => {
+        server.use(http.post("*/api/jobs", () => new HttpResponse(null, { status: 202 })));
+
+        await expect(apiClient.post("/api/jobs")).resolves.toBeUndefined();
+    });
+
     it("chuyển ApiError thành ApiRequestError có status, code, message, errors", async () => {
         server.use(
             http.post("*/api/auth/register", () =>

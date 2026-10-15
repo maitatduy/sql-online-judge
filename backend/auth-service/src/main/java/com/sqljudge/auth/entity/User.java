@@ -72,4 +72,14 @@ public class User extends BaseEntity {
     @Version
     @Column(name = "version", nullable = false)
     private long version;
+
+    public boolean isAwaitingEmailVerification() {
+        return emailVerifiedAt == null && deletedAt == null;
+    }
+
+    public void markEmailVerified(Instant now) {
+        if (emailVerifiedAt == null) {
+            emailVerifiedAt = now;
+        }
+    }
 }

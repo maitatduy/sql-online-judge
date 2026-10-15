@@ -147,10 +147,8 @@ async function request<T>(
     if (!response.ok) {
         throw await toRequestError(response);
     }
-    if (response.status === 204) {
-        return undefined as T;
-    }
-    return (await response.json()) as T;
+    const responseText = await response.text();
+    return (responseText ? JSON.parse(responseText) : undefined) as T;
 }
 
 export const apiClient = {

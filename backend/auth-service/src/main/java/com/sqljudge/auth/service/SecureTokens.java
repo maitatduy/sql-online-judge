@@ -25,6 +25,15 @@ public final class SecureTokens {
         return String.format("%06d", RANDOM.nextInt(CODE_BOUND));
     }
 
+    public static boolean matches(String rawValue, String expectedHash) {
+        if (expectedHash == null) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+                sha256(rawValue).getBytes(StandardCharsets.US_ASCII),
+                expectedHash.getBytes(StandardCharsets.US_ASCII));
+    }
+
     public static String sha256(String value) {
         try {
             byte[] digest =

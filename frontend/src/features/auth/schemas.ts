@@ -39,3 +39,12 @@ export const registerSchema = z.object({
 });
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
+
+export const verificationCodeSchema = z.object({
+    code: z
+        .string()
+        .trim()
+        .regex(/^\d{6}$/, "Mã xác thực gồm 6 chữ số"),
+});
+
+export type VerificationCodeFormValues = z.infer<typeof verificationCodeSchema>;

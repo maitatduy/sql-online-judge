@@ -33,6 +33,12 @@ export interface RegisterResponse {
     email: string;
 }
 
+export type ConfirmEmailRequest = { token: string } | { email: string; code: string };
+
+export interface ResendVerificationRequest {
+    email: string;
+}
+
 export interface UsernameAvailability {
     available: boolean;
 }

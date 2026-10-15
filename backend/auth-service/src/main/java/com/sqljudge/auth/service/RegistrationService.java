@@ -8,7 +8,6 @@ import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.ConflictException;
 import com.sqljudge.common.security.Role;
-import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,7 +26,7 @@ public class RegistrationService {
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
-        String email = request.email().trim().toLowerCase(Locale.ROOT);
+        String email = EmailAddresses.normalize(request.email());
         if (userRepository.existsByUsername(request.username())) {
             throw usernameTaken();
         }

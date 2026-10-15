@@ -55,4 +55,19 @@ public class EmailToken extends BaseEntity {
 
     @Column(name = "used_at")
     private Instant usedAt;
+
+    public boolean isActiveAt(Instant now) {
+        return usedAt == null && expiresAt.isAfter(now);
+    }
+
+    public void markUsed(Instant now) {
+        usedAt = now;
+    }
+
+    public void recordFailedAttempt(Instant now, int maxAttempts) {
+        failedAttempts++;
+        if (failedAttempts >= maxAttempts) {
+            expiresAt = now;
+        }
+    }
 }

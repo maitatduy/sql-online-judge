@@ -2,6 +2,7 @@ import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import type {
     AuthResponse,
+    ConfirmEmailRequest,
     LoginRequest,
     RegisterRequest,
     RegisterResponse,
@@ -29,6 +30,8 @@ const TAKEN_EMAIL = "taken@sqljudge.dev";
 const UNAVAILABLE_USERNAMES = [TAKEN_USERNAME, "admin", "demo"];
 const RETRY_AFTER_SECONDS = 30;
 const NEW_USER_ID = "0192f3a0-0000-7000-8000-000000000002";
+const VALID_CODE = "482913";
+const VALID_LINK_TOKEN = "valid-link-token";
 
 function newSessionUser(username: string): CurrentUser {
     return {
@@ -93,6 +96,22 @@ export const handlers: RequestHandler[] = [
             return apiError(409, "EMAIL_TAKEN", "Email đã được đăng ký");
         }
         return HttpResponse.json<RegisterResponse>({ email: body.email }, { status: 201 });
+    }),
+
+    http.post("*/api/auth/email-verification/confirm", async ({ request }) => {
+        await delay();
+        const body = (await request.json()) as ConfirmEmailRequest;
+        const isValid =
+            "token" in body ? body.token === VALID_LINK_TOKEN : body.code === VALID_CODE;
+        if (!isValid) {
+            return apiError(422, "TOKEN_INVALID_OR_EXPIRED", "Mã không hợp lệ hoặc đã hết hạn");
+        }
+        return new HttpResponse(null, { status: 204 });
+    }),
+
+    http.post("*/api/auth/email-verification", async () => {
+        await delay();
+        return new HttpResponse(null, { status: 202 });
     }),
 
     http.get("*/api/users/availability", async ({ request }) => {

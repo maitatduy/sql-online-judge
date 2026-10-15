@@ -49,7 +49,11 @@ public class SecurityConfig {
                                         .permitAll()
                                         .requestMatchers(HttpMethod.GET, "/api/users/availability")
                                         .permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/auth/register")
+                                        .requestMatchers(
+                                                HttpMethod.POST,
+                                                "/api/auth/register",
+                                                "/api/auth/email-verification",
+                                                "/api/auth/email-verification/confirm")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())
