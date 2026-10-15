@@ -8,7 +8,7 @@
 
 | Tầng | Chọn | Không dùng |
 |---|---|---|
-| Ngôn ngữ backend | Java 21 (LTS) | Kotlin, Node.js cho backend |
+| Ngôn ngữ backend | Java 17 (LTS) | Kotlin, Node.js cho backend |
 | Framework | Spring Boot 3.x | Quarkus, Micronaut |
 | Hạ tầng microservice | Spring Cloud Gateway, Eureka, Config Server | Service mesh (chưa cần) |
 | Bảo mật | Spring Security, JWT (access + refresh), OAuth2 Client (GitHub, Google) | Session server-side |

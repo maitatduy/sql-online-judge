@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: '21', cache: maven }
+        with: { distribution: temurin, java-version: '17', cache: maven }
       - run: ./mvnw -B -pl ${{ matrix.service }} -am verify
         working-directory: backend
   frontend:

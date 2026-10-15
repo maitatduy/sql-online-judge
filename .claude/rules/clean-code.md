@@ -68,7 +68,7 @@ if (contest.isRunningAt(now))
 
 ## Bất đồng bộ
 
-- Java: không `Thread.sleep` để chờ kết quả; dùng event, `CompletableFuture` có timeout, hoặc virtual thread cho I/O chặn trong worker.
+- Java: không `Thread.sleep` để chờ kết quả; dùng event hoặc `CompletableFuture` có timeout; I/O chặn trong worker chạy trên thread pool có giới hạn.
 - TypeScript: `async/await`, không trộn `.then()`; mọi Promise hoặc được `await`, hoặc được xử lý lỗi rõ ràng.
 
 ## Comment
