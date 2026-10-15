@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.Duration;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -64,4 +65,25 @@ public class UserSession extends BaseEntity {
 
     @Column(name = "revoked_at")
     private Instant revokedAt;
+
+    public boolean isActiveAt(Instant now) {
+        return revokedAt == null && expiresAt.isAfter(now);
+    }
+
+    public boolean wasRotatedWithin(Duration window, Instant now) {
+        return rotatedAt != null && !rotatedAt.plus(window).isBefore(now);
+    }
+
+    public void rotateTo(String newTokenHash, Instant now) {
+        previousTokenHash = tokenHash;
+        tokenHash = newTokenHash;
+        rotatedAt = now;
+        lastUsedAt = now;
+    }
+
+    public void revoke(Instant now) {
+        if (revokedAt == null) {
+            revokedAt = now;
+        }
+    }
 }

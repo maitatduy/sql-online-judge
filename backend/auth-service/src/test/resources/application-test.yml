@@ -6,6 +6,8 @@ spring:
 sqljudge:
   jwt:
     generate-ephemeral-key: true
+  security:
+    allowed-origins: http://localhost:3000
   email:
     from: no-reply@sqljudge.test
     frontend-url: http://localhost:3000

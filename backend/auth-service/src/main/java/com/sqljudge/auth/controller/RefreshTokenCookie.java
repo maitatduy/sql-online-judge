@@ -25,6 +25,16 @@ public final class RefreshTokenCookie {
         return builder.build();
     }
 
+    public static ResponseCookie cleared() {
+        return ResponseCookie.from(NAME, "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .path(PATH)
+                .maxAge(Duration.ZERO)
+                .build();
+    }
+
     static String headerFor(SignInResult result) {
         return of(result.refreshToken(), result.isPersistent()).toString();
     }

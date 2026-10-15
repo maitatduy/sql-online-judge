@@ -1,7 +1,6 @@
 package com.sqljudge.auth.service;
 
 import com.sqljudge.auth.dto.response.AuthResponse;
-import com.sqljudge.auth.dto.response.AuthUserResponse;
 import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.entity.UserSession;
 import com.sqljudge.auth.repository.UserRepository;
@@ -42,11 +41,7 @@ public class SignInService {
         user.setLastActiveAt(now);
         String refreshToken = SecureTokens.newToken();
         userSessionRepository.save(newSession(user, refreshToken, isPersistent, userAgent, now));
-        AuthResponse response =
-                new AuthResponse(
-                        accessTokenIssuer.issue(user),
-                        new AuthUserResponse(
-                                user.getId(), user.getUsername(), user.getEmail(), user.getRole()));
+        AuthResponse response = AuthResponses.of(user, accessTokenIssuer.issue(user));
         return new SignInResult(response, refreshToken, isPersistent);
     }
 

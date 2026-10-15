@@ -14,6 +14,7 @@ import { apiError } from "./api-error";
 import { profileHandlers } from "./profile-handlers";
 import {
     ADMIN_SESSION_USER,
+    clearMockSession,
     DEMO_SESSION_USER,
     readMockSession,
     writeMockSession,
@@ -75,6 +76,25 @@ export const handlers: RequestHandler[] = [
             return HttpResponse.json(signIn(demoUser, body.email));
         }
         return apiError(401, "INVALID_CREDENTIALS", "Email hoặc mật khẩu không đúng");
+    }),
+
+    http.post("*/api/auth/refresh", async () => {
+        await delay();
+        const currentUser = readMockSession();
+        if (!currentUser) {
+            return apiError(
+                401,
+                "INVALID_REFRESH_TOKEN",
+                "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại",
+            );
+        }
+        return HttpResponse.json(signIn(currentUser, `${currentUser.username}@sqljudge.dev`));
+    }),
+
+    http.post("*/api/auth/logout", async () => {
+        await delay();
+        clearMockSession();
+        return new HttpResponse(null, { status: 204 });
     }),
 
     http.get("*/api/auth/me", async () => {

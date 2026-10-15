@@ -27,7 +27,11 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(UserController.class)
 @Import({SecurityConfig.class, JwtKeyConfig.class})
 @ImportAutoConfiguration(CommonAutoConfiguration.class)
-@TestPropertySource(properties = "sqljudge.jwt.generate-ephemeral-key=true")
+@TestPropertySource(
+        properties = {
+            "sqljudge.jwt.generate-ephemeral-key=true",
+            "sqljudge.security.allowed-origins=http://localhost:3000"
+        })
 class UserControllerTest {
 
     @Autowired private MockMvc mockMvc;

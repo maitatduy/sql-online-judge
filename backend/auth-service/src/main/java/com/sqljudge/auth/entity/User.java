@@ -85,6 +85,10 @@ public class User extends BaseEntity {
         return bannedAt != null && (bannedUntil == null || bannedUntil.isAfter(now));
     }
 
+    public boolean canSignInAt(Instant now) {
+        return !isDeleted() && isEmailVerified() && !isBannedAt(now);
+    }
+
     public boolean isAwaitingEmailVerification() {
         return emailVerifiedAt == null && deletedAt == null;
     }

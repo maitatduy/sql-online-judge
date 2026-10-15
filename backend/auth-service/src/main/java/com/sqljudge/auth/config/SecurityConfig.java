@@ -1,8 +1,11 @@
 package com.sqljudge.auth.config;
 
 import com.sqljudge.common.security.JwtCurrentUserConverter;
+import com.sqljudge.common.web.ApiErrorWriter;
 import com.sqljudge.common.web.RestAccessDeniedHandler;
 import com.sqljudge.common.web.RestAuthenticationEntryPoint;
+import java.time.Clock;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,10 +13,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableMethodSecurity
+@EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityConfig {
 
     private static final String[] PUBLIC_PATHS = {
@@ -30,9 +35,15 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             RestAuthenticationEntryPoint authenticationEntryPoint,
-            RestAccessDeniedHandler accessDeniedHandler)
+            RestAccessDeniedHandler accessDeniedHandler,
+            SecurityProperties securityProperties,
+            ApiErrorWriter apiErrorWriter,
+            Clock clock)
             throws Exception {
-        return http.sessionManagement(
+        return http.addFilterBefore(
+                        new TrustedOriginFilter(securityProperties, apiErrorWriter, clock),
+                        BearerTokenAuthenticationFilter.class)
+                .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -53,6 +64,8 @@ public class SecurityConfig {
                                                 HttpMethod.POST,
                                                 "/api/auth/register",
                                                 "/api/auth/login",
+                                                "/api/auth/refresh",
+                                                "/api/auth/logout",
                                                 "/api/auth/email-verification",
                                                 "/api/auth/email-verification/confirm")
                                         .permitAll()
