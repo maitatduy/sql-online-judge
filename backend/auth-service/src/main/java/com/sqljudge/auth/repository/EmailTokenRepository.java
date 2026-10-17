@@ -33,4 +33,8 @@ public interface EmailTokenRepository extends JpaRepository<EmailToken, UUID> {
             @Param("user") User user,
             @Param("purpose") EmailTokenPurpose purpose,
             @Param("now") Instant now);
+
+    @Modifying
+    @Query("UPDATE EmailToken t SET t.usedAt = :now WHERE t.user = :user AND t.usedAt IS NULL")
+    int invalidateAllUnusedTokens(@Param("user") User user, @Param("now") Instant now);
 }

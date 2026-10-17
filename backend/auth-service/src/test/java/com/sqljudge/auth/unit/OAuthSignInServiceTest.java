@@ -12,8 +12,10 @@ import static org.mockito.Mockito.when;
 import com.sqljudge.auth.entity.OAuthAccount;
 import com.sqljudge.auth.entity.SignupProvider;
 import com.sqljudge.auth.entity.User;
+import com.sqljudge.auth.repository.EmailTokenRepository;
 import com.sqljudge.auth.repository.OAuthAccountRepository;
 import com.sqljudge.auth.repository.UserRepository;
+import com.sqljudge.auth.repository.UserSessionRepository;
 import com.sqljudge.auth.service.OAuthProfile;
 import com.sqljudge.auth.service.OAuthSignInService;
 import com.sqljudge.auth.service.SignInResult;
@@ -52,6 +54,8 @@ class OAuthSignInServiceTest {
 
     @Mock private OAuthAccountRepository oauthAccountRepository;
     @Mock private UserRepository userRepository;
+    @Mock private UserSessionRepository userSessionRepository;
+    @Mock private EmailTokenRepository emailTokenRepository;
     @Mock private UsernameGenerator usernameGenerator;
     @Mock private SignInService signInService;
     @Mock private SignInResult signInResult;
@@ -65,6 +69,8 @@ class OAuthSignInServiceTest {
                 new OAuthSignInService(
                         oauthAccountRepository,
                         userRepository,
+                        userSessionRepository,
+                        emailTokenRepository,
                         usernameGenerator,
                         signInService,
                         Clock.fixed(NOW, ZoneOffset.UTC));
@@ -90,16 +96,11 @@ class OAuthSignInServiceTest {
 
     @Test
     @DisplayName(
-            "Chưa liên kết nhưng trùng email đã verified: liên kết vào tài khoản có sẵn và xác thực"
-                    + " email")
-    void signIn_matchingVerifiedEmail_linksExistingUser() {
-        existingUser.setEmailVerifiedAt(null);
-        when(oauthAccountRepository.findByProviderAndProviderUserId(
-                        SignupProvider.GITHUB, "583231"))
-                .thenReturn(Optional.empty());
-        when(userRepository.findByEmail("minh.anh@gmail.com"))
-                .thenReturn(Optional.of(existingUser));
-        when(signInService.signIn(existingUser.getId(), true, USER_AGENT)).thenReturn(signInResult);
+            "Trùng email với user đã xác thực: liên kết, giữ nguyên mật khẩu và các phiên đang"
+                    + " có")
+    void signIn_matchingVerifiedUser_linksAndKeepsPassword() {
+        existingUser.setPasswordHash("hash-cua-chu-tai-khoan");
+        stubUnlinkedAccountWithExistingUser();
 
         service.signIn(VERIFIED_PROFILE, USER_AGENT);
 
@@ -107,7 +108,27 @@ class OAuthSignInServiceTest {
         assertThat(linked.getUser()).isSameAs(existingUser);
         assertThat(linked.getProvider()).isEqualTo(SignupProvider.GITHUB);
         assertThat(linked.getProviderUserId()).isEqualTo("583231");
+        assertThat(existingUser.getPasswordHash()).isEqualTo("hash-cua-chu-tai-khoan");
+        verify(userSessionRepository, never()).revokeAllActiveSessions(any(), any());
+        verify(emailTokenRepository, never()).invalidateAllUnusedTokens(any(), any());
+    }
+
+    @Test
+    @DisplayName(
+            "Trùng email với user chưa xác thực: xoá mật khẩu do người đăng ký trước đặt, thu hồi"
+                    + " phiên và token email, rồi xác thực email")
+    void signIn_matchingUnverifiedUser_discardsPreRegisteredCredentials() {
+        existingUser.setEmailVerifiedAt(null);
+        existingUser.setPasswordHash("hash-cua-ke-dang-ky-truoc");
+        stubUnlinkedAccountWithExistingUser();
+
+        service.signIn(VERIFIED_PROFILE, USER_AGENT);
+
+        assertThat(savedAccount().getUser()).isSameAs(existingUser);
+        assertThat(existingUser.getPasswordHash()).isNull();
         assertThat(existingUser.getEmailVerifiedAt()).isEqualTo(NOW);
+        verify(userSessionRepository).revokeAllActiveSessions(existingUser, NOW);
+        verify(emailTokenRepository).invalidateAllUnusedTokens(existingUser, NOW);
     }
 
     @Test
@@ -174,6 +195,15 @@ class OAuthSignInServiceTest {
         existingUser.setBannedAt(null);
         existingUser.setDeletedAt(NOW.minusSeconds(60));
         assertRejected(VERIFIED_PROFILE, ErrorCode.OAUTH_LOGIN_FAILED);
+    }
+
+    private void stubUnlinkedAccountWithExistingUser() {
+        when(oauthAccountRepository.findByProviderAndProviderUserId(
+                        SignupProvider.GITHUB, "583231"))
+                .thenReturn(Optional.empty());
+        when(userRepository.findByEmail("minh.anh@gmail.com"))
+                .thenReturn(Optional.of(existingUser));
+        when(signInService.signIn(existingUser.getId(), true, USER_AGENT)).thenReturn(signInResult);
     }
 
     private OAuthAccount savedAccount() {

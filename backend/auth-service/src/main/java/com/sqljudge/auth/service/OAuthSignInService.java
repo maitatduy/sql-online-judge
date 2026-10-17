@@ -2,8 +2,10 @@ package com.sqljudge.auth.service;
 
 import com.sqljudge.auth.entity.OAuthAccount;
 import com.sqljudge.auth.entity.User;
+import com.sqljudge.auth.repository.EmailTokenRepository;
 import com.sqljudge.auth.repository.OAuthAccountRepository;
 import com.sqljudge.auth.repository.UserRepository;
+import com.sqljudge.auth.repository.UserSessionRepository;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.ForbiddenException;
 import com.sqljudge.common.security.Role;
@@ -21,6 +23,8 @@ public class OAuthSignInService {
 
     private final OAuthAccountRepository oauthAccountRepository;
     private final UserRepository userRepository;
+    private final UserSessionRepository userSessionRepository;
+    private final EmailTokenRepository emailTokenRepository;
     private final UsernameGenerator usernameGenerator;
     private final SignInService signInService;
     private final Clock clock;
@@ -47,6 +51,9 @@ public class OAuthSignInService {
         String email = EmailAddresses.normalize(profile.email());
         User user =
                 userRepository.findByEmail(email).orElseGet(() -> createUser(profile, email, now));
+        if (!user.isEmailVerified()) {
+            discardUnverifiedCredentials(user, now);
+        }
         user.markEmailVerified(now);
         OAuthAccount account = new OAuthAccount();
         account.setUser(user);
@@ -54,6 +61,12 @@ public class OAuthSignInService {
         account.setProviderUserId(profile.providerUserId());
         oauthAccountRepository.save(account);
         return user;
+    }
+
+    private void discardUnverifiedCredentials(User user, Instant now) {
+        user.setPasswordHash(null);
+        userSessionRepository.revokeAllActiveSessions(user, now);
+        emailTokenRepository.invalidateAllUnusedTokens(user, now);
     }
 
     private User createUser(OAuthProfile profile, String email, Instant now) {
