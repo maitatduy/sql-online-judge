@@ -26,7 +26,7 @@ public class OAuthLoginConfig {
     SecurityFilterChain oauthLoginFilterChain(
             HttpSecurity http,
             RedisOAuth2AuthorizationRequestRepository authorizationRequestRepository,
-            GithubOAuth2UserService githubUserService,
+            ProviderOAuth2UserService providerUserService,
             OAuthLoginHandlers oauthLoginHandlers)
             throws Exception {
         return http.securityMatcher("/api/auth/oauth2/**", "/api/auth/login/oauth2/**")
@@ -49,7 +49,8 @@ public class OAuthLoginConfig {
                                                 redirection ->
                                                         redirection.baseUri(CALLBACK_BASE_URI))
                                         .userInfoEndpoint(
-                                                userInfo -> userInfo.userService(githubUserService))
+                                                userInfo ->
+                                                        userInfo.userService(providerUserService))
                                         .authorizedClientRepository(new NoStoredAuthorizedClients())
                                         .successHandler(oauthLoginHandlers)
                                         .failureHandler(oauthLoginHandlers)

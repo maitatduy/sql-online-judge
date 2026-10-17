@@ -15,16 +15,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 @Component
-public class GithubOAuth2UserService extends DefaultOAuth2UserService {
+public class ProviderOAuth2UserService extends DefaultOAuth2UserService {
 
-    static final String EMAIL_ATTRIBUTE = "email";
-    static final String EMAIL_VERIFIED_ATTRIBUTE = "email_verified";
-    private static final String ID_ATTRIBUTE = "id";
+    private static final String GITHUB_REGISTRATION_ID = "github";
+    private static final String EMAIL_ATTRIBUTE = "email";
+    private static final String EMAIL_VERIFIED_ATTRIBUTE = "email_verified";
+    private static final String GITHUB_ID_ATTRIBUTE = "id";
 
     private final RestClient restClient;
     private final String emailsUri;
 
-    public GithubOAuth2UserService(
+    public ProviderOAuth2UserService(
             RestClient.Builder restClientBuilder,
             @Value("${sqljudge.oauth.github.emails-uri}") String emailsUri) {
         this.restClient = restClientBuilder.build();
@@ -34,6 +35,14 @@ public class GithubOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
         OAuth2User user = super.loadUser(userRequest);
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        if (!GITHUB_REGISTRATION_ID.equals(registrationId)) {
+            return user;
+        }
+        return withGithubPrimaryEmail(user, userRequest);
+    }
+
+    private OAuth2User withGithubPrimaryEmail(OAuth2User user, OAuth2UserRequest userRequest) {
         Map<String, Object> attributes = new HashMap<>(user.getAttributes());
         primaryEmail(userRequest.getAccessToken().getTokenValue())
                 .ifPresentOrElse(
@@ -42,7 +51,7 @@ public class GithubOAuth2UserService extends DefaultOAuth2UserService {
                             attributes.put(EMAIL_VERIFIED_ATTRIBUTE, email.verified());
                         },
                         () -> attributes.put(EMAIL_VERIFIED_ATTRIBUTE, false));
-        return new DefaultOAuth2User(user.getAuthorities(), attributes, ID_ATTRIBUTE);
+        return new DefaultOAuth2User(user.getAuthorities(), attributes, GITHUB_ID_ATTRIBUTE);
     }
 
     private Optional<GithubEmail> primaryEmail(String accessToken) {

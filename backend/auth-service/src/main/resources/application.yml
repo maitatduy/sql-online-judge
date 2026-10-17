@@ -30,6 +30,11 @@ spring:
             client-secret: ${OAUTH_GITHUB_CLIENT_SECRET}
             scope: read:user,user:email
             redirect-uri: ${PUBLIC_API_URL}/api/auth/login/oauth2/code/{registrationId}
+          google:
+            client-id: ${OAUTH_GOOGLE_CLIENT_ID}
+            client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET}
+            scope: profile,email
+            redirect-uri: ${PUBLIC_API_URL}/api/auth/login/oauth2/code/{registrationId}
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}

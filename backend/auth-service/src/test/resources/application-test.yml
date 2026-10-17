@@ -12,6 +12,10 @@ spring:
             client-id: test-github-client
             client-secret: test-github-secret
             redirect-uri: http://localhost:8080/api/auth/login/oauth2/code/{registrationId}
+          google:
+            client-id: test-google-client
+            client-secret: test-google-secret
+            redirect-uri: http://localhost:8080/api/auth/login/oauth2/code/{registrationId}
   mail:
     host: localhost
     port: 1025

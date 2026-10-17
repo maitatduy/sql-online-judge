@@ -34,7 +34,8 @@ describe("OAuthCallback", () => {
         renderWithProviders(<OAuthCallback />);
 
         expect(screen.getByRole("status")).toHaveTextContent("Đang hoàn tất đăng nhập");
-        expect(screen.getByTestId("auth-status-icon")).toHaveClass("motion-safe:animate-spin");
+        expect(screen.getByTestId("spinner")).toBeInTheDocument();
+        expect(screen.queryByTestId("auth-status-icon")).not.toBeInTheDocument();
         await waitFor(() => expect(replace).toHaveBeenCalledWith("/problems"));
         expect(getAccessToken()).toBe("oauth-access-token");
     });

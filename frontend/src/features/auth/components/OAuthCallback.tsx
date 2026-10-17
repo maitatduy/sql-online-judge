@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleAlert, LoaderCircle } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -47,7 +47,6 @@ export function OAuthCallback() {
 
     return (
         <AuthStatusCard
-            icon={LoaderCircle}
             tone="brand"
             title="Đang đăng nhập"
             isBusy
