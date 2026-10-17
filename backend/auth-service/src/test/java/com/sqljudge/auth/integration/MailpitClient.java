@@ -10,6 +10,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
 
 final class MailpitClient {
@@ -26,9 +27,19 @@ final class MailpitClient {
     }
 
     ReceivedMail awaitMailTo(String recipient) throws IOException, InterruptedException {
+        return awaitMail(recipient, message -> true);
+    }
+
+    ReceivedMail awaitMailWithSubject(String recipient, String subject)
+            throws IOException, InterruptedException {
+        return awaitMail(recipient, message -> subject.equals(message.path("Subject").asText()));
+    }
+
+    private ReceivedMail awaitMail(String recipient, Predicate<JsonNode> matches)
+            throws IOException, InterruptedException {
         Instant deadline = Instant.now().plus(POLL_TIMEOUT);
         while (Instant.now().isBefore(deadline)) {
-            Optional<String> messageId = findMessageIdTo(recipient);
+            Optional<String> messageId = findMessageId(recipient, matches);
             if (messageId.isPresent()) {
                 JsonNode message = get("/api/v1/message/" + messageId.get());
                 return new ReceivedMail(
@@ -39,11 +50,12 @@ final class MailpitClient {
         throw new AssertionError("No mail delivered to " + recipient + " within " + POLL_TIMEOUT);
     }
 
-    private Optional<String> findMessageIdTo(String recipient)
+    private Optional<String> findMessageId(String recipient, Predicate<JsonNode> matches)
             throws IOException, InterruptedException {
         JsonNode messages = get("/api/v1/messages").path("messages");
         return StreamSupport.stream(messages.spliterator(), false)
                 .filter(message -> isAddressedTo(message, recipient))
+                .filter(matches)
                 .map(message -> message.path("ID").asText())
                 .findFirst();
     }

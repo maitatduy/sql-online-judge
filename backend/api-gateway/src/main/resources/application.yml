@@ -50,6 +50,10 @@ sqljudge:
         path: /api/auth/email-verification/**
         limit: 10
         window: 1m
+      - name: password-reset
+        path: /api/auth/password-reset/**
+        limit: 5
+        window: 1m
 
 management:
   server:

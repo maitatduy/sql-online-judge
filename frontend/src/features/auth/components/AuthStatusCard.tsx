@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-interface VerifyEmailCardProps {
+interface AuthStatusCardProps {
     icon: LucideIcon;
     tone: "brand" | "destructive";
     title: string;
@@ -10,13 +10,13 @@ interface VerifyEmailCardProps {
     children?: React.ReactNode;
 }
 
-export function VerifyEmailCard({
+export function AuthStatusCard({
     icon: Icon,
     tone,
     title,
     description,
     children,
-}: VerifyEmailCardProps) {
+}: AuthStatusCardProps) {
     return (
         <div className="flex flex-col gap-5 rounded-xl border bg-card p-6 shadow-2xl sm:p-8">
             <span

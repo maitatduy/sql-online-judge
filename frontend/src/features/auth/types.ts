@@ -39,6 +39,15 @@ export interface ResendVerificationRequest {
     email: string;
 }
 
+export interface PasswordResetRequest {
+    email: string;
+}
+
+export interface ResetPasswordRequest {
+    token: string;
+    newPassword: string;
+}
+
 export interface UsernameAvailability {
     available: boolean;
 }

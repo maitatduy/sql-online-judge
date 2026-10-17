@@ -8,14 +8,15 @@ import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
 
+import { RESEND_COOLDOWN_SECONDS } from "../countdown";
 import { getFormErrorMessage } from "../form-errors";
 import { useConfirmEmail } from "../hooks/useConfirmEmail";
 import { readPendingVerificationEmail } from "../pending-verification";
 import type { AuthResponse } from "../types";
 
-import { RESEND_COOLDOWN_SECONDS, ResendCodeButton } from "./ResendCodeButton";
+import { ResendCodeButton } from "./ResendCodeButton";
 import { VerificationCodeForm } from "./VerificationCodeForm";
-import { VerifyEmailCard } from "./VerifyEmailCard";
+import { AuthStatusCard } from "./AuthStatusCard";
 
 interface VerifyEmailFlowProps {
     token?: string;
@@ -66,7 +67,7 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
 
     if (step === "verified") {
         return (
-            <VerifyEmailCard
+            <AuthStatusCard
                 icon={CircleCheck}
                 tone="brand"
                 title="Email đã được xác thực"
@@ -80,13 +81,13 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
                 <Button asChild size="lg" className="h-12.5 text-[15px]">
                     <Link href={ROUTES.home}>Tiếp tục</Link>
                 </Button>
-            </VerifyEmailCard>
+            </AuthStatusCard>
         );
     }
 
     if (step === "invalid") {
         return (
-            <VerifyEmailCard
+            <AuthStatusCard
                 icon={CircleAlert}
                 tone="destructive"
                 title="Mã không hợp lệ hoặc đã hết hạn"
@@ -96,13 +97,13 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
                 <Link href={ROUTES.login} className={LINK_CLASS}>
                     Quay lại đăng nhập
                 </Link>
-            </VerifyEmailCard>
+            </AuthStatusCard>
         );
     }
 
     if (token && confirmLink.isError) {
         return (
-            <VerifyEmailCard
+            <AuthStatusCard
                 icon={CircleAlert}
                 tone="destructive"
                 title="Chưa xác thực được email"
@@ -115,13 +116,13 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
                 >
                     Thử lại
                 </Button>
-            </VerifyEmailCard>
+            </AuthStatusCard>
         );
     }
 
     if (token) {
         return (
-            <VerifyEmailCard
+            <AuthStatusCard
                 icon={Mail}
                 tone="brand"
                 title="Đang xác thực email"
@@ -131,7 +132,7 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
     }
 
     return (
-        <VerifyEmailCard
+        <AuthStatusCard
             icon={Mail}
             tone="brand"
             title="Xác thực email của bạn"
@@ -160,6 +161,6 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
                     Đổi email
                 </Link>
             </p>
-        </VerifyEmailCard>
+        </AuthStatusCard>
     );
 }

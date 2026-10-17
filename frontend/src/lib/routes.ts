@@ -4,6 +4,7 @@ export const ROUTES = {
     register: "/register",
     forgotPassword: "/forgot-password",
     verifyEmail: "/verify-email",
+    resetPassword: "/reset-password",
     learn: "/learn",
     problems: "/problems",
     contests: "/contests",
