@@ -7,6 +7,7 @@ interface AuthStatusCardProps {
     tone: "brand" | "destructive";
     title: string;
     description: React.ReactNode;
+    isBusy?: boolean;
     children?: React.ReactNode;
 }
 
@@ -15,6 +16,7 @@ export function AuthStatusCard({
     tone,
     title,
     description,
+    isBusy = false,
     children,
 }: AuthStatusCardProps) {
     return (
@@ -27,7 +29,11 @@ export function AuthStatusCard({
                         : "bg-destructive/12 text-destructive",
                 )}
             >
-                <Icon aria-hidden="true" className="size-6.5" />
+                <Icon
+                    aria-hidden="true"
+                    data-testid="auth-status-icon"
+                    className={cn("size-6.5", isBusy && "motion-safe:animate-spin")}
+                />
             </span>
             <div>
                 <h1 className="text-[26px] font-extrabold tracking-[-0.02em]">{title}</h1>

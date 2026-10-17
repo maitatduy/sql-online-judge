@@ -4,7 +4,6 @@ import type {
     AuthResponse,
     ConfirmEmailRequest,
     LoginRequest,
-    OAuthProvider,
     PasswordResetRequest,
     RegisterRequest,
     RegisterResponse,
@@ -15,8 +14,7 @@ import type {
 
 export const authApi = {
     login: (body: LoginRequest) => apiClient.post<AuthResponse>("/api/auth/login", body),
-    loginWithOAuth: (provider: OAuthProvider) =>
-        apiClient.post<AuthResponse>(`/api/auth/oauth/${provider}`),
+    refreshSession: () => apiClient.post<AuthResponse>("/api/auth/refresh"),
     register: (body: RegisterRequest) =>
         apiClient.post<RegisterResponse>("/api/auth/register", body),
     confirmEmail: (body: ConfirmEmailRequest) =>

@@ -225,6 +225,10 @@ async function request<T>(
     return (responseText ? JSON.parse(responseText) : undefined) as T;
 }
 
+export function apiUrl(path: string): string {
+    return buildUrl(path);
+}
+
 export const apiClient = {
     get: <T>(path: string, options: RequestOptions = {}) =>
         request<T>("GET", path, undefined, options),

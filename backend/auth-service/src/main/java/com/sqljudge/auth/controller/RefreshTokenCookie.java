@@ -35,7 +35,7 @@ public final class RefreshTokenCookie {
                 .build();
     }
 
-    static String headerFor(SignInResult result) {
+    public static String headerFor(SignInResult result) {
         return of(result.refreshToken(), result.isPersistent()).toString();
     }
 }

@@ -117,6 +117,17 @@ describe("LoginForm", () => {
         ).not.toBeInTheDocument();
     });
 
+    it.each([
+        ["OAUTH_EMAIL_NOT_VERIFIED", "Email của tài khoản liên kết chưa được xác minh"],
+        ["ACCOUNT_BANNED", "Tài khoản của bạn đang bị khoá"],
+        ["OAUTH_LOGIN_FAILED", "Không đăng nhập được bằng tài khoản liên kết"],
+        ["MA_LA", "Không đăng nhập được bằng tài khoản liên kết"],
+    ])("đăng nhập liên kết thất bại (%s) thì báo lỗi ngay khi mở trang", (errorCode, message) => {
+        renderWithProviders(<LoginForm nextPath="/" oauthErrorCode={errorCode} />);
+
+        expect(screen.getByRole("alert")).toHaveTextContent(message);
+    });
+
     it("có link quên mật khẩu", () => {
         renderWithProviders(<LoginForm nextPath="/" />);
 

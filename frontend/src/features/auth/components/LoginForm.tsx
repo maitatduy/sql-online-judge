@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
 
+import { getOAuthErrorMessage } from "../form-errors";
 import { useApiFormErrors } from "../hooks/useApiFormErrors";
 import { useLogin } from "../hooks/useLogin";
 import { useResendVerification } from "../hooks/useResendVerification";
@@ -23,12 +24,13 @@ import { TextField } from "./TextField";
 
 interface LoginFormProps {
     nextPath: string;
+    oauthErrorCode?: string;
 }
 
 const API_FIELDS = ["email", "password"] as const;
 const EMAIL_NOT_VERIFIED = "EMAIL_NOT_VERIFIED";
 
-export function LoginForm({ nextPath }: LoginFormProps) {
+export function LoginForm({ nextPath, oauthErrorCode }: LoginFormProps) {
     const router = useRouter();
     const login = useLogin();
     const {
@@ -43,10 +45,15 @@ export function LoginForm({ nextPath }: LoginFormProps) {
     const { formError, clearFormError, handleApiError } = useApiFormErrors(setError, API_FIELDS);
     const resendVerification = useResendVerification();
     const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+    const [oauthError, setOAuthError] = useState(() =>
+        oauthErrorCode ? getOAuthErrorMessage(oauthErrorCode) : null,
+    );
     const isBusy = login.isPending || login.isSuccess;
+    const alertMessage = formError ?? oauthError;
 
     const submitLogin = (values: LoginFormValues) => {
         clearFormError();
+        setOAuthError(null);
         setUnverifiedEmail(null);
         login.mutate(values, {
             onSuccess: () => router.push(nextPath),
@@ -73,9 +80,9 @@ export function LoginForm({ nextPath }: LoginFormProps) {
 
     return (
         <form noValidate onSubmit={handleSubmit(submitLogin)} className="flex flex-col gap-4">
-            {formError && (
+            {alertMessage && (
                 <FormAlert
-                    message={formError}
+                    message={alertMessage}
                     action={
                         unverifiedEmail && (
                             <button

@@ -27,6 +27,17 @@ export function getFieldErrors<TField extends string>(
     );
 }
 
+const OAUTH_ERROR_MESSAGES: Record<string, string | undefined> = {
+    OAUTH_EMAIL_NOT_VERIFIED:
+        "Email của tài khoản liên kết chưa được xác minh. Hãy xác minh email ở GitHub hoặc Google rồi thử lại.",
+    ACCOUNT_BANNED: "Tài khoản của bạn đang bị khoá",
+};
+const OAUTH_FALLBACK_MESSAGE = "Không đăng nhập được bằng tài khoản liên kết, vui lòng thử lại";
+
+export function getOAuthErrorMessage(errorCode: string): string {
+    return OAUTH_ERROR_MESSAGES[errorCode] ?? OAUTH_FALLBACK_MESSAGE;
+}
+
 function getRateLimitMessage(retryAfterSeconds: number | undefined): string {
     const waitTime = retryAfterSeconds ? `${retryAfterSeconds} giây` : "ít phút";
     return `Bạn thử quá nhiều lần. Vui lòng thử lại sau ${waitTime}.`;

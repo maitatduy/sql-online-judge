@@ -108,14 +108,6 @@ export const handlers: RequestHandler[] = [
         return HttpResponse.json(currentUser);
     }),
 
-    http.post("*/api/auth/oauth/:provider", async ({ params }) => {
-        await delay();
-        const provider = String(params.provider);
-        return HttpResponse.json(
-            signIn(newSessionUser(`${provider}.demo`), `${provider}@sqljudge.dev`),
-        );
-    }),
-
     http.post("*/api/auth/register", async ({ request }) => {
         await delay();
         const body = (await request.json()) as RegisterRequest;
