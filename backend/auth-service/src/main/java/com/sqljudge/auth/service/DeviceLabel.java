@@ -5,8 +5,6 @@ import java.util.Map;
 
 public record DeviceLabel(String browser, String os) {
 
-    static final String UNKNOWN = "Không rõ";
-
     private static final List<Map.Entry<String, String>> BROWSER_MARKERS =
             List.of(
                     Map.entry("Edg/", "Edge"),
@@ -29,7 +27,7 @@ public record DeviceLabel(String browser, String os) {
 
     public static DeviceLabel of(String userAgent) {
         if (userAgent == null) {
-            return new DeviceLabel(UNKNOWN, UNKNOWN);
+            return new DeviceLabel(null, null);
         }
         return new DeviceLabel(
                 firstMatch(BROWSER_MARKERS, userAgent), firstMatch(OS_MARKERS, userAgent));
@@ -40,6 +38,6 @@ public record DeviceLabel(String browser, String os) {
                 .filter(marker -> userAgent.contains(marker.getKey()))
                 .map(Map.Entry::getValue)
                 .findFirst()
-                .orElse(UNKNOWN);
+                .orElse(null);
     }
 }

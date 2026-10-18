@@ -42,9 +42,9 @@ class DeviceLabelTest {
     }
 
     @Test
-    @DisplayName("Không có hoặc không nhận ra User-Agent thì ghi Không rõ")
+    @DisplayName("Không có hoặc không nhận ra User-Agent thì để trống cho giao diện tự ghi")
     void of_missingOrUnknown_isUnknown() {
-        assertThat(DeviceLabel.of(null)).isEqualTo(new DeviceLabel("Không rõ", "Không rõ"));
-        assertThat(DeviceLabel.of("curl/8.4.0")).isEqualTo(new DeviceLabel("Không rõ", "Không rõ"));
+        assertThat(DeviceLabel.of(null)).isEqualTo(new DeviceLabel(null, null));
+        assertThat(DeviceLabel.of("curl/8.4.0")).isEqualTo(new DeviceLabel(null, null));
     }
 }

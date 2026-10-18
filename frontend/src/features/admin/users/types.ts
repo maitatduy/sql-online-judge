@@ -162,8 +162,8 @@ export interface ContestHistoryResponse {
 
 export interface UserSession {
     id: string;
-    browser: string;
-    os: string;
+    browser: string | null;
+    os: string | null;
     city: string | null;
     lastActiveAt: string;
     isActiveNow: boolean;

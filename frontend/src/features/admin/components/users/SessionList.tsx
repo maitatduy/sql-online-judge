@@ -6,7 +6,9 @@ import type { UserSession } from "@/features/admin/users/types";
 import { formatRelativeTime } from "@/lib/format";
 
 export function sessionLabel({ browser, os, city }: UserSession): string {
-    return [browser, os, city].filter(Boolean).join(" · ");
+    return [browser ?? "Trình duyệt không rõ", os ?? "Hệ điều hành không rõ", city]
+        .filter(Boolean)
+        .join(" · ");
 }
 
 interface SessionListProps {
