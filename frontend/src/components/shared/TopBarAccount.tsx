@@ -1,6 +1,6 @@
 "use client";
 
-import { Flame } from "lucide-react";
+import { Flame, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,10 +10,12 @@ import { isUnauthenticatedError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { useLogout } from "@/lib/useLogout";
 
 export function TopBarAccount() {
     const pathname = usePathname();
     const { data: currentUser, error, isPending } = useCurrentUser();
+    const logout = useLogout();
 
     if (isPending) {
         return <span aria-hidden="true" className="size-8 shrink-0 rounded-full bg-surface-2" />;
@@ -44,6 +46,18 @@ export function TopBarAccount() {
             >
                 <Avatar name={currentUser.displayName} />
             </Link>
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Đăng xuất"
+                title="Đăng xuất"
+                disabled={logout.isPending}
+                onClick={() => logout.mutate()}
+                className="size-11 text-muted-foreground"
+            >
+                <LogOut aria-hidden="true" className="size-4.5" />
+            </Button>
         </>
     );
 }

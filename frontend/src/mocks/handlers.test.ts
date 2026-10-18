@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { RegisterResponse } from "@/features/auth/types";
 import { apiClient } from "@/lib/api-client";
 import type { CurrentUser } from "@/lib/current-user";
 
@@ -27,17 +28,16 @@ describe("phiên đăng nhập giả", () => {
         });
     });
 
-    it("trả người dùng vừa đăng ký", async () => {
-        await apiClient.post("/api/auth/register", {
+    it("đăng ký chỉ trả email cần xác thực và chưa đăng nhập", async () => {
+        const response = await apiClient.post<RegisterResponse>("/api/auth/register", {
             username: "thu.ha",
             email: "thu.ha@sqljudge.dev",
             password: "mock-password",
             acceptedTerms: true,
         });
 
-        const currentUser = await apiClient.get<CurrentUser>("/api/auth/me");
-
-        expect(currentUser).toMatchObject({ username: "thu.ha", currentStreakDays: 0 });
+        expect(response).toEqual({ email: "thu.ha@sqljudge.dev" });
+        await expect(apiClient.get("/api/auth/me")).rejects.toMatchObject({ status: 401 });
     });
 
     it("vẫn chưa đăng nhập khi sai mật khẩu", async () => {

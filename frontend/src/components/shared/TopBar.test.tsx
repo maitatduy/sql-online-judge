@@ -7,6 +7,7 @@ import { TopBar } from "./TopBar";
 
 vi.mock("next/navigation", () => ({
     usePathname: () => "/u/minh.anh",
+    useRouter: () => ({ push: vi.fn() }),
 }));
 
 describe("TopBar", () => {

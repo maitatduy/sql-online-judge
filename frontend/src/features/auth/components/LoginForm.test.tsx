@@ -5,6 +5,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { server } from "@/mocks/server";
 import { renderWithProviders } from "@/test/render";
 
+import { clearAccessToken, getAccessToken } from "@/lib/auth-session";
+
+import { readPendingVerificationEmail } from "../pending-verification";
+
 import { LoginForm } from "./LoginForm";
 
 const push = vi.fn();
@@ -22,6 +26,8 @@ function fillAndSubmit(email: string, password: string) {
 describe("LoginForm", () => {
     beforeEach(() => {
         push.mockClear();
+        clearAccessToken();
+        sessionStorage.clear();
     });
 
     it("báo lỗi cạnh từng ô và không gửi request khi để trống", async () => {
@@ -56,6 +62,70 @@ describe("LoginForm", () => {
         fillAndSubmit("demo@sqljudge.dev", "mock-password");
 
         await waitFor(() => expect(push).toHaveBeenCalledWith("/problems"));
+    });
+
+    it("đăng nhập đúng thì giữ access token để gọi các API cần đăng nhập", async () => {
+        renderWithProviders(<LoginForm nextPath="/" />);
+
+        fillAndSubmit("demo@sqljudge.dev", "mock-password");
+
+        await waitFor(() => expect(getAccessToken()).toBe("mock-access-token"));
+    });
+
+    it("email chưa xác thực thì cho gửi lại mã và chuyển sang trang xác thực", async () => {
+        let resentTo: unknown;
+        server.use(
+            http.post("*/api/auth/email-verification", async ({ request }) => {
+                resentTo = await request.json();
+                return new HttpResponse(null, { status: 202 });
+            }),
+        );
+        renderWithProviders(<LoginForm nextPath="/" />);
+
+        fillAndSubmit("unverified@sqljudge.dev", "mock-password");
+
+        expect(await screen.findByRole("alert")).toHaveTextContent("Email chưa được xác thực");
+        fireEvent.click(screen.getByRole("button", { name: "Gửi lại mã xác thực" }));
+
+        await waitFor(() => expect(push).toHaveBeenCalledWith("/verify-email"));
+        expect(resentTo).toEqual({ email: "unverified@sqljudge.dev" });
+        expect(readPendingVerificationEmail()).toBe("unverified@sqljudge.dev");
+    });
+
+    it("tài khoản bị khoá thì hiện thông báo của máy chủ", async () => {
+        server.use(
+            http.post("*/api/auth/login", () =>
+                HttpResponse.json(
+                    {
+                        status: 403,
+                        code: "ACCOUNT_BANNED",
+                        message: "Tài khoản của bạn đang bị khoá",
+                    },
+                    { status: 403 },
+                ),
+            ),
+        );
+        renderWithProviders(<LoginForm nextPath="/" />);
+
+        fillAndSubmit("demo@sqljudge.dev", "mock-password");
+
+        expect(await screen.findByRole("alert")).toHaveTextContent(
+            "Tài khoản của bạn đang bị khoá",
+        );
+        expect(
+            screen.queryByRole("button", { name: "Gửi lại mã xác thực" }),
+        ).not.toBeInTheDocument();
+    });
+
+    it.each([
+        ["OAUTH_EMAIL_NOT_VERIFIED", "Email của tài khoản liên kết chưa được xác minh"],
+        ["ACCOUNT_BANNED", "Tài khoản của bạn đang bị khoá"],
+        ["OAUTH_LOGIN_FAILED", "Không đăng nhập được bằng tài khoản liên kết"],
+        ["MA_LA", "Không đăng nhập được bằng tài khoản liên kết"],
+    ])("đăng nhập liên kết thất bại (%s) thì báo lỗi ngay khi mở trang", (errorCode, message) => {
+        renderWithProviders(<LoginForm nextPath="/" oauthErrorCode={errorCode} />);
+
+        expect(screen.getByRole("alert")).toHaveTextContent(message);
     });
 
     it("có link quên mật khẩu", () => {

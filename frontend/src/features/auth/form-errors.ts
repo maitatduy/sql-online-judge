@@ -10,7 +10,6 @@ export interface FieldError<TField extends string> {
 
 const CONFLICT_FIELD_ERRORS: Record<string, FieldError<string> | undefined> = {
     USERNAME_TAKEN: { field: "username", message: "Tên người dùng này đã có người dùng" },
-    EMAIL_TAKEN: { field: "email", message: "Email này đã được đăng ký" },
 };
 
 export function getFieldErrors<TField extends string>(
@@ -25,6 +24,17 @@ export function getFieldErrors<TField extends string>(
     return candidates.filter((fieldError): fieldError is FieldError<TField> =>
         fields.includes(fieldError.field as TField),
     );
+}
+
+const OAUTH_ERROR_MESSAGES: Record<string, string | undefined> = {
+    OAUTH_EMAIL_NOT_VERIFIED:
+        "Email của tài khoản liên kết chưa được xác minh. Hãy xác minh email ở GitHub hoặc Google rồi thử lại.",
+    ACCOUNT_BANNED: "Tài khoản của bạn đang bị khoá",
+};
+const OAUTH_FALLBACK_MESSAGE = "Không đăng nhập được bằng tài khoản liên kết, vui lòng thử lại";
+
+export function getOAuthErrorMessage(errorCode: string): string {
+    return OAUTH_ERROR_MESSAGES[errorCode] ?? OAUTH_FALLBACK_MESSAGE;
 }
 
 function getRateLimitMessage(retryAfterSeconds: number | undefined): string {

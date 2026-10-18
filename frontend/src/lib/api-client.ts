@@ -1,6 +1,18 @@
+import { clearAccessToken, getAccessToken, setAccessToken } from "./auth-session";
+
 const NETWORK_ERROR_MESSAGE = "Không kết nối được máy chủ, vui lòng thử lại";
 const UNEXPECTED_ERROR_MESSAGE = "Đã có lỗi xảy ra, vui lòng thử lại sau";
 const UNAUTHENTICATED_STATUS = 401;
+const AUTH_PATH_PREFIX = "/api/auth/";
+const CURRENT_USER_PATH = "/api/auth/me";
+const REFRESH_PATH = "/api/auth/refresh";
+const COOKIE_SESSION_PATHS = new Set([REFRESH_PATH, "/api/auth/logout"]);
+
+interface RefreshedSession {
+    accessToken: string;
+}
+
+let refreshInFlight: Promise<boolean> | null = null;
 
 export interface ApiFieldError {
     field: string;
@@ -131,26 +143,90 @@ function isJsonBody(body: unknown): boolean {
     return body !== undefined && !(body instanceof FormData);
 }
 
+function usesCookieSession(path: string): boolean {
+    return COOKIE_SESSION_PATHS.has(path);
+}
+
+function canRefreshAfter(path: string): boolean {
+    return !path.startsWith(AUTH_PATH_PREFIX) || path === CURRENT_USER_PATH;
+}
+
+function buildHeaders(path: string, body: unknown): HeadersInit {
+    const headers: Record<string, string> = {};
+    if (isJsonBody(body)) {
+        headers["Content-Type"] = "application/json";
+    }
+    const accessToken = getAccessToken();
+    if (accessToken && !usesCookieSession(path)) {
+        headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return headers;
+}
+
+async function refreshSession(): Promise<boolean> {
+    try {
+        const response = await fetch(buildUrl(REFRESH_PATH), {
+            method: "POST",
+            credentials: "include",
+        });
+        if (!response.ok) {
+            clearAccessToken();
+            return false;
+        }
+        const session = (await response.json()) as RefreshedSession;
+        setAccessToken(session.accessToken);
+        return true;
+    } catch {
+        clearAccessToken();
+        return false;
+    }
+}
+
+function refreshOnce(): Promise<boolean> {
+    refreshInFlight ??= refreshSession().finally(() => {
+        refreshInFlight = null;
+    });
+    return refreshInFlight;
+}
+
+function sendRequest(
+    method: string,
+    path: string,
+    body: unknown,
+    options: RequestOptions,
+): Promise<Response> {
+    return send(buildUrl(path, options.params), {
+        method,
+        credentials: "include",
+        signal: options.signal,
+        headers: buildHeaders(path, body),
+        body: isJsonBody(body) ? JSON.stringify(body) : (body as FormData | undefined),
+    });
+}
+
 async function request<T>(
     method: string,
     path: string,
     body: unknown,
     options: RequestOptions,
 ): Promise<T> {
-    const response = await send(buildUrl(path, options.params), {
-        method,
-        credentials: "include",
-        signal: options.signal,
-        headers: isJsonBody(body) ? { "Content-Type": "application/json" } : undefined,
-        body: isJsonBody(body) ? JSON.stringify(body) : (body as FormData | undefined),
-    });
+    let response = await sendRequest(method, path, body, options);
+    if (
+        response.status === UNAUTHENTICATED_STATUS &&
+        canRefreshAfter(path) &&
+        (await refreshOnce())
+    ) {
+        response = await sendRequest(method, path, body, options);
+    }
     if (!response.ok) {
         throw await toRequestError(response);
     }
-    if (response.status === 204) {
-        return undefined as T;
-    }
-    return (await response.json()) as T;
+    const responseText = await response.text();
+    return (responseText ? JSON.parse(responseText) : undefined) as T;
+}
+
+export function apiUrl(path: string): string {
+    return buildUrl(path);
 }
 
 export const apiClient = {

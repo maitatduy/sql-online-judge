@@ -39,3 +39,31 @@ export const registerSchema = z.object({
 });
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
+
+export const verificationCodeSchema = z.object({
+    code: z
+        .string()
+        .trim()
+        .regex(/^\d{6}$/, "Mã xác thực gồm 6 chữ số"),
+});
+
+export type VerificationCodeFormValues = z.infer<typeof verificationCodeSchema>;
+
+export const forgotPasswordSchema = z.object({ email: emailSchema });
+
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z
+    .object({
+        newPassword: z
+            .string()
+            .min(1, "Vui lòng nhập mật khẩu mới")
+            .min(MIN_PASSWORD_LENGTH, `Mật khẩu cần ít nhất ${MIN_PASSWORD_LENGTH} ký tự`),
+        confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu mới"),
+    })
+    .refine(({ newPassword, confirmPassword }) => newPassword === confirmPassword, {
+        message: "Hai mật khẩu chưa khớp",
+        path: ["confirmPassword"],
+    });
+
+export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;

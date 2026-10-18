@@ -1,15 +1,19 @@
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
 
+import { getAccessToken, setAccessToken } from "@/lib/auth-session";
 import { server } from "@/mocks/server";
 import { DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
 
 import { TopBarAccount } from "./TopBarAccount";
 
+const push = vi.fn();
+
 vi.mock("next/navigation", () => ({
     usePathname: () => "/u/minh.anh",
+    useRouter: () => ({ push }),
 }));
 
 describe("TopBarAccount", () => {
@@ -58,6 +62,25 @@ describe("TopBarAccount", () => {
 
         await waitFor(() => expect(requestCount).toBe(1));
         await waitFor(() => expect(container).toBeEmptyDOMElement());
+    });
+
+    it("đăng xuất thì thu hồi phiên, xoá token và về trang chủ", async () => {
+        let hasLoggedOut = false;
+        server.use(
+            http.post("*/api/auth/logout", () => {
+                hasLoggedOut = true;
+                return new HttpResponse(null, { status: 204 });
+            }),
+        );
+        writeMockSession(DEMO_SESSION_USER);
+        setAccessToken("access-token");
+        renderWithProviders(<TopBarAccount />);
+
+        fireEvent.click(await screen.findByRole("button", { name: "Đăng xuất" }));
+
+        await waitFor(() => expect(push).toHaveBeenCalledWith("/"));
+        expect(hasLoggedOut).toBe(true);
+        expect(getAccessToken()).toBeNull();
     });
 
     it("chưa hiện nút nào khi đang tải", () => {

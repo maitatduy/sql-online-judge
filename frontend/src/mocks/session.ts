@@ -26,3 +26,7 @@ export function readMockSession(): CurrentUser | null {
 export function writeMockSession(user: CurrentUser): void {
     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
 }
+
+export function clearMockSession(): void {
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+}

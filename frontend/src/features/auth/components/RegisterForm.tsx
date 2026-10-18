@@ -6,10 +6,12 @@ import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/routes";
 
 import { useApiFormErrors } from "../hooks/useApiFormErrors";
 import { useRegister } from "../hooks/useRegister";
 import { useUsernameAvailability } from "../hooks/useUsernameAvailability";
+import { savePendingVerificationEmail } from "../pending-verification";
 import { registerSchema, type RegisterFormValues } from "../schemas";
 
 import { FormAlert } from "./FormAlert";
@@ -18,14 +20,10 @@ import { PasswordStrength } from "./PasswordStrength";
 import { TextField } from "./TextField";
 import { UsernameAvailability } from "./UsernameAvailability";
 
-interface RegisterFormProps {
-    nextPath: string;
-}
-
 const API_FIELDS = ["username", "email", "password"] as const;
 const TERMS_ERROR_ID = "register-terms-error";
 
-export function RegisterForm({ nextPath }: RegisterFormProps) {
+export function RegisterForm() {
     const router = useRouter();
     const registerAccount = useRegister();
     const {
@@ -48,7 +46,10 @@ export function RegisterForm({ nextPath }: RegisterFormProps) {
     const submitRegistration = (values: RegisterFormValues) => {
         clearFormError();
         registerAccount.mutate(values, {
-            onSuccess: () => router.push(nextPath),
+            onSuccess: ({ email }) => {
+                savePendingVerificationEmail(email);
+                router.push(ROUTES.verifyEmail);
+            },
             onError: handleApiError,
         });
     };

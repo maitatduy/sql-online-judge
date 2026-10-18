@@ -29,6 +29,25 @@ export interface RegisterRequest {
     acceptedTerms: boolean;
 }
 
+export interface RegisterResponse {
+    email: string;
+}
+
+export type ConfirmEmailRequest = { token: string } | { email: string; code: string };
+
+export interface ResendVerificationRequest {
+    email: string;
+}
+
+export interface PasswordResetRequest {
+    email: string;
+}
+
+export interface ResetPasswordRequest {
+    token: string;
+    newPassword: string;
+}
+
 export interface UsernameAvailability {
     available: boolean;
 }

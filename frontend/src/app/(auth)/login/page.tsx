@@ -10,16 +10,17 @@ export const metadata: Metadata = {
 };
 
 interface LoginPageProps {
-    searchParams: Promise<{ next?: string | string[] }>;
+    searchParams: Promise<{ next?: string | string[]; error?: string | string[] }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-    const { next } = await searchParams;
+    const { next, error } = await searchParams;
     const nextPath = getSafeNextPath(next);
+    const oauthErrorCode = typeof error === "string" ? error : undefined;
 
     return (
         <AuthShell mode="login" nextPath={nextPath}>
-            <LoginForm nextPath={nextPath} />
+            <LoginForm nextPath={nextPath} oauthErrorCode={oauthErrorCode} />
         </AuthShell>
     );
 }

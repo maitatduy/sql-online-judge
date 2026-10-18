@@ -1,0 +1,70 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      timeout: 2s
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${AUTH_SERVICE_URL}/internal/jwks
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: ${AUTH_SERVICE_URL}
+              predicates:
+                - Path=/api/auth/**,/api/users/**
+          globalcors:
+            cors-configurations:
+              '[/api/**]':
+                allowed-origins: ${CORS_ALLOWED_ORIGINS}
+                allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+                allowed-headers: Authorization,Content-Type,Idempotency-Key
+                exposed-headers: Location,Retry-After
+                allow-credentials: true
+                max-age: 3600
+
+sqljudge:
+  rate-limit:
+    trusted-proxies: 0
+    policies:
+      - name: login
+        path: /api/auth/login
+        limit: 10
+        window: 1m
+      - name: register
+        path: /api/auth/register
+        limit: 5
+        window: 1m
+      - name: email-verification
+        path: /api/auth/email-verification/**
+        limit: 10
+        window: 1m
+      - name: password-reset
+        path: /api/auth/password-reset/**
+        limit: 5
+        window: 1m
+
+management:
+  server:
+    port: 9080
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
