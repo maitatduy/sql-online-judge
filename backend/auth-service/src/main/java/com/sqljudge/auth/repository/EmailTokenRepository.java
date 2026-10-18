@@ -34,6 +34,14 @@ public interface EmailTokenRepository extends JpaRepository<EmailToken, UUID> {
             @Param("purpose") EmailTokenPurpose purpose,
             @Param("now") Instant now);
 
+    @Query(
+            "SELECT COALESCE(SUM(t.failedAttempts), 0L) FROM EmailToken t"
+                    + " WHERE t.user = :user AND t.purpose = :purpose AND t.createdAt > :since")
+    long sumFailedAttemptsSince(
+            @Param("user") User user,
+            @Param("purpose") EmailTokenPurpose purpose,
+            @Param("since") Instant since);
+
     @Modifying
     @Query("UPDATE EmailToken t SET t.usedAt = :now WHERE t.user = :user AND t.usedAt IS NULL")
     int invalidateAllUnusedTokens(@Param("user") User user, @Param("now") Instant now);

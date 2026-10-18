@@ -2,8 +2,15 @@ package com.sqljudge.auth.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.sqljudge.auth.entity.EmailToken;
+import com.sqljudge.auth.entity.EmailTokenPurpose;
+import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.integration.MailpitClient.ReceivedMail;
+import com.sqljudge.auth.repository.EmailTokenRepository;
 import com.sqljudge.auth.repository.UserRepository;
+import com.sqljudge.auth.service.SecureTokens;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +31,7 @@ class EmailVerificationIntegrationTest extends ContainerSupport {
 
     @Autowired private TestRestTemplate restTemplate;
     @Autowired private UserRepository userRepository;
+    @Autowired private EmailTokenRepository emailTokenRepository;
 
     @DynamicPropertySource
     static void mailProperties(DynamicPropertyRegistry registry) {
@@ -81,6 +89,37 @@ class EmailVerificationIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName(
+            "Đã sai 20 lần trong 24 giờ qua nhiều mã: khoá nhập mã kể cả mã đúng, link trong mail"
+                    + " vẫn dùng được")
+    void confirmByCode_dailyFailureCapReached_onlyLinkWorks() throws Exception {
+        String email = "doan.nhieu@gmail.com";
+        ReceivedMail mail = registerAndReadMail("doan.nhieu", email);
+        User user = userRepository.findByEmail(email).orElseThrow();
+        for (int previousCode = 0; previousCode < 4; previousCode++) {
+            emailTokenRepository.save(exhaustedToken(user));
+        }
+
+        ResponseEntity<Map> correctCode =
+                confirm(
+                        Map.of(
+                                "email",
+                                email,
+                                "code",
+                                MailpitContainer.firstGroup(MailpitContainer.CODE, mail.text())));
+        ResponseEntity<Map> link =
+                confirm(
+                        Map.of(
+                                "token",
+                                MailpitContainer.firstGroup(MailpitContainer.LINK, mail.text())));
+
+        assertThat(correctCode.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(correctCode.getBody()).containsEntry("code", "VERIFICATION_CODE_LOCKED");
+        assertThat(link.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(isVerified("doan.nhieu")).isTrue();
+    }
+
+    @Test
     @DisplayName("Gửi lại mã luôn trả 202, kể cả với email không tồn tại")
     void resend_unknownEmail_returnsAcceptedWithoutLeaking() {
         ResponseEntity<Void> response =
@@ -105,6 +144,18 @@ class EmailVerificationIntegrationTest extends ContainerSupport {
                         true);
         restTemplate.postForEntity("/api/auth/register", body, Map.class);
         return MailpitContainer.client().awaitMailTo(email);
+    }
+
+    private static EmailToken exhaustedToken(User user) {
+        EmailToken token = new EmailToken();
+        token.setUser(user);
+        token.setPurpose(EmailTokenPurpose.VERIFY);
+        token.setTokenHash(SecureTokens.sha256(SecureTokens.newToken()));
+        token.setCodeHash(SecureTokens.sha256(SecureTokens.newCode()));
+        token.setExpiresAt(Instant.now().plus(Duration.ofMinutes(15)));
+        token.setFailedAttempts(5);
+        token.setUsedAt(Instant.now());
+        return token;
     }
 
     private ResponseEntity<Map> confirm(Map<String, String> body) {

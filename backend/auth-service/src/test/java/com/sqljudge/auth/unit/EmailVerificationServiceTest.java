@@ -154,6 +154,24 @@ class EmailVerificationServiceTest {
     }
 
     @Test
+    @DisplayName(
+            "Đã sai đủ 20 lần trong 24 giờ: khoá nhập mã kể cả mã đúng, không tính thêm lần sai")
+    void confirmByCode_dailyFailureCapReached_rejectsEvenCorrectCode() {
+        EmailToken token = activeToken();
+        stubLatestActiveToken(token);
+        when(emailTokenRepository.sumFailedAttemptsSince(
+                        user, EmailTokenPurpose.VERIFY, NOW.minus(Duration.ofHours(24))))
+                .thenReturn(20L);
+
+        assertThatThrownBy(() -> service.confirmByCode(EMAIL, CODE))
+                .isInstanceOf(BusinessRuleException.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.VERIFICATION_CODE_LOCKED);
+        assertThat(token.getFailedAttempts()).isZero();
+        assertThat(user.getEmailVerifiedAt()).isNull();
+    }
+
+    @Test
     @DisplayName("Không có mã nào còn hiệu lực cho email đó thì trả 422, không lộ email có tồn tại")
     void confirmByCode_noActiveToken_throwsInvalid() {
         when(emailTokenRepository.findFirstByUserEmailAndPurposeAndUsedAtIsNullOrderByCreatedAtDesc(

@@ -24,6 +24,8 @@ public class EmailVerificationService {
     static final Duration VERIFICATION_TTL = Duration.ofMinutes(15);
     static final Duration RESEND_COOLDOWN = Duration.ofSeconds(60);
     static final int MAX_FAILED_ATTEMPTS = 5;
+    static final int MAX_DAILY_FAILED_ATTEMPTS = 20;
+    static final Duration FAILURE_CAP_WINDOW = Duration.ofHours(24);
 
     private static final EmailTokenPurpose PURPOSE = EmailTokenPurpose.VERIFY;
 
@@ -68,6 +70,12 @@ public class EmailVerificationService {
                                 EmailAddresses.normalize(email), PURPOSE)
                         .filter(found -> found.isActiveAt(now))
                         .orElseThrow(EmailVerificationService::invalidToken);
+        if (hasReachedDailyFailureCap(emailToken.getUser(), now)) {
+            throw new BusinessRuleException(
+                    ErrorCode.VERIFICATION_CODE_LOCKED,
+                    "Bạn đã nhập sai mã quá nhiều lần. Hãy bấm liên kết trong email để xác"
+                            + " thực.");
+        }
         if (!SecureTokens.matches(code, emailToken.getCodeHash())) {
             emailToken.recordFailedAttempt(now, MAX_FAILED_ATTEMPTS);
             throw invalidToken();
@@ -87,6 +95,13 @@ public class EmailVerificationService {
                             emailTokenRepository.invalidateUnusedTokens(user, PURPOSE, now);
                             sendVerificationEmail(user);
                         });
+    }
+
+    private boolean hasReachedDailyFailureCap(User user, Instant now) {
+        long failures =
+                emailTokenRepository.sumFailedAttemptsSince(
+                        user, PURPOSE, now.minus(FAILURE_CAP_WINDOW));
+        return failures >= MAX_DAILY_FAILED_ATTEMPTS;
     }
 
     private boolean isPastResendCooldown(User user, Instant now) {
