@@ -5,6 +5,7 @@ import com.sqljudge.common.error.ApiError;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.error.FieldViolation;
 import com.sqljudge.common.exception.AppException;
+import com.sqljudge.common.exception.InvalidFieldException;
 import com.sqljudge.common.exception.QuotaExceededException;
 import java.time.Clock;
 import java.util.List;
@@ -53,6 +54,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ex.getStatus())
                 .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.retryAfterSeconds()))
                 .body(ApiError.of(ex.getStatus(), ex.getCode(), ex.getMessage(), clock.instant()));
+    }
+
+    @ExceptionHandler(InvalidFieldException.class)
+    ResponseEntity<ApiError> handleInvalidField(InvalidFieldException ex) {
+        return respondWithViolations(List.of(ex.getViolation()));
     }
 
     @ExceptionHandler(AppException.class)

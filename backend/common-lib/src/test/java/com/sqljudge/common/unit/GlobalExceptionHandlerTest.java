@@ -14,6 +14,7 @@ import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.common.exception.ConflictException;
 import com.sqljudge.common.exception.ForbiddenException;
+import com.sqljudge.common.exception.InvalidFieldException;
 import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.exception.QuotaExceededException;
 import com.sqljudge.common.exception.ServiceUnavailableException;
@@ -89,6 +90,17 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.message").value("Không tìm thấy bài tập"))
                 .andExpect(jsonPath("$.errors").isEmpty())
                 .andExpect(jsonPath("$.timestamp").value("2026-10-11T13:05:22Z"));
+    }
+
+    @Test
+    @DisplayName("Lỗi một trường phát hiện trong service trả 400 VALIDATION_FAILED đúng trường")
+    void invalidFieldException_returnsFieldViolation() throws Exception {
+        mockMvc.perform(get("/invalid-field"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("Dữ liệu gửi lên không hợp lệ"))
+                .andExpect(jsonPath("$.errors[0].field").value("reason"))
+                .andExpect(jsonPath("$.errors[0].message").value("Không được để trống"));
     }
 
     @Test
@@ -266,6 +278,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/business-rule")
         void businessRule() {
             throw new BusinessRuleException(ANY_CODE, "Sai nghiệp vụ");
+        }
+
+        @GetMapping("/invalid-field")
+        void invalidField() {
+            throw new InvalidFieldException("reason", "Không được để trống");
         }
 
         @GetMapping("/forbidden")
