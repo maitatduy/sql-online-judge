@@ -12,7 +12,7 @@ export interface AdminUserSummary {
     rating: number;
     acceptedCount: number;
     joinedAt: string;
-    lastActiveAt: string;
+    lastActiveAt: string | null;
     isOnline: boolean;
     status: AccountStatus;
     bannedUntil: string | null;

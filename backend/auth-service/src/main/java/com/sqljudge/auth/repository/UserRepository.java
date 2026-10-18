@@ -1,13 +1,34 @@
 package com.sqljudge.auth.repository;
 
 import com.sqljudge.auth.entity.User;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
 
     boolean existsByUsername(String username);
 
     Optional<User> findByEmail(String email);
+
+    @Query(
+            """
+            SELECT new com.sqljudge.auth.repository.UserCounts(
+                COUNT(u),
+                COALESCE(SUM(CASE WHEN u.emailVerifiedAt IS NULL
+                    AND (u.bannedAt IS NULL OR u.bannedUntil <= :now) THEN 1L ELSE 0L END), 0L),
+                COALESCE(SUM(CASE WHEN u.role = com.sqljudge.common.security.Role.SETTER
+                    THEN 1L ELSE 0L END), 0L),
+                COALESCE(SUM(CASE WHEN u.role = com.sqljudge.common.security.Role.MODERATOR
+                    THEN 1L ELSE 0L END), 0L),
+                COALESCE(SUM(CASE WHEN u.bannedAt IS NOT NULL
+                    AND (u.bannedUntil IS NULL OR u.bannedUntil > :now) THEN 1L ELSE 0L END), 0L))
+            FROM User u
+            WHERE u.deletedAt IS NULL
+            """)
+    UserCounts countLiveUsers(@Param("now") Instant now);
 }

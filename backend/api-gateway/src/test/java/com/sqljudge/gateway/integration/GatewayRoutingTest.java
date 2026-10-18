@@ -72,6 +72,38 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName(
+            "API quản lý người dùng của admin được chuyển tới auth-service; admin khác chưa có"
+                    + " route")
+    void adminUserPaths_areRoutedToAuthService() {
+        webTestClient
+                .get()
+                .uri("/api/admin/users?role=SETTER&page=2")
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+        webTestClient
+                .get()
+                .uri("/api/admin/users/minh.anh")
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+        webTestClient
+                .get()
+                .uri("/api/admin/user-summary")
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+        webTestClient.get().uri("/api/admin/overview").exchange().expectStatus().isNotFound();
+
+        assertThat(AUTH_SERVICE.forwardedRequestLines())
+                .containsExactly(
+                        "GET /api/admin/users?role=SETTER&page=2",
+                        "GET /api/admin/users/minh.anh",
+                        "GET /api/admin/user-summary");
+    }
+
+    @Test
     @DisplayName("Đường dẫn nội bộ /internal/** không được định tuyến ra ngoài")
     void internalPath_isNotRouted() {
         webTestClient.get().uri("/internal/jwks").exchange().expectStatus().isNotFound();
