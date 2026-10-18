@@ -1,5 +1,6 @@
 package com.sqljudge.common.web;
 
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.sqljudge.common.error.ApiError;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.error.FieldViolation;
@@ -7,6 +8,7 @@ import com.sqljudge.common.exception.AppException;
 import com.sqljudge.common.exception.QuotaExceededException;
 import java.time.Clock;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public class GlobalExceptionHandler {
 
     private static final String VALIDATION_MESSAGE = "Dữ liệu gửi lên không hợp lệ";
+    private static final String INVALID_VALUE_MESSAGE = "Giá trị không hợp lệ";
 
     private static final AuthenticationTrustResolver TRUST_RESOLVER =
             new AuthenticationTrustResolverImpl();
@@ -78,16 +81,22 @@ public class GlobalExceptionHandler {
         return respondWithViolations(violations);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ApiError> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        if (ex.getCause() instanceof MismatchedInputException mismatch
+                && !mismatch.getPath().isEmpty()) {
+            return respondWithViolations(
+                    List.of(new FieldViolation(fieldPath(mismatch), INVALID_VALUE_MESSAGE)));
+        }
+        return respondMalformed();
+    }
+
     @ExceptionHandler({
-        HttpMessageNotReadableException.class,
         MethodArgumentTypeMismatchException.class,
         MissingServletRequestParameterException.class
     })
     ResponseEntity<ApiError> handleMalformedRequest(Exception ex) {
-        return respond(
-                HttpStatus.BAD_REQUEST,
-                ErrorCode.MALFORMED_REQUEST,
-                "Yêu cầu không đúng định dạng");
+        return respondMalformed();
     }
 
     @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})
@@ -135,6 +144,13 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(status, code, message, clock.instant()));
     }
 
+    private ResponseEntity<ApiError> respondMalformed() {
+        return respond(
+                HttpStatus.BAD_REQUEST,
+                ErrorCode.MALFORMED_REQUEST,
+                "Yêu cầu không đúng định dạng");
+    }
+
     private ResponseEntity<ApiError> respondWithViolations(List<FieldViolation> violations) {
         return ResponseEntity.badRequest()
                 .body(
@@ -144,6 +160,16 @@ public class GlobalExceptionHandler {
                                 VALIDATION_MESSAGE,
                                 violations,
                                 clock.instant()));
+    }
+
+    private static String fieldPath(MismatchedInputException mismatch) {
+        return mismatch.getPath().stream()
+                .map(
+                        reference ->
+                                reference.getFieldName() != null
+                                        ? reference.getFieldName()
+                                        : String.valueOf(reference.getIndex()))
+                .collect(Collectors.joining("."));
     }
 
     private static Stream<FieldViolation> toViolations(ParameterValidationResult result) {

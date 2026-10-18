@@ -30,6 +30,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.access.AccessDeniedException;
@@ -144,6 +146,22 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.errors[0].field").value("page"));
     }
 
+    @ParameterizedTest(name = "{0}")
+    @CsvSource(
+            delimiter = '|',
+            value = {
+                "priority|{\"title\":\"a\",\"priority\":\"URGENT\"}",
+                "pinned|{\"title\":\"a\",\"pinned\":\"yes\"}"
+            })
+    @DisplayName("Giá trị sai kiểu trong JSON hợp lệ trả 400 VALIDATION_FAILED đúng trường")
+    void unreadableValue_returnsFieldViolation(String field, String body) throws Exception {
+        mockMvc.perform(post("/body").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.errors[0].field").value(field))
+                .andExpect(jsonPath("$.errors[0].message").value("Giá trị không hợp lệ"));
+    }
+
     @Test
     @DisplayName("JSON hỏng, sai kiểu hoặc thiếu tham số trả 400 MALFORMED_REQUEST")
     void malformedRequest_returnsMalformedRequest() throws Exception {
@@ -222,7 +240,15 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.message").value("Đã có lỗi xảy ra, vui lòng thử lại sau"));
     }
 
-    record SampleRequest(@NotBlank(message = "Không được để trống") String title) {}
+    enum Priority {
+        LOW,
+        HIGH
+    }
+
+    record SampleRequest(
+            @NotBlank(message = "Không được để trống") String title,
+            Priority priority,
+            Boolean pinned) {}
 
     @RestController
     static class ThrowingController {
