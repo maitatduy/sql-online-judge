@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleAlert, CircleCheck, LockKeyhole } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,12 @@ const API_FIELDS = ["newPassword"] as const;
 
 export function ResetPasswordFlow({ token }: ResetPasswordFlowProps) {
     const [step, setStep] = useState<Step>(token ? "form" : "expired");
+
+    useEffect(() => {
+        if (token) {
+            window.history.replaceState(null, "", ROUTES.resetPassword);
+        }
+    }, [token]);
 
     if (step === "done") {
         return (

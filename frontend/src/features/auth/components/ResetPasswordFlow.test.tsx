@@ -100,6 +100,25 @@ describe("ResetPasswordFlow", () => {
         );
     });
 
+    it("xoá token khỏi thanh địa chỉ và lịch sử ngay khi mở trang, form vẫn dùng được token", async () => {
+        let receivedBody: unknown;
+        server.use(
+            http.post("*/api/auth/password-reset/confirm", async ({ request }) => {
+                receivedBody = await request.json();
+                return new HttpResponse(null, { status: 204 });
+            }),
+        );
+        window.history.pushState(null, "", "/reset-password?token=valid-reset-token");
+
+        renderWithProviders(<ResetPasswordFlow token="valid-reset-token" />);
+
+        expect(window.location.pathname).toBe("/reset-password");
+        expect(window.location.search).toBe("");
+        submitPasswords("matkhau-moi-2026", "matkhau-moi-2026");
+        await screen.findByRole("heading", { level: 1, name: "Đã đổi mật khẩu" });
+        expect(receivedBody).toMatchObject({ token: "valid-reset-token" });
+    });
+
     it("mở trang không có liên kết thì báo hết hạn ngay", () => {
         renderWithProviders(<ResetPasswordFlow />);
 
