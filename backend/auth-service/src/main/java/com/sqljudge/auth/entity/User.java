@@ -93,6 +93,18 @@ public class User extends BaseEntity {
         return emailVerifiedAt == null && deletedAt == null;
     }
 
+    public void ban(Instant now, Instant until, String reason) {
+        bannedAt = now;
+        bannedUntil = until;
+        banReason = reason;
+    }
+
+    public void unban() {
+        bannedAt = null;
+        bannedUntil = null;
+        banReason = null;
+    }
+
     public void markEmailVerified(Instant now) {
         if (emailVerifiedAt == null) {
             emailVerifiedAt = now;

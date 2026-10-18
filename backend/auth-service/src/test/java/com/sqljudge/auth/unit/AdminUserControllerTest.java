@@ -24,6 +24,7 @@ import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
 import com.sqljudge.auth.dto.response.AdminUserSummaryResponse;
 import com.sqljudge.auth.dto.response.UserCountsResponse;
 import com.sqljudge.auth.entity.SignupProvider;
+import com.sqljudge.auth.service.AdminUserBanService;
 import com.sqljudge.auth.service.AdminUserCommandService;
 import com.sqljudge.auth.service.AdminUserQueryService;
 import com.sqljudge.auth.service.AdminUserSearch;
@@ -89,6 +90,7 @@ class AdminUserControllerTest {
 
     @MockitoBean private AdminUserQueryService adminUserQueryService;
     @MockitoBean private AdminUserCommandService adminUserCommandService;
+    @MockitoBean private AdminUserBanService adminUserBanService;
 
     @Test
     @DisplayName(
