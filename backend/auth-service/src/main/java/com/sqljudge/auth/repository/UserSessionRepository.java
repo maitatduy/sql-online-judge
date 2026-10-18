@@ -4,6 +4,7 @@ import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.entity.UserSession;
 import jakarta.persistence.LockModeType;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +20,11 @@ public interface UserSessionRepository extends JpaRepository<UserSession, UUID> 
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<UserSession> findByPreviousTokenHash(String previousTokenHash);
+
+    List<UserSession> findByUserAndRevokedAtIsNullAndExpiresAtAfterOrderByLastUsedAtDesc(
+            User user, Instant now);
+
+    Optional<UserSession> findByIdAndUser(UUID id, User user);
 
     @Modifying
     @Query(

@@ -35,7 +35,7 @@ public class AdminAction extends BaseEntity {
     @Column(name = "action", nullable = false, length = 20)
     private AdminActionType action;
 
-    @Column(name = "reason", nullable = false, length = 500)
+    @Column(name = "reason", length = 500)
     private String reason;
 
     @Column(name = "expires_at")
@@ -49,6 +49,14 @@ public class AdminAction extends BaseEntity {
 
     public static AdminAction unban(UUID actorId, User target, String reason) {
         return of(actorId, target, AdminActionType.UNBAN, reason);
+    }
+
+    public static AdminAction revokeSession(UUID actorId, User target) {
+        return of(actorId, target, AdminActionType.REVOKE_SESSION, null);
+    }
+
+    public static AdminAction revokeAllSessions(UUID actorId, User target) {
+        return of(actorId, target, AdminActionType.REVOKE_ALL_SESSIONS, null);
     }
 
     private static AdminAction of(UUID actorId, User target, AdminActionType type, String reason) {
