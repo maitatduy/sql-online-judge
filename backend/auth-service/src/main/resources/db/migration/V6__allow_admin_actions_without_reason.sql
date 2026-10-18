@@ -1,0 +1,1 @@
+ALTER TABLE admin_actions MODIFY reason VARCHAR(500) NULL;

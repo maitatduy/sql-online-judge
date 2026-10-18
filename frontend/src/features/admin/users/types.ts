@@ -164,7 +164,7 @@ export interface UserSession {
     id: string;
     browser: string;
     os: string;
-    city: string;
+    city: string | null;
     lastActiveAt: string;
     isActiveNow: boolean;
     isUnusualLocation: boolean;
