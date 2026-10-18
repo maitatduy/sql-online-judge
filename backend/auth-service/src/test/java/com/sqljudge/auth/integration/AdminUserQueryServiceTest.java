@@ -1,8 +1,10 @@
 package com.sqljudge.auth.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.sqljudge.auth.dto.response.AccountStatus;
+import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
 import com.sqljudge.auth.dto.response.AdminUserSummaryResponse;
 import com.sqljudge.auth.dto.response.UserCountsResponse;
 import com.sqljudge.auth.entity.SignupProvider;
@@ -11,6 +13,8 @@ import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.service.AdminUserQueryService;
 import com.sqljudge.auth.service.AdminUserSearch;
 import com.sqljudge.common.config.CommonAutoConfiguration;
+import com.sqljudge.common.error.ErrorCode;
+import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.security.Role;
 import com.sqljudge.common.web.PageResponse;
 import java.time.Duration;
@@ -139,6 +143,44 @@ class AdminUserQueryServiceTest extends ContainerSupport {
         UserCountsResponse counts = service.countUsers();
 
         assertThat(counts).isEqualTo(new UserCountsResponse(5, 1, 1, 1, 1));
+    }
+
+    @Test
+    @DisplayName(
+            "Chi tiết theo username gồm tên hiển thị, cách đăng ký; số liệu của service khác tạm"
+                    + " rỗng")
+    void getUser_existingUsername_returnsDetail() {
+        User google = user("thu.google", "thu@gmail.com", Role.LEARNER);
+        google.setDisplayName("Nguyễn Thu");
+        google.setSignupProvider(SignupProvider.GOOGLE);
+        save(google);
+
+        AdminUserDetailResponse detail = service.getUser("thu.google");
+
+        assertThat(detail.account().username()).isEqualTo("thu.google");
+        assertThat(detail.account().status()).isEqualTo(AccountStatus.ACTIVE);
+        assertThat(detail.displayName()).isEqualTo("Nguyễn Thu");
+        assertThat(detail.signupProvider()).isEqualTo(SignupProvider.GOOGLE);
+        assertThat(detail.school()).isNull();
+        assertThat(detail.submissionCount()).isZero();
+        assertThat(detail.contestCount()).isZero();
+        assertThat(detail.violations()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Tài khoản đã xoá và đang bị khoá vẫn xem được chi tiết")
+    void getUser_deletedOrBannedAccount_isStillVisible() {
+        assertThat(service.getUser("da.xoa").account().deletedAt()).isNotNull();
+        assertThat(service.getUser("hung.ban").account().status()).isEqualTo(AccountStatus.BANNED);
+    }
+
+    @Test
+    @DisplayName("Username không tồn tại ném NotFoundException USER_NOT_FOUND")
+    void getUser_unknownUsername_throwsNotFound() {
+        assertThatThrownBy(() -> service.getUser("khong.co"))
+                .isInstanceOfSatisfying(
+                        NotFoundException.class,
+                        ex -> assertThat(ex.getCode()).isEqualTo(ErrorCode.USER_NOT_FOUND));
     }
 
     private PageResponse<AdminUserSummaryResponse> search(AdminUserSearch search) {

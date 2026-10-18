@@ -1,6 +1,7 @@
 package com.sqljudge.auth.controller;
 
 import com.sqljudge.auth.dto.response.AccountStatus;
+import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
 import com.sqljudge.auth.dto.response.AdminUserSummaryResponse;
 import com.sqljudge.auth.dto.response.UserCountsResponse;
 import com.sqljudge.auth.service.AdminUserQueryService;
@@ -15,6 +16,7 @@ import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,6 +50,16 @@ public class AdminUserController {
                     @Min(value = 1, message = "Phải từ 1 đến 100") @Max(value = MAX_PAGE_SIZE, message = "Phải từ 1 đến 100") int size) {
         return adminUserQueryService.search(
                 new AdminUserSearch(q, role, status, emailVerified, deleted), page, size);
+    }
+
+    @Operation(summary = "Chi tiết một người dùng cho admin, kể cả tài khoản đã xoá")
+    @ApiResponse(responseCode = "200", description = "Thông tin tài khoản và hồ sơ")
+    @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
+    @ApiResponse(responseCode = "403", description = "Không phải ADMIN")
+    @ApiResponse(responseCode = "404", description = "Không có người dùng với username này")
+    @GetMapping("/users/{username}")
+    public AdminUserDetailResponse getUser(@PathVariable String username) {
+        return adminUserQueryService.getUser(username);
     }
 
     @Operation(summary = "Số liệu tóm tắt người dùng cho admin")

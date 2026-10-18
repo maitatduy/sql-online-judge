@@ -17,11 +17,15 @@ import com.sqljudge.auth.config.JwtKeyConfig;
 import com.sqljudge.auth.config.SecurityConfig;
 import com.sqljudge.auth.controller.AdminUserController;
 import com.sqljudge.auth.dto.response.AccountStatus;
+import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
 import com.sqljudge.auth.dto.response.AdminUserSummaryResponse;
 import com.sqljudge.auth.dto.response.UserCountsResponse;
+import com.sqljudge.auth.entity.SignupProvider;
 import com.sqljudge.auth.service.AdminUserQueryService;
 import com.sqljudge.auth.service.AdminUserSearch;
 import com.sqljudge.common.config.CommonAutoConfiguration;
+import com.sqljudge.common.error.ErrorCode;
+import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.security.Role;
 import com.sqljudge.common.web.PageResponse;
 import java.time.Instant;
@@ -158,18 +162,61 @@ class AdminUserControllerTest {
     }
 
     @Test
+    @DisplayName(
+            "Admin xem chi tiết: trường của dòng danh sách và trường chi tiết nằm cùng một cấp")
+    void getUser_admin_returnsFlatDetail() throws Exception {
+        when(adminUserQueryService.getUser("lan.pham"))
+                .thenReturn(
+                        new AdminUserDetailResponse(
+                                SETTER, "Phạm Lan", null, SignupProvider.GOOGLE, 0, 0, List.of()));
+
+        mockMvc.perform(as("ADMIN", get("/api/admin/users/lan.pham")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("lan.pham"))
+                .andExpect(jsonPath("$.role").value("SETTER"))
+                .andExpect(jsonPath("$.status").value("ACTIVE"))
+                .andExpect(jsonPath("$.joinedAt").value("2026-09-01T00:00:00Z"))
+                .andExpect(jsonPath("$.displayName").value("Phạm Lan"))
+                .andExpect(jsonPath("$.school").isEmpty())
+                .andExpect(jsonPath("$.signupProvider").value("GOOGLE"))
+                .andExpect(jsonPath("$.submissionCount").value(0))
+                .andExpect(jsonPath("$.contestCount").value(0))
+                .andExpect(jsonPath("$.violations").isArray())
+                .andExpect(jsonPath("$.violations").isEmpty())
+                .andExpect(jsonPath("$.account").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Username không tồn tại trả 404 USER_NOT_FOUND")
+    void getUser_unknownUsername_returnsNotFound() throws Exception {
+        when(adminUserQueryService.getUser("khong.co"))
+                .thenThrow(
+                        new NotFoundException(
+                                ErrorCode.USER_NOT_FOUND, "Không tìm thấy người dùng"));
+
+        mockMvc.perform(as("ADMIN", get("/api/admin/users/khong.co")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Không tìm thấy người dùng"));
+    }
+
+    @Test
     @DisplayName("Không phải ADMIN (kể cả MODERATOR) bị 403; chưa đăng nhập bị 401")
     void adminEndpoints_requireAdminRole() throws Exception {
         for (String role : List.of("LEARNER", "SETTER", "MODERATOR")) {
             mockMvc.perform(as(role, get("/api/admin/users"))).andExpect(status().isForbidden());
             mockMvc.perform(as(role, get("/api/admin/user-summary")))
                     .andExpect(status().isForbidden());
+            mockMvc.perform(as(role, get("/api/admin/users/lan.pham")))
+                    .andExpect(status().isForbidden());
         }
         mockMvc.perform(get("/api/admin/users")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/admin/user-summary")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/admin/users/lan.pham")).andExpect(status().isUnauthorized());
 
         verify(adminUserQueryService, never()).countUsers();
         verify(adminUserQueryService, never()).search(any(), anyInt(), anyInt());
+        verify(adminUserQueryService, never()).getUser(any());
     }
 
     private MockHttpServletRequestBuilder as(String role, MockHttpServletRequestBuilder request) {
