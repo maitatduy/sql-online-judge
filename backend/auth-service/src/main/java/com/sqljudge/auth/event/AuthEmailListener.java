@@ -1,6 +1,8 @@
 package com.sqljudge.auth.event;
 
 import com.sqljudge.auth.config.EmailProperties;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,10 @@ public class AuthEmailListener {
     private static final String VERIFICATION_SUBJECT = "Xác thực email SQL Judge";
     private static final String PASSWORD_RESET_SUBJECT = "Đặt lại mật khẩu SQL Judge";
     private static final String INVITATION_SUBJECT = "Kích hoạt tài khoản SQL Judge";
+    private static final String BAN_SUBJECT = "Tài khoản SQL Judge đã bị khoá";
+    private static final String UNBAN_SUBJECT = "Tài khoản SQL Judge đã được mở khoá";
+    private static final DateTimeFormatter BAN_END_FORMAT =
+            DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy").withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
     private static final String ACCOUNT_EXISTS_SUBJECT = "Email này đã có tài khoản SQL Judge";
 
     private final JavaMailSender mailSender;
@@ -80,6 +86,42 @@ public class AuthEmailListener {
                 """
                         .formatted(event.username(), link);
         send(event.userId(), event.email(), INVITATION_SUBJECT, body, "invitation_email");
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendBanNotificationEmail(BanNotificationEmailRequestedEvent event) {
+        String period =
+                event.bannedUntil() == null
+                        ? "vĩnh viễn"
+                        : "đến " + BAN_END_FORMAT.format(event.bannedUntil()) + " (giờ Việt Nam)";
+        String body =
+                """
+                Chào %s,
+
+                Tài khoản SQL Judge của bạn đã bị khoá %s.
+                Lý do: %s
+
+                Trong thời gian bị khoá, bạn không thể đăng nhập.
+                Nếu bạn cho rằng đây là nhầm lẫn, hãy liên hệ quản trị viên SQL Judge.
+                """
+                        .formatted(event.username(), period, event.reason());
+        send(event.userId(), event.email(), BAN_SUBJECT, body, "ban_notification_email");
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendUnbanNotificationEmail(UnbanNotificationEmailRequestedEvent event) {
+        String body =
+                """
+                Chào %s,
+
+                Tài khoản SQL Judge của bạn đã được mở khoá.
+                Bạn có thể đăng nhập lại tại:
+                %s
+                """
+                        .formatted(event.username(), emailProperties.frontendUrl() + "/login");
+        send(event.userId(), event.email(), UNBAN_SUBJECT, body, "unban_notification_email");
     }
 
     @Async

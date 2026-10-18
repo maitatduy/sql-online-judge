@@ -1,14 +1,18 @@
 package com.sqljudge.auth.controller;
 
+import com.sqljudge.auth.dto.request.BanUserRequest;
 import com.sqljudge.auth.dto.request.CreateUserRequest;
+import com.sqljudge.auth.dto.request.UnbanUserRequest;
 import com.sqljudge.auth.dto.response.AccountStatus;
 import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
 import com.sqljudge.auth.dto.response.AdminUserSummaryResponse;
 import com.sqljudge.auth.dto.response.UserCountsResponse;
+import com.sqljudge.auth.service.AdminUserBanService;
 import com.sqljudge.auth.service.AdminUserCommandService;
 import com.sqljudge.auth.service.AdminUserQueryService;
 import com.sqljudge.auth.service.AdminUserSearch;
 import com.sqljudge.common.security.Role;
+import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.common.web.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,6 +44,7 @@ public class AdminUserController {
 
     private final AdminUserQueryService adminUserQueryService;
     private final AdminUserCommandService adminUserCommandService;
+    private final AdminUserBanService adminUserBanService;
 
     @Operation(summary = "Danh sách người dùng cho admin: lọc, tìm, phân trang")
     @ApiResponse(responseCode = "200", description = "Một trang người dùng, mới tạo đứng trước")
@@ -76,6 +81,34 @@ public class AdminUserController {
                         .buildAndExpand(created.account().username())
                         .toUri();
         return ResponseEntity.created(location).body(created);
+    }
+
+    @Operation(summary = "Khoá tài khoản: đăng xuất mọi phiên, ghi nhật ký, tuỳ chọn gửi email")
+    @ApiResponse(responseCode = "200", description = "Chi tiết tài khoản sau khi khoá")
+    @ApiResponse(responseCode = "400", description = "Thời hạn, lý do hoặc tuỳ chọn email sai")
+    @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
+    @ApiResponse(responseCode = "403", description = "Không phải ADMIN")
+    @ApiResponse(responseCode = "404", description = "Không có tài khoản hoặc đã bị xoá")
+    @ApiResponse(responseCode = "409", description = "Tài khoản đang bị khoá")
+    @ApiResponse(responseCode = "422", description = "Admin tự khoá chính mình")
+    @PostMapping("/users/{username}/ban")
+    public AdminUserDetailResponse banUser(
+            @PathVariable String username, @Valid @RequestBody BanUserRequest request) {
+        return adminUserBanService.ban(username, request, SecurityUtils.requireCurrentUser().id());
+    }
+
+    @Operation(summary = "Mở khoá tài khoản, ghi nhật ký kèm lý do")
+    @ApiResponse(responseCode = "200", description = "Chi tiết tài khoản sau khi mở khoá")
+    @ApiResponse(responseCode = "400", description = "Thiếu lý do hoặc lý do quá dài")
+    @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
+    @ApiResponse(responseCode = "403", description = "Không phải ADMIN")
+    @ApiResponse(responseCode = "404", description = "Không có tài khoản hoặc đã bị xoá")
+    @ApiResponse(responseCode = "409", description = "Tài khoản không bị khoá")
+    @PostMapping("/users/{username}/unban")
+    public AdminUserDetailResponse unbanUser(
+            @PathVariable String username, @Valid @RequestBody UnbanUserRequest request) {
+        return adminUserBanService.unban(
+                username, request, SecurityUtils.requireCurrentUser().id());
     }
 
     @Operation(summary = "Chi tiết một người dùng cho admin, kể cả tài khoản đã xoá")
