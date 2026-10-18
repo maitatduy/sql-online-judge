@@ -50,10 +50,13 @@ public class PasswordResetService {
         EmailToken resetToken =
                 emailTokenRepository
                         .findByTokenHash(SecureTokens.sha256(token))
-                        .filter(found -> found.getPurpose() == PURPOSE && found.isActiveAt(now))
+                        .filter(found -> isPasswordLink(found) && found.isActiveAt(now))
                         .orElseThrow(PasswordResetService::invalidLink);
         User user = resetToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+        if (resetToken.getPurpose() == EmailTokenPurpose.INVITE) {
+            user.markEmailVerified(now);
+        }
         resetToken.markUsed(now);
         userSessionRepository.revokeAllActiveSessions(user, now);
     }
@@ -70,6 +73,10 @@ public class PasswordResetService {
         eventPublisher.publishEvent(
                 new PasswordResetEmailRequestedEvent(
                         user.getId(), user.getEmail(), user.getUsername(), token));
+    }
+
+    private static boolean isPasswordLink(EmailToken token) {
+        return token.getPurpose() == PURPOSE || token.getPurpose() == EmailTokenPurpose.INVITE;
     }
 
     private boolean isPastCooldown(User user, Instant now) {

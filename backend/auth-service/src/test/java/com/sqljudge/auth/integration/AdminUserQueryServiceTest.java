@@ -9,7 +9,10 @@ import com.sqljudge.auth.dto.response.AdminUserSummaryResponse;
 import com.sqljudge.auth.dto.response.UserCountsResponse;
 import com.sqljudge.auth.entity.SignupProvider;
 import com.sqljudge.auth.entity.User;
+import com.sqljudge.auth.repository.EmailTokenRepository;
+import com.sqljudge.auth.repository.OAuthAccountRepository;
 import com.sqljudge.auth.repository.UserRepository;
+import com.sqljudge.auth.repository.UserSessionRepository;
 import com.sqljudge.auth.service.AdminUserQueryService;
 import com.sqljudge.auth.service.AdminUserSearch;
 import com.sqljudge.common.config.CommonAutoConfiguration;
@@ -38,11 +41,17 @@ class AdminUserQueryServiceTest extends ContainerSupport {
     private static final Instant NOW = Instant.now();
 
     @Autowired private UserRepository userRepository;
+    @Autowired private EmailTokenRepository emailTokenRepository;
+    @Autowired private UserSessionRepository userSessionRepository;
+    @Autowired private OAuthAccountRepository oauthAccountRepository;
     @Autowired private AdminUserQueryService service;
 
     @BeforeEach
     void seedUsers() {
-        userRepository.deleteAll();
+        emailTokenRepository.deleteAllInBatch();
+        userSessionRepository.deleteAllInBatch();
+        oauthAccountRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
         save(user("lan.pham", "lan.pham@gmail.com", Role.SETTER));
         User unverified = user("minh.anh", "minh.anh@gmail.com", Role.LEARNER);
         unverified.setEmailVerifiedAt(null);

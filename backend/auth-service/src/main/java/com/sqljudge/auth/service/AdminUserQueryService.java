@@ -1,6 +1,5 @@
 package com.sqljudge.auth.service;
 
-import com.sqljudge.auth.dto.response.AccountStatus;
 import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
 import com.sqljudge.auth.dto.response.AdminUserSummaryResponse;
 import com.sqljudge.auth.dto.response.UserCountsResponse;
@@ -12,7 +11,6 @@ import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.web.PageResponse;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,10 +23,6 @@ public class AdminUserQueryService {
 
     private static final Sort NEWEST_FIRST =
             Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
-    private static final int STAT_NOT_TRACKED_YET = 0;
-    private static final boolean PRESENCE_NOT_TRACKED_YET = false;
-    private static final String AVATAR_NOT_STORED_YET = null;
-    private static final String SCHOOL_NOT_STORED_YET = null;
 
     private final UserRepository userRepository;
     private final Clock clock;
@@ -41,7 +35,7 @@ public class AdminUserQueryService {
                 userRepository.findAll(
                         AdminUserSpecifications.matching(search, now),
                         PageRequest.of(page - 1, size, NEWEST_FIRST)),
-                user -> toSummary(user, now));
+                user -> AdminUserViews.toSummary(user, now));
     }
 
     @Transactional(readOnly = true)
@@ -50,14 +44,7 @@ public class AdminUserQueryService {
                 userRepository
                         .findByUsername(username)
                         .orElseThrow(AdminUserQueryService::userNotFound);
-        return new AdminUserDetailResponse(
-                toSummary(user, clock.instant()),
-                user.getDisplayName(),
-                SCHOOL_NOT_STORED_YET,
-                user.getSignupProvider(),
-                STAT_NOT_TRACKED_YET,
-                STAT_NOT_TRACKED_YET,
-                List.of());
+        return AdminUserViews.toDetail(user, clock.instant());
     }
 
     @Transactional(readOnly = true)
@@ -73,23 +60,5 @@ public class AdminUserQueryService {
 
     private static NotFoundException userNotFound() {
         return new NotFoundException(ErrorCode.USER_NOT_FOUND, "Không tìm thấy người dùng");
-    }
-
-    private static AdminUserSummaryResponse toSummary(User user, Instant now) {
-        return new AdminUserSummaryResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole(),
-                STAT_NOT_TRACKED_YET,
-                STAT_NOT_TRACKED_YET,
-                user.getCreatedAt(),
-                user.getLastActiveAt(),
-                PRESENCE_NOT_TRACKED_YET,
-                user.isBannedAt(now) ? AccountStatus.BANNED : AccountStatus.ACTIVE,
-                user.getBannedUntil(),
-                user.isEmailVerified(),
-                AVATAR_NOT_STORED_YET,
-                user.getDeletedAt());
     }
 }

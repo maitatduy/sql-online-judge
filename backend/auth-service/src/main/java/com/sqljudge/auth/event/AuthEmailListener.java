@@ -18,6 +18,7 @@ public class AuthEmailListener {
 
     private static final String VERIFICATION_SUBJECT = "Xác thực email SQL Judge";
     private static final String PASSWORD_RESET_SUBJECT = "Đặt lại mật khẩu SQL Judge";
+    private static final String INVITATION_SUBJECT = "Kích hoạt tài khoản SQL Judge";
     private static final String ACCOUNT_EXISTS_SUBJECT = "Email này đã có tài khoản SQL Judge";
 
     private final JavaMailSender mailSender;
@@ -60,6 +61,25 @@ public class AuthEmailListener {
                 """
                         .formatted(event.username(), link);
         send(event.userId(), event.email(), PASSWORD_RESET_SUBJECT, body, "password_reset_email");
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendInvitationEmail(InvitationEmailRequestedEvent event) {
+        String link = emailProperties.frontendUrl() + "/reset-password?token=" + event.token();
+        String body =
+                """
+                Chào %s,
+
+                Quản trị viên SQL Judge vừa tạo tài khoản cho bạn.
+                Bấm liên kết sau để đặt mật khẩu và kích hoạt tài khoản:
+                %s
+
+                Liên kết có hiệu lực 7 ngày và chỉ dùng được một lần.
+                Nếu bạn không mong đợi email này, hãy bỏ qua nó.
+                """
+                        .formatted(event.username(), link);
+        send(event.userId(), event.email(), INVITATION_SUBJECT, body, "invitation_email");
     }
 
     @Async
