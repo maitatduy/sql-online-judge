@@ -22,4 +22,10 @@ describe("sessionLabel", () => {
     it("bỏ thành phố khi chưa có dữ liệu vị trí", () => {
         expect(sessionLabel({ ...SESSION, city: null })).toBe("Chrome · Windows");
     });
+
+    it("ghi rõ phần nào không nhận ra được", () => {
+        expect(sessionLabel({ ...SESSION, browser: null, os: null, city: null })).toBe(
+            "Trình duyệt không rõ · Hệ điều hành không rõ",
+        );
+    });
 });

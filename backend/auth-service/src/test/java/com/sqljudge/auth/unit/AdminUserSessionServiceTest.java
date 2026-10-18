@@ -88,7 +88,7 @@ class AdminUserSessionServiceTest {
         assertThat(sessions.get(0).isActiveNow()).isTrue();
         assertThat(sessions.get(0).city()).isNull();
         assertThat(sessions.get(0).isUnusualLocation()).isFalse();
-        assertThat(sessions.get(1).browser()).isEqualTo("Không rõ");
+        assertThat(sessions.get(1).browser()).isNull();
         assertThat(sessions.get(1).isActiveNow()).isFalse();
     }
 
@@ -148,11 +148,22 @@ class AdminUserSessionServiceTest {
     @DisplayName("Đăng xuất tất cả: thu hồi mọi phiên và ghi nhật ký")
     void revokeAllSessions_revokesEverySessionAndRecords() {
         stubUser();
+        when(userSessionRepository.revokeAllActiveSessions(user, NOW)).thenReturn(2);
 
         service.revokeAllSessions("viet.luu", ADMIN_ID);
 
-        verify(userSessionRepository).revokeAllActiveSessions(user, NOW);
         assertThat(recordedAction().getAction()).isEqualTo(AdminActionType.REVOKE_ALL_SESSIONS);
+    }
+
+    @Test
+    @DisplayName("Không còn phiên nào thì không ghi nhật ký")
+    void revokeAllSessions_noActiveSession_recordsNothing() {
+        stubUser();
+        when(userSessionRepository.revokeAllActiveSessions(user, NOW)).thenReturn(0);
+
+        service.revokeAllSessions("viet.luu", ADMIN_ID);
+
+        verifyNoInteractions(adminActionRepository);
     }
 
     @Test

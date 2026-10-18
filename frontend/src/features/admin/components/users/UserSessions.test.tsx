@@ -70,6 +70,11 @@ describe("phiên đăng nhập trên trang chi tiết", () => {
             await screen.findByRole("dialog", { name: "Đăng xuất mọi thiết bị của viet.luu?" }),
         );
 
+        expect(
+            dialog.getByText(
+                "Mọi phiên đăng nhập bị thu hồi; người dùng sẽ bị đăng xuất trong vòng 15 phút.",
+            ),
+        ).toBeInTheDocument();
         expect(dialog.queryByText(/Bạn cũng sẽ bị đăng xuất/)).not.toBeInTheDocument();
 
         fireEvent.click(dialog.getByRole("button", { name: "Đăng xuất mọi thiết bị" }));

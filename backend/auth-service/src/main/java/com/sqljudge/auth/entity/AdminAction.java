@@ -42,13 +42,13 @@ public class AdminAction extends BaseEntity {
     private Instant expiresAt;
 
     public static AdminAction ban(UUID actorId, User target, String reason) {
-        AdminAction action = of(actorId, target, AdminActionType.BAN, reason);
+        AdminAction action = of(actorId, target, AdminActionType.BAN, requireReason(reason));
         action.expiresAt = target.getBannedUntil();
         return action;
     }
 
     public static AdminAction unban(UUID actorId, User target, String reason) {
-        return of(actorId, target, AdminActionType.UNBAN, reason);
+        return of(actorId, target, AdminActionType.UNBAN, requireReason(reason));
     }
 
     public static AdminAction revokeSession(UUID actorId, User target) {
@@ -57,6 +57,13 @@ public class AdminAction extends BaseEntity {
 
     public static AdminAction revokeAllSessions(UUID actorId, User target) {
         return of(actorId, target, AdminActionType.REVOKE_ALL_SESSIONS, null);
+    }
+
+    private static String requireReason(String reason) {
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("reason is required for this admin action");
+        }
+        return reason;
     }
 
     private static AdminAction of(UUID actorId, User target, AdminActionType type, String reason) {

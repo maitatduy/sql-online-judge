@@ -4,7 +4,8 @@ import { useRevokeAllSessions } from "@/features/admin/hooks/useUserSessions";
 import { ActionDialog } from "./ActionDialog";
 import { DialogActions } from "./DialogActions";
 
-const REVOKE_DESCRIPTION = "Mọi phiên đăng nhập bị thu hồi; người dùng phải đăng nhập lại.";
+const REVOKE_DESCRIPTION =
+    "Mọi phiên đăng nhập bị thu hồi; người dùng sẽ bị đăng xuất trong vòng 15 phút.";
 const SELF_WARNING = "Bạn cũng sẽ bị đăng xuất khỏi phiên đang dùng.";
 
 interface RevokeAllSessionsDialogProps {

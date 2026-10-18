@@ -65,9 +65,16 @@ public class AdminUserSessionService {
     @Transactional
     public void revokeAllSessions(String username, UUID actorId) {
         User user = findLiveUser(username);
-        userSessionRepository.revokeAllActiveSessions(user, clock.instant());
+        int revokedCount = userSessionRepository.revokeAllActiveSessions(user, clock.instant());
+        if (revokedCount == 0) {
+            return;
+        }
         adminActionRepository.save(AdminAction.revokeAllSessions(actorId, user));
-        log.info("admin_all_sessions_revoked userId={} actorId={}", user.getId(), actorId);
+        log.info(
+                "admin_all_sessions_revoked userId={} actorId={} count={}",
+                user.getId(),
+                actorId,
+                revokedCount);
     }
 
     private User findLiveUser(String username) {
