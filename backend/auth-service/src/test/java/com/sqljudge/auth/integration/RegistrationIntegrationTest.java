@@ -42,7 +42,7 @@ class RegistrationIntegrationTest extends ContainerSupport {
         ResponseEntity<Map> response = register("tich.hop", "Tich.Hop@Gmail.com");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getHeaders().getLocation()).hasToString("/api/users/tich.hop");
+        assertThat(response.getHeaders().getLocation()).isNull();
         assertThat(response.getBody()).containsOnlyKeys("email");
 
         User user =
@@ -73,14 +73,24 @@ class RegistrationIntegrationTest extends ContainerSupport {
     }
 
     @Test
-    @DisplayName("Đăng ký lại cùng email khác hoa thường trả 409 EMAIL_TAKEN")
-    void register_duplicateEmail_returnsConflict() {
+    @DisplayName(
+            "Đăng ký lại bằng email đã có: trả 201 giống hệt đăng ký mới để không lộ email, không"
+                    + " tạo user, chủ email nhận mail báo đã có tài khoản")
+    void register_existingEmail_respondsLikeNewAndNotifiesOwner() throws Exception {
         register("lan.mot", "trung.email@gmail.com");
+        long usersBefore = userRepository.count();
 
         ResponseEntity<Map> response = register("lan.hai", "TRUNG.EMAIL@gmail.com");
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-        assertThat(response.getBody()).containsEntry("code", "EMAIL_TAKEN");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).containsOnlyKeys("email");
+        assertThat(response.getBody()).containsEntry("email", "trung.email@gmail.com");
+        assertThat(userRepository.count()).isEqualTo(usersBefore);
+        ReceivedMail mail =
+                MailpitContainer.client()
+                        .awaitMailWithSubject(
+                                "trung.email@gmail.com", "Email này đã có tài khoản SQL Judge");
+        assertThat(mail.text()).contains("lan.mot").contains("/forgot-password");
     }
 
     private ResponseEntity<Map> register(String username, String email) {

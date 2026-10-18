@@ -13,17 +13,17 @@ import com.sqljudge.common.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
-import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -35,16 +35,17 @@ public class AuthController {
     private final UserService userService;
 
     @Operation(summary = "Đăng ký tài khoản bằng email, gửi mã xác thực")
-    @ApiResponse(responseCode = "201", description = "Đã tạo tài khoản chưa xác thực")
+    @ApiResponse(
+            responseCode = "201",
+            description =
+                    "Đã nhận đăng ký. Email đã có tài khoản cũng trả 201 để không lộ email, chủ"
+                            + " email nhận mail báo")
     @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ")
-    @ApiResponse(responseCode = "409", description = "Username hoặc email đã có người dùng")
+    @ApiResponse(responseCode = "409", description = "Username đã có người dùng")
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
-        URI location =
-                UriComponentsBuilder.fromPath("/api/users/{username}")
-                        .buildAndExpand(request.username())
-                        .toUri();
-        return ResponseEntity.created(location).body(registrationService.register(request));
+    @ResponseStatus(HttpStatus.CREATED)
+    public RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
+        return registrationService.register(request);
     }
 
     @Operation(summary = "Đăng nhập bằng email và mật khẩu")

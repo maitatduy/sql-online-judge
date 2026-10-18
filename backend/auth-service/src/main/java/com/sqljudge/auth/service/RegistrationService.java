@@ -4,11 +4,13 @@ import com.sqljudge.auth.dto.request.RegisterRequest;
 import com.sqljudge.auth.dto.response.RegisterResponse;
 import com.sqljudge.auth.entity.SignupProvider;
 import com.sqljudge.auth.entity.User;
+import com.sqljudge.auth.event.AccountExistsEmailRequestedEvent;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.ConflictException;
 import com.sqljudge.common.security.Role;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class RegistrationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -30,19 +33,34 @@ public class RegistrationService {
         if (userRepository.existsByUsername(request.username())) {
             throw usernameTaken();
         }
-        if (userRepository.existsByEmail(email)) {
-            throw emailTaken();
-        }
-        User user = save(newLearner(request, email));
-        emailVerificationService.sendVerificationEmail(user);
+        String passwordHash = passwordEncoder.encode(request.password());
+        userRepository
+                .findByEmail(email)
+                .ifPresentOrElse(
+                        this::notifyExistingOwner,
+                        () -> registerNewLearner(request, email, passwordHash));
         return new RegisterResponse(email);
     }
 
-    private User newLearner(RegisterRequest request, String email) {
+    private void registerNewLearner(RegisterRequest request, String email, String passwordHash) {
+        User user = save(newLearner(request, email, passwordHash));
+        emailVerificationService.sendVerificationEmail(user);
+    }
+
+    private void notifyExistingOwner(User owner) {
+        if (owner.isDeleted()) {
+            return;
+        }
+        eventPublisher.publishEvent(
+                new AccountExistsEmailRequestedEvent(
+                        owner.getId(), owner.getEmail(), owner.getUsername()));
+    }
+
+    private static User newLearner(RegisterRequest request, String email, String passwordHash) {
         User user = new User();
         user.setUsername(request.username());
         user.setEmail(email);
-        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setPasswordHash(passwordHash);
         user.setRole(Role.LEARNER);
         user.setSignupProvider(SignupProvider.EMAIL);
         return user;

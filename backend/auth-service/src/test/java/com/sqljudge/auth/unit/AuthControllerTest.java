@@ -66,14 +66,16 @@ class AuthControllerTest {
     @MockitoBean private UserService userService;
 
     @Test
-    @DisplayName("Khách đăng ký thành công: 201, Location, chỉ trả email, không cần CSRF token")
+    @DisplayName(
+            "Khách đăng ký thành công: 201, chỉ trả email, chưa có Location vì chưa có trang hồ"
+                    + " sơ, không cần CSRF token")
     void register_anonymousWithoutCsrfToken_returnsCreated() throws Exception {
         when(registrationService.register(any(RegisterRequest.class)))
                 .thenReturn(new RegisterResponse("minh.anh@gmail.com"));
 
         mockMvc.perform(register(VALID_BODY))
                 .andExpect(status().isCreated())
-                .andExpect(header().string(HttpHeaders.LOCATION, "/api/users/minh.anh"))
+                .andExpect(header().doesNotExist(HttpHeaders.LOCATION))
                 .andExpect(jsonPath("$.email").value("minh.anh@gmail.com"))
                 .andExpect(jsonPath("$.accessToken").doesNotExist());
     }

@@ -29,7 +29,6 @@ const DEMO_ACCOUNTS: Record<string, CurrentUser> = {
 const LOCKED_EMAIL = "locked@sqljudge.dev";
 const UNVERIFIED_EMAIL = "unverified@sqljudge.dev";
 const TAKEN_USERNAME = "taken";
-const TAKEN_EMAIL = "taken@sqljudge.dev";
 const UNAVAILABLE_USERNAMES = [TAKEN_USERNAME, "admin", "demo"];
 const RETRY_AFTER_SECONDS = 30;
 const NEW_USER_ID = "0192f3a0-0000-7000-8000-000000000002";
@@ -113,9 +112,6 @@ export const handlers: RequestHandler[] = [
         const body = (await request.json()) as RegisterRequest;
         if (body.username === TAKEN_USERNAME) {
             return apiError(409, "USERNAME_TAKEN", "Tên người dùng đã có người dùng");
-        }
-        if (body.email === TAKEN_EMAIL) {
-            return apiError(409, "EMAIL_TAKEN", "Email đã được đăng ký");
         }
         return HttpResponse.json<RegisterResponse>({ email: body.email }, { status: 201 });
     }),

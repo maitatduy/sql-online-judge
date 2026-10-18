@@ -10,7 +10,6 @@ export interface FieldError<TField extends string> {
 
 const CONFLICT_FIELD_ERRORS: Record<string, FieldError<string> | undefined> = {
     USERNAME_TAKEN: { field: "username", message: "Tên người dùng này đã có người dùng" },
-    EMAIL_TAKEN: { field: "email", message: "Email này đã được đăng ký" },
 };
 
 export function getFieldErrors<TField extends string>(

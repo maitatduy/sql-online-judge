@@ -18,6 +18,7 @@ public class AuthEmailListener {
 
     private static final String VERIFICATION_SUBJECT = "Xác thực email SQL Judge";
     private static final String PASSWORD_RESET_SUBJECT = "Đặt lại mật khẩu SQL Judge";
+    private static final String ACCOUNT_EXISTS_SUBJECT = "Email này đã có tài khoản SQL Judge";
 
     private final JavaMailSender mailSender;
     private final EmailProperties emailProperties;
@@ -59,6 +60,30 @@ public class AuthEmailListener {
                 """
                         .formatted(event.username(), link);
         send(event.userId(), event.email(), PASSWORD_RESET_SUBJECT, body, "password_reset_email");
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendAccountExistsEmail(AccountExistsEmailRequestedEvent event) {
+        String body =
+                """
+                Chào %s,
+
+                Có người vừa dùng email này để đăng ký SQL Judge, nhưng email đã có tài khoản.
+
+                Đăng nhập tại:
+                %s
+
+                Nếu quên mật khẩu, đặt lại tại:
+                %s
+
+                Nếu không phải bạn, hãy bỏ qua email này. Tài khoản của bạn không bị thay đổi.
+                """
+                        .formatted(
+                                event.username(),
+                                emailProperties.frontendUrl() + "/login",
+                                emailProperties.frontendUrl() + "/forgot-password");
+        send(event.userId(), event.email(), ACCOUNT_EXISTS_SUBJECT, body, "account_exists_email");
     }
 
     private void send(UUID userId, String to, String subject, String body, String logEvent) {

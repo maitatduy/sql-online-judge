@@ -131,13 +131,14 @@ describe("RegisterForm", () => {
         expect(push).not.toHaveBeenCalled();
     });
 
-    it("email đã đăng ký thì báo lỗi ở ô email", async () => {
+    it("email đã có tài khoản thì vẫn sang bước xác thực như email mới, không lộ email đã đăng ký", async () => {
         renderWithProviders(<RegisterForm />);
 
         fillAndSubmit({ email: "taken@sqljudge.dev" });
 
-        expect(await screen.findByText("Email này đã được đăng ký")).toBeInTheDocument();
-        expect(screen.getByLabelText("Email")).toHaveAttribute("aria-invalid", "true");
+        await waitFor(() => expect(push).toHaveBeenCalledWith("/verify-email"));
+        expect(readPendingVerificationEmail()).toBe("taken@sqljudge.dev");
+        expect(screen.getByLabelText("Email")).not.toHaveAttribute("aria-invalid", "true");
     });
 
     it("thanh độ mạnh cập nhật khi gõ mật khẩu", () => {
