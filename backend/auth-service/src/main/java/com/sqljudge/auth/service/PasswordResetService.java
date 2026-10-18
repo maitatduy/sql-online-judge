@@ -54,10 +54,10 @@ public class PasswordResetService {
                         .orElseThrow(PasswordResetService::invalidLink);
         User user = resetToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
-        if (resetToken.getPurpose() == EmailTokenPurpose.INVITE) {
-            user.markEmailVerified(now);
-        }
+        user.markEmailVerified(now);
         resetToken.markUsed(now);
+        emailTokenRepository.invalidateUnusedTokens(user, PURPOSE, now);
+        emailTokenRepository.invalidateUnusedTokens(user, EmailTokenPurpose.INVITE, now);
         userSessionRepository.revokeAllActiveSessions(user, now);
     }
 

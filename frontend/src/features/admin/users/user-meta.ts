@@ -12,12 +12,18 @@ export function joinedLabel({ joinedAt, signupProvider }: AdminUserDetail): stri
     return `${formatDate(joinedAt)} qua ${SIGNUP_PROVIDER_LABELS[signupProvider]}`;
 }
 
-export function userMetaLines(user: AdminUserDetail): string[] {
-    return [
-        user.displayName,
-        user.school,
-        user.email,
-        user.isEmailVerified ? "Đã xác minh" : "Chưa xác minh",
-        `Tham gia ${joinedLabel(user)}`,
-    ].filter((line): line is string => Boolean(line));
+export interface UserMetaLine {
+    kind: "displayName" | "school" | "email" | "verification" | "joined";
+    text: string;
+}
+
+export function userMetaLines(user: AdminUserDetail): UserMetaLine[] {
+    const lines: { kind: UserMetaLine["kind"]; text: string | null }[] = [
+        { kind: "displayName", text: user.displayName },
+        { kind: "school", text: user.school },
+        { kind: "email", text: user.email },
+        { kind: "verification", text: user.isEmailVerified ? "Đã xác minh" : "Chưa xác minh" },
+        { kind: "joined", text: `Tham gia ${joinedLabel(user)}` },
+    ];
+    return lines.filter((line): line is UserMetaLine => Boolean(line.text));
 }

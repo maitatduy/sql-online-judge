@@ -38,9 +38,9 @@ export function UserPageContent({ user }: UserPageContentProps) {
                         aria-label="Thông tin tài khoản"
                         className="mb-1.5 text-[13px] text-muted-foreground"
                     >
-                        {userMetaLines(user).map((line) => (
-                            <li key={line} className="break-all">
-                                {line}
+                        {userMetaLines(user).map(({ kind, text }) => (
+                            <li key={kind} className="break-all">
+                                {text}
                             </li>
                         ))}
                     </ul>

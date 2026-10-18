@@ -27,7 +27,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -141,7 +140,7 @@ class AdminUserCommandServiceTest {
     @DisplayName("Email đã được dùng (so sau khi chuẩn hoá): 409 EMAIL_TAKEN")
     void createUser_takenEmail_rejects() {
         when(userRepository.existsByUsername("lan.pham")).thenReturn(false);
-        when(userRepository.findByEmail("lan.pham@gmail.com")).thenReturn(Optional.of(new User()));
+        when(userRepository.existsByEmail("lan.pham@gmail.com")).thenReturn(true);
 
         assertThatThrownBy(() -> service.createUser(REQUEST))
                 .isInstanceOf(ConflictException.class)
@@ -153,6 +152,6 @@ class AdminUserCommandServiceTest {
 
     private void stubFreeUsernameAndEmail() {
         when(userRepository.existsByUsername("lan.pham")).thenReturn(false);
-        when(userRepository.findByEmail("lan.pham@gmail.com")).thenReturn(Optional.empty());
+        when(userRepository.existsByEmail("lan.pham@gmail.com")).thenReturn(false);
     }
 }

@@ -13,11 +13,13 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminUserCommandService {
@@ -35,12 +37,17 @@ public class AdminUserCommandService {
         if (userRepository.existsByUsername(request.username())) {
             throw UserConflicts.usernameTaken();
         }
-        if (userRepository.findByEmail(email).isPresent()) {
+        if (userRepository.existsByEmail(email)) {
             throw UserConflicts.emailTaken();
         }
         Instant now = clock.instant();
         User user = save(newInvitedUser(request, email));
         sendInvitation(user, now);
+        log.info(
+                "admin_user_created userId={} createdBy={} role={}",
+                user.getId(),
+                user.getCreatedBy(),
+                user.getRole());
         return AdminUserViews.toDetail(user, now);
     }
 

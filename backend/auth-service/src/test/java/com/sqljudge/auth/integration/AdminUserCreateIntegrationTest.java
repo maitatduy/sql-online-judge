@@ -23,7 +23,7 @@ import org.springframework.test.context.DynamicPropertySource;
 @ActiveProfiles("test")
 class AdminUserCreateIntegrationTest extends ContainerSupport {
 
-    private static final Pattern INVITE_LINK =
+    private static final Pattern PASSWORD_LINK =
             Pattern.compile("http://localhost:3000/reset-password\\?token=([A-Za-z0-9_-]{43})");
     private static final String INVITE_SUBJECT = "Kích hoạt tài khoản SQL Judge";
     private static final String ADMIN_PASSWORD = "matkhau-admin-2026";
@@ -53,17 +53,8 @@ class AdminUserCreateIntegrationTest extends ContainerSupport {
                                 "role", "SETTER",
                                 "displayName", "Người Mới"));
         ResponseEntity<Map> loginBeforeActivation = login(email, NEW_PASSWORD);
-        String token =
-                MailpitContainer.firstGroup(
-                        INVITE_LINK,
-                        MailpitContainer.client()
-                                .awaitMailWithSubject(email, INVITE_SUBJECT)
-                                .text());
-        ResponseEntity<Map> activated =
-                restTemplate.postForEntity(
-                        "/api/auth/password-reset/confirm",
-                        Map.of("token", token, "newPassword", NEW_PASSWORD),
-                        Map.class);
+        String token = readLinkToken(email, INVITE_SUBJECT);
+        ResponseEntity<Map> activated = confirmPassword(token, NEW_PASSWORD);
 
         assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(created.getHeaders().getLocation()).hasPath("/api/admin/users/moi.tao");
@@ -75,6 +66,25 @@ class AdminUserCreateIntegrationTest extends ContainerSupport {
         assertThat(loginBeforeActivation.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(activated.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(login(email, NEW_PASSWORD).getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    @DisplayName("Người được mời đặt mật khẩu qua Quên mật khẩu: link mời cũ không dùng được nữa")
+    void createUser_passwordSetByResetLink_invalidatesInviteLink() throws Exception {
+        String adminToken = signInAsAdmin("admin.moi", "admin.moi@gmail.com");
+        String email = "quen.loi.moi@gmail.com";
+        createUser(
+                adminToken, Map.of("username", "quen.loi.moi", "email", email, "role", "LEARNER"));
+        String inviteToken = readLinkToken(email, INVITE_SUBJECT);
+
+        restTemplate.postForEntity("/api/auth/password-reset", Map.of("email", email), Void.class);
+        String resetToken = readLinkToken(email, "Đặt lại mật khẩu SQL Judge");
+        ResponseEntity<Map> reset = confirmPassword(resetToken, NEW_PASSWORD);
+        ResponseEntity<Map> lateInvite = confirmPassword(inviteToken, "matkhau-khac-2026");
+
+        assertThat(reset.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(lateInvite.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(lateInvite.getBody()).containsEntry("code", "TOKEN_INVALID_OR_EXPIRED");
     }
 
     @Test
@@ -137,6 +147,19 @@ class AdminUserCreateIntegrationTest extends ContainerSupport {
         headers.setBearerAuth(adminToken);
         return restTemplate.postForEntity(
                 "/api/admin/users", new HttpEntity<>(body, headers), Map.class);
+    }
+
+    private static String readLinkToken(String email, String subject) throws Exception {
+        return MailpitContainer.firstGroup(
+                PASSWORD_LINK,
+                MailpitContainer.client().awaitMailWithSubject(email, subject).text());
+    }
+
+    private ResponseEntity<Map> confirmPassword(String token, String newPassword) {
+        return restTemplate.postForEntity(
+                "/api/auth/password-reset/confirm",
+                Map.of("token", token, "newPassword", newPassword),
+                Map.class);
     }
 
     private ResponseEntity<Map> login(String email, String password) {
