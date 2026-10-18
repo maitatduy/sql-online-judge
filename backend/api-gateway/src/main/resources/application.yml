@@ -37,6 +37,7 @@ spring:
 
 sqljudge:
   rate-limit:
+    trusted-proxies: 0
     policies:
       - name: login
         path: /api/auth/login

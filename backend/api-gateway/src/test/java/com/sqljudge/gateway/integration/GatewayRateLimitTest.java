@@ -71,6 +71,18 @@ class GatewayRateLimitTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName(
+            "Không chạy sau proxy (mặc định): đổi X-Forwarded-For giả mỗi lần cũng không thoát"
+                    + " giới hạn")
+    void login_spoofedForwardedFor_isIgnoredWithoutTrustedProxy() {
+        for (int attempt = 0; attempt < 10; attempt++) {
+            post("/api/auth/login", "198.51.100." + attempt).expectStatus().isOk();
+        }
+
+        post("/api/auth/login", "198.51.100.99").expectStatus().isEqualTo(429);
+    }
+
+    @Test
     @DisplayName("Đăng ký chặt hơn: 5 lần/phút/IP")
     void register_overLimit_isRejected() {
         for (int attempt = 0; attempt < 5; attempt++) {
@@ -110,10 +122,20 @@ class GatewayRateLimitTest extends GatewayIntegrationSupport {
     }
 
     private WebTestClient.ResponseSpec post(String path) {
+        return post(path, null);
+    }
+
+    private WebTestClient.ResponseSpec post(String path, String forwardedFor) {
         return webTestClient
                 .post()
                 .uri(path)
                 .header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN)
+                .headers(
+                        headers -> {
+                            if (forwardedFor != null) {
+                                headers.set("X-Forwarded-For", forwardedFor);
+                            }
+                        })
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{}")
                 .exchange();

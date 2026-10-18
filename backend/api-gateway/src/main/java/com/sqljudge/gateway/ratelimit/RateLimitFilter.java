@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.cloud.gateway.support.ipresolver.RemoteAddressResolver;
+import org.springframework.cloud.gateway.support.ipresolver.XForwardedRemoteAddressResolver;
 import org.springframework.core.Ordered;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
@@ -36,6 +38,7 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
             "Bạn thao tác quá nhanh, vui lòng thử lại sau";
 
     private final List<CompiledPolicy> policies;
+    private final RemoteAddressResolver clientAddressResolver;
     private final ReactiveStringRedisTemplate redisTemplate;
     private final ApiErrorWriter apiErrorWriter;
 
@@ -43,6 +46,11 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
             RateLimitProperties properties,
             ReactiveStringRedisTemplate redisTemplate,
             ApiErrorWriter apiErrorWriter) {
+        this.clientAddressResolver =
+                properties.trustedProxies() == 0
+                        ? new RemoteAddressResolver() {}
+                        : XForwardedRemoteAddressResolver.maxTrustedIndex(
+                                properties.trustedProxies());
         this.policies =
                 properties.policies().stream()
                         .map(
@@ -129,8 +137,8 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
                         });
     }
 
-    private static String clientAddress(ServerWebExchange exchange) {
-        InetSocketAddress remoteAddress = exchange.getRequest().getRemoteAddress();
+    private String clientAddress(ServerWebExchange exchange) {
+        InetSocketAddress remoteAddress = clientAddressResolver.resolve(exchange);
         if (remoteAddress == null || remoteAddress.getAddress() == null) {
             return UNKNOWN_CLIENT;
         }
