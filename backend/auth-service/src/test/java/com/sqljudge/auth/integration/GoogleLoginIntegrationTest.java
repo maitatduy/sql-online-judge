@@ -62,11 +62,10 @@ class GoogleLoginIntegrationTest extends ContainerSupport {
     void googleLogin_newUser_createsAccountAndSignsIn() throws Exception {
         GOOGLE.willReturn("109876543210", "Gg.User@gmail.com", true, "Người Dùng Google");
 
-        HttpResponse<String> authorization = get("/api/auth/oauth2/authorization/google");
+        HttpResponse<String> authorization = get("/api/auth/oauth2/authorization/google", null);
         String location = authorization.headers().firstValue("Location").orElseThrow();
         Map<String, String> query = queryParameters(URI.create(location));
-        HttpResponse<String> callback =
-                get("/api/auth/login/oauth2/code/google?code=abc&state=" + query.get("state"));
+        HttpResponse<String> callback = callback(authorization);
 
         assertThat(location).startsWith(GOOGLE.baseUrl() + "/o/oauth2/v2/auth");
         assertThat(query.get("scope")).isEqualTo("profile email");
@@ -120,17 +119,8 @@ class GoogleLoginIntegrationTest extends ContainerSupport {
     void googleLogin_unverifiedEmail_redirectsWithError() throws Exception {
         GOOGLE.willReturn("109876543211", "chua.verify.gg@gmail.com", false, "Chưa Verify");
 
-        HttpResponse<String> authorization = get("/api/auth/oauth2/authorization/google");
-        String state =
-                queryParameters(
-                                URI.create(
-                                        authorization
-                                                .headers()
-                                                .firstValue("Location")
-                                                .orElseThrow()))
-                        .get("state");
         HttpResponse<String> callback =
-                get("/api/auth/login/oauth2/code/google?code=abc&state=" + state);
+                callback(get("/api/auth/oauth2/authorization/google", null));
 
         assertThat(callback.headers().firstValue("Location"))
                 .hasValue("http://localhost:3000/login?error=OAUTH_EMAIL_NOT_VERIFIED");
@@ -138,25 +128,31 @@ class GoogleLoginIntegrationTest extends ContainerSupport {
     }
 
     private void signInWithGoogle() throws Exception {
-        HttpResponse<String> authorization = get("/api/auth/oauth2/authorization/google");
-        String state =
-                queryParameters(
-                                URI.create(
-                                        authorization
-                                                .headers()
-                                                .firstValue("Location")
-                                                .orElseThrow()))
-                        .get("state");
         HttpResponse<String> callback =
-                get("/api/auth/login/oauth2/code/google?code=abc&state=" + state);
+                callback(get("/api/auth/oauth2/authorization/google", null));
         assertThat(callback.headers().firstValue("Location"))
                 .hasValue("http://localhost:3000/auth/callback");
     }
 
-    private HttpResponse<String> get(String path) throws Exception {
-        HttpRequest request =
-                HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).GET().build();
-        return HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+    private HttpResponse<String> callback(HttpResponse<String> authorization) throws Exception {
+        String location = authorization.headers().firstValue("Location").orElseThrow();
+        String state = queryParameters(URI.create(location)).get("state");
+        String nonceCookie =
+                authorization.headers().allValues("Set-Cookie").stream()
+                        .filter(cookie -> cookie.startsWith("sqljudge_oauth_nonce="))
+                        .map(cookie -> cookie.substring(0, cookie.indexOf(';')))
+                        .findFirst()
+                        .orElseThrow();
+        return get("/api/auth/login/oauth2/code/google?code=abc&state=" + state, nonceCookie);
+    }
+
+    private HttpResponse<String> get(String path, String cookie) throws Exception {
+        HttpRequest.Builder request =
+                HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).GET();
+        if (cookie != null) {
+            request.header("Cookie", cookie);
+        }
+        return HTTP.send(request.build(), HttpResponse.BodyHandlers.ofString());
     }
 
     private static Map<String, String> queryParameters(URI uri) {

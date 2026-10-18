@@ -131,6 +131,32 @@ class GithubLoginIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName(
+            "Login CSRF: kẻ xấu gửi link callback của luồng mình bắt đầu cho nạn nhân, trình duyệt"
+                    + " nạn nhân không có cookie nonce nên không bị đăng nhập")
+    void githubCallback_openedInAnotherBrowser_isRejected() throws Exception {
+        GITHUB.willReturn(910004, "ke-xau", "ke.xau@gmail.com", true);
+        HttpResponse<String> authorization = get("/api/auth/oauth2/authorization/github", null);
+        String state =
+                queryParameters(
+                                URI.create(
+                                        authorization
+                                                .headers()
+                                                .firstValue("Location")
+                                                .orElseThrow()))
+                        .get("state");
+
+        HttpResponse<String> victimCallback =
+                get("/api/auth/login/oauth2/code/github?code=abc&state=" + state, null);
+
+        assertThat(victimCallback.headers().firstValue("Location"))
+                .hasValue("http://localhost:3000/login?error=OAUTH_LOGIN_FAILED");
+        assertThat(victimCallback.headers().allValues("Set-Cookie"))
+                .noneMatch(cookie -> cookie.startsWith("sqljudge_refresh="));
+        assertThat(userRepository.findByEmail("ke.xau@gmail.com")).isEmpty();
+    }
+
+    @Test
     @DisplayName("Callback với state không do mình phát: không đăng nhập")
     void githubCallback_unknownState_isRejected() throws Exception {
         HttpResponse<String> callback =
@@ -163,13 +189,30 @@ class GithubLoginIntegrationTest extends ContainerSupport {
         String location = authorization.headers().firstValue("Location").orElseThrow();
         assertThat(location).startsWith(GITHUB.baseUrl() + "/login/oauth/authorize");
         String state = queryParameters(URI.create(location)).get("state");
-        return get("/api/auth/login/oauth2/code/github?code=abc&state=" + state);
+        return get(
+                "/api/auth/login/oauth2/code/github?code=abc&state=" + state,
+                nonceCookie(authorization));
     }
 
     private HttpResponse<String> get(String path) throws Exception {
-        HttpRequest request =
-                HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).GET().build();
-        return HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+        return get(path, null);
+    }
+
+    private HttpResponse<String> get(String path, String cookie) throws Exception {
+        HttpRequest.Builder request =
+                HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).GET();
+        if (cookie != null) {
+            request.header("Cookie", cookie);
+        }
+        return HTTP.send(request.build(), HttpResponse.BodyHandlers.ofString());
+    }
+
+    private static String nonceCookie(HttpResponse<?> authorization) {
+        return authorization.headers().allValues("Set-Cookie").stream()
+                .filter(cookie -> cookie.startsWith("sqljudge_oauth_nonce="))
+                .map(cookie -> cookie.substring(0, cookie.indexOf(';')))
+                .findFirst()
+                .orElseThrow();
     }
 
     private HttpResponse<String> refreshWith(String refreshToken) throws Exception {

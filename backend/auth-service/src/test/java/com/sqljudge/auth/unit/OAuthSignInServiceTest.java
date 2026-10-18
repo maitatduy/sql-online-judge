@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +37,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class OAuthSignInServiceTest {
@@ -59,6 +63,7 @@ class OAuthSignInServiceTest {
     @Mock private UsernameGenerator usernameGenerator;
     @Mock private SignInService signInService;
     @Mock private SignInResult signInResult;
+    @Mock private PlatformTransactionManager transactionManager;
 
     private OAuthSignInService service;
     private User existingUser;
@@ -73,6 +78,7 @@ class OAuthSignInServiceTest {
                         emailTokenRepository,
                         usernameGenerator,
                         signInService,
+                        new TransactionTemplate(transactionManager),
                         Clock.fixed(NOW, ZoneOffset.UTC));
         existingUser = new User();
         ReflectionTestUtils.setField(existingUser, "id", UUID.randomUUID());
@@ -163,6 +169,41 @@ class OAuthSignInServiceTest {
         assertThat(user.getPasswordHash()).isNull();
         assertThat(user.getEmailVerifiedAt()).isEqualTo(NOW);
         assertThat(savedAccount().getUser()).isSameAs(user);
+    }
+
+    @Test
+    @DisplayName(
+            "Hai callback cùng lúc tạo trùng user: lần đầu vướng unique, thử lại một lần thì đăng"
+                    + " nhập vào tài khoản vừa được tạo")
+    void signIn_concurrentCreation_retriesOnceInNewTransaction() {
+        OAuthAccount createdByOtherCallback = new OAuthAccount();
+        createdByOtherCallback.setUser(existingUser);
+        when(oauthAccountRepository.findByProviderAndProviderUserId(
+                        SignupProvider.GITHUB, "583231"))
+                .thenReturn(Optional.empty(), Optional.of(createdByOtherCallback));
+        when(userRepository.findByEmail("minh.anh@gmail.com")).thenReturn(Optional.empty());
+        when(usernameGenerator.generate("Minh-Anh")).thenReturn("minh_anh");
+        when(userRepository.saveAndFlush(any(User.class)))
+                .thenThrow(new DataIntegrityViolationException("uk_users_email"));
+        when(signInService.signIn(existingUser.getId(), true, USER_AGENT)).thenReturn(signInResult);
+
+        assertThat(service.signIn(VERIFIED_PROFILE, USER_AGENT)).isSameAs(signInResult);
+        verify(transactionManager, times(2)).getTransaction(any());
+    }
+
+    @Test
+    @DisplayName(
+            "Thử lại vẫn vướng unique: OAUTH_LOGIN_FAILED để về trang đăng nhập, không trả 500")
+    void signIn_conflictTwice_rejectsWithLoginFailed() {
+        when(oauthAccountRepository.findByProviderAndProviderUserId(
+                        SignupProvider.GITHUB, "583231"))
+                .thenReturn(Optional.empty());
+        when(userRepository.findByEmail("minh.anh@gmail.com")).thenReturn(Optional.empty());
+        when(usernameGenerator.generate("Minh-Anh")).thenReturn("minh_anh");
+        when(userRepository.saveAndFlush(any(User.class)))
+                .thenThrow(new DataIntegrityViolationException("uk_users_username"));
+
+        assertRejected(VERIFIED_PROFILE, ErrorCode.OAUTH_LOGIN_FAILED);
     }
 
     @Test
