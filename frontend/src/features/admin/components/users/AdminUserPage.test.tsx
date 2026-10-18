@@ -28,6 +28,11 @@ async function findLoadedPage(username: string) {
     await screen.findByRole("heading", { level: 1, name: username });
 }
 
+function accountInfoLines() {
+    const info = within(screen.getByRole("list", { name: "Thông tin tài khoản" }));
+    return info.getAllByRole("listitem").map((line) => line.textContent);
+}
+
 function typeReason(dialog: ReturnType<typeof within>, reason: string) {
     fireEvent.change(dialog.getByRole("textbox", { name: /^Lý do/ }), {
         target: { value: reason },
@@ -174,26 +179,29 @@ describe("trang chi tiết người dùng - đầu trang và thẻ số", () => 
         writeMockSession(ADMIN_SESSION_USER);
     });
 
-    it("ghi tên, trường, email, xác minh và kênh tham gia trên một dòng", async () => {
+    it("ghi tên, trường, email, xác minh và kênh tham gia, mỗi mục một dòng", async () => {
         await renderPage("viet.luu");
         await findLoadedPage("viet.luu");
 
-        expect(
-            screen.getByText(
-                "Lưu Quốc Việt · ĐH Mở Hà Nội · viet.luu@example.com · Đã xác minh · Tham gia 03/02/2026 qua GitHub",
-            ),
-        ).toBeInTheDocument();
+        expect(accountInfoLines()).toEqual([
+            "Lưu Quốc Việt",
+            "ĐH Mở Hà Nội",
+            "viet.luu@example.com",
+            "Đã xác minh",
+            "Tham gia 03/02/2026 qua GitHub",
+        ]);
     });
 
-    it("bỏ qua phần không có dữ liệu trong dòng thông tin", async () => {
+    it("bỏ qua dòng không có dữ liệu trong thông tin tài khoản", async () => {
         await renderPage("tam.nguyen");
         await findLoadedPage("tam.nguyen");
 
-        expect(
-            screen.getByText(
-                "Nguyễn Thành Tâm · tam.nguyen@example.com · Chưa xác minh · Tham gia 11/10/2026 qua email",
-            ),
-        ).toBeInTheDocument();
+        expect(accountInfoLines()).toEqual([
+            "Nguyễn Thành Tâm",
+            "tam.nguyen@example.com",
+            "Chưa xác minh",
+            "Tham gia 11/10/2026 qua email",
+        ]);
     });
 
     it("hiện đủ 5 thẻ số", async () => {
