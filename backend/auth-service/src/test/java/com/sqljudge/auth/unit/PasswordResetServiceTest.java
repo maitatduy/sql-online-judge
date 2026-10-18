@@ -139,6 +139,76 @@ class PasswordResetServiceTest {
     }
 
     @Test
+    @DisplayName("Link mời do admin gửi: đặt mật khẩu lần đầu và xác minh email")
+    void resetPassword_inviteLink_setsPasswordAndVerifiesEmail() {
+        user.setPasswordHash(null);
+        EmailToken invite = resetToken(NOW.plus(Duration.ofDays(6)));
+        invite.setPurpose(EmailTokenPurpose.INVITE);
+        when(emailTokenRepository.findByTokenHash(SecureTokens.sha256(TOKEN)))
+                .thenReturn(Optional.of(invite));
+        when(passwordEncoder.encode("matkhau-moi-2026")).thenReturn("new-hash");
+
+        service.resetPassword(TOKEN, "matkhau-moi-2026");
+
+        assertThat(user.getPasswordHash()).isEqualTo("new-hash");
+        assertThat(user.getEmailVerifiedAt()).isEqualTo(NOW);
+        assertThat(invite.getUsedAt()).isEqualTo(NOW);
+    }
+
+    @Test
+    @DisplayName("Dùng link reset: link mời và link reset khác còn chờ đều bị vô hiệu")
+    void resetPassword_resetLink_invalidatesOtherPasswordLinks() {
+        EmailToken token = resetToken(NOW.plus(Duration.ofMinutes(10)));
+        when(emailTokenRepository.findByTokenHash(SecureTokens.sha256(TOKEN)))
+                .thenReturn(Optional.of(token));
+
+        service.resetPassword(TOKEN, "matkhau-moi-2026");
+
+        verify(emailTokenRepository).invalidateUnusedTokens(user, EmailTokenPurpose.RESET, NOW);
+        verify(emailTokenRepository).invalidateUnusedTokens(user, EmailTokenPurpose.INVITE, NOW);
+    }
+
+    @Test
+    @DisplayName("Dùng link mời: link reset còn chờ cũng bị vô hiệu")
+    void resetPassword_inviteLink_invalidatesPendingResetLinks() {
+        EmailToken invite = resetToken(NOW.plus(Duration.ofDays(6)));
+        invite.setPurpose(EmailTokenPurpose.INVITE);
+        when(emailTokenRepository.findByTokenHash(SecureTokens.sha256(TOKEN)))
+                .thenReturn(Optional.of(invite));
+
+        service.resetPassword(TOKEN, "matkhau-moi-2026");
+
+        verify(emailTokenRepository).invalidateUnusedTokens(user, EmailTokenPurpose.RESET, NOW);
+        verify(emailTokenRepository).invalidateUnusedTokens(user, EmailTokenPurpose.INVITE, NOW);
+    }
+
+    @Test
+    @DisplayName("Link đặt lại mật khẩu cũng chứng minh sở hữu email nên xác minh email")
+    void resetPassword_resetLink_verifiesEmail() {
+        EmailToken token = resetToken(NOW.plus(Duration.ofMinutes(10)));
+        when(emailTokenRepository.findByTokenHash(SecureTokens.sha256(TOKEN)))
+                .thenReturn(Optional.of(token));
+
+        service.resetPassword(TOKEN, "matkhau-moi-2026");
+
+        assertThat(user.getEmailVerifiedAt()).isEqualTo(NOW);
+    }
+
+    @Test
+    @DisplayName("Email đã xác minh từ trước thì giữ nguyên thời điểm xác minh cũ")
+    void resetPassword_alreadyVerified_keepsOriginalVerificationTime() {
+        Instant verifiedAt = NOW.minus(Duration.ofDays(30));
+        user.setEmailVerifiedAt(verifiedAt);
+        EmailToken token = resetToken(NOW.plus(Duration.ofMinutes(10)));
+        when(emailTokenRepository.findByTokenHash(SecureTokens.sha256(TOKEN)))
+                .thenReturn(Optional.of(token));
+
+        service.resetPassword(TOKEN, "matkhau-moi-2026");
+
+        assertThat(user.getEmailVerifiedAt()).isEqualTo(verifiedAt);
+    }
+
+    @Test
     @DisplayName("Link hết hạn, đã dùng, sai mục đích hoặc không tồn tại: 422, mật khẩu giữ nguyên")
     void resetPassword_invalidLink_rejects() {
         EmailToken expired = resetToken(NOW);

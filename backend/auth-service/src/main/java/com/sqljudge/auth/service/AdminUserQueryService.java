@@ -1,11 +1,13 @@
 package com.sqljudge.auth.service;
 
-import com.sqljudge.auth.dto.response.AccountStatus;
+import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
 import com.sqljudge.auth.dto.response.AdminUserSummaryResponse;
 import com.sqljudge.auth.dto.response.UserCountsResponse;
 import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.repository.UserCounts;
 import com.sqljudge.auth.repository.UserRepository;
+import com.sqljudge.common.error.ErrorCode;
+import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.web.PageResponse;
 import java.time.Clock;
 import java.time.Instant;
@@ -21,9 +23,6 @@ public class AdminUserQueryService {
 
     private static final Sort NEWEST_FIRST =
             Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
-    private static final int STAT_NOT_TRACKED_YET = 0;
-    private static final boolean PRESENCE_NOT_TRACKED_YET = false;
-    private static final String AVATAR_NOT_STORED_YET = null;
 
     private final UserRepository userRepository;
     private final Clock clock;
@@ -36,7 +35,16 @@ public class AdminUserQueryService {
                 userRepository.findAll(
                         AdminUserSpecifications.matching(search, now),
                         PageRequest.of(page - 1, size, NEWEST_FIRST)),
-                user -> toSummary(user, now));
+                user -> AdminUserViews.toSummary(user, now));
+    }
+
+    @Transactional(readOnly = true)
+    public AdminUserDetailResponse getUser(String username) {
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(AdminUserQueryService::userNotFound);
+        return AdminUserViews.toDetail(user, clock.instant());
     }
 
     @Transactional(readOnly = true)
@@ -50,21 +58,7 @@ public class AdminUserQueryService {
                 counts.banned());
     }
 
-    private static AdminUserSummaryResponse toSummary(User user, Instant now) {
-        return new AdminUserSummaryResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole(),
-                STAT_NOT_TRACKED_YET,
-                STAT_NOT_TRACKED_YET,
-                user.getCreatedAt(),
-                user.getLastActiveAt(),
-                PRESENCE_NOT_TRACKED_YET,
-                user.isBannedAt(now) ? AccountStatus.BANNED : AccountStatus.ACTIVE,
-                user.getBannedUntil(),
-                user.isEmailVerified(),
-                AVATAR_NOT_STORED_YET,
-                user.getDeletedAt());
+    private static NotFoundException userNotFound() {
+        return new NotFoundException(ErrorCode.USER_NOT_FOUND, "Không tìm thấy người dùng");
     }
 }

@@ -6,8 +6,6 @@ import com.sqljudge.auth.entity.SignupProvider;
 import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.event.AccountExistsEmailRequestedEvent;
 import com.sqljudge.auth.repository.UserRepository;
-import com.sqljudge.common.error.ErrorCode;
-import com.sqljudge.common.exception.ConflictException;
 import com.sqljudge.common.security.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -20,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RegistrationService {
 
-    private static final String EMAIL_UNIQUE_INDEX = "uk_users_email";
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
@@ -31,7 +27,7 @@ public class RegistrationService {
     public RegisterResponse register(RegisterRequest request) {
         String email = EmailAddresses.normalize(request.email());
         if (userRepository.existsByUsername(request.username())) {
-            throw usernameTaken();
+            throw UserConflicts.usernameTaken();
         }
         String passwordHash = passwordEncoder.encode(request.password());
         userRepository
@@ -70,17 +66,7 @@ public class RegistrationService {
         try {
             return userRepository.saveAndFlush(user);
         } catch (DataIntegrityViolationException exception) {
-            String detail = String.valueOf(exception.getMostSpecificCause().getMessage());
-            throw detail.contains(EMAIL_UNIQUE_INDEX) ? emailTaken() : usernameTaken();
+            throw UserConflicts.fromUniqueViolation(exception);
         }
-    }
-
-    private static ConflictException usernameTaken() {
-        return new ConflictException(
-                ErrorCode.USERNAME_TAKEN, "Tên người dùng này đã có người dùng");
-    }
-
-    private static ConflictException emailTaken() {
-        return new ConflictException(ErrorCode.EMAIL_TAKEN, "Email này đã được đăng ký");
     }
 }

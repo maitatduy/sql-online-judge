@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,12 +18,18 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.sqljudge.auth.config.JwtKeyConfig;
 import com.sqljudge.auth.config.SecurityConfig;
 import com.sqljudge.auth.controller.AdminUserController;
+import com.sqljudge.auth.dto.request.CreateUserRequest;
 import com.sqljudge.auth.dto.response.AccountStatus;
+import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
 import com.sqljudge.auth.dto.response.AdminUserSummaryResponse;
 import com.sqljudge.auth.dto.response.UserCountsResponse;
+import com.sqljudge.auth.entity.SignupProvider;
+import com.sqljudge.auth.service.AdminUserCommandService;
 import com.sqljudge.auth.service.AdminUserQueryService;
 import com.sqljudge.auth.service.AdminUserSearch;
 import com.sqljudge.common.config.CommonAutoConfiguration;
+import com.sqljudge.common.error.ErrorCode;
+import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.security.Role;
 import com.sqljudge.common.web.PageResponse;
 import java.time.Instant;
@@ -29,12 +37,15 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -67,10 +78,17 @@ class AdminUserControllerTest {
                     null,
                     null);
 
+    private static final String NEW_USER_JSON =
+            """
+            {"username":"lan.pham","email":"lan.pham@gmail.com","role":"SETTER",\
+            "displayName":"Phạm Ngọc Lan"}\
+            """;
+
     @Autowired private MockMvc mockMvc;
     @Autowired private RSAKey signingKey;
 
     @MockitoBean private AdminUserQueryService adminUserQueryService;
+    @MockitoBean private AdminUserCommandService adminUserCommandService;
 
     @Test
     @DisplayName(
@@ -158,18 +176,120 @@ class AdminUserControllerTest {
     }
 
     @Test
+    @DisplayName(
+            "Admin xem chi tiết: trường của dòng danh sách và trường chi tiết nằm cùng một cấp")
+    void getUser_admin_returnsFlatDetail() throws Exception {
+        when(adminUserQueryService.getUser("lan.pham"))
+                .thenReturn(
+                        new AdminUserDetailResponse(
+                                SETTER, "Phạm Lan", null, SignupProvider.GOOGLE, 0, 0, List.of()));
+
+        mockMvc.perform(as("ADMIN", get("/api/admin/users/lan.pham")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("lan.pham"))
+                .andExpect(jsonPath("$.role").value("SETTER"))
+                .andExpect(jsonPath("$.status").value("ACTIVE"))
+                .andExpect(jsonPath("$.joinedAt").value("2026-09-01T00:00:00Z"))
+                .andExpect(jsonPath("$.displayName").value("Phạm Lan"))
+                .andExpect(jsonPath("$.school").isEmpty())
+                .andExpect(jsonPath("$.signupProvider").value("GOOGLE"))
+                .andExpect(jsonPath("$.submissionCount").value(0))
+                .andExpect(jsonPath("$.contestCount").value(0))
+                .andExpect(jsonPath("$.violations").isArray())
+                .andExpect(jsonPath("$.violations").isEmpty())
+                .andExpect(jsonPath("$.account").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Username không tồn tại trả 404 USER_NOT_FOUND")
+    void getUser_unknownUsername_returnsNotFound() throws Exception {
+        when(adminUserQueryService.getUser("khong.co"))
+                .thenThrow(
+                        new NotFoundException(
+                                ErrorCode.USER_NOT_FOUND, "Không tìm thấy người dùng"));
+
+        mockMvc.perform(as("ADMIN", get("/api/admin/users/khong.co")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Không tìm thấy người dùng"));
+    }
+
+    @Test
+    @DisplayName("Admin tạo tài khoản: 201, header Location trỏ tới chi tiết, body là chi tiết")
+    void createUser_admin_returnsCreatedDetail() throws Exception {
+        CreateUserRequest request =
+                new CreateUserRequest(
+                        "lan.pham", "lan.pham@gmail.com", Role.SETTER, "Phạm Ngọc Lan");
+        when(adminUserCommandService.createUser(request))
+                .thenReturn(
+                        new AdminUserDetailResponse(
+                                SETTER,
+                                "Phạm Ngọc Lan",
+                                null,
+                                SignupProvider.EMAIL,
+                                0,
+                                0,
+                                List.of()));
+
+        mockMvc.perform(as("ADMIN", json(post("/api/admin/users"), NEW_USER_JSON)))
+                .andExpect(status().isCreated())
+                .andExpect(header().string(HttpHeaders.LOCATION, "/api/admin/users/lan.pham"))
+                .andExpect(jsonPath("$.username").value("lan.pham"))
+                .andExpect(jsonPath("$.displayName").value("Phạm Ngọc Lan"))
+                .andExpect(jsonPath("$.signupProvider").value("EMAIL"));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource(
+            delimiter = '|',
+            value = {
+                "username|{\"username\":\"Lan"
+                        + " Pham\",\"email\":\"lan@gmail.com\",\"role\":\"SETTER\"}",
+                "username|{\"username\":\"ab\",\"email\":\"lan@gmail.com\",\"role\":\"SETTER\"}",
+                "username|{\"username\":\"me\",\"email\":\"lan@gmail.com\",\"role\":\"SETTER\"}",
+                "email|{\"username\":\"lan.pham\",\"email\":\"khong-hop-le\",\"role\":\"SETTER\"}",
+                "role|{\"username\":\"lan.pham\",\"email\":\"lan@gmail.com\"}",
+                "displayName|{\"username\":\"lan.pham\",\"email\":\"lan@gmail.com\",\"role\":\"SETTER\","
+                    + "\"displayName\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}"
+            })
+    @DisplayName("Dữ liệu tạo tài khoản sai trả 400 VALIDATION_FAILED đúng trường")
+    void createUser_invalidField_returnsFieldError(String field, String body) throws Exception {
+        mockMvc.perform(as("ADMIN", json(post("/api/admin/users"), body)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.errors[0].field").value(field));
+
+        verifyNoInteractions(adminUserCommandService);
+    }
+
+    @Test
     @DisplayName("Không phải ADMIN (kể cả MODERATOR) bị 403; chưa đăng nhập bị 401")
     void adminEndpoints_requireAdminRole() throws Exception {
         for (String role : List.of("LEARNER", "SETTER", "MODERATOR")) {
             mockMvc.perform(as(role, get("/api/admin/users"))).andExpect(status().isForbidden());
             mockMvc.perform(as(role, get("/api/admin/user-summary")))
                     .andExpect(status().isForbidden());
+            mockMvc.perform(as(role, get("/api/admin/users/lan.pham")))
+                    .andExpect(status().isForbidden());
+            mockMvc.perform(as(role, json(post("/api/admin/users"), NEW_USER_JSON)))
+                    .andExpect(status().isForbidden());
         }
         mockMvc.perform(get("/api/admin/users")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/admin/user-summary")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/admin/users/lan.pham")).andExpect(status().isUnauthorized());
+        mockMvc.perform(json(post("/api/admin/users"), NEW_USER_JSON))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(adminUserCommandService);
 
         verify(adminUserQueryService, never()).countUsers();
         verify(adminUserQueryService, never()).search(any(), anyInt(), anyInt());
+        verify(adminUserQueryService, never()).getUser(any());
+    }
+
+    private static MockHttpServletRequestBuilder json(
+            MockHttpServletRequestBuilder request, String body) {
+        return request.contentType(MediaType.APPLICATION_JSON).content(body);
     }
 
     private MockHttpServletRequestBuilder as(String role, MockHttpServletRequestBuilder request) {

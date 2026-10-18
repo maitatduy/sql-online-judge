@@ -1,6 +1,6 @@
 import { useUserPageTab } from "@/features/admin/hooks/useUserPageTab";
 import type { AdminUserDetail } from "@/features/admin/users/types";
-import { userMetaLine } from "@/features/admin/users/user-meta";
+import { userMetaLines } from "@/features/admin/users/user-meta";
 import { formatDate } from "@/lib/format";
 
 import { AccountStatusLine } from "./AccountStatusLine";
@@ -34,7 +34,16 @@ export function UserPageContent({ user }: UserPageContentProps) {
                 <DetailAvatar username={user.username} avatarUrl={user.avatarUrl} />
                 <div className="min-w-0 flex-[1_1_260px]">
                     <h1 className="text-2xl font-extrabold break-all">{user.username}</h1>
-                    <p className="mb-1.5 text-[13px] text-muted-foreground">{userMetaLine(user)}</p>
+                    <ul
+                        aria-label="Thông tin tài khoản"
+                        className="mb-1.5 text-[13px] text-muted-foreground"
+                    >
+                        {userMetaLines(user).map(({ kind, text }) => (
+                            <li key={kind} className="break-all">
+                                {text}
+                            </li>
+                        ))}
+                    </ul>
                     <AccountStatusLine user={user} />
                 </div>
                 <UserPageActions user={user} />
