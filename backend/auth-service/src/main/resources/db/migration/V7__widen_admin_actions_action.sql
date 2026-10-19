@@ -1,0 +1,1 @@
+ALTER TABLE admin_actions MODIFY action VARCHAR(40) NOT NULL;

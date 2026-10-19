@@ -4,5 +4,7 @@ public enum AdminActionType {
     BAN,
     UNBAN,
     REVOKE_SESSION,
-    REVOKE_ALL_SESSIONS
+    REVOKE_ALL_SESSIONS,
+    UPDATE_ROLE,
+    UPDATE_DISPLAY_NAME
 }

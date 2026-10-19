@@ -13,7 +13,6 @@ import com.sqljudge.auth.repository.UserSessionRepository;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.common.exception.ConflictException;
-import com.sqljudge.common.exception.NotFoundException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
@@ -36,7 +35,7 @@ public class AdminUserBanService {
 
     @Transactional
     public AdminUserDetailResponse ban(String username, BanUserRequest request, UUID actorId) {
-        User user = findLiveUser(username);
+        User user = AdminUserLookup.findLive(userRepository, username);
         if (user.getId().equals(actorId)) {
             throw new BusinessRuleException(
                     ErrorCode.CANNOT_MODIFY_SELF, "Bạn không thể tự khoá tài khoản của chính mình");
@@ -65,7 +64,7 @@ public class AdminUserBanService {
 
     @Transactional
     public AdminUserDetailResponse unban(String username, UnbanUserRequest request, UUID actorId) {
-        User user = findLiveUser(username);
+        User user = AdminUserLookup.findLive(userRepository, username);
         Instant now = clock.instant();
         if (!user.isBannedAt(now)) {
             throw new ConflictException(ErrorCode.USER_NOT_BANNED, "Tài khoản không bị khoá");
@@ -77,15 +76,5 @@ public class AdminUserBanService {
                         user.getId(), user.getEmail(), user.getUsername()));
         log.info("admin_user_unbanned userId={} actorId={}", user.getId(), actorId);
         return AdminUserViews.toDetail(user, now);
-    }
-
-    private User findLiveUser(String username) {
-        return userRepository
-                .findByUsername(username)
-                .filter(user -> !user.isDeleted())
-                .orElseThrow(
-                        () ->
-                                new NotFoundException(
-                                        ErrorCode.USER_NOT_FOUND, "Không tìm thấy người dùng"));
     }
 }
