@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sqljudge.common.config.CommonAutoConfiguration;
 import com.sqljudge.common.web.GlobalExceptionHandler;
+import com.sqljudge.common.web.OptimisticLockExceptionHandler;
 import com.sqljudge.common.web.RestAccessDeniedHandler;
 import com.sqljudge.common.web.RestAuthenticationEntryPoint;
 import java.time.Clock;
@@ -31,6 +32,7 @@ class CommonAutoConfigurationTest {
                         context -> {
                             assertThat(context)
                                     .hasSingleBean(GlobalExceptionHandler.class)
+                                    .hasSingleBean(OptimisticLockExceptionHandler.class)
                                     .hasSingleBean(RestAuthenticationEntryPoint.class)
                                     .hasSingleBean(RestAccessDeniedHandler.class)
                                     .hasBean(CommonAutoConfiguration.AUDITOR_AWARE_BEAN)
