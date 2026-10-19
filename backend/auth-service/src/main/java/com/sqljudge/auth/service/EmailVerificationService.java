@@ -8,6 +8,7 @@ import com.sqljudge.auth.repository.EmailTokenRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.BusinessRuleException;
+import com.sqljudge.common.exception.ConflictException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -22,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class EmailVerificationService {
 
     static final Duration VERIFICATION_TTL = Duration.ofMinutes(15);
-    static final Duration RESEND_COOLDOWN = Duration.ofSeconds(60);
     static final int MAX_FAILED_ATTEMPTS = 5;
     static final int MAX_DAILY_FAILED_ATTEMPTS = 20;
     static final Duration FAILURE_CAP_WINDOW = Duration.ofHours(24);
@@ -89,12 +89,26 @@ public class EmailVerificationService {
         userRepository
                 .findByEmail(EmailAddresses.normalize(email))
                 .filter(User::isAwaitingEmailVerification)
-                .filter(user -> isPastResendCooldown(user, now))
-                .ifPresent(
-                        user -> {
-                            emailTokenRepository.invalidateUnusedTokens(user, PURPOSE, now);
-                            sendVerificationEmail(user);
-                        });
+                .filter(
+                        user ->
+                                ResendCooldown.remaining(emailTokenRepository, user, PURPOSE, now)
+                                        .isZero())
+                .ifPresent(user -> reissue(user, now));
+    }
+
+    @Transactional
+    public void resendVerificationEmailTo(User user) {
+        if (user.isEmailVerified()) {
+            throw new ConflictException(ErrorCode.EMAIL_ALREADY_VERIFIED, "Email đã được xác minh");
+        }
+        Instant now = clock.instant();
+        ResendCooldown.requirePassed(emailTokenRepository, user, PURPOSE, now);
+        reissue(user, now);
+    }
+
+    private void reissue(User user, Instant now) {
+        emailTokenRepository.invalidateUnusedTokens(user, PURPOSE, now);
+        sendVerificationEmail(user);
     }
 
     private boolean hasReachedDailyFailureCap(User user, Instant now) {
@@ -102,14 +116,6 @@ public class EmailVerificationService {
                 emailTokenRepository.sumFailedAttemptsSince(
                         user, PURPOSE, now.minus(FAILURE_CAP_WINDOW));
         return failures >= MAX_DAILY_FAILED_ATTEMPTS;
-    }
-
-    private boolean isPastResendCooldown(User user, Instant now) {
-        Instant cooldownStart = now.minus(RESEND_COOLDOWN);
-        return emailTokenRepository
-                .findFirstByUserAndPurposeOrderByCreatedAtDesc(user, PURPOSE)
-                .map(latest -> !latest.getCreatedAt().isAfter(cooldownStart))
-                .orElse(true);
     }
 
     private static UUID markVerified(EmailToken emailToken, Instant now) {

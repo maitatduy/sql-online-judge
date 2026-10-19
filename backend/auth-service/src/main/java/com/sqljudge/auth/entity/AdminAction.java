@@ -81,6 +81,14 @@ public class AdminAction extends BaseEntity {
         return of(actorId, target, AdminActionType.REVOKE_ALL_SESSIONS, null);
     }
 
+    public static AdminAction sendPasswordReset(UUID actorId, User target) {
+        return of(actorId, target, AdminActionType.SEND_PASSWORD_RESET, null);
+    }
+
+    public static AdminAction sendVerification(UUID actorId, User target) {
+        return of(actorId, target, AdminActionType.SEND_VERIFICATION, null);
+    }
+
     private static String requireReason(String reason) {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("reason is required for this admin action");

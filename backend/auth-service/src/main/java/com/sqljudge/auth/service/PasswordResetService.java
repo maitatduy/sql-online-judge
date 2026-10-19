@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class PasswordResetService {
 
     static final Duration RESET_LINK_TTL = Duration.ofMinutes(30);
-    static final Duration RESEND_COOLDOWN = Duration.ofSeconds(60);
 
     private static final EmailTokenPurpose PURPOSE = EmailTokenPurpose.RESET;
 
@@ -40,8 +39,18 @@ public class PasswordResetService {
         userRepository
                 .findByEmail(EmailAddresses.normalize(email))
                 .filter(user -> !user.isDeleted())
-                .filter(user -> isPastCooldown(user, now))
+                .filter(
+                        user ->
+                                ResendCooldown.remaining(emailTokenRepository, user, PURPOSE, now)
+                                        .isZero())
                 .ifPresent(user -> issueResetLink(user, now));
+    }
+
+    @Transactional
+    public void sendResetLinkTo(User user) {
+        Instant now = clock.instant();
+        ResendCooldown.requirePassed(emailTokenRepository, user, PURPOSE, now);
+        issueResetLink(user, now);
     }
 
     @Transactional
@@ -77,14 +86,6 @@ public class PasswordResetService {
 
     private static boolean isPasswordLink(EmailToken token) {
         return token.getPurpose() == PURPOSE || token.getPurpose() == EmailTokenPurpose.INVITE;
-    }
-
-    private boolean isPastCooldown(User user, Instant now) {
-        Instant cooldownStart = now.minus(RESEND_COOLDOWN);
-        return emailTokenRepository
-                .findFirstByUserAndPurposeOrderByCreatedAtDesc(user, PURPOSE)
-                .map(latest -> !latest.getCreatedAt().isAfter(cooldownStart))
-                .orElse(true);
     }
 
     private static BusinessRuleException invalidLink() {

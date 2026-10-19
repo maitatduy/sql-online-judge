@@ -19,6 +19,7 @@ import com.sqljudge.auth.service.PasswordResetService;
 import com.sqljudge.auth.service.SecureTokens;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.BusinessRuleException;
+import com.sqljudge.common.exception.QuotaExceededException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -121,6 +122,45 @@ class PasswordResetServiceTest {
         service.requestReset("da.xoa@gmail.com");
 
         verifyNoInteractions(emailTokenRepository, eventPublisher);
+    }
+
+    @Test
+    @DisplayName("Admin gửi link đặt lại: huỷ link cũ, phát link mới tới email của tài khoản")
+    void sendResetLinkTo_pastCooldown_issuesLink() {
+        when(emailTokenRepository.findFirstByUserAndPurposeOrderByCreatedAtDesc(
+                        user, EmailTokenPurpose.RESET))
+                .thenReturn(Optional.empty());
+        when(emailTokenRepository.save(any(EmailToken.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.sendResetLinkTo(user);
+
+        verify(emailTokenRepository).invalidateUnusedTokens(user, EmailTokenPurpose.RESET, NOW);
+        ArgumentCaptor<PasswordResetEmailRequestedEvent> event =
+                ArgumentCaptor.forClass(PasswordResetEmailRequestedEvent.class);
+        verify(eventPublisher).publishEvent(event.capture());
+        assertThat(event.getValue().email()).isEqualTo(EMAIL);
+    }
+
+    @Test
+    @DisplayName("Admin gửi lại trong 60 giây: 429 EMAIL_RESEND_COOLDOWN, chờ phần còn lại")
+    void sendResetLinkTo_withinCooldown_rejectsWithRemainingWait() {
+        EmailToken recent = new EmailToken();
+        ReflectionTestUtils.setField(recent, "createdAt", NOW.minusSeconds(20));
+        when(emailTokenRepository.findFirstByUserAndPurposeOrderByCreatedAtDesc(
+                        user, EmailTokenPurpose.RESET))
+                .thenReturn(Optional.of(recent));
+
+        assertThatThrownBy(() -> service.sendResetLinkTo(user))
+                .isInstanceOfSatisfying(
+                        QuotaExceededException.class,
+                        rejected -> {
+                            assertThat(rejected.getCode())
+                                    .isEqualTo(ErrorCode.EMAIL_RESEND_COOLDOWN);
+                            assertThat(rejected.retryAfterSeconds()).isEqualTo(40);
+                        });
+        verify(emailTokenRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
