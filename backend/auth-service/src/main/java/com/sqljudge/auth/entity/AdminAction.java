@@ -32,7 +32,7 @@ public class AdminAction extends BaseEntity {
     private UUID targetUserId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "action", nullable = false, length = 20)
+    @Column(name = "action", nullable = false, length = 40)
     private AdminActionType action;
 
     @Column(name = "reason", length = 500)
@@ -40,6 +40,12 @@ public class AdminAction extends BaseEntity {
 
     @Column(name = "expires_at")
     private Instant expiresAt;
+
+    @Column(name = "previous_value", length = 100)
+    private String previousValue;
+
+    @Column(name = "new_value", length = 100)
+    private String newValue;
 
     public static AdminAction ban(UUID actorId, User target, String reason) {
         AdminAction action = of(actorId, target, AdminActionType.BAN, requireReason(reason));
@@ -49,6 +55,22 @@ public class AdminAction extends BaseEntity {
 
     public static AdminAction unban(UUID actorId, User target, String reason) {
         return of(actorId, target, AdminActionType.UNBAN, requireReason(reason));
+    }
+
+    public static AdminAction changeRole(UUID actorId, User target, ValueChange change) {
+        AdminAction action =
+                of(actorId, target, AdminActionType.UPDATE_ROLE, requireReason(change.reason()));
+        action.previousValue = change.previous();
+        action.newValue = target.getRole().name();
+        return action;
+    }
+
+    public static AdminAction changeDisplayName(UUID actorId, User target, ValueChange change) {
+        AdminAction action =
+                of(actorId, target, AdminActionType.UPDATE_DISPLAY_NAME, change.reason());
+        action.previousValue = change.previous();
+        action.newValue = target.getDisplayName();
+        return action;
     }
 
     public static AdminAction revokeSession(UUID actorId, User target) {

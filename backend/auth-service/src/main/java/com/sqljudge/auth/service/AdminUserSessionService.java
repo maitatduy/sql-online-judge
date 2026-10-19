@@ -33,7 +33,7 @@ public class AdminUserSessionService {
 
     @Transactional(readOnly = true)
     public UserSessionsResponse listSessions(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(this::userNotFound);
+        User user = AdminUserLookup.findAny(userRepository, username);
         Instant now = clock.instant();
         return new UserSessionsResponse(
                 userSessionRepository
@@ -46,7 +46,7 @@ public class AdminUserSessionService {
 
     @Transactional
     public void revokeSession(String username, UUID sessionId, UUID actorId) {
-        User user = findLiveUser(username);
+        User user = AdminUserLookup.findLive(userRepository, username);
         Instant now = clock.instant();
         UserSession session =
                 userSessionRepository
@@ -64,7 +64,7 @@ public class AdminUserSessionService {
 
     @Transactional
     public void revokeAllSessions(String username, UUID actorId) {
-        User user = findLiveUser(username);
+        User user = AdminUserLookup.findLive(userRepository, username);
         int revokedCount = userSessionRepository.revokeAllActiveSessions(user, clock.instant());
         if (revokedCount == 0) {
             return;
@@ -75,17 +75,6 @@ public class AdminUserSessionService {
                 user.getId(),
                 actorId,
                 revokedCount);
-    }
-
-    private User findLiveUser(String username) {
-        return userRepository
-                .findByUsername(username)
-                .filter(user -> !user.isDeleted())
-                .orElseThrow(this::userNotFound);
-    }
-
-    private NotFoundException userNotFound() {
-        return new NotFoundException(ErrorCode.USER_NOT_FOUND, "Không tìm thấy người dùng");
     }
 
     private static UserSessionResponse toResponse(UserSession session, Instant now) {

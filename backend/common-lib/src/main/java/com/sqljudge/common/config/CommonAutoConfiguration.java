@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sqljudge.common.persistence.SecurityAuditorAware;
 import com.sqljudge.common.web.ApiErrorWriter;
 import com.sqljudge.common.web.GlobalExceptionHandler;
+import com.sqljudge.common.web.OptimisticLockExceptionHandler;
 import com.sqljudge.common.web.RestAccessDeniedHandler;
 import com.sqljudge.common.web.RestAuthenticationEntryPoint;
 import java.time.Clock;
@@ -58,6 +59,17 @@ public class CommonAutoConfiguration {
         RestAccessDeniedHandler restAccessDeniedHandler(
                 ApiErrorWriter apiErrorWriter, Clock clock) {
             return new RestAccessDeniedHandler(apiErrorWriter, clock);
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+    @ConditionalOnClass(name = "org.springframework.dao.OptimisticLockingFailureException")
+    static class OptimisticLockConfiguration {
+
+        @Bean
+        OptimisticLockExceptionHandler optimisticLockExceptionHandler(Clock clock) {
+            return new OptimisticLockExceptionHandler(clock);
         }
     }
 
