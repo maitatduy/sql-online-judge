@@ -9,5 +9,6 @@ public enum AdminActionType {
     UPDATE_DISPLAY_NAME,
     SEND_PASSWORD_RESET,
     SEND_VERIFICATION,
-    DELETE
+    DELETE,
+    RESTORE
 }

@@ -21,4 +21,16 @@ class UserTest {
 
         assertThat(user.getDeletedAt()).isEqualTo(FIRST_DELETION);
     }
+
+    @Test
+    @DisplayName("Khôi phục bỏ dấu xoá, tài khoản không còn bị coi là đã xoá")
+    void restore_deletedUser_clearsDeletion() {
+        User user = new User();
+        user.markDeleted(FIRST_DELETION);
+
+        user.restore();
+
+        assertThat(user.isDeleted()).isFalse();
+        assertThat(user.getDeletedAt()).isNull();
+    }
 }

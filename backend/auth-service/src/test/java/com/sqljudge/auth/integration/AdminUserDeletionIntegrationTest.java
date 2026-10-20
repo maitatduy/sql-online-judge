@@ -94,6 +94,45 @@ class AdminUserDeletionIntegrationTest extends ContainerSupport {
                 .isFalse();
     }
 
+    @Test
+    @DisplayName(
+            "Admin khôi phục tài khoản đã xoá: 200, quay lại danh sách, đăng nhập lại được;"
+                    + " khôi phục lần nữa bị 409")
+    void restore_endToEnd() throws Exception {
+        String adminToken = signInAsAdmin("admin.khoiphuc", "admin.khoiphuc@gmail.com");
+        String email = "duoc.khoiphuc@gmail.com";
+        registerVerified("duoc.khoiphuc", email);
+        deleteUser("duoc.khoiphuc", adminToken);
+
+        ResponseEntity<Map> restored = restore("duoc.khoiphuc", adminToken);
+        ResponseEntity<Map> restoredAgain = restore("duoc.khoiphuc", adminToken);
+
+        assertThat(restored.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(restored.getBody())
+                .containsEntry("username", "duoc.khoiphuc")
+                .containsEntry("deletedAt", null);
+        assertThat(restoredAgain.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(restoredAgain.getBody()).containsEntry("code", "USER_NOT_DELETED");
+        assertThat(usernamesIn("/api/admin/users?q=duoc.khoiphuc", adminToken))
+                .containsExactly("duoc.khoiphuc");
+        assertThat(login(email).getStatusCode()).isEqualTo(HttpStatus.OK);
+        UUID targetId = userRepository.findByUsername("duoc.khoiphuc").orElseThrow().getId();
+        assertThat(adminActionRepository.findAll())
+                .filteredOn(action -> targetId.equals(action.getTargetUserId()))
+                .extracting(action -> action.getAction())
+                .containsExactlyInAnyOrder(AdminActionType.DELETE, AdminActionType.RESTORE);
+    }
+
+    private ResponseEntity<Map> restore(String username, String adminToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(adminToken);
+        return restTemplate.exchange(
+                "/api/admin/users/" + username + "/restore",
+                HttpMethod.POST,
+                new HttpEntity<>(headers),
+                Map.class);
+    }
+
     private DeleteResult deleteUser(String username, String adminToken)
             throws IOException, InterruptedException {
         String body = objectMapper.writeValueAsString(Map.of("reason", REASON));

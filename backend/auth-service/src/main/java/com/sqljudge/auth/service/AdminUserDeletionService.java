@@ -1,6 +1,7 @@
 package com.sqljudge.auth.service;
 
 import com.sqljudge.auth.dto.request.DeleteUserRequest;
+import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
 import com.sqljudge.auth.entity.AdminAction;
 import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.repository.AdminActionRepository;
@@ -9,6 +10,7 @@ import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.BusinessRuleException;
+import com.sqljudge.common.exception.ConflictException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
@@ -41,5 +43,17 @@ public class AdminUserDeletionService {
         emailTokenRepository.invalidateAllUnusedTokens(user, now);
         adminActionRepository.save(AdminAction.delete(actorId, user, request.reason().strip()));
         log.info("admin_user_deleted userId={} actorId={}", user.getId(), actorId);
+    }
+
+    @Transactional
+    public AdminUserDetailResponse restore(String username, UUID actorId) {
+        User user = AdminUserLookup.findAny(userRepository, username);
+        if (!user.isDeleted()) {
+            throw new ConflictException(ErrorCode.USER_NOT_DELETED, "Tài khoản chưa bị xoá");
+        }
+        user.restore();
+        adminActionRepository.save(AdminAction.restore(actorId, user));
+        log.info("admin_user_restored userId={} actorId={}", user.getId(), actorId);
+        return AdminUserViews.toDetail(user, clock.instant());
     }
 }

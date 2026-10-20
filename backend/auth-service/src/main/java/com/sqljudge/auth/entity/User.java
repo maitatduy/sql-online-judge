@@ -111,6 +111,10 @@ public class User extends BaseEntity {
         }
     }
 
+    public void restore() {
+        deletedAt = null;
+    }
+
     public void markEmailVerified(Instant now) {
         if (emailVerifiedAt == null) {
             emailVerifiedAt = now;

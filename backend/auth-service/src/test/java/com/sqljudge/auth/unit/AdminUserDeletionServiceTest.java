@@ -7,8 +7,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.sqljudge.auth.dto.request.DeleteUserRequest;
+import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
 import com.sqljudge.auth.entity.AdminAction;
 import com.sqljudge.auth.entity.AdminActionType;
+import com.sqljudge.auth.entity.SignupProvider;
 import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.repository.AdminActionRepository;
 import com.sqljudge.auth.repository.EmailTokenRepository;
@@ -17,6 +19,7 @@ import com.sqljudge.auth.repository.UserSessionRepository;
 import com.sqljudge.auth.service.AdminUserDeletionService;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.AppException;
+import com.sqljudge.common.security.Role;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -105,6 +108,39 @@ class AdminUserDeletionServiceTest {
                 () -> service.delete("da.xoa", new DeleteUserRequest("Lý do"), ADMIN_ID),
                 ErrorCode.USER_NOT_FOUND);
         verifyNoInteractions(userSessionRepository, emailTokenRepository, adminActionRepository);
+    }
+
+    @Test
+    @DisplayName("Khôi phục tài khoản đã xoá: bỏ dấu xoá, ghi nhật ký, trả chi tiết")
+    void restore_deletedUser_restoresAndRecords() {
+        user.setDeletedAt(NOW.minusSeconds(3600));
+        user.setEmail("viet.luu@gmail.com");
+        user.setRole(Role.LEARNER);
+        user.setSignupProvider(SignupProvider.EMAIL);
+        when(userRepository.findByUsername("viet.luu")).thenReturn(Optional.of(user));
+
+        AdminUserDetailResponse restored = service.restore("viet.luu", ADMIN_ID);
+
+        assertThat(user.getDeletedAt()).isNull();
+        assertThat(restored.account().username()).isEqualTo("viet.luu");
+        assertThat(restored.account().deletedAt()).isNull();
+        ArgumentCaptor<AdminAction> saved = ArgumentCaptor.forClass(AdminAction.class);
+        verify(adminActionRepository).save(saved.capture());
+        assertThat(saved.getValue().getAction()).isEqualTo(AdminActionType.RESTORE);
+        assertThat(saved.getValue().getActorId()).isEqualTo(ADMIN_ID);
+        assertThat(saved.getValue().getTargetUserId()).isEqualTo(USER_ID);
+        assertThat(saved.getValue().getReason()).isNull();
+    }
+
+    @Test
+    @DisplayName("Khôi phục tài khoản chưa bị xoá: 409 USER_NOT_DELETED; không có thì 404")
+    void restore_liveOrMissing_rejects() {
+        when(userRepository.findByUsername("viet.luu")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername("khong.co")).thenReturn(Optional.empty());
+
+        assertRejected(() -> service.restore("viet.luu", ADMIN_ID), ErrorCode.USER_NOT_DELETED);
+        assertRejected(() -> service.restore("khong.co", ADMIN_ID), ErrorCode.USER_NOT_FOUND);
+        verifyNoInteractions(adminActionRepository);
     }
 
     private static void assertRejected(

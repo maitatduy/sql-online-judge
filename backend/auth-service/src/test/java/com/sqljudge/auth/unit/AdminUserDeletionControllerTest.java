@@ -3,7 +3,9 @@ package com.sqljudge.auth.unit;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,11 +14,19 @@ import com.sqljudge.auth.config.JwtKeyConfig;
 import com.sqljudge.auth.config.SecurityConfig;
 import com.sqljudge.auth.controller.AdminUserDeletionController;
 import com.sqljudge.auth.dto.request.DeleteUserRequest;
+import com.sqljudge.auth.dto.response.AccountStatus;
+import com.sqljudge.auth.dto.response.AdminUserDetailResponse;
+import com.sqljudge.auth.dto.response.AdminUserSummaryResponse;
+import com.sqljudge.auth.entity.SignupProvider;
 import com.sqljudge.auth.service.AdminUserDeletionService;
 import com.sqljudge.common.config.CommonAutoConfiguration;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.BusinessRuleException;
+import com.sqljudge.common.exception.ConflictException;
+import com.sqljudge.common.security.Role;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +107,67 @@ class AdminUserDeletionControllerTest {
                 .andExpect(status().isUnauthorized());
 
         verifyNoInteractions(adminUserDeletionService);
+    }
+
+    @Test
+    @DisplayName("Khôi phục tài khoản trả 200 kèm chi tiết, người thực hiện lấy từ JWT")
+    void restore_admin_returnsDetail() throws Exception {
+        when(adminUserDeletionService.restore("viet.luu", TestJwts.USER_ID))
+                .thenReturn(restoredDetail());
+
+        mockMvc.perform(as("ADMIN", post(USER_PATH + "/restore")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("viet.luu"))
+                .andExpect(jsonPath("$.deletedAt").isEmpty());
+    }
+
+    @Test
+    @DisplayName("Khôi phục tài khoản chưa bị xoá: 409 USER_NOT_DELETED")
+    void restore_notDeleted_returnsConflict() throws Exception {
+        when(adminUserDeletionService.restore("viet.luu", TestJwts.USER_ID))
+                .thenThrow(
+                        new ConflictException(ErrorCode.USER_NOT_DELETED, "Tài khoản chưa bị xoá"));
+
+        mockMvc.perform(as("ADMIN", post(USER_PATH + "/restore")))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("USER_NOT_DELETED"));
+    }
+
+    @Test
+    @DisplayName("Khôi phục: không phải ADMIN bị 403, chưa đăng nhập bị 401")
+    void restore_requiresAdminRole() throws Exception {
+        for (String role : List.of("LEARNER", "SETTER", "MODERATOR")) {
+            mockMvc.perform(as(role, post(USER_PATH + "/restore")))
+                    .andExpect(status().isForbidden());
+        }
+        mockMvc.perform(post(USER_PATH + "/restore")).andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(adminUserDeletionService);
+    }
+
+    private static AdminUserDetailResponse restoredDetail() {
+        return new AdminUserDetailResponse(
+                new AdminUserSummaryResponse(
+                        UUID.fromString("0192f3a0-0000-7000-8000-00000000000b"),
+                        "viet.luu",
+                        "viet.luu@gmail.com",
+                        Role.LEARNER,
+                        0,
+                        0,
+                        Instant.parse("2026-09-01T00:00:00Z"),
+                        null,
+                        false,
+                        AccountStatus.ACTIVE,
+                        null,
+                        true,
+                        null,
+                        null),
+                null,
+                null,
+                SignupProvider.EMAIL,
+                0,
+                0,
+                List.of());
     }
 
     private static MockHttpServletRequestBuilder json(
