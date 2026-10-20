@@ -69,6 +69,12 @@ public class User extends BaseEntity {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
+    @Column(name = "avatar_public_id", length = 100)
+    private String avatarPublicId;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -109,6 +115,11 @@ public class User extends BaseEntity {
         if (deletedAt == null) {
             deletedAt = now;
         }
+    }
+
+    public void changeAvatar(String url, String publicId) {
+        avatarUrl = url;
+        avatarPublicId = publicId;
     }
 
     public void restore() {

@@ -28,3 +28,8 @@ sqljudge:
   email:
     from: no-reply@sqljudge.test
     frontend-url: http://localhost:3000
+  avatar:
+    cloudinary:
+      cloud-name: test-cloud
+      api-key: test-key
+      api-secret: test-secret

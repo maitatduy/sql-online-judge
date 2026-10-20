@@ -10,5 +10,6 @@ public enum AdminActionType {
     SEND_PASSWORD_RESET,
     SEND_VERIFICATION,
     DELETE,
-    RESTORE
+    RESTORE,
+    UPDATE_AVATAR
 }

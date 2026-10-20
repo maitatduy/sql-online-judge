@@ -97,6 +97,10 @@ public class AdminAction extends BaseEntity {
         return of(actorId, target, AdminActionType.RESTORE, null);
     }
 
+    public static AdminAction updateAvatar(UUID actorId, User target) {
+        return of(actorId, target, AdminActionType.UPDATE_AVATAR, null);
+    }
+
     private static String requireReason(String reason) {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("reason is required for this admin action");

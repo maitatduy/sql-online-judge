@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -95,6 +96,11 @@ public class GlobalExceptionHandler {
                     List.of(new FieldViolation(fieldPath(mismatch), INVALID_VALUE_MESSAGE)));
         }
         return respondMalformed();
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ResponseEntity<ApiError> handleUploadTooLarge(MaxUploadSizeExceededException ex) {
+        return respondWithViolations(List.of(new FieldViolation("file", "Tệp tải lên quá lớn")));
     }
 
     @ExceptionHandler({
