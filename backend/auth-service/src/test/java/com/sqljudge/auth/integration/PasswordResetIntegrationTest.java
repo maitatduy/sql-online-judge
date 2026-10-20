@@ -16,8 +16,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -29,11 +27,6 @@ class PasswordResetIntegrationTest extends ContainerSupport {
     private static final String NEW_PASSWORD = "matkhau-moi-2026";
 
     @Autowired private TestRestTemplate restTemplate;
-
-    @DynamicPropertySource
-    static void mailProperties(DynamicPropertyRegistry registry) {
-        MailpitContainer.registerMailProperties(registry);
-    }
 
     @Test
     @DisplayName(

@@ -15,8 +15,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -25,11 +23,6 @@ class SessionIntegrationTest extends ContainerSupport {
     private static final String FRONTEND_ORIGIN = "http://localhost:3000";
 
     @Autowired private TestRestTemplate restTemplate;
-
-    @DynamicPropertySource
-    static void mailProperties(DynamicPropertyRegistry registry) {
-        MailpitContainer.registerMailProperties(registry);
-    }
 
     @Test
     @DisplayName(

@@ -23,8 +23,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -37,11 +35,6 @@ class AdminUserBanIntegrationTest extends ContainerSupport {
     @Autowired private TestRestTemplate restTemplate;
     @Autowired private UserRepository userRepository;
     @Autowired private AdminActionRepository adminActionRepository;
-
-    @DynamicPropertySource
-    static void mailProperties(DynamicPropertyRegistry registry) {
-        MailpitContainer.registerMailProperties(registry);
-    }
 
     @Test
     @DisplayName(
