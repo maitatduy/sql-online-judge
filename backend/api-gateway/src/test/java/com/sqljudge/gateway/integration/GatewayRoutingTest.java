@@ -94,13 +94,20 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
                 .exchange()
                 .expectStatus()
                 .isUnauthorized();
+        webTestClient
+                .post()
+                .uri("/api/admin/user-exports")
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
         webTestClient.get().uri("/api/admin/overview").exchange().expectStatus().isNotFound();
 
         assertThat(AUTH_SERVICE.forwardedRequestLines())
                 .containsExactly(
                         "GET /api/admin/users?role=SETTER&page=2",
                         "GET /api/admin/users/minh.anh",
-                        "GET /api/admin/user-summary");
+                        "GET /api/admin/user-summary",
+                        "POST /api/admin/user-exports");
     }
 
     @Test
@@ -149,7 +156,9 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
-    @DisplayName("Response thật tới frontend có header CORS và lộ Retry-After")
+    @DisplayName(
+            "Response thật tới frontend có header CORS, lộ Retry-After và Content-Disposition để"
+                    + " đọc tên file tải về")
     void routedResponse_toFrontendOrigin_hasCorsHeaders() {
         webTestClient
                 .get()
@@ -161,7 +170,11 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
                 .expectHeader()
                 .value(
                         HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS,
-                        exposed -> assertThat(exposed).contains(HttpHeaders.RETRY_AFTER));
+                        exposed ->
+                                assertThat(exposed)
+                                        .contains(
+                                                HttpHeaders.RETRY_AFTER,
+                                                HttpHeaders.CONTENT_DISPOSITION));
     }
 
     @Test

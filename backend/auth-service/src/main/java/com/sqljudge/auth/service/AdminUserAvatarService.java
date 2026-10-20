@@ -34,6 +34,23 @@ public class AdminUserAvatarService {
         return new UserAvatarResponse(stored.url());
     }
 
+    public void remove(String username, UUID actorId) {
+        String removedPublicId = transactionOperations.execute(status -> detach(username, actorId));
+        deleteQuietly(removedPublicId);
+    }
+
+    private String detach(String username, UUID actorId) {
+        User user = AdminUserLookup.findLive(userRepository, username);
+        if (!user.hasAvatar()) {
+            return null;
+        }
+        String publicId = user.getAvatarPublicId();
+        user.removeAvatar();
+        adminActionRepository.save(AdminAction.removeAvatar(actorId, user));
+        log.info("admin_user_avatar_removed userId={} actorId={}", user.getId(), actorId);
+        return publicId;
+    }
+
     private String attachOrDiscard(String username, StoredAvatar stored, UUID actorId) {
         try {
             return transactionOperations.execute(status -> attach(username, stored, actorId));

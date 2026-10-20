@@ -58,7 +58,7 @@ class AdminUserEditIntegrationTest extends ContainerSupport {
                 .containsEntry("role", "SETTER");
         UUID targetId = userRepository.findByUsername("duoc.nang").orElseThrow().getId();
         assertThat(adminActionRepository.findAll())
-                .filteredOn(action -> action.getTargetUserId().equals(targetId))
+                .filteredOn(action -> targetId.equals(action.getTargetUserId()))
                 .singleElement()
                 .satisfies(
                         action -> {

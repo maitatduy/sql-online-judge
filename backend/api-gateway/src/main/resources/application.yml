@@ -24,14 +24,14 @@ spring:
             - id: auth-service
               uri: ${AUTH_SERVICE_URL}
               predicates:
-                - Path=/api/auth/**,/api/users/**,/api/admin/users/**,/api/admin/user-summary
+                - Path=/api/auth/**,/api/users/**,/api/admin/users/**,/api/admin/user-summary,/api/admin/user-exports
           globalcors:
             cors-configurations:
               '[/api/**]':
                 allowed-origins: ${CORS_ALLOWED_ORIGINS}
                 allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
                 allowed-headers: Authorization,Content-Type,Idempotency-Key
-                exposed-headers: Location,Retry-After
+                exposed-headers: Location,Retry-After,Content-Disposition
                 allow-credentials: true
                 max-age: 3600
 

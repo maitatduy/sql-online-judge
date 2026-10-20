@@ -70,7 +70,7 @@ class AdminUserSessionIntegrationTest extends ContainerSupport {
         assertThat(refresh(refreshToken).getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         UUID targetId = userRepository.findByUsername("co.phien").orElseThrow().getId();
         assertThat(adminActionRepository.findAll())
-                .filteredOn(action -> action.getTargetUserId().equals(targetId))
+                .filteredOn(action -> targetId.equals(action.getTargetUserId()))
                 .singleElement()
                 .satisfies(
                         action -> {

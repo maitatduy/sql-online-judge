@@ -19,6 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -43,9 +44,26 @@ public class AdminUserEditService {
             changeDisplayName(user, request, actorId);
         }
         if (isRoleChanged) {
-            changeRole(user, request, actorId);
+            applyRoleChange(user, new RoleChange(request.getRole(), reasonOf(request)), actorId);
         }
         return AdminUserViews.toDetail(user, clock.instant());
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void applyRoleChange(User user, RoleChange change, UUID actorId) {
+        Role previousRole = user.getRole();
+        user.setRole(change.role());
+        Instant now = clock.instant();
+        userSessionRepository.revokeAllActiveSessions(user, now);
+        adminActionRepository.save(
+                AdminAction.changeRole(
+                        actorId, user, new ValueChange(previousRole.name(), change.reason())));
+        log.info(
+                "admin_user_role_changed userId={} actorId={} from={} to={}",
+                user.getId(),
+                actorId,
+                previousRole,
+                user.getRole());
     }
 
     private void requireRoleChangeAllowed(User user, UpdateUserRequest request, UUID actorId) {
@@ -68,22 +86,6 @@ public class AdminUserEditService {
         adminActionRepository.save(
                 AdminAction.changeDisplayName(
                         actorId, user, new ValueChange(previousName, reasonOf(request))));
-    }
-
-    private void changeRole(User user, UpdateUserRequest request, UUID actorId) {
-        Role previousRole = user.getRole();
-        user.setRole(request.getRole());
-        Instant now = clock.instant();
-        userSessionRepository.revokeAllActiveSessions(user, now);
-        adminActionRepository.save(
-                AdminAction.changeRole(
-                        actorId, user, new ValueChange(previousRole.name(), reasonOf(request))));
-        log.info(
-                "admin_user_role_changed userId={} actorId={} from={} to={}",
-                user.getId(),
-                actorId,
-                previousRole,
-                user.getRole());
     }
 
     private static String reasonOf(UpdateUserRequest request) {

@@ -21,6 +21,9 @@ spring:
     port: 1025
 
 sqljudge:
+  admin:
+    user-export:
+      batch-size: 2
   jwt:
     generate-ephemeral-key: true
   security:

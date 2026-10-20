@@ -162,4 +162,59 @@ class AdminUserAvatarServiceTest {
         assertThat(user.getAvatarUrl()).isNull();
         verifyNoInteractions(adminActionRepository);
     }
+
+    @Test
+    @DisplayName("Gỡ avatar: đặt avatar về null, ghi nhật ký, xoá ảnh khỏi kho sau khi lưu")
+    void remove_existingAvatar_clearsAndDeletesImage() {
+        user.changeAvatar("https://res.cloudinary.com/sqljudge/avatars/cu.png", "avatars/cu");
+        when(userRepository.findByUsername("viet.luu")).thenReturn(Optional.of(user));
+
+        service.remove("viet.luu", ADMIN_ID);
+
+        assertThat(user.getAvatarUrl()).isNull();
+        assertThat(user.getAvatarPublicId()).isNull();
+        verify(avatarStorage).delete("avatars/cu");
+        ArgumentCaptor<AdminAction> saved = ArgumentCaptor.forClass(AdminAction.class);
+        verify(adminActionRepository).save(saved.capture());
+        assertThat(saved.getValue().getAction()).isEqualTo(AdminActionType.REMOVE_AVATAR);
+        assertThat(saved.getValue().getActorId()).isEqualTo(ADMIN_ID);
+        assertThat(saved.getValue().getTargetUserId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    @DisplayName("Gỡ avatar khi chưa có avatar: không đổi gì, không ghi nhật ký")
+    void remove_noAvatar_doesNothing() {
+        when(userRepository.findByUsername("viet.luu")).thenReturn(Optional.of(user));
+
+        service.remove("viet.luu", ADMIN_ID);
+
+        verifyNoInteractions(avatarStorage, adminActionRepository);
+    }
+
+    @Test
+    @DisplayName("Gỡ avatar của tài khoản không có hoặc đã xoá: 404")
+    void remove_missingUser_throwsNotFound() {
+        when(userRepository.findByUsername("khong.co")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.remove("khong.co", ADMIN_ID))
+                .isInstanceOfSatisfying(
+                        AppException.class,
+                        rejected ->
+                                assertThat(rejected.getCode()).isEqualTo(ErrorCode.USER_NOT_FOUND));
+        verifyNoInteractions(avatarStorage, adminActionRepository);
+    }
+
+    @Test
+    @DisplayName("Gỡ avatar mà kho ảnh lỗi khi xoá: avatar vẫn về null, chỉ ghi log")
+    void remove_storageDeleteFails_stillClearsAvatar() {
+        user.changeAvatar("https://res.cloudinary.com/sqljudge/avatars/cu.png", "avatars/cu");
+        when(userRepository.findByUsername("viet.luu")).thenReturn(Optional.of(user));
+        doThrow(new IllegalStateException("cloudinary down"))
+                .when(avatarStorage)
+                .delete("avatars/cu");
+
+        service.remove("viet.luu", ADMIN_ID);
+
+        assertThat(user.getAvatarUrl()).isNull();
+    }
 }

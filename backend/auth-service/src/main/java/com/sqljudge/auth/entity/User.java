@@ -122,6 +122,15 @@ public class User extends BaseEntity {
         avatarPublicId = publicId;
     }
 
+    public boolean hasAvatar() {
+        return avatarPublicId != null;
+    }
+
+    public void removeAvatar() {
+        avatarUrl = null;
+        avatarPublicId = null;
+    }
+
     public void restore() {
         deletedAt = null;
     }

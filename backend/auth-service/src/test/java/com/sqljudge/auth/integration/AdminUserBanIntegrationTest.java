@@ -142,7 +142,7 @@ class AdminUserBanIntegrationTest extends ContainerSupport {
     private List<AdminAction> recordedActions(String username) {
         UUID targetId = userRepository.findByUsername(username).orElseThrow().getId();
         return adminActionRepository.findAll().stream()
-                .filter(action -> action.getTargetUserId().equals(targetId))
+                .filter(action -> targetId.equals(action.getTargetUserId()))
                 .toList();
     }
 

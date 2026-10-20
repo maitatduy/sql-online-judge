@@ -2,8 +2,11 @@ package com.sqljudge.auth.unit;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,6 +20,7 @@ import com.sqljudge.auth.service.AdminUserAvatarService;
 import com.sqljudge.common.config.CommonAutoConfiguration;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.InvalidFieldException;
+import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.exception.ServiceUnavailableException;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -89,6 +93,37 @@ class AdminUserAvatarControllerTest {
             mockMvc.perform(as(role, upload(PNG_FILE))).andExpect(status().isForbidden());
         }
         mockMvc.perform(upload(PNG_FILE)).andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(adminUserAvatarService);
+    }
+
+    @Test
+    @DisplayName("Gỡ avatar trả 204, người thực hiện lấy từ JWT")
+    void remove_admin_returnsNoContent() throws Exception {
+        mockMvc.perform(as("ADMIN", delete(AVATAR_PATH))).andExpect(status().isNoContent());
+
+        verify(adminUserAvatarService).remove("viet.luu", TestJwts.USER_ID);
+    }
+
+    @Test
+    @DisplayName("Gỡ avatar của tài khoản không có: 404 USER_NOT_FOUND")
+    void remove_missingUser_returnsNotFound() throws Exception {
+        doThrow(new NotFoundException(ErrorCode.USER_NOT_FOUND, "Không tìm thấy người dùng"))
+                .when(adminUserAvatarService)
+                .remove("viet.luu", TestJwts.USER_ID);
+
+        mockMvc.perform(as("ADMIN", delete(AVATAR_PATH)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"));
+    }
+
+    @Test
+    @DisplayName("Gỡ avatar: không phải ADMIN bị 403, chưa đăng nhập bị 401")
+    void remove_requiresAdminRole() throws Exception {
+        for (String role : List.of("LEARNER", "SETTER", "MODERATOR")) {
+            mockMvc.perform(as(role, delete(AVATAR_PATH))).andExpect(status().isForbidden());
+        }
+        mockMvc.perform(delete(AVATAR_PATH)).andExpect(status().isUnauthorized());
 
         verifyNoInteractions(adminUserAvatarService);
     }

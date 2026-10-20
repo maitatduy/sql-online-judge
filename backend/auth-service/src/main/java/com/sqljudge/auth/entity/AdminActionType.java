@@ -11,5 +11,7 @@ public enum AdminActionType {
     SEND_VERIFICATION,
     DELETE,
     RESTORE,
-    UPDATE_AVATAR
+    UPDATE_AVATAR,
+    REMOVE_AVATAR,
+    EXPORT_USER_EMAILS
 }

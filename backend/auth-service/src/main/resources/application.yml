@@ -5,6 +5,9 @@ server:
 spring:
   application:
     name: auth-service
+  mvc:
+    async:
+      request-timeout: 5m
   jpa:
     open-in-view: false
     hibernate:
@@ -67,6 +70,9 @@ management:
       show-details: never
 
 sqljudge:
+  admin:
+    user-export:
+      batch-size: 500
   jwt:
     private-key-path: ${JWT_PRIVATE_KEY_PATH:}
     generate-ephemeral-key: false

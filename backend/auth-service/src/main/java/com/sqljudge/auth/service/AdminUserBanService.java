@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -44,6 +45,13 @@ public class AdminUserBanService {
         if (user.isBannedAt(now)) {
             throw new ConflictException(ErrorCode.USER_ALREADY_BANNED, "Tài khoản đã bị khoá");
         }
+        applyBan(user, request, actorId);
+        return AdminUserViews.toDetail(user, now);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void applyBan(User user, BanUserRequest request, UUID actorId) {
+        Instant now = clock.instant();
         String reason = request.reason().strip();
         Instant until = request.duration().bannedUntilFrom(now);
         user.ban(now, until, reason);
@@ -59,7 +67,6 @@ public class AdminUserBanService {
                 user.getId(),
                 actorId,
                 request.duration());
-        return AdminUserViews.toDetail(user, now);
     }
 
     @Transactional

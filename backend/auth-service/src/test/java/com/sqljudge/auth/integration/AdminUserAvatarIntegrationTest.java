@@ -81,6 +81,39 @@ class AdminUserAvatarIntegrationTest extends ContainerSupport {
         assertThat(userRepository.findByUsername("anh.sai").orElseThrow().getAvatarUrl()).isNull();
     }
 
+    @Test
+    @DisplayName(
+            "Admin gỡ avatar: 204, chi tiết không còn avatarUrl, ảnh bị xoá khỏi kho, có nhật ký")
+    void removeAvatar_endToEnd() throws Exception {
+        String adminToken = signInAsAdmin("admin.go", "admin.go@gmail.com");
+        registerVerified("go.anh", "go.anh@gmail.com");
+        upload("go.anh", PNG, adminToken);
+        String publicId = userRepository.findByUsername("go.anh").orElseThrow().getAvatarPublicId();
+
+        ResponseEntity<Map> removed = remove("go.anh", adminToken);
+        ResponseEntity<Map> detail = get("/api/admin/users/go.anh", adminToken);
+
+        assertThat(removed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(detail.getBody()).containsEntry("avatarUrl", null);
+        assertThat(avatarStorage.contains(publicId)).isFalse();
+        User user = userRepository.findByUsername("go.anh").orElseThrow();
+        assertThat(user.getAvatarPublicId()).isNull();
+        assertThat(adminActionRepository.findAll())
+                .filteredOn(action -> user.getId().equals(action.getTargetUserId()))
+                .extracting(action -> action.getAction())
+                .containsExactly(AdminActionType.UPDATE_AVATAR, AdminActionType.REMOVE_AVATAR);
+    }
+
+    private ResponseEntity<Map> remove(String username, String adminToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(adminToken);
+        return restTemplate.exchange(
+                "/api/admin/users/" + username + "/avatar",
+                HttpMethod.DELETE,
+                new HttpEntity<>(headers),
+                Map.class);
+    }
+
     private ResponseEntity<Map> upload(String username, byte[] bytes, String adminToken) {
         MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
         form.add(

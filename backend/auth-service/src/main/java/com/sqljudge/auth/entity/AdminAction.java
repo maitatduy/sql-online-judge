@@ -28,7 +28,7 @@ public class AdminAction extends BaseEntity {
     @Column(name = "actor_id", nullable = false, columnDefinition = "BINARY(16)")
     private UUID actorId;
 
-    @Column(name = "target_user_id", nullable = false, columnDefinition = "BINARY(16)")
+    @Column(name = "target_user_id", columnDefinition = "BINARY(16)")
     private UUID targetUserId;
 
     @Enumerated(EnumType.STRING)
@@ -46,6 +46,9 @@ public class AdminAction extends BaseEntity {
 
     @Column(name = "new_value", length = 100)
     private String newValue;
+
+    @Column(name = "details", length = 500)
+    private String details;
 
     public static AdminAction ban(UUID actorId, User target, String reason) {
         AdminAction action = of(actorId, target, AdminActionType.BAN, requireReason(reason));
@@ -99,6 +102,19 @@ public class AdminAction extends BaseEntity {
 
     public static AdminAction updateAvatar(UUID actorId, User target) {
         return of(actorId, target, AdminActionType.UPDATE_AVATAR, null);
+    }
+
+    public static AdminAction removeAvatar(UUID actorId, User target) {
+        return of(actorId, target, AdminActionType.REMOVE_AVATAR, null);
+    }
+
+    public static AdminAction exportUserEmails(UUID actorId, String reason, String details) {
+        AdminAction action = new AdminAction();
+        action.actorId = actorId;
+        action.action = AdminActionType.EXPORT_USER_EMAILS;
+        action.reason = requireReason(reason);
+        action.details = details;
+        return action;
     }
 
     private static String requireReason(String reason) {
