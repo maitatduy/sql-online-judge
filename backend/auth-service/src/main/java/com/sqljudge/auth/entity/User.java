@@ -105,6 +105,12 @@ public class User extends BaseEntity {
         banReason = null;
     }
 
+    public void markDeleted(Instant now) {
+        if (deletedAt == null) {
+            deletedAt = now;
+        }
+    }
+
     public void markEmailVerified(Instant now) {
         if (emailVerifiedAt == null) {
             emailVerifiedAt = now;

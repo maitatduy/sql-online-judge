@@ -89,6 +89,10 @@ public class AdminAction extends BaseEntity {
         return of(actorId, target, AdminActionType.SEND_VERIFICATION, null);
     }
 
+    public static AdminAction delete(UUID actorId, User target, String reason) {
+        return of(actorId, target, AdminActionType.DELETE, requireReason(reason));
+    }
+
     private static String requireReason(String reason) {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("reason is required for this admin action");
