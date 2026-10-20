@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { memo, useId } from "react";
 
 import { accountStateOf } from "@/features/admin/users/account-status";
 import type { AdminUserSummary } from "@/features/admin/users/types";
@@ -18,7 +18,13 @@ interface UserRowProps {
     handlers: UserRowHandlers;
 }
 
-export function UserRow({ user, isSelected, onToggleSelected, canDelete, handlers }: UserRowProps) {
+export const UserRow = memo(function UserRow({
+    user,
+    isSelected,
+    onToggleSelected,
+    canDelete,
+    handlers,
+}: UserRowProps) {
     const usernameId = useId();
 
     return (
@@ -66,4 +72,4 @@ export function UserRow({ user, isSelected, onToggleSelected, canDelete, handler
             </td>
         </tr>
     );
-}
+});
