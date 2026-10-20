@@ -22,7 +22,6 @@ import type {
     CreateUserRequest,
     DeleteUserRequest,
     ExportUsersRequest,
-    ExportUsersResponse,
     UnbanUserRequest,
     PageRequest,
     RevokeSessionRequest,
@@ -82,7 +81,7 @@ export const adminApi = {
     bulkChangeRole: (request: BulkChangeRoleRequest) =>
         apiClient.post<BulkUserActionResponse>("/api/admin/users/bulk-role", request),
     exportUsers: (request: ExportUsersRequest) =>
-        apiClient.post<ExportUsersResponse>("/api/admin/user-exports", request),
+        apiClient.postForFile("/api/admin/user-exports", request),
     deleteUser: ({ username, reason }: DeleteUserRequest) =>
         apiClient.delete<undefined>(`/api/admin/users/${encodeURIComponent(username)}`, {
             reason,

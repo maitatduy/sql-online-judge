@@ -7,6 +7,8 @@ const AUTH_PATH_PREFIX = "/api/auth/";
 const CURRENT_USER_PATH = "/api/auth/me";
 const REFRESH_PATH = "/api/auth/refresh";
 const COOKIE_SESSION_PATHS = new Set([REFRESH_PATH, "/api/auth/logout"]);
+const EXTENDED_FILENAME_PATTERN = /filename\*\s*=\s*UTF-8''([^;]+)/i;
+const PLAIN_FILENAME_PATTERN = /filename\s*=\s*"?([^";]+)"?/i;
 
 interface RefreshedSession {
     accessToken: string;
@@ -67,6 +69,11 @@ export function isUnauthenticatedError(error: unknown): boolean {
 }
 
 type QueryParams = Record<string, string | number | boolean | undefined>;
+
+export interface DownloadedFile {
+    blob: Blob;
+    fileName: string | null;
+}
 
 interface RequestOptions {
     params?: QueryParams;
@@ -204,12 +211,12 @@ function sendRequest(
     });
 }
 
-async function request<T>(
+async function requestOk(
     method: string,
     path: string,
     body: unknown,
     options: RequestOptions,
-): Promise<T> {
+): Promise<Response> {
     let response = await sendRequest(method, path, body, options);
     if (
         response.status === UNAUTHENTICATED_STATUS &&
@@ -221,8 +228,48 @@ async function request<T>(
     if (!response.ok) {
         throw await toRequestError(response);
     }
+    return response;
+}
+
+async function request<T>(
+    method: string,
+    path: string,
+    body: unknown,
+    options: RequestOptions,
+): Promise<T> {
+    const response = await requestOk(method, path, body, options);
     const responseText = await response.text();
     return (responseText ? JSON.parse(responseText) : undefined) as T;
+}
+
+function decodeFileName(encodedName: string): string | null {
+    try {
+        return decodeURIComponent(encodedName);
+    } catch {
+        return null;
+    }
+}
+
+function fileNameOf(contentDisposition: string | null): string | null {
+    if (!contentDisposition) {
+        return null;
+    }
+    const encodedName = EXTENDED_FILENAME_PATTERN.exec(contentDisposition)?.[1];
+    const decodedName = encodedName ? decodeFileName(encodedName) : null;
+    return decodedName ?? PLAIN_FILENAME_PATTERN.exec(contentDisposition)?.[1] ?? null;
+}
+
+async function requestFile(
+    method: string,
+    path: string,
+    body: unknown,
+    options: RequestOptions,
+): Promise<DownloadedFile> {
+    const response = await requestOk(method, path, body, options);
+    return {
+        blob: await response.blob(),
+        fileName: fileNameOf(response.headers.get("Content-Disposition")),
+    };
 }
 
 export function apiUrl(path: string): string {
@@ -238,6 +285,8 @@ export const apiClient = {
         request<T>("PATCH", path, body, options),
     delete: <T>(path: string, body?: unknown, options: RequestOptions = {}) =>
         request<T>("DELETE", path, body, options),
+    postForFile: (path: string, body?: unknown, options: RequestOptions = {}) =>
+        requestFile("POST", path, body, options),
     putForm: <T>(path: string, form: FormData, options: RequestOptions = {}) =>
         request<T>("PUT", path, form, options),
 };
