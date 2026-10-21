@@ -111,6 +111,28 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName("Ghi chú và hạn chế của một tài khoản được chuyển tới auth-service")
+    void adminUserNotesAndRestrictions_areRoutedToAuthService() {
+        webTestClient
+                .post()
+                .uri("/api/admin/users/minh.anh/notes")
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+        webTestClient
+                .patch()
+                .uri("/api/admin/users/minh.anh/restrictions")
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+
+        assertThat(AUTH_SERVICE.forwardedRequestLines())
+                .containsExactly(
+                        "POST /api/admin/users/minh.anh/notes",
+                        "PATCH /api/admin/users/minh.anh/restrictions");
+    }
+
+    @Test
     @DisplayName("Đường dẫn nội bộ /internal/** không được định tuyến ra ngoài")
     void internalPath_isNotRouted() {
         webTestClient.get().uri("/internal/jwks").exchange().expectStatus().isNotFound();

@@ -10,6 +10,7 @@ import com.sqljudge.auth.dto.response.UserCountsResponse;
 import com.sqljudge.auth.entity.SignupProvider;
 import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.repository.AdminActionRepository;
+import com.sqljudge.auth.repository.AdminUserNoteRepository;
 import com.sqljudge.auth.repository.EmailTokenRepository;
 import com.sqljudge.auth.repository.OAuthAccountRepository;
 import com.sqljudge.auth.repository.UserRepository;
@@ -43,6 +44,7 @@ class AdminUserQueryServiceTest extends ContainerSupport {
 
     @Autowired private UserRepository userRepository;
     @Autowired private AdminActionRepository adminActionRepository;
+    @Autowired private AdminUserNoteRepository adminUserNoteRepository;
     @Autowired private EmailTokenRepository emailTokenRepository;
     @Autowired private UserSessionRepository userSessionRepository;
     @Autowired private OAuthAccountRepository oauthAccountRepository;
@@ -51,6 +53,7 @@ class AdminUserQueryServiceTest extends ContainerSupport {
     @BeforeEach
     void seedUsers() {
         adminActionRepository.deleteAllInBatch();
+        adminUserNoteRepository.deleteAllInBatch();
         emailTokenRepository.deleteAllInBatch();
         userSessionRepository.deleteAllInBatch();
         oauthAccountRepository.deleteAllInBatch();
