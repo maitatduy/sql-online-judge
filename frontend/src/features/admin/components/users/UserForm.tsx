@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useId, useState } from "react";
 import { useForm, useWatch, type UseFormSetError } from "react-hook-form";
 
+import { NativeSelect } from "@/components/shared/NativeSelect";
 import type { AvatarChange } from "@/features/admin/users/avatar-file";
 import { fieldErrorOf } from "@/features/admin/users/form-errors";
 import { ROLE_LABELS, ROLES } from "@/features/admin/users/role-labels";
@@ -11,7 +12,6 @@ import { ApiRequestError } from "@/lib/api-client";
 import { AdminGrantConfirmDialog } from "./AdminGrantConfirmDialog";
 import { AvatarField } from "./AvatarField";
 import { DialogActions } from "./DialogActions";
-import { NativeSelect } from "./NativeSelect";
 import { TextAreaField } from "./TextAreaField";
 import { TextInputField } from "./TextInputField";
 

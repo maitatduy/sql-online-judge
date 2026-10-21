@@ -2,8 +2,8 @@ import { useId } from "react";
 
 import { formatNumber } from "@/lib/format";
 
+import { formatVerdictPercent } from "../format";
 import type { SubmissionTotals, VerdictShare } from "../types";
-import { formatVerdictPercent } from "../verdict-appearance";
 
 interface SubmissionFactsProps {
     totals: SubmissionTotals;

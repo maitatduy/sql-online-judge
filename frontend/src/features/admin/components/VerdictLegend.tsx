@@ -1,9 +1,9 @@
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { VERDICT_LABELS, type Verdict } from "@/lib/verdict";
+import { VERDICT_FILL_CLASSES, VERDICT_LABELS, type Verdict } from "@/lib/verdict";
 
+import { formatVerdictPercent } from "../format";
 import type { VerdictShare } from "../types";
-import { formatVerdictPercent, VERDICT_FILL_CLASSES } from "../verdict-appearance";
 
 const FULL_WIDTH_PERCENT = 100;
 

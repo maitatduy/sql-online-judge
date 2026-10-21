@@ -1,9 +1,9 @@
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Verdict } from "@/lib/verdict";
+import { VERDICT_STROKE_CLASSES, type Verdict } from "@/lib/verdict";
 
+import { formatVerdictPercent } from "../format";
 import type { VerdictShare } from "../types";
-import { formatVerdictPercent, VERDICT_STROKE_CLASSES } from "../verdict-appearance";
 import { verdictDonutSegments } from "../verdict-donut";
 
 const FULL_CIRCLE_PERCENT = 100;

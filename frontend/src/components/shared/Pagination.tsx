@@ -1,20 +1,16 @@
 import Link from "next/link";
 
+import { PageStepLink } from "@/components/shared/PageStepLink";
 import { Button } from "@/components/ui/button";
-import { pageRangeLabel, pageWindow } from "@/features/admin/users/pagination";
-import { usersHref, type UsersFilters } from "@/features/admin/users/search-params";
-import type { AdminUsersResponse } from "@/features/admin/users/types";
+import { pageRangeLabel, pageWindow, type PageInfo } from "@/lib/pagination";
 
-import { PageStepLink } from "./PageStepLink";
-
-interface UsersPaginationProps {
-    filters: UsersFilters;
-    result: Pick<AdminUsersResponse, "page" | "size" | "totalItems" | "totalPages">;
+interface PaginationProps {
+    result: PageInfo;
+    hrefOf: (page: number) => string;
 }
 
-export function UsersPagination({ filters, result }: UsersPaginationProps) {
+export function Pagination({ result, hrefOf }: PaginationProps) {
     const { page, totalPages } = result;
-    const hrefOf = (targetPage: number) => usersHref({ ...filters, page: targetPage });
 
     return (
         <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 text-[13px]">

@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { UsersFilterChange } from "@/features/admin/hooks/useUsersFilters";
@@ -12,8 +13,6 @@ import {
 import { ROLE_LABELS, ROLES } from "@/features/admin/users/role-labels";
 import { hasActiveFilter, type UsersFilters } from "@/features/admin/users/search-params";
 import type { Role } from "@/lib/current-user";
-
-import { NativeSelect } from "./NativeSelect";
 
 const SEARCH_DEBOUNCE_MS = 300;
 

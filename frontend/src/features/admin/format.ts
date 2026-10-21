@@ -2,6 +2,7 @@ const MS_PER_SECOND = 1000;
 const VIETNAM_TIME_ZONE = "Asia/Ho_Chi_Minh";
 
 const secondsFormatter = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
+const percentFormatter = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
 
 const timeFormatter = new Intl.DateTimeFormat("en-GB", {
     timeZone: VIETNAM_TIME_ZONE,
@@ -16,4 +17,8 @@ export function formatVietnamTime(date: string | Date): string {
 
 export function formatWaitDuration(durationMs: number): string {
     return `${secondsFormatter.format(durationMs / MS_PER_SECOND)} giây`;
+}
+
+export function formatVerdictPercent(percent: number): string {
+    return `${percentFormatter.format(percent)}%`;
 }

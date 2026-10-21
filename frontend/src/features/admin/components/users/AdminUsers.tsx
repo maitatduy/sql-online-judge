@@ -6,12 +6,14 @@ import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { Pagination } from "@/components/shared/Pagination";
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { Button } from "@/components/ui/button";
 import { StaleDataNotice } from "@/features/admin/components/StaleDataNotice";
 import { useAdminUsers } from "@/features/admin/hooks/useAdminUsers";
 import { useUserSelection } from "@/features/admin/hooks/useUserSelection";
 import { useUsersFilters } from "@/features/admin/hooks/useUsersFilters";
+import { usersHref } from "@/features/admin/users/search-params";
 import { ApiRequestError } from "@/lib/api-client";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -20,7 +22,6 @@ import { UserFilters } from "./UserFilters";
 import type { UserRowHandlers } from "./UserRowActions";
 import { UserSummaryTiles } from "./UserSummaryTiles";
 import { UsersHeader } from "./UsersHeader";
-import { UsersPagination } from "./UsersPagination";
 import { UsersTable } from "./UsersTable";
 import { UsersTableSkeleton } from "./UsersTableSkeleton";
 
@@ -114,7 +115,10 @@ export function AdminUsers() {
                             selfUsername={currentUser?.username ?? null}
                             rowHandlers={rowHandlers}
                         />
-                        <UsersPagination filters={filters} result={users} />
+                        <Pagination
+                            result={users}
+                            hrefOf={(page) => usersHref({ ...filters, page })}
+                        />
                     </>
                 ) : null}
                 {users && !hasUsers ? (
