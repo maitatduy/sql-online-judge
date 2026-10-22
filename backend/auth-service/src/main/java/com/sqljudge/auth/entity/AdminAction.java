@@ -108,6 +108,19 @@ public class AdminAction extends BaseEntity {
         return of(actorId, target, AdminActionType.REMOVE_AVATAR, null);
     }
 
+    public static AdminAction updateRestrictions(
+            UUID actorId, User target, RestrictionsChange change) {
+        AdminAction action =
+                of(
+                        actorId,
+                        target,
+                        AdminActionType.UPDATE_RESTRICTIONS,
+                        requireReason(change.reason()));
+        action.previousValue = change.previous();
+        action.newValue = change.current();
+        return action;
+    }
+
     public static AdminAction exportUserEmails(UUID actorId, String reason, String details) {
         AdminAction action = new AdminAction();
         action.actorId = actorId;

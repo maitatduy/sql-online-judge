@@ -73,6 +73,8 @@ sqljudge:
   admin:
     user-export:
       batch-size: 500
+    restrictions:
+      default-ai-daily-quota: 20
   jwt:
     private-key-path: ${JWT_PRIVATE_KEY_PATH:}
     generate-ephemeral-key: false

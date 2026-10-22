@@ -20,6 +20,13 @@ final class AdminUserLookup {
                 .orElseThrow(AdminUserLookup::notFound);
     }
 
+    static User lockLive(UserRepository userRepository, String username) {
+        return userRepository
+                .findByUsernameForUpdate(username)
+                .filter(user -> !user.isDeleted())
+                .orElseThrow(AdminUserLookup::notFound);
+    }
+
     private static NotFoundException notFound() {
         return new NotFoundException(ErrorCode.USER_NOT_FOUND, "Không tìm thấy người dùng");
     }

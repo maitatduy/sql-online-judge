@@ -1,5 +1,6 @@
 package com.sqljudge.auth.service;
 
+import com.sqljudge.auth.config.AdminProperties;
 import com.sqljudge.auth.dto.request.ExportScope;
 import com.sqljudge.auth.dto.request.ExportUsersRequest;
 import com.sqljudge.auth.dto.request.UserExportFilters;
@@ -22,14 +23,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AdminUserExportService {
 
     private static final AdminUserSearch ALL_LIVE_USERS =
@@ -37,16 +39,7 @@ public class AdminUserExportService {
 
     private final UserRepository userRepository;
     private final AdminActionRepository adminActionRepository;
-    private final int batchSize;
-
-    public AdminUserExportService(
-            UserRepository userRepository,
-            AdminActionRepository adminActionRepository,
-            @Value("${sqljudge.admin.user-export.batch-size}") int batchSize) {
-        this.userRepository = userRepository;
-        this.adminActionRepository = adminActionRepository;
-        this.batchSize = batchSize;
-    }
+    private final AdminProperties adminProperties;
 
     @Transactional
     public UserExport prepare(ExportUsersRequest request, UUID actorId, Instant now) {
@@ -107,7 +100,7 @@ public class AdminUserExportService {
         while (!batch.isEmpty()) {
             writeRows(writer, batch, toRow);
             writer.flush();
-            if (batch.size() < batchSize) {
+            if (batch.size() < batchSize()) {
                 return;
             }
             User last = batch.get(batch.size() - 1);
@@ -125,7 +118,14 @@ public class AdminUserExportService {
     private List<User> nextBatch(Specification<User> specification) {
         return userRepository.findBy(
                 specification,
-                query -> query.sortBy(AdminUserSpecifications.NEWEST_FIRST).limit(batchSize).all());
+                query ->
+                        query.sortBy(AdminUserSpecifications.NEWEST_FIRST)
+                                .limit(batchSize())
+                                .all());
+    }
+
+    private int batchSize() {
+        return adminProperties.userExport().batchSize();
     }
 
     private List<User> selectedUsers(List<String> requestedUsernames) {
