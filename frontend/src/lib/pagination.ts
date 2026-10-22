@@ -9,6 +9,10 @@ export interface PageInfo {
     totalPages: number;
 }
 
+export interface Page<T> extends PageInfo {
+    items: T[];
+}
+
 export function pageWindow(page: number, totalPages: number): number[] {
     const buttonCount = Math.min(MAX_PAGE_BUTTONS, totalPages);
     const lastStart = totalPages - buttonCount + 1;

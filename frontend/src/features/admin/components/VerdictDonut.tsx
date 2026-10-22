@@ -1,8 +1,7 @@
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatPercent } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { VERDICT_STROKE_CLASSES, type Verdict } from "@/lib/verdict";
 
-import { formatVerdictPercent } from "../format";
 import type { VerdictShare } from "../types";
 import { verdictDonutSegments } from "../verdict-donut";
 
@@ -66,7 +65,7 @@ export function VerdictDonut({
     const gapPercent = segments.length > 1 ? SEGMENT_GAP_PERCENT : 0;
     const activeShare = shares.find((share) => share.verdict === activeVerdict);
     const summary = shares
-        .map((share) => `${share.verdict} ${formatVerdictPercent(share.percent)}`)
+        .map((share) => `${share.verdict} ${formatPercent(share.percent)}`)
         .join(", ");
 
     return (
@@ -112,7 +111,7 @@ export function VerdictDonut({
             })}
             {activeShare ? (
                 <DonutCenter
-                    caption={`${activeShare.verdict} - ${formatVerdictPercent(activeShare.percent)}`}
+                    caption={`${activeShare.verdict} - ${formatPercent(activeShare.percent)}`}
                     count={activeShare.count}
                 />
             ) : (
