@@ -132,13 +132,39 @@ class AdminUserNoteControllerTest {
     }
 
     @Test
+    @DisplayName("Xem một ghi chú theo id trả 200 với ghi chú đó")
+    void getOne_admin_returnsNote() throws Exception {
+        when(adminUserNoteService.get("viet.luu", NOTE_ID)).thenReturn(NOTE);
+
+        mockMvc.perform(as("ADMIN", get(NOTES_PATH + "/" + NOTE_ID)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(NOTE_ID.toString()))
+                .andExpect(jsonPath("$.body").value("Đã nhắc nhở"));
+    }
+
+    @Test
+    @DisplayName("Ghi chú không thuộc tài khoản này: 404 NOTE_NOT_FOUND")
+    void getOne_noteOfAnotherUser_returnsNotFound() throws Exception {
+        when(adminUserNoteService.get("viet.luu", NOTE_ID))
+                .thenThrow(
+                        new NotFoundException(ErrorCode.NOTE_NOT_FOUND, "Không tìm thấy ghi chú"));
+
+        mockMvc.perform(as("ADMIN", get(NOTES_PATH + "/" + NOTE_ID)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOTE_NOT_FOUND"));
+    }
+
+    @Test
     @DisplayName("Ghi chú: không phải ADMIN bị 403, chưa đăng nhập bị 401, cả xem lẫn thêm")
     void notes_requireAdminRole() throws Exception {
+        String notePath = NOTES_PATH + "/" + NOTE_ID;
         for (String role : List.of("LEARNER", "SETTER", "MODERATOR")) {
             mockMvc.perform(as(role, get(NOTES_PATH))).andExpect(status().isForbidden());
+            mockMvc.perform(as(role, get(notePath))).andExpect(status().isForbidden());
             mockMvc.perform(as(role, json("{\"body\":\"x\"}"))).andExpect(status().isForbidden());
         }
         mockMvc.perform(get(NOTES_PATH)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get(notePath)).andExpect(status().isUnauthorized());
         mockMvc.perform(json("{\"body\":\"x\"}")).andExpect(status().isUnauthorized());
 
         verifyNoInteractions(adminUserNoteService);

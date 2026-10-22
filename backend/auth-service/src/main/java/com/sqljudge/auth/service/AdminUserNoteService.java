@@ -7,7 +7,10 @@ import com.sqljudge.auth.entity.AdminUserNote;
 import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.repository.AdminUserNoteRepository;
 import com.sqljudge.auth.repository.UserRepository;
+import com.sqljudge.common.error.ErrorCode;
+import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.security.CurrentUser;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Limit;
@@ -29,6 +32,17 @@ public class AdminUserNoteService {
         User user = AdminUserLookup.findAny(userRepository, username);
         return new UserNotesResponse(
                 adminUserNoteRepository.findLatestByUserId(user.getId(), LATEST_NOTES));
+    }
+
+    @Transactional(readOnly = true)
+    public UserNoteResponse get(String username, UUID noteId) {
+        User user = AdminUserLookup.findAny(userRepository, username);
+        return adminUserNoteRepository
+                .findOneByIdAndUserId(noteId, user.getId())
+                .orElseThrow(
+                        () ->
+                                new NotFoundException(
+                                        ErrorCode.NOTE_NOT_FOUND, "Không tìm thấy ghi chú"));
     }
 
     @Transactional

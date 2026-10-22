@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,6 +37,18 @@ public class AdminUserNoteController {
     @GetMapping
     public UserNotesResponse list(@PathVariable String username) {
         return adminUserNoteService.list(username);
+    }
+
+    @Operation(summary = "Một ghi chú nội bộ của tài khoản, là đích của header Location khi tạo")
+    @ApiResponse(responseCode = "200", description = "Ghi chú, kể cả của tài khoản đã xoá")
+    @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
+    @ApiResponse(responseCode = "403", description = "Không phải ADMIN")
+    @ApiResponse(
+            responseCode = "404",
+            description = "Không có tài khoản, hoặc ghi chú không thuộc tài khoản này")
+    @GetMapping("/{noteId}")
+    public UserNoteResponse get(@PathVariable String username, @PathVariable UUID noteId) {
+        return adminUserNoteService.get(username, noteId);
     }
 
     @Operation(summary = "Thêm ghi chú nội bộ, không sửa hay xoá được sau khi tạo")

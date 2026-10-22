@@ -137,4 +137,37 @@ class AdminUserNoteServiceTest {
         assertThat(new AddUserNoteRequest("  Ghi chú  ").body()).isEqualTo("Ghi chú");
         assertThat(new AddUserNoteRequest(null).body()).isNull();
     }
+
+    @Test
+    @DisplayName("toString của yêu cầu thêm ghi chú không in nội dung ghi chú")
+    void request_toString_hidesBody() {
+        assertThat(new AddUserNoteRequest("Bí mật nội bộ").toString())
+                .doesNotContain("Bí mật nội bộ");
+    }
+
+    @Test
+    @DisplayName("Xem một ghi chú của tài khoản: trả ghi chú đó, kể cả tài khoản đã xoá")
+    void get_noteOfUser_returnsNote() {
+        target.markDeleted(CREATED_AT);
+        UserNoteResponse note = new UserNoteResponse(NOTE_ID, "mod.thu", "Đã nhắc nhở", CREATED_AT);
+        when(userRepository.findByUsername("viet.luu")).thenReturn(Optional.of(target));
+        when(adminUserNoteRepository.findOneByIdAndUserId(NOTE_ID, TARGET_ID))
+                .thenReturn(Optional.of(note));
+
+        assertThat(service.get("viet.luu", NOTE_ID)).isEqualTo(note);
+    }
+
+    @Test
+    @DisplayName("Ghi chú không thuộc tài khoản này hoặc không tồn tại: 404 NOTE_NOT_FOUND")
+    void get_noteOfAnotherUser_throwsNotFound() {
+        when(userRepository.findByUsername("viet.luu")).thenReturn(Optional.of(target));
+        when(adminUserNoteRepository.findOneByIdAndUserId(NOTE_ID, TARGET_ID))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.get("viet.luu", NOTE_ID))
+                .isInstanceOfSatisfying(
+                        AppException.class,
+                        rejected ->
+                                assertThat(rejected.getCode()).isEqualTo(ErrorCode.NOTE_NOT_FOUND));
+    }
 }

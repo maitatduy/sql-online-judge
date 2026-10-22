@@ -9,4 +9,9 @@ public record AddUserNoteRequest(
     public AddUserNoteRequest {
         body = body == null ? null : body.strip();
     }
+
+    @Override
+    public String toString() {
+        return "AddUserNoteRequest[]";
+    }
 }

@@ -59,6 +59,18 @@ class AdminUserNoteIntegrationTest extends ContainerSupport {
                 .extracting(item -> item.get("body"), item -> item.get("authorUsername"))
                 .containsExactly(tuple("Lần 2", "admin.ghichu"), tuple("Lần 1", "admin.ghichu"));
         assertThat(items.get(0)).containsEntry("id", second.getBody().get("id"));
+        ResponseEntity<Map> byLocation =
+                get(adminToken, first.getHeaders().getLocation().getPath());
+        assertThat(byLocation.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(byLocation.getBody())
+                .containsEntry("id", first.getBody().get("id"))
+                .containsEntry("body", "Lần 1")
+                .containsEntry("authorUsername", "admin.ghichu");
+        saveUser("ghichu.khac");
+        ResponseEntity<Map> wrongOwner =
+                get(adminToken, "/api/admin/users/ghichu.khac/notes/" + first.getBody().get("id"));
+        assertThat(wrongOwner.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(wrongOwner.getBody()).containsEntry("code", "NOTE_NOT_FOUND");
 
         target.markDeleted(Instant.now());
         userRepository.save(target);
