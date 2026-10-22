@@ -18,6 +18,7 @@ const eslintConfig = [
             "out/**",
             "build/**",
             "coverage/**",
+            "test-results/**",
             "public/mockServiceWorker.js",
             "next-env.d.ts",
         ],
