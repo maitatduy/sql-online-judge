@@ -4,6 +4,7 @@ import { useToast } from "@/components/shared/ToastProvider";
 import { useAdminUser } from "@/features/admin/hooks/useAdminUser";
 import { useUpdateUser } from "@/features/admin/hooks/useUpdateUser";
 import { useRemoveAvatar, useUploadAvatar } from "@/features/admin/hooks/useUserAvatar";
+import { roleLockedReasonOf } from "@/features/admin/users/moderation";
 import type { UserFormValues } from "@/features/admin/users/schemas";
 import type { AdminUserDetail, UpdateUserRequest } from "@/features/admin/users/types";
 import { ApiRequestError } from "@/lib/api-client";
@@ -67,7 +68,7 @@ export function EditUserDialog({ username, onClose }: EditUserDialogProps) {
                         reason: "",
                     }}
                     currentAvatarUrl={user.avatarUrl}
-                    isSelf={currentUser.username === username}
+                    roleLockedReason={roleLockedReasonOf(currentUser.username, user)}
                     submitLabel="Lưu thay đổi"
                     onSubmit={(submission) => submitEdit(user, submission)}
                     onFailure={(failure) =>

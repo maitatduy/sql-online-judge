@@ -4,7 +4,9 @@ import type { ApiFieldError } from "@/lib/api-client";
 
 import { banAdminUser, isBanDuration } from "./admin-user-actions";
 import {
+    cannotModifyAdmin,
     cannotModifySelf,
+    isOtherAdmin,
     reasonFieldError,
     userNotFound,
     validationFailed,
@@ -44,6 +46,9 @@ export const adminUserBanHandlers: RequestHandler[] = [
         }
         if (readMockSession()?.username === username) {
             return cannotModifySelf("Bạn không thể tự khoá tài khoản của chính mình");
+        }
+        if (isOtherAdmin(user)) {
+            return cannotModifyAdmin("Không thể khoá tài khoản quản trị viên khác");
         }
         if (user.status === "BANNED") {
             return apiError(409, "USER_ALREADY_BANNED", "Tài khoản đã bị khoá");

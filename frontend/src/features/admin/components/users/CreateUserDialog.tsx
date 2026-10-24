@@ -53,7 +53,7 @@ export function CreateUserDialog({ onClose }: CreateUserDialogProps) {
                 mode="create"
                 defaultValues={EMPTY_USER}
                 currentAvatarUrl={null}
-                isSelf={false}
+                roleLockedReason={null}
                 submitLabel="Tạo tài khoản"
                 onSubmit={submitCreate}
                 onFailure={(error, values) =>

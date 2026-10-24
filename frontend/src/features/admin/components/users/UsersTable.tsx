@@ -59,7 +59,7 @@ export function UsersTable({ users, selection, selfUsername, rowHandlers }: User
                             user={user}
                             isSelected={selection.selected.has(user.username)}
                             onToggleSelected={selection.toggleUser}
-                            canDelete={user.username !== selfUsername}
+                            canDelete={user.username !== selfUsername && user.role !== "ADMIN"}
                             handlers={rowHandlers}
                         />
                     ))}

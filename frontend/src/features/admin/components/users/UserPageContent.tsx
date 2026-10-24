@@ -66,7 +66,11 @@ export function UserPageContent({ user }: UserPageContentProps) {
             ) : null}
             {tab === "contests" ? <ContestHistoryTab username={user.username} /> : null}
             {tab === "sessions" ? (
-                <SessionsCard username={user.username} isReadOnly={user.deletedAt !== null} />
+                <SessionsCard
+                    username={user.username}
+                    role={user.role}
+                    isDeleted={user.deletedAt !== null}
+                />
             ) : null}
             {tab === "violations" ? (
                 <PageCard title="Lịch sử vi phạm">
