@@ -15,4 +15,18 @@ describe("VerdictBadge", () => {
 
         expect(screen.getByText("AC · 48 ms")).toHaveAttribute("title", "Đúng");
     });
+
+    it("hiện trạng thái đang chấm bằng chữ và màu verdict-pending", () => {
+        render(<VerdictBadge verdict="PENDING" />);
+
+        const badge = screen.getByText("Đang chấm");
+        expect(badge).toHaveAttribute("title", "Máy chấm đang chạy testcase");
+        expect(badge).toHaveClass("text-verdict-pending");
+    });
+
+    it("tô nền verdict-pending khi đang chấm ở dạng solid", () => {
+        render(<VerdictBadge verdict="PENDING" variant="solid" detail="3/8" />);
+
+        expect(screen.getByText("Đang chấm · 3/8")).toHaveClass("bg-verdict-pending");
+    });
 });

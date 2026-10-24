@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useId } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { NativeSelect } from "@/components/shared/NativeSelect";
 import { useToast } from "@/components/shared/ToastProvider";
 import { useBulkChangeRole } from "@/features/admin/hooks/useBulkChangeRole";
 import { accountCountLabel, affectedSummary } from "@/features/admin/users/bulk-result";
@@ -11,7 +12,6 @@ import { BULK_ROLES, bulkRoleSchema, type BulkRoleValues } from "@/features/admi
 
 import { ActionDialog } from "./ActionDialog";
 import { DialogActions } from "./DialogActions";
-import { NativeSelect } from "./NativeSelect";
 import { SelfSkipNotice } from "./SelfSkipNotice";
 import { TextAreaField } from "./TextAreaField";
 

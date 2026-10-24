@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useId, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { NativeSelect } from "@/components/shared/NativeSelect";
 import { useToast } from "@/components/shared/ToastProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,6 @@ import { restrictionsSchema, type RestrictionsValues } from "@/features/admin/us
 import type { AdminUserDetail, UserRestrictions } from "@/features/admin/users/types";
 
 import { AdminGrantConfirmDialog } from "./AdminGrantConfirmDialog";
-import { NativeSelect } from "./NativeSelect";
 import { TextAreaField } from "./TextAreaField";
 
 const LABEL_CLASS = "mb-1.5 block text-[13px] font-semibold";

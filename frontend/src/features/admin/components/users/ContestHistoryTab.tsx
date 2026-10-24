@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useUserContestHistory } from "@/features/admin/hooks/useUserContestHistory";
-import { pageRangeLabel } from "@/features/admin/users/pagination";
+import { pageRangeLabel } from "@/lib/pagination";
 
 import { BlockEmpty, BlockError, BlockLoading } from "./BlockStates";
 import { ContestTable } from "./ContestTable";

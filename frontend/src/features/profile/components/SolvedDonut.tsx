@@ -1,23 +1,11 @@
-import { DIFFICULTIES, DIFFICULTY_LABELS, type Difficulty } from "@/lib/difficulty";
+import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
+import { DIFFICULTIES, DIFFICULTY_STROKE_CLASSES } from "@/lib/difficulty";
 import { formatNumber } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 import { donutSegments, totalProblemCount } from "../donut-segments";
 import type { ProfileStats } from "../types";
 
 const FULL_CIRCLE_PERCENT = 100;
-
-const STROKE_CLASS_NAMES: Record<Difficulty, string> = {
-    EASY: "stroke-difficulty-easy",
-    MEDIUM: "stroke-difficulty-medium",
-    HARD: "stroke-difficulty-hard",
-};
-
-const TEXT_CLASS_NAMES: Record<Difficulty, string> = {
-    EASY: "text-difficulty-easy",
-    MEDIUM: "text-difficulty-medium",
-    HARD: "text-difficulty-hard",
-};
 
 interface SolvedDonutProps {
     stats: ProfileStats;
@@ -56,7 +44,7 @@ export function SolvedDonut({ stats }: SolvedDonutProps) {
                         strokeDasharray={`${segment.percent} ${FULL_CIRCLE_PERCENT - segment.percent}`}
                         strokeDashoffset={-segment.offsetPercent}
                         transform="rotate(-90 70 70)"
-                        className={STROKE_CLASS_NAMES[segment.difficulty]}
+                        className={DIFFICULTY_STROKE_CLASSES[segment.difficulty]}
                     />
                 ))}
                 <text
@@ -71,9 +59,7 @@ export function SolvedDonut({ stats }: SolvedDonutProps) {
             <ul className="flex flex-1 flex-col gap-2 text-[13px]">
                 {DIFFICULTIES.map((difficulty) => (
                     <li key={difficulty} className="flex justify-between gap-3">
-                        <span className={cn("font-semibold", TEXT_CLASS_NAMES[difficulty])}>
-                            {DIFFICULTY_LABELS[difficulty]}
-                        </span>
+                        <DifficultyLabel difficulty={difficulty} />
                         <span className="font-mono">
                             {formatNumber(stats.solvedByDifficulty[difficulty].solved)}/
                             {formatNumber(stats.solvedByDifficulty[difficulty].total)}
