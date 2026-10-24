@@ -11,9 +11,19 @@ function isApiMockingEnabled(): boolean {
     );
 }
 
-async function startMockWorker(): Promise<void> {
+let mockWorkerStart: Promise<void> | null = null;
+
+async function launchMockWorker(): Promise<void> {
     const { worker } = await import("@/mocks/browser");
     await worker.start({ onUnhandledRequest: "bypass", quiet: true });
+}
+
+function startMockWorker(): Promise<void> {
+    mockWorkerStart ??= launchMockWorker().catch((error: unknown) => {
+        mockWorkerStart = null;
+        throw error;
+    });
+    return mockWorkerStart;
 }
 
 interface AppProvidersProps {
