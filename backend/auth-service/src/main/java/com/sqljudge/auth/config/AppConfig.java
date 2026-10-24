@@ -9,7 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration(proxyBeanMethods = false)
 @EnableAsync
-@EnableConfigurationProperties(EmailProperties.class)
+@EnableConfigurationProperties({EmailProperties.class, AdminProperties.class})
 public class AppConfig {
 
     private static final int BCRYPT_COST = 12;

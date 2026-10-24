@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.sqljudge.auth.config.AdminProperties;
 import com.sqljudge.auth.dto.request.ExportScope;
 import com.sqljudge.auth.dto.request.ExportUsersRequest;
 import com.sqljudge.auth.entity.AdminAction;
@@ -39,7 +40,9 @@ class AdminUserExportServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-10-20T05:00:00Z");
     private static final UUID ADMIN_ID = UUID.fromString("0192f3a0-0000-7000-8000-00000000000a");
-    private static final int BATCH_SIZE = 500;
+    private static final AdminProperties PROPERTIES =
+            new AdminProperties(
+                    new AdminProperties.UserExport(500), new AdminProperties.Restrictions(20));
 
     @Mock private UserRepository userRepository;
     @Mock private AdminActionRepository adminActionRepository;
@@ -48,7 +51,7 @@ class AdminUserExportServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new AdminUserExportService(userRepository, adminActionRepository, BATCH_SIZE);
+        service = new AdminUserExportService(userRepository, adminActionRepository, PROPERTIES);
     }
 
     @Test
