@@ -1,0 +1,1 @@
+ALTER TABLE admin_actions ADD COLUMN details VARCHAR(500) NULL;

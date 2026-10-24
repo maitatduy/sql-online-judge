@@ -13,16 +13,12 @@ import java.time.Clock;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class AdminUserQueryService {
-
-    private static final Sort NEWEST_FIRST =
-            Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
 
     private final UserRepository userRepository;
     private final Clock clock;
@@ -34,7 +30,7 @@ public class AdminUserQueryService {
         return PageResponse.from(
                 userRepository.findAll(
                         AdminUserSpecifications.matching(search, now),
-                        PageRequest.of(page - 1, size, NEWEST_FIRST)),
+                        PageRequest.of(page - 1, size, AdminUserSpecifications.NEWEST_FIRST)),
                 user -> AdminUserViews.toSummary(user, now));
     }
 

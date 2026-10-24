@@ -19,7 +19,8 @@ import { adminUserRestrictionHandlers } from "./admin-user-restrictions";
 import { adminUserSessionHandlers } from "./admin-user-sessions";
 import { adminUserEmailHandlers } from "./admin-user-email-handlers";
 import { userNotFound, validationFailed } from "./admin-user-errors";
-import { readAdminUserDetail, readAdminUsers, readDeletedAdminUsers } from "./admin-user-store";
+import { queryAdminUsers } from "./admin-user-query";
+import { readAdminUserDetail, readAdminUsers } from "./admin-user-store";
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
@@ -56,19 +57,6 @@ function invalidParam(query: URLSearchParams): ApiFieldError | null {
         return { field: "emailVerified", message: "Phải là true hoặc false" };
     }
     return null;
-}
-
-function matchesQuery(user: AdminUserSummary, query: URLSearchParams): boolean {
-    const keyword = query.get("q")?.trim().toLowerCase() ?? "";
-    const role = query.get("role");
-    const status = query.get("status");
-    const emailVerified = query.get("emailVerified");
-    return (
-        (user.username.includes(keyword) || user.email.includes(keyword)) &&
-        (role === null || user.role === role) &&
-        (status === null || user.status === status) &&
-        (emailVerified === null || String(user.isEmailVerified) === emailVerified)
-    );
 }
 
 function countUsers(users: AdminUserSummary[]): UserCountsResponse {
@@ -114,10 +102,7 @@ export const adminUserHandlers: RequestHandler[] = [
         }
         const page = integerParam(query.get("page"), 1);
         const size = integerParam(query.get("size"), DEFAULT_PAGE_SIZE);
-        const source = query.get("deleted") === "true" ? readDeletedAdminUsers : readAdminUsers;
-        const users = source(new Date())
-            .filter((user) => matchesQuery(user, query))
-            .sort((first, second) => second.joinedAt.localeCompare(first.joinedAt));
+        const users = queryAdminUsers(query, new Date());
         const firstIndex = (page - 1) * size;
         const response: AdminUsersResponse = {
             items: users.slice(firstIndex, firstIndex + size),

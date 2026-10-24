@@ -11,7 +11,6 @@ final class AdminUserViews {
 
     private static final int STAT_NOT_TRACKED_YET = 0;
     private static final boolean PRESENCE_NOT_TRACKED_YET = false;
-    private static final String AVATAR_NOT_STORED_YET = null;
     private static final String SCHOOL_NOT_STORED_YET = null;
 
     private AdminUserViews() {}
@@ -30,7 +29,7 @@ final class AdminUserViews {
                 user.isBannedAt(now) ? AccountStatus.BANNED : AccountStatus.ACTIVE,
                 user.getBannedUntil(),
                 user.isEmailVerified(),
-                AVATAR_NOT_STORED_YET,
+                user.getAvatarUrl(),
                 user.getDeletedAt());
     }
 

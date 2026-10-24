@@ -43,7 +43,6 @@ class GoogleLoginIntegrationTest extends ContainerSupport {
 
     @DynamicPropertySource
     static void googleProperties(DynamicPropertyRegistry registry) {
-        MailpitContainer.registerMailProperties(registry);
         String base = GOOGLE.baseUrl();
         registry.add(
                 "spring.security.oauth2.client.provider.google.authorization-uri",

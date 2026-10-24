@@ -2,7 +2,7 @@
 
 import { Search } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -17,6 +17,7 @@ import { useCurrentUser } from "@/lib/useCurrentUser";
 
 import { BulkActionBar } from "./BulkActionBar";
 import { UserFilters } from "./UserFilters";
+import type { UserRowHandlers } from "./UserRowActions";
 import { UserSummaryTiles } from "./UserSummaryTiles";
 import { UsersHeader } from "./UsersHeader";
 import { UsersPagination } from "./UsersPagination";
@@ -59,12 +60,15 @@ export function AdminUsers() {
     const { data: currentUser } = useCurrentUser();
     const [rowDialog, setRowDialog] = useState<RowDialog | null>(null);
     const closeRowDialog = () => setRowDialog(null);
-    const rowHandlers = {
-        onView: openUser,
-        onEdit: (username: string) => setRowDialog({ kind: "edit", username }),
-        onDelete: (username: string) => setRowDialog({ kind: "delete", username }),
-        onRestore: (username: string) => setRowDialog({ kind: "restore", username }),
-    };
+    const rowHandlers = useMemo<UserRowHandlers>(
+        () => ({
+            onView: openUser,
+            onEdit: (username) => setRowDialog({ kind: "edit", username }),
+            onDelete: (username) => setRowDialog({ kind: "delete", username }),
+            onRestore: (username) => setRowDialog({ kind: "restore", username }),
+        }),
+        [openUser],
+    );
     const finishDelete = (username: string) => {
         selection.removeUser(username);
         setRowDialog(null);

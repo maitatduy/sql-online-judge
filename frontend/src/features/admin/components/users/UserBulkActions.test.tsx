@@ -16,7 +16,12 @@ vi.mock("next/navigation", async () => ({
 
 const SELF_NOTICE = "Tài khoản của bạn, admin.huy, sẽ được bỏ qua.";
 
-async function renderWithSelection(search: string, usernames: string[]) {
+interface SelectionView {
+    bar: ReturnType<typeof within>;
+    rows: Map<string, HTMLElement>;
+}
+
+async function renderWithSelection(search: string, usernames: string[]): Promise<SelectionView> {
     visit(`/admin/users${search}`);
     writeMockSession(ADMIN_SESSION_USER);
     renderWithProviders(
@@ -24,11 +29,26 @@ async function renderWithSelection(search: string, usernames: string[]) {
             <AdminUsers />
         </ToastProvider>,
     );
-    await screen.findByRole("row", { name: usernames[0] });
-    usernames.forEach((username) =>
-        fireEvent.click(screen.getByRole("checkbox", { name: `Chọn ${username}` })),
+    const [firstUsername, ...otherUsernames] = usernames;
+    const rows = new Map([
+        [firstUsername, await screen.findByRole("row", { name: firstUsername })],
+        ...otherUsernames.map((username) => [
+            username,
+            screen.getByRole("row", { name: username }),
+        ]),
+    ] as [string, HTMLElement][]);
+    rows.forEach((row, username) =>
+        fireEvent.click(within(row).getByRole("checkbox", { name: `Chọn ${username}` })),
     );
-    return within(screen.getByRole("region", { name: "Thao tác hàng loạt" }));
+    return { bar: within(screen.getByRole("region", { name: "Thao tác hàng loạt" })), rows };
+}
+
+function rowOf({ rows }: SelectionView, username: string): HTMLElement {
+    const row = rows.get(username);
+    if (!row) {
+        throw new Error(`Row of ${username} was not selected`);
+    }
+    return row;
 }
 
 async function openDialog(bar: ReturnType<typeof within>, action: string, title: string) {
@@ -44,8 +64,7 @@ function typeReason(dialog: ReturnType<typeof within>, reason: string) {
 
 const STATUS_CELL_INDEX = 2;
 
-const statusOf = (username: string) =>
-    within(screen.getByRole("row", { name: username })).getAllByRole("cell")[STATUS_CELL_INDEX];
+const statusOf = (row: HTMLElement) => within(row).getAllByRole("cell")[STATUS_CELL_INDEX];
 
 describe("khoá hàng loạt", () => {
     beforeEach(() => {
@@ -53,8 +72,9 @@ describe("khoá hàng loạt", () => {
     });
 
     it("khoá các tài khoản đã chọn, bỏ chọn và cập nhật bảng cùng thẻ số", async () => {
-        const bar = await renderWithSelection("", ["tam.nguyen", "datahust"]);
-        const dialog = await openDialog(bar, "Khoá tài khoản", "Khoá 2 tài khoản");
+        const view = await renderWithSelection("", ["tam.nguyen", "datahust"]);
+        const bannedTile = screen.getByRole("button", { name: /^Đang bị khoá/ });
+        const dialog = await openDialog(view.bar, "Khoá tài khoản", "Khoá 2 tài khoản");
 
         expect(dialog.queryByText(SELF_NOTICE)).not.toBeInTheDocument();
 
@@ -68,13 +88,9 @@ describe("khoá hàng loạt", () => {
         expect(
             screen.queryByRole("region", { name: "Thao tác hàng loạt" }),
         ).not.toBeInTheDocument();
-        await waitFor(() => expect(statusOf("datahust")).toHaveTextContent("Bị khoá"));
-        expect(statusOf("tam.nguyen")).toHaveTextContent("Bị khoá");
-        await waitFor(() =>
-            expect(
-                within(screen.getByRole("button", { name: /^Đang bị khoá/ })).getByText("4"),
-            ).toBeInTheDocument(),
-        );
+        await waitFor(() => expect(statusOf(rowOf(view, "datahust"))).toHaveTextContent("Bị khoá"));
+        expect(statusOf(rowOf(view, "tam.nguyen"))).toHaveTextContent("Bị khoá");
+        await waitFor(() => expect(within(bannedTile).getByText("4")).toBeInTheDocument());
     });
 
     it("gửi danh sách đã chọn trừ chính mình và báo sẽ bỏ qua chính mình", async () => {
@@ -85,7 +101,7 @@ describe("khoá hàng loạt", () => {
                 return undefined;
             }),
         );
-        const bar = await renderWithSelection("?page=4", ["quang.le", "admin.huy"]);
+        const { bar } = await renderWithSelection("?page=4", ["quang.le", "admin.huy"]);
         const dialog = await openDialog(bar, "Khoá tài khoản", "Khoá 1 tài khoản");
 
         expect(dialog.getByText(SELF_NOTICE)).toBeInTheDocument();
@@ -108,7 +124,7 @@ describe("khoá hàng loạt", () => {
     });
 
     it("không cho gửi khi chỉ chọn chính mình", async () => {
-        const bar = await renderWithSelection("?page=4", ["admin.huy"]);
+        const { bar } = await renderWithSelection("?page=4", ["admin.huy"]);
         const dialog = await openDialog(bar, "Khoá tài khoản", "Khoá 0 tài khoản");
 
         typeReason(dialog, "Thử");
@@ -117,7 +133,7 @@ describe("khoá hàng loạt", () => {
     });
 
     it("nêu số tài khoản bị bỏ qua", async () => {
-        const bar = await renderWithSelection("", ["tam.nguyen", "spam.bot88"]);
+        const { bar } = await renderWithSelection("", ["tam.nguyen", "spam.bot88"]);
         const dialog = await openDialog(bar, "Khoá tài khoản", "Khoá 2 tài khoản");
 
         typeReason(dialog, "Spam");
@@ -139,7 +155,7 @@ describe("khoá hàng loạt", () => {
                 ),
             ),
         );
-        const bar = await renderWithSelection("", ["tam.nguyen", "datahust"]);
+        const { bar } = await renderWithSelection("", ["tam.nguyen", "datahust"]);
         const dialog = await openDialog(bar, "Khoá tài khoản", "Khoá 2 tài khoản");
 
         typeReason(dialog, "Spam");
@@ -159,8 +175,8 @@ describe("đổi vai trò hàng loạt", () => {
     });
 
     it("đổi vai trò các tài khoản đã chọn rồi bỏ chọn", async () => {
-        const bar = await renderWithSelection("", ["tam.nguyen", "datahust"]);
-        const dialog = await openDialog(bar, "Đổi vai trò", "Đổi vai trò 2 tài khoản");
+        const view = await renderWithSelection("", ["tam.nguyen", "datahust"]);
+        const dialog = await openDialog(view.bar, "Đổi vai trò", "Đổi vai trò 2 tài khoản");
         const roleSelect = dialog.getByRole("combobox", { name: "Vai trò mới" });
 
         expect(
@@ -184,14 +200,12 @@ describe("đổi vai trò hàng loạt", () => {
             screen.queryByRole("region", { name: "Thao tác hàng loạt" }),
         ).not.toBeInTheDocument();
         await waitFor(() =>
-            expect(
-                within(screen.getByRole("row", { name: "tam.nguyen" })).getByText("Kiểm duyệt"),
-            ).toBeInTheDocument(),
+            expect(within(rowOf(view, "tam.nguyen")).getByText("Kiểm duyệt")).toBeInTheDocument(),
         );
     });
 
     it("báo sẽ bỏ qua chính mình", async () => {
-        const bar = await renderWithSelection("?page=4", ["quang.le", "admin.huy"]);
+        const { bar } = await renderWithSelection("?page=4", ["quang.le", "admin.huy"]);
         const dialog = await openDialog(bar, "Đổi vai trò", "Đổi vai trò 1 tài khoản");
 
         expect(dialog.getByText(SELF_NOTICE)).toBeInTheDocument();
@@ -206,7 +220,7 @@ describe("đổi vai trò hàng loạt", () => {
                 ),
             ),
         );
-        const bar = await renderWithSelection("", ["tam.nguyen"]);
+        const { bar } = await renderWithSelection("", ["tam.nguyen"]);
         const dialog = await openDialog(bar, "Đổi vai trò", "Đổi vai trò 1 tài khoản");
 
         typeReason(dialog, "Thử");

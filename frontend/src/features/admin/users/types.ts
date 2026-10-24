@@ -113,10 +113,6 @@ export interface ExportUsersRequest {
     reason?: string;
 }
 
-export interface ExportUsersResponse {
-    exportId: string;
-}
-
 export interface DeleteUserRequest {
     username: string;
     reason: string;

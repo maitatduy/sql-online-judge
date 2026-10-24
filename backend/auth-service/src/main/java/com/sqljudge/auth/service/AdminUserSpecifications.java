@@ -8,13 +8,31 @@ import jakarta.persistence.criteria.Root;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 final class AdminUserSpecifications {
 
+    static final Sort NEWEST_FIRST = Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
+
     private static final char LIKE_ESCAPE = '\\';
 
     private AdminUserSpecifications() {}
+
+    static Specification<User> createdNoLaterThan(Instant instant) {
+        return (root, query, builder) ->
+                builder.lessThanOrEqualTo(root.<Instant>get("createdAt"), instant);
+    }
+
+    static Specification<User> olderThan(User last) {
+        return (root, query, builder) ->
+                builder.or(
+                        builder.lessThan(root.<Instant>get("createdAt"), last.getCreatedAt()),
+                        builder.and(
+                                builder.equal(root.get("createdAt"), last.getCreatedAt()),
+                                builder.lessThan(root.<UUID>get("id"), last.getId())));
+    }
 
     static Specification<User> matching(AdminUserSearch search, Instant now) {
         return (root, query, builder) -> {

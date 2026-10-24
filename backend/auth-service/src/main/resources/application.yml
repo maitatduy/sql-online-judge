@@ -5,6 +5,9 @@ server:
 spring:
   application:
     name: auth-service
+  mvc:
+    async:
+      request-timeout: 5m
   jpa:
     open-in-view: false
     hibernate:
@@ -35,6 +38,13 @@ spring:
             client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET}
             scope: profile,email
             redirect-uri: ${PUBLIC_API_URL}/api/auth/login/oauth2/code/{registrationId}
+  http:
+    client:
+      factory: jdk
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 3MB
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -60,6 +70,9 @@ management:
       show-details: never
 
 sqljudge:
+  admin:
+    user-export:
+      batch-size: 500
   jwt:
     private-key-path: ${JWT_PRIVATE_KEY_PATH:}
     generate-ephemeral-key: false
@@ -71,6 +84,13 @@ sqljudge:
   email:
     from: ${MAIL_FROM}
     frontend-url: ${FRONTEND_URL}
+  avatar:
+    cloudinary:
+      cloud-name: ${CLOUDINARY_CLOUD_NAME}
+      api-key: ${CLOUDINARY_API_KEY}
+      api-secret: ${CLOUDINARY_API_SECRET}
+      folder: sqljudge/avatars
+      timeout-seconds: 10
 
 springdoc:
   api-docs:

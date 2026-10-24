@@ -49,6 +49,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 class GlobalExceptionHandlerTest {
 
@@ -90,6 +91,16 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.message").value("Không tìm thấy bài tập"))
                 .andExpect(jsonPath("$.errors").isEmpty())
                 .andExpect(jsonPath("$.timestamp").value("2026-10-11T13:05:22Z"));
+    }
+
+    @Test
+    @DisplayName("Tệp tải lên vượt giới hạn multipart trả 400 VALIDATION_FAILED trên field file")
+    void maxUploadSizeExceeded_returnsFileViolation() throws Exception {
+        mockMvc.perform(get("/too-large"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.errors[0].field").value("file"))
+                .andExpect(jsonPath("$.errors[0].message").value("Tệp tải lên quá lớn"));
     }
 
     @Test
@@ -288,6 +299,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/forbidden")
         void forbidden() {
             throw new ForbiddenException(ANY_CODE, "Không có quyền");
+        }
+
+        @GetMapping("/too-large")
+        void tooLarge() {
+            throw new MaxUploadSizeExceededException(3 * 1024 * 1024);
         }
 
         @GetMapping("/unavailable")

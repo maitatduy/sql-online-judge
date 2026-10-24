@@ -54,7 +54,7 @@ export function ExportUsersDialog(props: ExportUsersDialogProps) {
             { ...exportRequestOf(scope, props), includeEmail, ...(includeEmail ? { reason } : {}) },
             {
                 onSuccess: () => {
-                    showToast("Đang tạo file CSV, bạn sẽ nhận thông báo khi xong.");
+                    showToast("Đã tải file CSV");
                     onClose();
                 },
                 onError: (error) => showToast(`Chưa tạo được file CSV. ${error.message}`, "error"),
@@ -79,7 +79,7 @@ export function ExportUsersDialog(props: ExportUsersDialogProps) {
     return (
         <ActionDialog
             title="Xuất danh sách người dùng"
-            description="File CSV sẽ có trong mục Thông báo khi tạo xong."
+            description="File CSV sẽ được tải về máy ngay khi tạo xong."
             onClose={onClose}
         >
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -125,7 +125,7 @@ export function ExportUsersDialog(props: ExportUsersDialogProps) {
                     />
                 ) : null}
                 <DialogActions
-                    submitLabel="Tạo file CSV"
+                    submitLabel={exportUsers.isPending ? "Đang tạo file CSV…" : "Tạo file CSV"}
                     isSubmitDisabled={isReasonMissing || exportUsers.isPending}
                 />
             </form>

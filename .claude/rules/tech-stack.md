@@ -20,6 +20,7 @@
 | Đồng bộ | OpenFeign + Resilience4j (circuit breaker, retry, timeout) | RestTemplate |
 | Bất đồng bộ | Apache Kafka | RabbitMQ, BullMQ |
 | Cache & bộ đếm | Redis | Memcached, cache trong bộ nhớ khi chạy nhiều instance |
+| Ảnh người dùng (avatar) | Cloudinary qua SDK `cloudinary-http5`, chỉ gọi sau interface `AvatarStorage` | Lưu file trên đĩa VPS, BLOB trong MySQL |
 | Realtime | Server-Sent Events (SSE) | Polling dày đặc; WebSocket chỉ khi SSE không đủ |
 | Sandbox chấm | Container PostgreSQL 16, MySQL 8, SQLite 3 riêng cho judge-worker | Chạy trên DB ứng dụng |
 | Parse SQL | JSqlParser (lọc câu lệnh, chuẩn hoá) | Regex |

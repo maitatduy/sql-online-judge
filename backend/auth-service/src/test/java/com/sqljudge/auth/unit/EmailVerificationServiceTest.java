@@ -18,6 +18,8 @@ import com.sqljudge.auth.service.EmailVerificationService;
 import com.sqljudge.auth.service.SecureTokens;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.BusinessRuleException;
+import com.sqljudge.common.exception.ConflictException;
+import com.sqljudge.common.exception.QuotaExceededException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -228,6 +230,54 @@ class EmailVerificationServiceTest {
         service.resendVerificationEmail("unknown@gmail.com");
 
         verifyNoInteractions(emailTokenRepository, eventPublisher);
+    }
+
+    @Test
+    @DisplayName("Admin gửi lại mã xác minh: huỷ mã cũ và gửi mã mới")
+    void resendVerificationEmailTo_unverifiedPastCooldown_issuesNewToken() {
+        when(emailTokenRepository.findFirstByUserAndPurposeOrderByCreatedAtDesc(
+                        user, EmailTokenPurpose.VERIFY))
+                .thenReturn(Optional.of(tokenCreatedAt(NOW.minusSeconds(61))));
+        when(emailTokenRepository.save(any(EmailToken.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.resendVerificationEmailTo(user);
+
+        verify(emailTokenRepository).invalidateUnusedTokens(user, EmailTokenPurpose.VERIFY, NOW);
+        assertThat(publishedEvent().email()).isEqualTo(EMAIL);
+    }
+
+    @Test
+    @DisplayName("Admin gửi mã cho email đã xác minh: 409 EMAIL_ALREADY_VERIFIED")
+    void resendVerificationEmailTo_verified_rejects() {
+        user.setEmailVerifiedAt(NOW.minusSeconds(3600));
+
+        assertThatThrownBy(() -> service.resendVerificationEmailTo(user))
+                .isInstanceOfSatisfying(
+                        ConflictException.class,
+                        rejected ->
+                                assertThat(rejected.getCode())
+                                        .isEqualTo(ErrorCode.EMAIL_ALREADY_VERIFIED));
+        verifyNoInteractions(emailTokenRepository, eventPublisher);
+    }
+
+    @Test
+    @DisplayName("Admin gửi lại trong 60 giây: 429 EMAIL_RESEND_COOLDOWN, chờ phần còn lại")
+    void resendVerificationEmailTo_withinCooldown_rejectsWithRemainingWait() {
+        when(emailTokenRepository.findFirstByUserAndPurposeOrderByCreatedAtDesc(
+                        user, EmailTokenPurpose.VERIFY))
+                .thenReturn(Optional.of(tokenCreatedAt(NOW.minusSeconds(45))));
+
+        assertThatThrownBy(() -> service.resendVerificationEmailTo(user))
+                .isInstanceOfSatisfying(
+                        QuotaExceededException.class,
+                        rejected -> {
+                            assertThat(rejected.getCode())
+                                    .isEqualTo(ErrorCode.EMAIL_RESEND_COOLDOWN);
+                            assertThat(rejected.retryAfterSeconds()).isEqualTo(15);
+                        });
+        verify(emailTokenRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     private EmailToken activeToken() {

@@ -69,6 +69,12 @@ public class User extends BaseEntity {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
+    @Column(name = "avatar_public_id", length = 100)
+    private String avatarPublicId;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -103,6 +109,30 @@ public class User extends BaseEntity {
         bannedAt = null;
         bannedUntil = null;
         banReason = null;
+    }
+
+    public void markDeleted(Instant now) {
+        if (deletedAt == null) {
+            deletedAt = now;
+        }
+    }
+
+    public void changeAvatar(String url, String publicId) {
+        avatarUrl = url;
+        avatarPublicId = publicId;
+    }
+
+    public boolean hasAvatar() {
+        return avatarPublicId != null;
+    }
+
+    public void removeAvatar() {
+        avatarUrl = null;
+        avatarPublicId = null;
+    }
+
+    public void restore() {
+        deletedAt = null;
     }
 
     public void markEmailVerified(Instant now) {

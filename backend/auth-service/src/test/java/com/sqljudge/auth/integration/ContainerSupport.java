@@ -1,6 +1,8 @@
 package com.sqljudge.auth.integration;
 
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -17,5 +19,10 @@ abstract class ContainerSupport {
     static {
         MYSQL.start();
         REDIS.start();
+    }
+
+    @DynamicPropertySource
+    static void mailProperties(DynamicPropertyRegistry registry) {
+        MailpitContainer.registerMailProperties(registry);
     }
 }
