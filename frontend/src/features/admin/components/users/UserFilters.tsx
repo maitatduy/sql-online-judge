@@ -1,5 +1,4 @@
 import { Search } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 
 import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Button } from "@/components/ui/button";
@@ -13,8 +12,7 @@ import {
 import { ROLE_LABELS, ROLES } from "@/features/admin/users/role-labels";
 import { hasActiveFilter, type UsersFilters } from "@/features/admin/users/search-params";
 import type { Role } from "@/lib/current-user";
-
-const SEARCH_DEBOUNCE_MS = 300;
+import { useDebouncedSearch } from "@/lib/useDebouncedSearch";
 
 interface UserFiltersProps {
     filters: UsersFilters;
@@ -23,31 +21,12 @@ interface UserFiltersProps {
 }
 
 export function UserFilters({ filters, onChange, onClear }: UserFiltersProps) {
-    const [searchText, setSearchText] = useState(filters.q);
-    const [appliedQuery, setAppliedQuery] = useState(filters.q);
-    const pendingSearch = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-    if (filters.q !== appliedQuery) {
-        setAppliedQuery(filters.q);
-        if (filters.q !== searchText.trim()) {
-            setSearchText(filters.q);
-        }
-    }
-
-    useEffect(() => () => clearTimeout(pendingSearch.current), []);
-
-    function handleSearchChange(nextText: string) {
-        setSearchText(nextText);
-        clearTimeout(pendingSearch.current);
-        pendingSearch.current = setTimeout(
-            () => onChange({ q: nextText.trim() }),
-            SEARCH_DEBOUNCE_MS,
-        );
-    }
+    const { searchText, changeSearchText, clearSearchText } = useDebouncedSearch(filters.q, (q) =>
+        onChange({ q }),
+    );
 
     function handleClear() {
-        clearTimeout(pendingSearch.current);
-        setSearchText("");
+        clearSearchText();
         onClear();
     }
 
@@ -63,7 +42,7 @@ export function UserFilters({ filters, onChange, onClear }: UserFiltersProps) {
                     aria-label="Tìm người dùng"
                     placeholder="Tên người dùng hoặc email…"
                     value={searchText}
-                    onChange={(event) => handleSearchChange(event.target.value)}
+                    onChange={(event) => changeSearchText(event.target.value)}
                     className="pl-8.5 shadow-none"
                 />
             </div>

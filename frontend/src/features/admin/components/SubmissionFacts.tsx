@@ -1,8 +1,7 @@
 import { useId } from "react";
 
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatPercent } from "@/lib/format";
 
-import { formatVerdictPercent } from "../format";
 import type { SubmissionTotals, VerdictShare } from "../types";
 
 interface SubmissionFactsProps {
@@ -35,7 +34,7 @@ export function SubmissionFacts({ totals, verdictShares }: SubmissionFactsProps)
         <div className="flex divide-x border-b pb-4">
             <Fact label="Hôm nay" value={formatNumber(totals.today)} />
             <Fact label="7 ngày qua" value={formatNumber(totals.last7Days)} />
-            <Fact label="Tỉ lệ AC" value={formatVerdictPercent(acceptedPercent)} />
+            <Fact label="Tỉ lệ AC" value={formatPercent(acceptedPercent)} />
         </div>
     );
 }

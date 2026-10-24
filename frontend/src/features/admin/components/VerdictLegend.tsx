@@ -1,8 +1,7 @@
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatPercent } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { VERDICT_FILL_CLASSES, VERDICT_LABELS, type Verdict } from "@/lib/verdict";
 
-import { formatVerdictPercent } from "../format";
 import type { VerdictShare } from "../types";
 
 const FULL_WIDTH_PERCENT = 100;
@@ -49,7 +48,7 @@ export function VerdictLegend({
                             {formatNumber(share.count)}
                         </span>
                         <strong className="w-12 shrink-0 text-right font-mono">
-                            {formatVerdictPercent(share.percent)}
+                            {formatPercent(share.percent)}
                         </strong>
                     </div>
                     <div

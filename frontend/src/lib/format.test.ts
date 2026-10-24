@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDate, formatNumber, formatRelativeTime } from "./format";
+import { formatDate, formatNumber, formatPercent, formatRelativeTime } from "./format";
 
 describe("formatDate", () => {
     it("định dạng ngày theo dd/MM/yyyy", () => {
@@ -19,6 +19,16 @@ describe("formatNumber", () => {
         [100000, "100.000"],
     ])("định dạng %d theo vi-VN thành %s", (value, expected) => {
         expect(formatNumber(value)).toBe(expected);
+    });
+});
+
+describe("formatPercent", () => {
+    it("làm tròn một chữ số thập phân, dùng dấu phẩy", () => {
+        expect(formatPercent(41.25)).toBe("41,3%");
+    });
+
+    it("bỏ phần thập phân khi tròn", () => {
+        expect(formatPercent(50)).toBe("50%");
     });
 });
 

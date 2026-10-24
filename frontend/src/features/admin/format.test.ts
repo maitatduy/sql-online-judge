@@ -1,16 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatVerdictPercent, formatVietnamTime, formatWaitDuration } from "./format";
-
-describe("formatVerdictPercent", () => {
-    it("làm tròn một chữ số thập phân, dùng dấu phẩy", () => {
-        expect(formatVerdictPercent(41.25)).toBe("41,3%");
-    });
-
-    it("bỏ phần thập phân khi tròn", () => {
-        expect(formatVerdictPercent(50)).toBe("50%");
-    });
-});
+import { formatVietnamTime, formatWaitDuration } from "./format";
 
 describe("formatWaitDuration", () => {
     it("hiện một chữ số thập phân với dấu phẩy", () => {
