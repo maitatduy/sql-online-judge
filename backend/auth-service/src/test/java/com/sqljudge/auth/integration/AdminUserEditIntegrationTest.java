@@ -85,6 +85,31 @@ class AdminUserEditIntegrationTest extends ContainerSupport {
         assertThat(response.getBody().toString()).contains("field=reason");
     }
 
+    @Test
+    @DisplayName(
+            "Hạ vai trò quản trị viên khác: 422 CANNOT_MODIFY_ADMIN, vẫn là ADMIN, không ghi nhật"
+                    + " ký")
+    void changeRole_otherAdmin_returnsUnprocessable() throws Exception {
+        registerVerified("admin.ha.quyen", "admin.ha.quyen@gmail.com");
+        promoteToAdmin("admin.ha.quyen");
+        String adminToken = accessToken(login("admin.ha.quyen@gmail.com"));
+        registerVerified("admin.bi.ha", "admin.bi.ha@gmail.com");
+        promoteToAdmin("admin.bi.ha");
+
+        ResponseEntity<Map> response =
+                patch(
+                        adminToken,
+                        "/api/admin/users/admin.bi.ha",
+                        Map.of("role", "LEARNER", "reason", "Hạ để khoá"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getBody()).containsEntry("code", "CANNOT_MODIFY_ADMIN");
+        var target = userRepository.findByUsername("admin.bi.ha").orElseThrow();
+        assertThat(target.getRole()).isEqualTo(Role.ADMIN);
+        assertThat(adminActionRepository.findAll())
+                .noneMatch(action -> target.getId().equals(action.getTargetUserId()));
+    }
+
     private void registerVerified(String username, String email) throws Exception {
         restTemplate.postForEntity(
                 "/api/auth/register",

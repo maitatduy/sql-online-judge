@@ -11,7 +11,6 @@ import com.sqljudge.auth.repository.AdminActionRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
 import com.sqljudge.common.error.ErrorCode;
-import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.common.exception.ConflictException;
 import java.time.Clock;
 import java.time.Instant;
@@ -37,10 +36,7 @@ public class AdminUserBanService {
     @Transactional
     public AdminUserDetailResponse ban(String username, BanUserRequest request, UUID actorId) {
         User user = AdminUserLookup.findLive(userRepository, username);
-        if (user.getId().equals(actorId)) {
-            throw new BusinessRuleException(
-                    ErrorCode.CANNOT_MODIFY_SELF, "Bạn không thể tự khoá tài khoản của chính mình");
-        }
+        AdminTargetGuard.requireModerable(user, actorId, AdminTargetGuard.Action.BAN);
         Instant now = clock.instant();
         if (user.isBannedAt(now)) {
             throw new ConflictException(ErrorCode.USER_ALREADY_BANNED, "Tài khoản đã bị khoá");

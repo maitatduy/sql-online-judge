@@ -112,6 +112,31 @@ class AdminUserEditServiceTest {
     }
 
     @Test
+    @DisplayName("Đổi vai trò của quản trị viên khác: 422 CANNOT_MODIFY_ADMIN, không đổi gì")
+    void update_otherAdminRole_rejects() {
+        target.setRole(Role.ADMIN);
+
+        assertRejected(
+                () -> service.update("viet.luu", roleChange(Role.LEARNER, "Hạ quyền"), ADMIN_ID),
+                ErrorCode.CANNOT_MODIFY_ADMIN);
+        assertThat(target.getRole()).isEqualTo(Role.ADMIN);
+        verifyNoInteractions(userSessionRepository, adminActionRepository);
+    }
+
+    @Test
+    @DisplayName("Đổi tên hiển thị của quản trị viên khác: vẫn được phép")
+    void update_otherAdminDisplayName_changesName() {
+        target.setRole(Role.ADMIN);
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setDisplayName("Quản trị Hà Nội");
+
+        service.update("viet.luu", request, ADMIN_ID);
+
+        assertThat(target.getDisplayName()).isEqualTo("Quản trị Hà Nội");
+        assertThat(target.getRole()).isEqualTo(Role.ADMIN);
+    }
+
+    @Test
     @DisplayName("Gửi lại đúng vai trò hiện tại kèm tên mới: chỉ đổi tên, không cần lý do")
     void update_sameRoleWithNewName_changesNameOnly() {
         UpdateUserRequest request = new UpdateUserRequest();

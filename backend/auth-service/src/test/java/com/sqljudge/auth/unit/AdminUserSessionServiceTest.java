@@ -17,6 +17,7 @@ import com.sqljudge.auth.repository.UserSessionRepository;
 import com.sqljudge.auth.service.AdminUserSessionService;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.AppException;
+import com.sqljudge.common.security.Role;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -164,6 +165,34 @@ class AdminUserSessionServiceTest {
         service.revokeAllSessions("viet.luu", ADMIN_ID);
 
         verifyNoInteractions(adminActionRepository);
+    }
+
+    @Test
+    @DisplayName(
+            "Đăng xuất phiên của quản trị viên khác: 422 CANNOT_MODIFY_ADMIN, không thu hồi gì")
+    void revokeSessions_otherAdmin_rejects() {
+        user.setRole(Role.ADMIN);
+        stubUser();
+
+        assertRejected(
+                () -> service.revokeSession("viet.luu", SESSION_ID, ADMIN_ID),
+                ErrorCode.CANNOT_MODIFY_ADMIN);
+        assertRejected(
+                () -> service.revokeAllSessions("viet.luu", ADMIN_ID),
+                ErrorCode.CANNOT_MODIFY_ADMIN);
+        verifyNoInteractions(userSessionRepository, adminActionRepository);
+    }
+
+    @Test
+    @DisplayName("Quản trị viên đăng xuất mọi phiên của chính mình: vẫn được phép")
+    void revokeAllSessions_ownAdminAccount_revokes() {
+        user.setRole(Role.ADMIN);
+        stubUser();
+        when(userSessionRepository.revokeAllActiveSessions(user, NOW)).thenReturn(1);
+
+        service.revokeAllSessions("viet.luu", user.getId());
+
+        assertThat(recordedAction().getAction()).isEqualTo(AdminActionType.REVOKE_ALL_SESSIONS);
     }
 
     @Test

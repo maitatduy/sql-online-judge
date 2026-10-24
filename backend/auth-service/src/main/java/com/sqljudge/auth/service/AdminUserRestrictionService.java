@@ -10,8 +10,6 @@ import com.sqljudge.auth.entity.UserRestriction;
 import com.sqljudge.auth.repository.AdminActionRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserRestrictionRepository;
-import com.sqljudge.common.error.ErrorCode;
-import com.sqljudge.common.exception.BusinessRuleException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,10 +36,7 @@ public class AdminUserRestrictionService {
     public UserRestrictionsResponse update(
             String username, UpdateRestrictionsRequest request, UUID actorId) {
         User user = AdminUserLookup.lockLive(userRepository, username);
-        if (user.getId().equals(actorId)) {
-            throw new BusinessRuleException(
-                    ErrorCode.CANNOT_MODIFY_SELF, "Bạn không thể tự đặt hạn chế cho chính mình");
-        }
+        AdminTargetGuard.requireModerable(user, actorId, AdminTargetGuard.Action.RESTRICT);
         UserRestriction restriction = restrictionOf(user);
         String previous = restriction.describe(defaultAiDailyQuota());
         restriction.changeTo(
