@@ -9,7 +9,6 @@ import com.sqljudge.auth.repository.EmailTokenRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
 import com.sqljudge.common.error.ErrorCode;
-import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.common.exception.ConflictException;
 import java.time.Clock;
 import java.time.Instant;
@@ -33,10 +32,7 @@ public class AdminUserDeletionService {
     @Transactional
     public void delete(String username, DeleteUserRequest request, UUID actorId) {
         User user = AdminUserLookup.findLive(userRepository, username);
-        if (user.getId().equals(actorId)) {
-            throw new BusinessRuleException(
-                    ErrorCode.CANNOT_MODIFY_SELF, "Bạn không thể tự xoá tài khoản của chính mình");
-        }
+        AdminTargetGuard.requireModerable(user, actorId, AdminTargetGuard.Action.DELETE);
         Instant now = clock.instant();
         user.markDeleted(now);
         userSessionRepository.revokeAllActiveSessions(user, now);

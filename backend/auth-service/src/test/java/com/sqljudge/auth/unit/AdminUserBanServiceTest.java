@@ -146,6 +146,24 @@ class AdminUserBanServiceTest {
     }
 
     @Test
+    @DisplayName("Khoá tài khoản quản trị viên khác: 422 CANNOT_MODIFY_ADMIN, không đổi gì")
+    void ban_otherAdmin_rejects() {
+        target.setRole(Role.ADMIN);
+        stubTarget();
+
+        assertThatThrownBy(() -> service.ban("viet.luu", SEVEN_DAYS_WITH_EMAIL, ADMIN_ID))
+                .isInstanceOfSatisfying(
+                        AppException.class,
+                        ex -> {
+                            assertThat(ex.getCode()).isEqualTo(ErrorCode.CANNOT_MODIFY_ADMIN);
+                            assertThat(ex.getMessage())
+                                    .isEqualTo("Không thể khoá tài khoản quản trị viên khác");
+                        });
+        assertThat(target.getBannedAt()).isNull();
+        verifyNoInteractions(userSessionRepository, adminActionRepository, eventPublisher);
+    }
+
+    @Test
     @DisplayName("Tài khoản đang bị khoá: 409 USER_ALREADY_BANNED")
     void ban_alreadyBanned_rejects() {
         target.setBannedAt(NOW.minus(Duration.ofDays(1)));

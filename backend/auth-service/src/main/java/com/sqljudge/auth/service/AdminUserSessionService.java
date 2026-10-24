@@ -47,6 +47,7 @@ public class AdminUserSessionService {
     @Transactional
     public void revokeSession(String username, UUID sessionId, UUID actorId) {
         User user = AdminUserLookup.findLive(userRepository, username);
+        AdminTargetGuard.requireModerable(user, actorId, AdminTargetGuard.Action.REVOKE_SESSIONS);
         Instant now = clock.instant();
         UserSession session =
                 userSessionRepository
@@ -65,6 +66,7 @@ public class AdminUserSessionService {
     @Transactional
     public void revokeAllSessions(String username, UUID actorId) {
         User user = AdminUserLookup.findLive(userRepository, username);
+        AdminTargetGuard.requireModerable(user, actorId, AdminTargetGuard.Action.REVOKE_SESSIONS);
         int revokedCount = userSessionRepository.revokeAllActiveSessions(user, clock.instant());
         if (revokedCount == 0) {
             return;

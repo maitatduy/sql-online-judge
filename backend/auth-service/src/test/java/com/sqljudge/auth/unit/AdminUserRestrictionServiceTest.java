@@ -21,6 +21,7 @@ import com.sqljudge.auth.repository.UserRestrictionRepository;
 import com.sqljudge.auth.service.AdminUserRestrictionService;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.AppException;
+import com.sqljudge.common.security.Role;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -165,6 +166,28 @@ class AdminUserRestrictionServiceTest {
                             assertThat(rejected.getCode()).isEqualTo(ErrorCode.CANNOT_MODIFY_SELF);
                             assertThat(rejected.getMessage())
                                     .isEqualTo("Bạn không thể tự đặt hạn chế cho chính mình");
+                        });
+        verifyNoInteractions(userRestrictionRepository, adminActionRepository);
+    }
+
+    @Test
+    @DisplayName("Đặt hạn chế cho quản trị viên khác: 422 CANNOT_MODIFY_ADMIN")
+    void update_otherAdmin_isRejected() {
+        target.setRole(Role.ADMIN);
+        when(userRepository.findByUsernameForUpdate("viet.luu")).thenReturn(Optional.of(target));
+
+        assertThatThrownBy(
+                        () ->
+                                service.update(
+                                        "viet.luu",
+                                        new UpdateRestrictionsRequest(null, true, "Thử"),
+                                        ADMIN_ID))
+                .isInstanceOfSatisfying(
+                        AppException.class,
+                        rejected -> {
+                            assertThat(rejected.getCode()).isEqualTo(ErrorCode.CANNOT_MODIFY_ADMIN);
+                            assertThat(rejected.getMessage())
+                                    .isEqualTo("Không thể đặt hạn chế cho quản trị viên khác");
                         });
         verifyNoInteractions(userRestrictionRepository, adminActionRepository);
     }

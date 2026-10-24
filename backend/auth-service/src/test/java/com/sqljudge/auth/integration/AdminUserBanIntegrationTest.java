@@ -107,6 +107,30 @@ class AdminUserBanIntegrationTest extends ContainerSupport {
         assertThat(response.getBody()).containsEntry("code", "CANNOT_MODIFY_SELF");
     }
 
+    @Test
+    @DisplayName(
+            "Admin không khoá được quản trị viên khác: 422 CANNOT_MODIFY_ADMIN, vẫn đăng nhập được")
+    void ban_otherAdmin_returnsUnprocessable() throws Exception {
+        String adminEmail = "admin.khoa.admin@gmail.com";
+        signUp("admin.khoa.admin", adminEmail);
+        promoteToAdmin("admin.khoa.admin");
+        String adminToken = accessToken(login(adminEmail));
+        String otherEmail = "admin.bi.khoa@gmail.com";
+        signUp("admin.bi.khoa", otherEmail);
+        promoteToAdmin("admin.bi.khoa");
+
+        ResponseEntity<Map> response =
+                post(
+                        adminToken,
+                        "/api/admin/users/admin.bi.khoa/ban",
+                        Map.of("duration", "PERMANENT", "reason", "Thử", "notifyByEmail", false));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getBody()).containsEntry("code", "CANNOT_MODIFY_ADMIN");
+        assertThat(login(otherEmail).getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(recordedActions("admin.bi.khoa")).isEmpty();
+    }
+
     private String signUp(String username, String email) throws Exception {
         restTemplate.postForEntity(
                 "/api/auth/register",

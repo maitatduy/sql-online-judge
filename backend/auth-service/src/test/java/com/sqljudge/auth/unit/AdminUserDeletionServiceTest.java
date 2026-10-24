@@ -94,6 +94,19 @@ class AdminUserDeletionServiceTest {
     }
 
     @Test
+    @DisplayName("Xoá tài khoản quản trị viên khác: 422 CANNOT_MODIFY_ADMIN, không thay đổi gì")
+    void delete_otherAdmin_rejects() {
+        user.setRole(Role.ADMIN);
+        when(userRepository.findByUsername("viet.luu")).thenReturn(Optional.of(user));
+
+        assertRejected(
+                () -> service.delete("viet.luu", new DeleteUserRequest("Thử"), ADMIN_ID),
+                ErrorCode.CANNOT_MODIFY_ADMIN);
+        assertThat(user.getDeletedAt()).isNull();
+        verifyNoInteractions(userSessionRepository, emailTokenRepository, adminActionRepository);
+    }
+
+    @Test
     @DisplayName("Không có tài khoản hoặc đã xoá từ trước: 404 USER_NOT_FOUND")
     void delete_missingOrAlreadyDeleted_rejects() {
         User deleted = new User();

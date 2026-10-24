@@ -8,8 +8,6 @@ import com.sqljudge.auth.entity.ValueChange;
 import com.sqljudge.auth.repository.AdminActionRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
-import com.sqljudge.common.error.ErrorCode;
-import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.common.exception.InvalidFieldException;
 import com.sqljudge.common.security.Role;
 import java.time.Clock;
@@ -67,10 +65,7 @@ public class AdminUserEditService {
     }
 
     private void requireRoleChangeAllowed(User user, UpdateUserRequest request, UUID actorId) {
-        if (user.getId().equals(actorId)) {
-            throw new BusinessRuleException(
-                    ErrorCode.CANNOT_MODIFY_SELF, "Bạn không thể tự đổi vai trò của chính mình");
-        }
+        AdminTargetGuard.requireModerable(user, actorId, AdminTargetGuard.Action.CHANGE_ROLE);
         if (reasonOf(request) == null) {
             throw new InvalidFieldException("reason", "Không được để trống");
         }
