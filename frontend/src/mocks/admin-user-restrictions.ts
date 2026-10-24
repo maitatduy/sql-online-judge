@@ -4,7 +4,9 @@ import type { UserRestrictions } from "@/features/admin/users/types";
 import type { ApiFieldError } from "@/lib/api-client";
 
 import {
+    cannotModifyAdmin,
     cannotModifySelf,
+    isOtherAdmin,
     reasonFieldError,
     userNotFound,
     validationFailed,
@@ -68,11 +70,15 @@ export const adminUserRestrictionHandlers: RequestHandler[] = [
         if (invalid) {
             return validationFailed(invalid);
         }
-        if (!findAdminUser(username)) {
+        const user = findAdminUser(username);
+        if (!user) {
             return userNotFound();
         }
         if (readMockSession()?.username === username) {
             return cannotModifySelf("Bạn không thể tự đặt hạn chế cho chính mình");
+        }
+        if (isOtherAdmin(user)) {
+            return cannotModifyAdmin("Không thể đặt hạn chế cho quản trị viên khác");
         }
         const updated: UserRestrictions = {
             ...restrictionsOf(username),

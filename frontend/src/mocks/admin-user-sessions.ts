@@ -2,11 +2,12 @@ import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import type { AdminUserSummary, UserSession } from "@/features/admin/users/types";
 
-import { userNotFound } from "./admin-user-errors";
+import { cannotModifyAdmin, isOtherAdmin, userNotFound } from "./admin-user-errors";
 import { findAdminUser, findAnyAdminUser } from "./admin-user-store";
 import { apiError } from "./api-error";
 
 const REVOKED_STORAGE_KEY = "sqljudge:mock:admin-user-revoked-sessions";
+const REVOKE_OTHER_ADMIN_MESSAGE = "Không thể đăng xuất phiên của quản trị viên khác";
 const DAY_MS = 24 * 60 * 60_000;
 const NO_CONTENT_STATUS = 204;
 
@@ -87,6 +88,9 @@ export const adminUserSessionHandlers: RequestHandler[] = [
         if (!user) {
             return userNotFound();
         }
+        if (isOtherAdmin(user)) {
+            return cannotModifyAdmin(REVOKE_OTHER_ADMIN_MESSAGE);
+        }
         const sessionId = String(params.sessionId);
         if (!activeSessionsOf(user).some((session) => session.id === sessionId)) {
             return apiError(404, "SESSION_NOT_FOUND", "Không tìm thấy phiên đăng nhập");
@@ -100,6 +104,9 @@ export const adminUserSessionHandlers: RequestHandler[] = [
         const user = findAdminUser(String(params.username));
         if (!user) {
             return userNotFound();
+        }
+        if (isOtherAdmin(user)) {
+            return cannotModifyAdmin(REVOKE_OTHER_ADMIN_MESSAGE);
         }
         revokeSessions(
             user.username,

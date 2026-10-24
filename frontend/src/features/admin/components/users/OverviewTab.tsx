@@ -46,7 +46,8 @@ export function OverviewTab({ user, onShowContests, onShowSessions }: OverviewTa
                 <RestrictionsCard user={user} />
                 <SessionsCard
                     username={user.username}
-                    isReadOnly={user.deletedAt !== null}
+                    role={user.role}
+                    isDeleted={user.deletedAt !== null}
                     limit={RECENT_COUNT}
                     onShowAll={onShowSessions}
                 />

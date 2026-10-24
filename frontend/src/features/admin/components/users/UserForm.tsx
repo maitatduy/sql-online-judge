@@ -30,7 +30,7 @@ interface UserFormProps {
     mode: "create" | "edit";
     defaultValues: UserFormValues;
     currentAvatarUrl: string | null;
-    isSelf: boolean;
+    roleLockedReason: string | null;
     submitLabel: string;
     onSubmit: (submission: UserFormSubmission) => Promise<void>;
     onFailure: (error: Error, values: UserFormValues) => void;
@@ -51,7 +51,7 @@ function showFieldErrors(error: unknown, setError: UseFormSetError<UserFormValue
 }
 
 export function UserForm(props: UserFormProps) {
-    const { mode, defaultValues, currentAvatarUrl, isSelf, submitLabel } = props;
+    const { mode, defaultValues, currentAvatarUrl, roleLockedReason, submitLabel } = props;
     const roleId = useId();
     const [avatar, setAvatar] = useState<AvatarChange>({ kind: "keep" });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,7 +125,7 @@ export function UserForm(props: UserFormProps) {
                     </label>
                     <NativeSelect
                         id={roleId}
-                        disabled={isSelf}
+                        disabled={roleLockedReason !== null}
                         className="w-full"
                         {...register("role")}
                     >
@@ -135,10 +135,8 @@ export function UserForm(props: UserFormProps) {
                             </option>
                         ))}
                     </NativeSelect>
-                    {isSelf ? (
-                        <p className="mt-1.5 text-xs text-muted-foreground">
-                            Bạn không thể tự đổi vai trò của chính mình.
-                        </p>
+                    {roleLockedReason ? (
+                        <p className="mt-1.5 text-xs text-muted-foreground">{roleLockedReason}</p>
                     ) : null}
                 </div>
             </div>

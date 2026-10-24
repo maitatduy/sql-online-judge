@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { canModerate } from "@/features/admin/users/moderation";
 import type { AdminUserDetail } from "@/features/admin/users/types";
 import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -25,7 +26,10 @@ const UnbanUserDialog = dynamic(
 type OpenDialog = "ban" | "unban" | "reset" | null;
 
 interface UserDetailActionsProps {
-    user: Pick<AdminUserDetail, "username" | "email" | "status" | "isEmailVerified" | "deletedAt">;
+    user: Pick<
+        AdminUserDetail,
+        "username" | "email" | "role" | "status" | "isEmailVerified" | "deletedAt"
+    >;
 }
 
 export function UserDetailActions({ user }: UserDetailActionsProps) {
@@ -33,11 +37,7 @@ export function UserDetailActions({ user }: UserDetailActionsProps) {
     const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
     const isDeleted = user.deletedAt !== null;
     const isBanned = !isDeleted && user.status === "BANNED";
-    const canBan =
-        !isDeleted &&
-        !isBanned &&
-        currentUser !== undefined &&
-        currentUser.username !== user.username;
+    const canBan = !isDeleted && !isBanned && canModerate(currentUser?.username, user);
     const closeDialog = () => setOpenDialog(null);
 
     return (

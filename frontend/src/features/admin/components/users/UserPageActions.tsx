@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { canModerate } from "@/features/admin/users/moderation";
 import type { AdminUserDetail } from "@/features/admin/users/types";
 import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -34,7 +35,7 @@ type OpenDialog = "edit" | "ban" | "ban-permanent" | "unban" | "delete" | "resto
 const DANGER_CLASS = "border-destructive/40 text-destructive hover:text-destructive";
 
 interface UserPageActionsProps {
-    user: Pick<AdminUserDetail, "username" | "status" | "deletedAt">;
+    user: Pick<AdminUserDetail, "username" | "role" | "status" | "deletedAt">;
 }
 
 export function UserPageActions({ user }: UserPageActionsProps) {
@@ -43,7 +44,7 @@ export function UserPageActions({ user }: UserPageActionsProps) {
     const closeDialog = () => setOpenDialog(null);
     const isDeleted = user.deletedAt !== null;
     const isBanned = user.status === "BANNED";
-    const isOtherUser = currentUser !== undefined && currentUser.username !== user.username;
+    const isModerable = canModerate(currentUser?.username, user);
 
     return (
         <div className="flex flex-wrap gap-2">
@@ -76,7 +77,7 @@ export function UserPageActions({ user }: UserPageActionsProps) {
                             Mở khoá tài khoản
                         </Button>
                     ) : null}
-                    {isOtherUser && !isBanned ? (
+                    {isModerable && !isBanned ? (
                         <>
                             <Button
                                 type="button"
@@ -97,7 +98,7 @@ export function UserPageActions({ user }: UserPageActionsProps) {
                             </Button>
                         </>
                     ) : null}
-                    {isOtherUser ? (
+                    {isModerable ? (
                         <Button
                             type="button"
                             size="sm"

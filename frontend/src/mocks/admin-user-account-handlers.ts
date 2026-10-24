@@ -6,7 +6,9 @@ import type { ApiFieldError } from "@/lib/api-client";
 import { isReservedUsername, RESERVED_USERNAME_MESSAGE, USERNAME_PATTERN } from "@/lib/username";
 
 import {
+    cannotModifyAdmin,
     cannotModifySelf,
+    isOtherAdmin,
     reasonFieldError,
     userNotFound,
     validationFailed,
@@ -166,6 +168,9 @@ export const adminUserAccountHandlers: RequestHandler[] = [
         if (isRoleChanged && readMockSession()?.username === username) {
             return cannotModifySelf("Bạn không thể tự đổi vai trò của chính mình");
         }
+        if (isRoleChanged && isOtherAdmin(user)) {
+            return cannotModifyAdmin("Không thể đổi vai trò của quản trị viên khác");
+        }
         if (newRole) {
             changeAdminUser(username, { role: newRole });
         }
@@ -183,11 +188,15 @@ export const adminUserAccountHandlers: RequestHandler[] = [
         if (invalid) {
             return validationFailed(invalid);
         }
-        if (!findAdminUser(username)) {
+        const user = findAdminUser(username);
+        if (!user) {
             return userNotFound();
         }
         if (readMockSession()?.username === username) {
             return cannotModifySelf("Bạn không thể tự xoá tài khoản của chính mình");
+        }
+        if (isOtherAdmin(user)) {
+            return cannotModifyAdmin("Không thể xoá tài khoản quản trị viên khác");
         }
         deleteAdminUser(username);
         return new HttpResponse(null, { status: NO_CONTENT_STATUS });

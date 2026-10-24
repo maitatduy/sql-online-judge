@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useToast } from "@/components/shared/ToastProvider";
 import { Button } from "@/components/ui/button";
 import { useRevokeSession, useUserSessions } from "@/features/admin/hooks/useUserSessions";
+import { isOtherAdmin } from "@/features/admin/users/moderation";
 import type { UserSession } from "@/features/admin/users/types";
+import type { Role } from "@/lib/current-user";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 import { BlockEmpty, BlockError, BlockLoading } from "./BlockStates";
@@ -21,14 +23,16 @@ const RevokeAllSessionsDialog = dynamic(
 
 interface SessionsCardProps {
     username: string;
-    isReadOnly: boolean;
+    role: Role;
+    isDeleted: boolean;
     limit?: number;
     onShowAll?: () => void;
 }
 
-export function SessionsCard({ username, isReadOnly, limit, onShowAll }: SessionsCardProps) {
+export function SessionsCard({ username, role, isDeleted, limit, onShowAll }: SessionsCardProps) {
     const showToast = useToast();
     const { data: currentUser } = useCurrentUser();
+    const isReadOnly = isDeleted || isOtherAdmin(currentUser?.username, { username, role });
     const { data: sessions, error, isPending, refetch } = useUserSessions(username);
     const revokeSession = useRevokeSession(username);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
