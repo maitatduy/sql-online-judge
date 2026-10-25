@@ -1,6 +1,7 @@
 import { AUDIT_ACTION_LABELS } from "@/features/admin/audit/action-labels";
+import { targetSummaryOf } from "@/features/admin/audit/entry-summary";
 import type { AuditLogEntry } from "@/features/admin/audit/types";
-import { formatAuditTime } from "@/features/admin/format";
+import { formatAuditMoment, formatAuditTime } from "@/features/admin/format";
 import { cn } from "@/lib/utils";
 
 import { AuditActionLabel } from "./AuditActionLabel";
@@ -13,9 +14,10 @@ interface AuditTableProps {
     entries: AuditLogEntry[];
     selectedId: string | null;
     onSelect: (entryId: string) => void;
+    now: Date;
 }
 
-export function AuditTable({ entries, selectedId, onSelect }: AuditTableProps) {
+export function AuditTable({ entries, selectedId, onSelect, now }: AuditTableProps) {
     return (
         <table className="w-full min-w-[760px] border-collapse text-[13px]">
             <thead>
@@ -60,7 +62,7 @@ export function AuditTable({ entries, selectedId, onSelect }: AuditTableProps) {
                                 aria-label={`Xem chi tiết: ${AUDIT_ACTION_LABELS[entry.action]} lúc ${formatAuditTime(entry.occurredAt)}`}
                                 className="text-left text-muted-foreground hover:text-brand hover:underline"
                             >
-                                {formatAuditTime(entry.occurredAt)}
+                                {formatAuditMoment(entry.occurredAt, now)}
                             </button>
                         </td>
                         <td className={cn(CELL_CLASS, "font-semibold")}>{entry.actorUsername}</td>
@@ -68,7 +70,7 @@ export function AuditTable({ entries, selectedId, onSelect }: AuditTableProps) {
                             <AuditActionLabel action={entry.action} />
                         </td>
                         <td className={cn(CELL_CLASS, "font-mono text-[12.5px]")}>
-                            {entry.targetUsername ?? entry.details ?? "-"}
+                            {targetSummaryOf(entry)}
                         </td>
                         <td className={cn(CELL_CLASS, "text-muted-foreground")}>
                             {entry.reason ?? "-"}

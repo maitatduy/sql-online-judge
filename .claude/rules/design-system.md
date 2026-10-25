@@ -32,6 +32,8 @@ Trong component chỉ dùng class token (`bg-brand`, `text-verdict-wa`) hoặc `
 | Trạng thái vận hành | `status-ok`, `status-busy`, `status-down` | Trạng thái của worker và dịch vụ: hoạt động, bận hoặc đang khởi động lại, mất kết nối |
 | Mức tải | `meter-normal`, `meter-high`, `meter-critical` | Thanh đo CPU, RAM: dưới 60%, từ 60%, từ 85% |
 | Vai trò tài khoản | `role-setter`, `role-moderator`, `role-admin` | **Chỉ** nhãn vai trò của tài khoản trong Admin Console: chữ dùng token, nền dùng độ mờ `/12` của chính token. Vai trò Học viên dùng `surface-2` và `text-muted` |
+| Nhóm thao tác | `audit-account`, `audit-ban` | **Chỉ** nhãn loại thao tác trong Nhật ký thao tác: nhóm tài khoản, nhóm khoá và xoá. Chữ dùng token, nền dùng độ mờ `/12` của chính token |
+| Khối thay đổi | `diff-surface`, `diff-border`, `diff-removed`, `diff-added` | Khối so sánh giá trị cũ và mới dạng code: nền, viền, dòng bị bỏ, dòng thêm vào. Luôn tối ở cả nền sáng lẫn nền tối; nền mỗi dòng dùng độ mờ `/12` của token dòng đó |
 | Trạng thái tài khoản | `account-active`, `account-banned`, `account-unverified` | **Chỉ** trạng thái của tài khoản người dùng: hoạt động, bị khoá, chưa xác minh email |
 | Vi phạm của tài khoản | `violation-severe`, `violation-minor` | **Chỉ** lịch sử vi phạm của một tài khoản: chấm mức nghiêm trọng, mức nhẹ; ô đếm vi phạm dùng `violation-severe` |
 | Trạng thái xử lý vi phạm | `case-open`, `case-resolved` | **Chỉ** nhãn trạng thái xử lý của một vi phạm hoặc báo cáo: chờ xử lý, đã xử lý |

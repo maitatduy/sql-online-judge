@@ -37,7 +37,7 @@ describe("trang nhật ký thao tác", () => {
         const firstRow = table.getAllByRole("row")[1];
         expect(firstRow).toHaveTextContent("admin.huy");
         expect(firstRow).toHaveTextContent("Đổi vai trò");
-        expect(firstRow).toHaveTextContent("datahust");
+        expect(firstRow).toHaveTextContent("datahust: LEARNER → SETTER");
         expect(firstRow).toHaveTextContent("CLB được duyệt làm người ra đề");
         expect(screen.getByRole("navigation", { name: "Phân trang" })).toBeInTheDocument();
         expect(screen.getByText("1-20 trong 24 thao tác")).toBeInTheDocument();
@@ -82,8 +82,9 @@ describe("trang nhật ký thao tác", () => {
         await findDetailButtons(table);
 
         const detail = within(screen.getByRole("complementary", { name: "Chi tiết thao tác" }));
-        expect(detail.getByText("Trước: LEARNER")).toBeInTheDocument();
-        expect(detail.getByText("Sau: SETTER")).toBeInTheDocument();
+        expect(detail.getByText("Thay đổi")).toBeInTheDocument();
+        expect(detail.getByText('- role: "LEARNER"')).toBeInTheDocument();
+        expect(detail.getByText('+ role: "SETTER"')).toBeInTheDocument();
         expect(detail.getByText("CLB được duyệt làm người ra đề")).toBeInTheDocument();
         expect(detail.getByRole("link", { name: "datahust" })).toHaveAttribute(
             "href",
