@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatVietnamTime, formatWaitDuration } from "./format";
+import { formatAuditTime, formatVietnamTime, formatWaitDuration } from "./format";
 
 describe("formatWaitDuration", () => {
     it("hiện một chữ số thập phân với dấu phẩy", () => {
@@ -23,5 +23,12 @@ describe("formatVietnamTime", () => {
 
     it("dùng đồng hồ 24 giờ khi qua nửa đêm", () => {
         expect(formatVietnamTime("2026-10-10T17:05:00Z")).toBe("00:05");
+    });
+});
+
+describe("formatAuditTime", () => {
+    it("ghép ngày và giờ Việt Nam, sang ngày mới khi qua nửa đêm", () => {
+        expect(formatAuditTime("2026-10-13T07:05:12Z")).toBe("13/10/2026 14:05");
+        expect(formatAuditTime("2026-10-10T17:05:00Z")).toBe("11/10/2026 00:05");
     });
 });

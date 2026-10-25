@@ -6,6 +6,7 @@ import {
     buildJudgeWorkers,
     buildNavigationCounts,
 } from "./admin-fixtures";
+import { adminAuditLogHandlers } from "./admin-audit-log";
 import { adminUserExportHandlers } from "./admin-user-export-handlers";
 import { adminUserHandlers } from "./admin-user-handlers";
 import { apiError } from "./api-error";
@@ -83,4 +84,5 @@ export const adminHandlers: RequestHandler[] = [
 
     ...adminUserHandlers,
     ...adminUserExportHandlers,
+    ...adminAuditLogHandlers,
 ];

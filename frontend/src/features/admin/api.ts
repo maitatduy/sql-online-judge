@@ -1,6 +1,8 @@
 import type { AdminNavigationCounts } from "@/lib/admin-navigation";
 import { apiClient } from "@/lib/api-client";
 
+import { AUDIT_PAGE_SIZE, auditQueryOf, type AuditFilters } from "./audit/search-params";
+import type { AuditLogResponse } from "./audit/types";
 import type {
     AdminOverviewResponse,
     JudgeWorkersResponse,
@@ -147,4 +149,13 @@ export const adminApi = {
         ),
     getPendingTasks: (signal?: AbortSignal) =>
         apiClient.get<PendingTasksResponse>("/api/admin/pending-tasks", { signal }),
+    getAuditLog: (filters: AuditFilters, signal?: AbortSignal) =>
+        apiClient.get<AuditLogResponse>("/api/admin/audit-log", {
+            params: {
+                ...auditQueryOf(filters, new Date()),
+                page: filters.page,
+                size: AUDIT_PAGE_SIZE,
+            },
+            signal,
+        }),
 };
