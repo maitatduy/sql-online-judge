@@ -105,6 +105,21 @@ class AdminAuditLogIntegrationTest extends ContainerSupport {
                         new HttpEntity<>(bearer(adminToken)),
                         Map.class);
         assertThat((List<String>) actors.getBody().get("usernames")).contains("nk.admin");
+
+        ResponseEntity<String> export =
+                restTemplate.exchange(
+                        "/api/admin/audit-log/export?actor=nk.admin&category=ACCOUNT",
+                        HttpMethod.GET,
+                        new HttpEntity<>(bearer(adminToken)),
+                        String.class);
+        assertThat(export.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(export.getHeaders().getContentDisposition().getFilename())
+                .startsWith("audit-log-")
+                .endsWith(".csv");
+        String[] lines = export.getBody().split("\n");
+        assertThat(lines).hasSize(5);
+        assertThat(lines[0]).startsWith("occurredAt,actor,actorRole,action,target");
+        assertThat(export.getBody()).contains("nk.admin,ADMIN,BAN,nk.khac");
     }
 
     @Test
