@@ -87,6 +87,50 @@ class AdminAuditLogIntegrationTest extends ContainerSupport {
         assertThat(firstPage.getBody())
                 .containsEntry("totalItems", 4)
                 .containsEntry("totalPages", 2);
+
+        assertThat(items(get(adminToken, "?actor=nk.admin&q=khoản phụ")))
+                .extracting("targetUsername")
+                .containsExactly("nk.khac");
+        assertThat(items(get(adminToken, "?actor=nk.admin&q=MUCTIEU")))
+                .extracting("action")
+                .containsExactly("BAN", "UPDATE_ROLE");
+        assertThat(items(get(adminToken, "?actor=nk.admin&q=%25"))).isEmpty();
+        assertThat(items(get(adminToken, "?actor=nk.admin&category=ACCOUNT"))).hasSize(4);
+        assertThat(get(adminToken, "?category=PROBLEM").getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+
+        ResponseEntity<Map> actors =
+                restTemplate.exchange(
+                        "/api/admin/audit-log/actors",
+                        HttpMethod.GET,
+                        new HttpEntity<>(bearer(adminToken)),
+                        Map.class);
+        assertThat((List<String>) actors.getBody().get("usernames")).contains("nk.admin");
+
+        ResponseEntity<String> export =
+                restTemplate.exchange(
+                        "/api/admin/audit-log/export?actor=nk.admin&category=ACCOUNT",
+                        HttpMethod.GET,
+                        new HttpEntity<>(bearer(adminToken)),
+                        String.class);
+        assertThat(export.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(export.getHeaders().getContentDisposition().getFilename())
+                .startsWith("audit-log-")
+                .endsWith(".csv");
+        String[] lines = export.getBody().split("\n");
+        assertThat(lines).hasSize(6);
+        assertThat(lines[0]).startsWith("occurredAt,actor,actorRole,action,target");
+        assertThat(lines[1])
+                .contains("EXPORT_AUDIT_LOG")
+                .endsWith("actor=nk.admin; category=ACCOUNT");
+        assertThat(export.getBody()).contains("nk.admin,ADMIN,BAN,nk.khac");
+        assertThat(items(get(adminToken, "?actor=nk.admin&action=EXPORT_AUDIT_LOG")))
+                .singleElement()
+                .satisfies(
+                        exported ->
+                                assertThat(exported)
+                                        .containsEntry(
+                                                "details", "actor=nk.admin; category=ACCOUNT"));
     }
 
     @Test
