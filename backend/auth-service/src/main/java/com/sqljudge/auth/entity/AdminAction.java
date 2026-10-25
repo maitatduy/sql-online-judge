@@ -144,10 +144,11 @@ public class AdminAction extends BaseEntity {
         return action;
     }
 
-    public static AdminAction inviteRole(UUID actorId, User invitee, RoleInvitation invitation) {
+    public static AdminAction onInvitation(
+            AdminActionType type, UUID actorId, User invitee, RoleInvitation invitation) {
         AdminAction action = new AdminAction();
         action.actorId = actorId;
-        action.action = AdminActionType.INVITE_ROLE;
+        action.action = type;
         action.newValue = invitation.getRole().name();
         if (invitee == null) {
             action.details = invitation.getEmail();

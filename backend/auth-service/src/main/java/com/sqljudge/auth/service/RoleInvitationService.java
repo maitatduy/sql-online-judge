@@ -4,6 +4,7 @@ import com.sqljudge.auth.dto.request.InviteRolesRequest;
 import com.sqljudge.auth.dto.response.InviteRolesResponse;
 import com.sqljudge.auth.dto.response.SkippedInvitation;
 import com.sqljudge.auth.entity.AdminAction;
+import com.sqljudge.auth.entity.AdminActionType;
 import com.sqljudge.auth.entity.InvitationLink;
 import com.sqljudge.auth.entity.RoleInvitation;
 import com.sqljudge.auth.entity.User;
@@ -74,17 +75,27 @@ public class RoleInvitationService {
             String email, User invitee, Role role, String message, CurrentUser actor, Instant now) {
         String token = SecureTokens.newToken();
         RoleInvitation invitation =
-                RoleInvitation.of(
-                        email,
-                        role,
-                        message,
-                        actor.id(),
-                        new InvitationLink(SecureTokens.sha256(token), now.plus(INVITATION_TTL)));
+                RoleInvitation.of(email, role, message, actor.id(), linkOf(token, now));
         roleInvitationRepository.save(invitation);
-        adminActionRepository.save(AdminAction.inviteRole(actor.id(), invitee, invitation));
-        eventPublisher.publishEvent(
-                new RoleInvitationEmailRequestedEvent(
-                        invitation.getId(), email, actor.username(), role, message, token));
+        adminActionRepository.save(
+                AdminAction.onInvitation(
+                        AdminActionType.INVITE_ROLE, actor.id(), invitee, invitation));
+        eventPublisher.publishEvent(mailOf(invitation, token, actor));
+    }
+
+    static InvitationLink linkOf(String token, Instant now) {
+        return new InvitationLink(SecureTokens.sha256(token), now.plus(INVITATION_TTL));
+    }
+
+    static RoleInvitationEmailRequestedEvent mailOf(
+            RoleInvitation invitation, String token, CurrentUser actor) {
+        return new RoleInvitationEmailRequestedEvent(
+                invitation.getId(),
+                invitation.getEmail(),
+                actor.username(),
+                invitation.getRole(),
+                invitation.getMessage(),
+                token);
     }
 
     private String skipReasonOf(String email, User invitee, Role role, Instant now) {
