@@ -17,12 +17,13 @@ import { cn } from "@/lib/utils";
 
 import { AuditEntryDetail } from "./AuditEntryDetail";
 import { AuditFilterBar } from "./AuditFilterBar";
+import { AuditLogHeader } from "./AuditLogHeader";
 import { AuditTable } from "./AuditTable";
 
 const SKELETON_ROW_COUNT = 8;
 
 export function AdminAuditLog() {
-    const { filters, changeFilters, clearFilters } = useAuditFilters();
+    const { filters, changeFilters } = useAuditFilters();
     const { data, dataUpdatedAt, error, isPending, isPlaceholderData, isRefetchError, refetch } =
         useAuditLog(filters);
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -37,14 +38,9 @@ export function AdminAuditLog() {
 
     return (
         <main id={MAIN_CONTENT_ID} className="flex flex-col gap-4 px-4 pt-6 pb-10 md:px-7">
-            <div>
-                <h1 className="text-[26px] font-extrabold">Nhật ký thao tác</h1>
-                <p className="mt-0.5 text-[13px] text-muted-foreground">
-                    Mọi thay đổi của quản trị viên và kiểm duyệt viên · chỉ đọc
-                </p>
-            </div>
+            <AuditLogHeader filters={filters} />
             {isRefetchError ? <StaleDataNotice updatedAtMs={dataUpdatedAt} /> : null}
-            <AuditFilterBar filters={filters} onChange={changeFilters} onClear={clearFilters} />
+            <AuditFilterBar filters={filters} onChange={changeFilters} />
             <div className="flex flex-col items-start gap-4 lg:flex-row">
                 <section
                     aria-label="Bảng nhật ký"

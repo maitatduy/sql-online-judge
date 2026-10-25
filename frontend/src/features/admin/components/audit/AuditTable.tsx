@@ -1,3 +1,6 @@
+import { Eye } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { AUDIT_ACTION_LABELS } from "@/features/admin/audit/action-labels";
 import { targetSummaryOf } from "@/features/admin/audit/entry-summary";
 import type { AuditLogEntry } from "@/features/admin/audit/types";
@@ -37,6 +40,9 @@ export function AuditTable({ entries, selectedId, onSelect, now }: AuditTablePro
                     <th scope="col" className={HEADER_CELL_CLASS}>
                         Lý do
                     </th>
+                    <th scope="col" className={cn(HEADER_CELL_CLASS, "w-24 text-right")}>
+                        Hành động
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -44,9 +50,8 @@ export function AuditTable({ entries, selectedId, onSelect, now }: AuditTablePro
                     <tr
                         key={entry.id}
                         aria-current={entry.id === selectedId ? "true" : undefined}
-                        onClick={() => onSelect(entry.id)}
                         className={cn(
-                            "cursor-pointer hover:bg-surface",
+                            "hover:bg-surface",
                             entry.id === selectedId && "bg-brand-soft hover:bg-brand-soft",
                         )}
                     >
@@ -55,15 +60,10 @@ export function AuditTable({ entries, selectedId, onSelect, now }: AuditTablePro
                                 CELL_CLASS,
                                 "border-l-3",
                                 entry.id === selectedId ? "border-l-brand" : "border-l-transparent",
+                                "text-muted-foreground",
                             )}
                         >
-                            <button
-                                type="button"
-                                aria-label={`Xem chi tiết: ${AUDIT_ACTION_LABELS[entry.action]} lúc ${formatAuditTime(entry.occurredAt)}`}
-                                className="text-left text-muted-foreground hover:text-brand hover:underline"
-                            >
-                                {formatAuditMoment(entry.occurredAt, now)}
-                            </button>
+                            {formatAuditMoment(entry.occurredAt, now)}
                         </td>
                         <td className={cn(CELL_CLASS, "font-semibold")}>{entry.actorUsername}</td>
                         <td className={CELL_CLASS}>
@@ -74,6 +74,19 @@ export function AuditTable({ entries, selectedId, onSelect, now }: AuditTablePro
                         </td>
                         <td className={cn(CELL_CLASS, "text-muted-foreground")}>
                             {entry.reason ?? "-"}
+                        </td>
+                        <td className={cn(CELL_CLASS, "text-right")}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                aria-label={`Xem chi tiết: ${AUDIT_ACTION_LABELS[entry.action]} lúc ${formatAuditTime(entry.occurredAt)}`}
+                                aria-pressed={entry.id === selectedId}
+                                onClick={() => onSelect(entry.id)}
+                                className="size-8 text-muted-foreground hover:text-brand"
+                            >
+                                <Eye aria-hidden="true" />
+                            </Button>
                         </td>
                     </tr>
                 ))}

@@ -1,4 +1,4 @@
-import type { AuditAction } from "./types";
+import type { AuditAction, AuditCategory } from "./types";
 
 export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     BAN: "Khoá tài khoản",
@@ -17,7 +17,15 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     EXPORT_USER_EMAILS: "Xuất email người dùng",
 };
 
-export const AUDIT_ACTIONS = Object.keys(AUDIT_ACTION_LABELS) as AuditAction[];
+export const AUDIT_CATEGORY_LABELS: Record<AuditCategory, string> = {
+    ACCOUNT: "Tài khoản",
+    PROBLEM: "Bài tập",
+    SUBMISSION: "Bài nộp",
+    CONTEST: "Contest",
+    CONFIG: "Cấu hình",
+};
+
+export const AUDIT_CATEGORIES = Object.keys(AUDIT_CATEGORY_LABELS) as AuditCategory[];
 
 const DESTRUCTIVE_ACTIONS: ReadonlySet<AuditAction> = new Set(["BAN", "DELETE"]);
 
