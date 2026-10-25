@@ -27,6 +27,7 @@ export function AdminAuditLog() {
         useAuditLog(filters);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [focusRequest, setFocusRequest] = useState(0);
+    const [mountedAt] = useState(() => new Date());
     const selected = data?.items.find((entry) => entry.id === selectedId) ?? data?.items[0] ?? null;
 
     function handleSelect(entryId: string) {
@@ -81,6 +82,7 @@ export function AdminAuditLog() {
                                     entries={data.items}
                                     selectedId={selected?.id ?? null}
                                     onSelect={handleSelect}
+                                    now={mountedAt}
                                 />
                             </div>
                             <Pagination

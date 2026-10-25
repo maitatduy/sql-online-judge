@@ -12,8 +12,8 @@ export function AuditActionLabel({ action }: AuditActionLabelProps) {
             className={cn(
                 "inline-flex h-5.5 items-center rounded-full px-2 text-xs font-semibold whitespace-nowrap",
                 isDestructiveAction(action)
-                    ? "bg-destructive/12 text-destructive"
-                    : "bg-surface-2 text-foreground",
+                    ? "bg-audit-ban/12 text-audit-ban"
+                    : "bg-audit-account/12 text-audit-account",
             )}
         >
             {AUDIT_ACTION_LABELS[action]}

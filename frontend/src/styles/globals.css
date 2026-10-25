@@ -68,6 +68,14 @@
     --role-moderator: #6d28d9;
     --role-admin: #1d4ed8;
 
+    --audit-account: #1d4ed8;
+    --audit-ban: #c81e1e;
+
+    --diff-surface: #0f1a2b;
+    --diff-border: #2b3a52;
+    --diff-removed: #fca5a5;
+    --diff-added: #86efac;
+
     --account-active: #15803d;
     --account-banned: #c81e1e;
     --account-unverified: #9a5b05;
@@ -152,6 +160,14 @@
     --role-setter: #fb923c;
     --role-moderator: #a78bfa;
     --role-admin: #60a5fa;
+
+    --audit-account: #60a5fa;
+    --audit-ban: #f87171;
+
+    --diff-surface: #0f1a2b;
+    --diff-border: #2b3a52;
+    --diff-removed: #fca5a5;
+    --diff-added: #86efac;
 
     --account-active: #4ade80;
     --account-banned: #f87171;
@@ -264,6 +280,14 @@
     --color-role-setter: var(--role-setter);
     --color-role-moderator: var(--role-moderator);
     --color-role-admin: var(--role-admin);
+
+    --color-audit-account: var(--audit-account);
+    --color-audit-ban: var(--audit-ban);
+
+    --color-diff-surface: var(--diff-surface);
+    --color-diff-border: var(--diff-border);
+    --color-diff-removed: var(--diff-removed);
+    --color-diff-added: var(--diff-added);
 
     --color-account-active: var(--account-active);
     --color-account-banned: var(--account-banned);

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import { AUDIT_ACTION_LABELS } from "@/features/admin/audit/action-labels";
+import { changedFieldOf, hasValueChange } from "@/features/admin/audit/entry-summary";
 import type { AuditLogEntry } from "@/features/admin/audit/types";
 import { formatAuditTime } from "@/features/admin/format";
 import { ROLE_LABELS } from "@/features/admin/users/role-labels";
@@ -10,10 +11,6 @@ import { ROUTES } from "@/lib/routes";
 interface AuditEntryDetailProps {
     entry: AuditLogEntry;
     focusRequest: number;
-}
-
-function hasValueChange({ previousValue, newValue }: AuditLogEntry): boolean {
-    return previousValue !== null || newValue !== null;
 }
 
 export function AuditEntryDetail({ entry, focusRequest }: AuditEntryDetailProps) {
@@ -71,9 +68,16 @@ export function AuditEntryDetail({ entry, focusRequest }: AuditEntryDetailProps)
                 ) : null}
             </dl>
             {hasValueChange(entry) ? (
-                <div className="flex flex-col gap-1 rounded-md bg-surface-2 px-3 py-2 font-mono text-xs">
-                    <span>Trước: {entry.previousValue ?? "(trống)"}</span>
-                    <span>Sau: {entry.newValue ?? "(trống)"}</span>
+                <div>
+                    <p className="mb-1.5 text-[13px] font-semibold">Thay đổi</p>
+                    <div className="overflow-hidden rounded-lg border border-diff-border bg-diff-surface font-mono text-xs leading-[1.8]">
+                        <p className="bg-diff-removed/12 px-3 py-2 text-diff-removed">
+                            {`- ${changedFieldOf(entry.action)}: ${JSON.stringify(entry.previousValue)}`}
+                        </p>
+                        <p className="bg-diff-added/12 px-3 py-2 text-diff-added">
+                            {`+ ${changedFieldOf(entry.action)}: ${JSON.stringify(entry.newValue)}`}
+                        </p>
+                    </div>
                 </div>
             ) : null}
             {entry.reason ? (
