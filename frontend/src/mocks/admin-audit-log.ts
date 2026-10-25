@@ -3,6 +3,8 @@ import { delay, http, HttpResponse, type RequestHandler } from "msw";
 import type { AuditAction, AuditLogEntry, AuditLogResponse } from "@/features/admin/audit/types";
 import type { Role } from "@/lib/current-user";
 
+import { toCsv } from "./csv";
+
 const DEFAULT_PAGE_SIZE = 20;
 const NEWEST_AT_MS = Date.now() - 2 * 60 * 60_000;
 const STEP_MS = 3 * 60 * 60_000;
@@ -103,15 +105,54 @@ const AUDIT_LOG: AuditLogEntry[] = SEED.map(
     }),
 );
 
+const LOGGED_CATEGORY = "ACCOUNT";
+const CSV_COLUMNS = [
+    "occurredAt",
+    "actorUsername",
+    "actorRole",
+    "action",
+    "targetUsername",
+    "previousValue",
+    "newValue",
+    "reason",
+    "expiresAt",
+    "details",
+] as const satisfies readonly (keyof AuditLogEntry)[];
+const CSV_HEADER = [
+    "occurredAt",
+    "actor",
+    "actorRole",
+    "action",
+    "target",
+    "previousValue",
+    "newValue",
+    "reason",
+    "expiresAt",
+    "details",
+];
+
+function exportFileName(now: Date): string {
+    const stamp = now.toISOString().slice(0, 16).replace(/-|:/g, "").replace("T", "-");
+    return `audit-log-${stamp}.csv`;
+}
+
+function containsKeyword(entry: AuditLogEntry, keyword: string): boolean {
+    return [entry.actorUsername, entry.targetUsername, entry.reason].some((text) =>
+        text?.toLowerCase().includes(keyword.toLowerCase()),
+    );
+}
+
 function matches(entry: AuditLogEntry, query: URLSearchParams): boolean {
     const user = query.get("user");
     const actor = query.get("actor");
-    const action = query.get("action");
+    const category = query.get("category");
+    const keyword = query.get("q");
     const from = query.get("from");
     return (
         (user === null || entry.targetUsername === user) &&
         (actor === null || entry.actorUsername === actor) &&
-        (action === null || entry.action === action) &&
+        (category === null || category === LOGGED_CATEGORY) &&
+        (keyword === null || containsKeyword(entry, keyword)) &&
         (from === null || entry.occurredAt >= new Date(from).toISOString())
     );
 }
@@ -137,5 +178,27 @@ export const adminAuditLogHandlers: RequestHandler[] = [
             totalPages: Math.ceil(entries.length / size),
         };
         return HttpResponse.json(response);
+    }),
+
+    http.get("*/api/admin/audit-log/actors", async () => {
+        await delay();
+        const usernames = [...new Set(AUDIT_LOG.map((entry) => entry.actorUsername))].sort();
+        return HttpResponse.json({ usernames });
+    }),
+
+    http.get("*/api/admin/audit-log/export", async ({ request }) => {
+        await delay();
+        const query = new URL(request.url).searchParams;
+        const rows = AUDIT_LOG.filter((entry) => matches(entry, query)).map((entry) =>
+            CSV_COLUMNS.map((column) => String(entry[column] ?? "")),
+        );
+        const now = new Date();
+        return new HttpResponse(toCsv([CSV_HEADER, ...rows]), {
+            status: 200,
+            headers: {
+                "Content-Type": "text/csv; charset=utf-8",
+                "Content-Disposition": `attachment; filename="${exportFileName(now)}"`,
+            },
+        });
     }),
 ];

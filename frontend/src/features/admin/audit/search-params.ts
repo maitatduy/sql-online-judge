@@ -1,24 +1,25 @@
 import { ROUTES } from "@/lib/routes";
 
-import { AUDIT_ACTIONS } from "./action-labels";
-import type { AuditAction } from "./types";
+import { AUDIT_CATEGORIES } from "./action-labels";
+import type { AuditCategory } from "./types";
 
 export const AUDIT_PAGE_SIZE = 20;
 
-export const AUDIT_PERIODS = ["today", "7d", "30d"] as const;
+export const AUDIT_PERIODS = ["7d", "today", "30d"] as const;
 
 export type AuditPeriod = (typeof AUDIT_PERIODS)[number];
 
 export const AUDIT_PERIOD_LABELS: Record<AuditPeriod, string> = {
-    today: "Hôm nay",
     "7d": "7 ngày qua",
+    today: "Hôm nay",
     "30d": "30 ngày qua",
 };
 
 export interface AuditFilters {
     user: string | null;
     actor: string | null;
-    action: AuditAction | null;
+    category: AuditCategory | null;
+    q: string | null;
     period: AuditPeriod | null;
     page: number;
 }
@@ -26,7 +27,8 @@ export interface AuditFilters {
 export interface AuditQuery {
     user?: string;
     actor?: string;
-    action?: AuditAction;
+    category?: AuditCategory;
+    q?: string;
     from?: string;
 }
 
@@ -41,7 +43,8 @@ const ALL_TIME_PARAM = "all";
 export const NO_AUDIT_FILTERS: AuditFilters = {
     user: null,
     actor: null,
-    action: null,
+    category: null,
+    q: null,
     period: DEFAULT_PERIOD,
     page: FIRST_PAGE,
 };
@@ -86,13 +89,14 @@ export function readAuditFilters(searchParams: Pick<URLSearchParams, "get">): Au
     return {
         user,
         actor: readText(searchParams.get("actor")),
-        action: knownValue(AUDIT_ACTIONS, searchParams.get("action")),
+        category: knownValue(AUDIT_CATEGORIES, searchParams.get("category")),
+        q: readText(searchParams.get("q")),
         period: readPeriod(searchParams.get("period"), user),
         page: readPage(searchParams.get("page")),
     };
 }
 
-export function auditHref({ user, actor, action, period, page }: AuditFilters): string {
+export function auditHref({ user, actor, category, q, period, page }: AuditFilters): string {
     const query = new URLSearchParams();
     if (user) {
         query.set("user", user);
@@ -100,8 +104,11 @@ export function auditHref({ user, actor, action, period, page }: AuditFilters): 
     if (actor) {
         query.set("actor", actor);
     }
-    if (action) {
-        query.set("action", action);
+    if (category) {
+        query.set("category", category);
+    }
+    if (q) {
+        query.set("q", q);
     }
     if (period !== defaultPeriodOf(user)) {
         query.set("period", period ?? ALL_TIME_PARAM);
@@ -113,15 +120,15 @@ export function auditHref({ user, actor, action, period, page }: AuditFilters): 
     return queryString ? `${ROUTES.adminAuditLog}?${queryString}` : ROUTES.adminAuditLog;
 }
 
-export function auditQueryOf({ user, actor, action, period }: AuditFilters, now: Date): AuditQuery {
+export function auditQueryOf(
+    { user, actor, category, q, period }: AuditFilters,
+    now: Date,
+): AuditQuery {
     return {
         ...(user ? { user } : {}),
         ...(actor ? { actor } : {}),
-        ...(action ? { action } : {}),
+        ...(category ? { category } : {}),
+        ...(q ? { q } : {}),
         ...(period ? { from: fromOf(period, now).toISOString() } : {}),
     };
-}
-
-export function hasActiveAuditFilter({ user, actor, action, period }: AuditFilters): boolean {
-    return user !== null || actor !== null || action !== null || period !== defaultPeriodOf(user);
 }

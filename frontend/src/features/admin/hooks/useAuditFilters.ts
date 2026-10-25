@@ -18,12 +18,8 @@ function changeFilters(change: AuditFilterChange): void {
     replaceUrl({ ...current, ...change, page: NO_AUDIT_FILTERS.page });
 }
 
-function clearFilters(): void {
-    replaceUrl(NO_AUDIT_FILTERS);
-}
-
 export function useAuditFilters() {
     const filters = readAuditFilters(useSearchParams());
 
-    return { filters, changeFilters, clearFilters };
+    return { filters, changeFilters };
 }

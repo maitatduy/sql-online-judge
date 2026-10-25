@@ -1,6 +1,12 @@
 import type { Role } from "@/lib/current-user";
 import type { Page } from "@/lib/pagination";
 
+export type AuditCategory = "ACCOUNT";
+
+export interface AuditActorsResponse {
+    usernames: string[];
+}
+
 export type AuditAction =
     | "BAN"
     | "UNBAN"
@@ -15,7 +21,8 @@ export type AuditAction =
     | "UPDATE_AVATAR"
     | "REMOVE_AVATAR"
     | "EXPORT_USER_EMAILS"
-    | "UPDATE_RESTRICTIONS";
+    | "UPDATE_RESTRICTIONS"
+    | "EXPORT_AUDIT_LOG";
 
 export interface AuditLogEntry {
     id: string;

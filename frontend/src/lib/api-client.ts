@@ -285,6 +285,8 @@ export const apiClient = {
         request<T>("PATCH", path, body, options),
     delete: <T>(path: string, body?: unknown, options: RequestOptions = {}) =>
         request<T>("DELETE", path, body, options),
+    getForFile: (path: string, options: RequestOptions = {}) =>
+        requestFile("GET", path, undefined, options),
     postForFile: (path: string, body?: unknown, options: RequestOptions = {}) =>
         requestFile("POST", path, body, options),
     putForm: <T>(path: string, form: FormData, options: RequestOptions = {}) =>

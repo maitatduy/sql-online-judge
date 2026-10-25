@@ -2,7 +2,7 @@ import type { AdminNavigationCounts } from "@/lib/admin-navigation";
 import { apiClient } from "@/lib/api-client";
 
 import { AUDIT_PAGE_SIZE, auditQueryOf, type AuditFilters } from "./audit/search-params";
-import type { AuditLogResponse } from "./audit/types";
+import type { AuditActorsResponse, AuditLogResponse } from "./audit/types";
 import type {
     AdminOverviewResponse,
     JudgeWorkersResponse,
@@ -157,5 +157,11 @@ export const adminApi = {
                 size: AUDIT_PAGE_SIZE,
             },
             signal,
+        }),
+    getAuditActors: (signal?: AbortSignal) =>
+        apiClient.get<AuditActorsResponse>("/api/admin/audit-log/actors", { signal }),
+    exportAuditLog: (filters: AuditFilters) =>
+        apiClient.getForFile("/api/admin/audit-log/export", {
+            params: { ...auditQueryOf(filters, new Date()) },
         }),
 };
