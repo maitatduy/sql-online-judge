@@ -143,6 +143,19 @@ public class AdminAction extends BaseEntity {
         return action;
     }
 
+    public static AdminAction inviteRole(UUID actorId, User invitee, RoleInvitation invitation) {
+        AdminAction action = new AdminAction();
+        action.actorId = actorId;
+        action.action = AdminActionType.INVITE_ROLE;
+        action.newValue = invitation.getRole().name();
+        if (invitee == null) {
+            action.details = invitation.getEmail();
+        } else {
+            action.targetUserId = invitee.getId();
+        }
+        return action;
+    }
+
     private static String requireReason(String reason) {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("reason is required for this admin action");

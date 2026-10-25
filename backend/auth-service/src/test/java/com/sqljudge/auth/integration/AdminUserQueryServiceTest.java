@@ -13,6 +13,7 @@ import com.sqljudge.auth.repository.AdminActionRepository;
 import com.sqljudge.auth.repository.AdminUserNoteRepository;
 import com.sqljudge.auth.repository.EmailTokenRepository;
 import com.sqljudge.auth.repository.OAuthAccountRepository;
+import com.sqljudge.auth.repository.RoleInvitationRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserRestrictionRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
@@ -50,6 +51,7 @@ class AdminUserQueryServiceTest extends ContainerSupport {
     @Autowired private EmailTokenRepository emailTokenRepository;
     @Autowired private UserSessionRepository userSessionRepository;
     @Autowired private OAuthAccountRepository oauthAccountRepository;
+    @Autowired private RoleInvitationRepository roleInvitationRepository;
     @Autowired private AdminUserQueryService service;
 
     @BeforeEach
@@ -60,6 +62,7 @@ class AdminUserQueryServiceTest extends ContainerSupport {
         emailTokenRepository.deleteAllInBatch();
         userSessionRepository.deleteAllInBatch();
         oauthAccountRepository.deleteAllInBatch();
+        roleInvitationRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
         save(user("lan.pham", "lan.pham@gmail.com", Role.SETTER));
         User unverified = user("minh.anh", "minh.anh@gmail.com", Role.LEARNER);
