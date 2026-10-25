@@ -1,35 +1,27 @@
 import Link from "next/link";
-import { useEffect, useRef } from "react";
 
+import { Button } from "@/components/ui/button";
 import { AUDIT_ACTION_LABELS } from "@/features/admin/audit/action-labels";
 import { changedFieldOf, hasValueChange } from "@/features/admin/audit/entry-summary";
 import type { AuditLogEntry } from "@/features/admin/audit/types";
 import { formatAuditTime } from "@/features/admin/format";
 import { ROLE_LABELS } from "@/features/admin/users/role-labels";
+import { ActionDialog } from "@/features/admin/components/users/ActionDialog";
 import { ROUTES } from "@/lib/routes";
 
-interface AuditEntryDetailProps {
+interface AuditEntryDialogProps {
     entry: AuditLogEntry;
-    focusRequest: number;
+    onClose: () => void;
 }
 
-export function AuditEntryDetail({ entry, focusRequest }: AuditEntryDetailProps) {
-    const headingRef = useRef<HTMLHeadingElement>(null);
-
-    useEffect(() => {
-        if (focusRequest > 0) {
-            headingRef.current?.focus();
-        }
-    }, [focusRequest]);
-
+export function AuditEntryDialog({ entry, onClose }: AuditEntryDialogProps) {
     return (
-        <aside
-            aria-label="Chi tiết thao tác"
-            className="flex w-full flex-col gap-3 rounded-lg border bg-card p-4.5 lg:w-95 lg:flex-none"
+        <ActionDialog
+            title="Chi tiết thao tác"
+            description="Nhật ký không sửa hay xoá được. Thao tác nhạy cảm (khoá, xoá tài khoản, đổi vai trò) bắt buộc nhập lý do."
+            onClose={onClose}
+            className="max-w-[520px]"
         >
-            <h2 ref={headingRef} tabIndex={-1} className="text-base font-bold outline-none">
-                Chi tiết
-            </h2>
             <dl className="flex flex-col gap-1 text-[13px]">
                 <div>
                     <dt className="inline text-muted-foreground">Thao tác: </dt>
@@ -86,10 +78,11 @@ export function AuditEntryDetail({ entry, focusRequest }: AuditEntryDetailProps)
                     <span>{entry.reason}</span>
                 </div>
             ) : null}
-            <p className="text-xs text-muted-foreground">
-                Nhật ký không sửa hay xoá được. Thao tác nhạy cảm (khoá, xoá tài khoản, đổi vai trò)
-                bắt buộc nhập lý do.
-            </p>
-        </aside>
+            <div className="flex justify-end">
+                <Button type="button" variant="outline" onClick={onClose}>
+                    Đóng
+                </Button>
+            </div>
+        </ActionDialog>
     );
 }

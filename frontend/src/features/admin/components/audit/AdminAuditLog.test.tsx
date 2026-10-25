@@ -176,11 +176,20 @@ describe("trang nhật ký thao tác", () => {
         await waitFor(() => expect(window.location.search).toBe(""));
     });
 
-    it("tải xong thì panel chi tiết hiện sẵn dòng đầu mà không cướp focus", async () => {
+    it("chưa bấm nút xem thì không mở chi tiết nào", async () => {
         const table = await renderLog();
         await findDetailButtons(table);
 
-        const detail = within(screen.getByRole("complementary", { name: "Chi tiết thao tác" }));
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(screen.queryByRole("complementary")).not.toBeInTheDocument();
+    });
+
+    it("bấm nút xem thì mở modal chi tiết đúng dòng đó", async () => {
+        const table = await renderLog();
+
+        fireEvent.click((await findDetailButtons(table))[0]);
+
+        const detail = within(await screen.findByRole("dialog", { name: "Chi tiết thao tác" }));
         expect(detail.getByText("Thay đổi")).toBeInTheDocument();
         expect(detail.getByText('- role: "LEARNER"')).toBeInTheDocument();
         expect(detail.getByText('+ role: "SETTER"')).toBeInTheDocument();
@@ -189,43 +198,20 @@ describe("trang nhật ký thao tác", () => {
             "href",
             "/admin/users/datahust",
         );
-        expect(table.getAllByRole("row")[1]).toHaveAttribute("aria-current", "true");
-        expect(screen.getByRole("heading", { level: 2, name: "Chi tiết" })).not.toHaveFocus();
     });
 
-    it("bấm nút xem ở cột hành động thì chọn dòng đó và chuyển focus tới panel", async () => {
+    it("đóng modal thì trả focus về nút xem đã mở nó", async () => {
         const table = await renderLog();
-        const viewButtons = await findDetailButtons(table);
+        const secondView = (await findDetailButtons(table))[1];
+        secondView.focus();
 
-        fireEvent.click(viewButtons[1]);
-
-        const secondRow = table.getAllByRole("row")[2];
-        expect(within(secondRow).getByRole("button", { name: /^Xem chi tiết/ })).toBe(
-            viewButtons[1],
-        );
-        expect(secondRow).toHaveAttribute("aria-current", "true");
-        expect(table.getAllByRole("row")[1]).not.toHaveAttribute("aria-current");
-        const detail = within(screen.getByRole("complementary", { name: "Chi tiết thao tác" }));
+        fireEvent.click(secondView);
+        const detail = within(await screen.findByRole("dialog", { name: "Chi tiết thao tác" }));
         expect(detail.getByRole("link", { name: "spam.bot88" })).toBeInTheDocument();
-        expect(screen.getByRole("heading", { level: 2, name: "Chi tiết" })).toHaveFocus();
-    });
+        fireEvent.click(detail.getByRole("button", { name: "Đóng" }));
 
-    it("đổi bộ lọc làm dòng đang chọn biến khỏi bảng thì panel chuyển sang dòng đầu mới", async () => {
-        const table = await renderLog();
-        fireEvent.click((await findDetailButtons(table))[0]);
-
-        fireEvent.change(screen.getByRole("searchbox", { name: "Tìm trong nhật ký" }), {
-            target: { value: "spam" },
-        });
-
-        await waitFor(() =>
-            expect(
-                within(screen.getByRole("complementary", { name: "Chi tiết thao tác" })).getByRole(
-                    "link",
-                    { name: "spam.bot88" },
-                ),
-            ).toBeInTheDocument(),
-        );
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(secondView).toHaveFocus();
     });
 
     it("không có kết quả thì hiện trạng thái trống", async () => {

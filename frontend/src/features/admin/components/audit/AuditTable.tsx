@@ -15,12 +15,11 @@ const CELL_CLASS = "border-b px-3 py-2.25 align-middle";
 
 interface AuditTableProps {
     entries: AuditLogEntry[];
-    selectedId: string | null;
-    onSelect: (entryId: string) => void;
+    onView: (entryId: string) => void;
     now: Date;
 }
 
-export function AuditTable({ entries, selectedId, onSelect, now }: AuditTableProps) {
+export function AuditTable({ entries, onView, now }: AuditTableProps) {
     return (
         <table className="w-full min-w-[760px] border-collapse text-[13px]">
             <thead>
@@ -47,22 +46,8 @@ export function AuditTable({ entries, selectedId, onSelect, now }: AuditTablePro
             </thead>
             <tbody>
                 {entries.map((entry) => (
-                    <tr
-                        key={entry.id}
-                        aria-current={entry.id === selectedId ? "true" : undefined}
-                        className={cn(
-                            "hover:bg-surface",
-                            entry.id === selectedId && "bg-brand-soft hover:bg-brand-soft",
-                        )}
-                    >
-                        <td
-                            className={cn(
-                                CELL_CLASS,
-                                "border-l-3",
-                                entry.id === selectedId ? "border-l-brand" : "border-l-transparent",
-                                "text-muted-foreground",
-                            )}
-                        >
+                    <tr key={entry.id} className="hover:bg-surface">
+                        <td className={cn(CELL_CLASS, "text-muted-foreground")}>
                             {formatAuditMoment(entry.occurredAt, now)}
                         </td>
                         <td className={cn(CELL_CLASS, "font-semibold")}>{entry.actorUsername}</td>
@@ -81,8 +66,7 @@ export function AuditTable({ entries, selectedId, onSelect, now }: AuditTablePro
                                 variant="ghost"
                                 size="icon"
                                 aria-label={`Xem chi tiết: ${AUDIT_ACTION_LABELS[entry.action]} lúc ${formatAuditTime(entry.occurredAt)}`}
-                                aria-pressed={entry.id === selectedId}
-                                onClick={() => onSelect(entry.id)}
+                                onClick={() => onView(entry.id)}
                                 className="size-8 text-muted-foreground hover:text-brand"
                             >
                                 <Eye aria-hidden="true" />
