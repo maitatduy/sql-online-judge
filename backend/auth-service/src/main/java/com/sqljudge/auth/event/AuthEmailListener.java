@@ -1,8 +1,10 @@
 package com.sqljudge.auth.event;
 
 import com.sqljudge.auth.config.EmailProperties;
+import com.sqljudge.common.security.Role;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,9 @@ public class AuthEmailListener {
     private static final DateTimeFormatter BAN_END_FORMAT =
             DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy").withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
     private static final String ACCOUNT_EXISTS_SUBJECT = "Email này đã có tài khoản SQL Judge";
+    private static final String ROLE_INVITATION_SUBJECT = "Lời mời tham gia đội ngũ SQL Judge";
+    private static final Map<Role, String> ROLE_LABELS =
+            Map.of(Role.SETTER, "Người ra đề", Role.MODERATOR, "Kiểm duyệt");
 
     private final JavaMailSender mailSender;
     private final EmailProperties emailProperties;
@@ -86,6 +91,36 @@ public class AuthEmailListener {
                 """
                         .formatted(event.username(), link);
         send(event.userId(), event.email(), INVITATION_SUBJECT, body, "invitation_email");
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendRoleInvitationEmail(RoleInvitationEmailRequestedEvent event) {
+        String link = emailProperties.frontendUrl() + "/invitations/" + event.token();
+        String note =
+                event.message() == null
+                        ? ""
+                        : "Lời nhắn từ quản trị viên:\n" + event.message() + "\n\n";
+        String body =
+                """
+                Chào bạn,
+
+                %s mời bạn nhận vai trò %s trên SQL Judge.
+
+                %sBấm liên kết sau, đăng nhập (hoặc đăng ký bằng chính email này) để nhận quyền:
+                %s
+
+                Liên kết có hiệu lực 7 ngày và chỉ dùng được một lần.
+                Nếu bạn không mong đợi email này, hãy bỏ qua nó.
+                """
+                        .formatted(
+                                event.inviterUsername(), ROLE_LABELS.get(event.role()), note, link);
+        send(
+                event.invitationId(),
+                event.email(),
+                ROLE_INVITATION_SUBJECT,
+                body,
+                "role_invitation_email");
     }
 
     @Async
