@@ -16,10 +16,15 @@ import lombok.Setter;
 @Entity
 @Table(
         name = "admin_actions",
-        indexes =
-                @Index(
-                        name = "idx_admin_actions_target_user_id_created_at",
-                        columnList = "target_user_id, created_at"))
+        indexes = {
+            @Index(
+                    name = "idx_admin_actions_target_user_id_created_at",
+                    columnList = "target_user_id, created_at"),
+            @Index(name = "idx_admin_actions_created_at", columnList = "created_at"),
+            @Index(
+                    name = "idx_admin_actions_actor_id_created_at",
+                    columnList = "actor_id, created_at")
+        })
 @Getter
 @Setter
 @NoArgsConstructor
