@@ -4,7 +4,7 @@ import type { AuditAction, AuditLogEntry, AuditLogResponse } from "@/features/ad
 import type { Role } from "@/lib/current-user";
 
 const DEFAULT_PAGE_SIZE = 20;
-const NEWEST_AT_MS = Date.parse("2026-10-13T07:05:12Z");
+const NEWEST_AT_MS = Date.now() - 2 * 60 * 60_000;
 const STEP_MS = 3 * 60 * 60_000;
 
 type SeedEntry = [

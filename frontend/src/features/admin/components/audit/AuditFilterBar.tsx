@@ -8,12 +8,15 @@ import {
     AUDIT_PERIOD_LABELS,
     AUDIT_PERIODS,
     hasActiveAuditFilter,
+    NO_AUDIT_FILTERS,
     type AuditFilters,
     type AuditPeriod,
 } from "@/features/admin/audit/search-params";
 import type { AuditAction } from "@/features/admin/audit/types";
 import type { AuditFilterChange } from "@/features/admin/hooks/useAuditFilters";
 import { useDebouncedSearch } from "@/lib/useDebouncedSearch";
+
+const ALL_TIME_OPTION = "all";
 
 interface AuditFilterBarProps {
     filters: AuditFilters;
@@ -32,8 +35,16 @@ export function AuditFilterBar({ filters, onChange, onClear }: AuditFilterBarPro
         onClear();
     }
 
+    function handleUserCleared() {
+        onChange({ user: null, period: filters.period ?? NO_AUDIT_FILTERS.period });
+    }
+
     return (
-        <div className="flex flex-wrap items-center gap-2 border-b px-3.5 py-3">
+        <div
+            role="search"
+            aria-label="Bộ lọc nhật ký"
+            className="flex flex-wrap items-center gap-2 rounded-lg border bg-card px-3.5 py-3"
+        >
             {filters.user ? (
                 <span className="inline-flex h-8 items-center gap-1 rounded-full bg-surface-2 pr-1 pl-3 text-[13px] font-semibold">
                     Đối tượng: {filters.user}
@@ -43,7 +54,7 @@ export function AuditFilterBar({ filters, onChange, onClear }: AuditFilterBarPro
                         size="icon"
                         aria-label="Bỏ lọc đối tượng"
                         className="size-6 rounded-full"
-                        onClick={() => onChange({ user: null })}
+                        onClick={handleUserCleared}
                     >
                         <X aria-hidden="true" />
                     </Button>
@@ -51,6 +62,7 @@ export function AuditFilterBar({ filters, onChange, onClear }: AuditFilterBarPro
             ) : null}
             <NativeSelect
                 aria-label="Loại thao tác"
+                className="w-44"
                 value={filters.action ?? ""}
                 onChange={(event) =>
                     onChange({ action: (event.target.value || null) as AuditAction | null })
@@ -66,19 +78,25 @@ export function AuditFilterBar({ filters, onChange, onClear }: AuditFilterBarPro
             <Input
                 type="search"
                 aria-label="Người thực hiện"
-                placeholder="Username người thực hiện…"
+                placeholder="Người thực hiện…"
                 value={searchText}
                 onChange={(event) => changeSearchText(event.target.value)}
-                className="w-56 shadow-none"
+                className="w-40 shadow-none"
             />
             <NativeSelect
                 aria-label="Khoảng thời gian"
-                value={filters.period ?? ""}
+                className="w-36"
+                value={filters.period ?? ALL_TIME_OPTION}
                 onChange={(event) =>
-                    onChange({ period: (event.target.value || null) as AuditPeriod | null })
+                    onChange({
+                        period:
+                            event.target.value === ALL_TIME_OPTION
+                                ? null
+                                : (event.target.value as AuditPeriod),
+                    })
                 }
             >
-                <option value="">Mọi lúc</option>
+                <option value={ALL_TIME_OPTION}>Mọi lúc</option>
                 {AUDIT_PERIODS.map((period) => (
                     <option key={period} value={period}>
                         {AUDIT_PERIOD_LABELS[period]}

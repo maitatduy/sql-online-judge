@@ -20,15 +20,15 @@ export function pageWindow(page: number, totalPages: number): number[] {
     return Array.from({ length: buttonCount }, (_, index) => firstPage + index);
 }
 
-export function pageRangeLabel({
-    page,
-    size,
-    totalItems,
-}: Pick<PageInfo, "page" | "size" | "totalItems">): string {
+export function pageRangeLabel(
+    { page, size, totalItems }: Pick<PageInfo, "page" | "size" | "totalItems">,
+    unit?: string,
+): string {
     if (totalItems === 0) {
-        return "0 kết quả";
+        return `0 ${unit ?? "kết quả"}`;
     }
     const firstRow = (page - 1) * size + 1;
     const lastRow = Math.min(page * size, totalItems);
-    return `${formatNumber(firstRow)}-${formatNumber(lastRow)} trong ${formatNumber(totalItems)}`;
+    const range = `${formatNumber(firstRow)}-${formatNumber(lastRow)} trong ${formatNumber(totalItems)}`;
+    return unit ? `${range} ${unit}` : range;
 }

@@ -7,15 +7,16 @@ import { pageRangeLabel, pageWindow, type PageInfo } from "@/lib/pagination";
 interface PaginationProps {
     result: PageInfo;
     hrefOf: (page: number) => string;
+    unit?: string;
 }
 
-export function Pagination({ result, hrefOf }: PaginationProps) {
+export function Pagination({ result, hrefOf, unit }: PaginationProps) {
     const { page, totalPages } = result;
 
     return (
         <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 text-[13px]">
             <span aria-live="polite" className="text-muted-foreground">
-                {pageRangeLabel(result)}
+                {pageRangeLabel(result, unit)}
             </span>
             {totalPages > 1 ? (
                 <nav aria-label="Phân trang" className="flex flex-wrap gap-1">
