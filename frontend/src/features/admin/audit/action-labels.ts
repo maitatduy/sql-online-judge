@@ -15,17 +15,16 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     UPDATE_AVATAR: "Đổi ảnh đại diện",
     REMOVE_AVATAR: "Xoá ảnh đại diện",
     EXPORT_USER_EMAILS: "Xuất email người dùng",
+    EXPORT_AUDIT_LOG: "Xuất nhật ký",
 };
 
 export const AUDIT_CATEGORY_LABELS: Record<AuditCategory, string> = {
     ACCOUNT: "Tài khoản",
-    PROBLEM: "Bài tập",
-    SUBMISSION: "Bài nộp",
-    CONTEST: "Contest",
-    CONFIG: "Cấu hình",
 };
 
 export const AUDIT_CATEGORIES = Object.keys(AUDIT_CATEGORY_LABELS) as AuditCategory[];
+
+export const UPCOMING_AUDIT_CATEGORY_LABELS = ["Bài tập", "Bài nộp", "Contest", "Cấu hình"];
 
 const DESTRUCTIVE_ACTIONS: ReadonlySet<AuditAction> = new Set(["BAN", "DELETE"]);
 

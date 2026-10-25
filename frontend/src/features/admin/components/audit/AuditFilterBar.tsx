@@ -2,7 +2,11 @@ import { Search, X } from "lucide-react";
 
 import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Button } from "@/components/ui/button";
-import { AUDIT_CATEGORIES, AUDIT_CATEGORY_LABELS } from "@/features/admin/audit/action-labels";
+import {
+    AUDIT_CATEGORIES,
+    AUDIT_CATEGORY_LABELS,
+    UPCOMING_AUDIT_CATEGORY_LABELS,
+} from "@/features/admin/audit/action-labels";
 import {
     AUDIT_PERIOD_LABELS,
     AUDIT_PERIODS,
@@ -82,6 +86,11 @@ export function AuditFilterBar({ filters, onChange }: AuditFilterBarProps) {
                 {AUDIT_CATEGORIES.map((category) => (
                     <option key={category} value={category}>
                         {AUDIT_CATEGORY_LABELS[category]}
+                    </option>
+                ))}
+                {UPCOMING_AUDIT_CATEGORY_LABELS.map((label) => (
+                    <option key={label} disabled>
+                        {label} (sắp có)
                     </option>
                 ))}
             </NativeSelect>

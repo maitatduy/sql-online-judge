@@ -105,11 +105,13 @@ describe("trang nhật ký thao tác", () => {
         expect(optionsOf("Loại thao tác")).toEqual([
             "Mọi thao tác",
             "Tài khoản",
-            "Bài tập",
-            "Bài nộp",
-            "Contest",
-            "Cấu hình",
+            "Bài tập (sắp có)",
+            "Bài nộp (sắp có)",
+            "Contest (sắp có)",
+            "Cấu hình (sắp có)",
         ]);
+        expect(filters.getByRole("option", { name: "Tài khoản" })).toBeEnabled();
+        expect(filters.getByRole("option", { name: "Bài tập (sắp có)" })).toBeDisabled();
         expect(optionsOf("Khoảng thời gian")).toEqual([
             "7 ngày qua",
             "Hôm nay",
@@ -139,15 +141,14 @@ describe("trang nhật ký thao tác", () => {
         );
     });
 
-    it("chọn nhóm chưa có nhật ký thì hiện trạng thái trống", async () => {
+    it("chọn nhóm Tài khoản thì ghi lên URL", async () => {
         await renderLog();
 
         fireEvent.change(screen.getByRole("combobox", { name: "Loại thao tác" }), {
-            target: { value: "PROBLEM" },
+            target: { value: "ACCOUNT" },
         });
 
-        await waitFor(() => expect(window.location.search).toBe("?category=PROBLEM"));
-        expect(await screen.findByText("Không có thao tác nào")).toBeInTheDocument();
+        await waitFor(() => expect(window.location.search).toBe("?category=ACCOUNT"));
     });
 
     it("chọn người thực hiện thì ghi lên URL", async () => {

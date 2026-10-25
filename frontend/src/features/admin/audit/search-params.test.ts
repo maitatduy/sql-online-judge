@@ -24,6 +24,7 @@ describe("bộ lọc nhật ký trên URL", () => {
         expect(
             readAuditFilters(new URLSearchParams("category=BILLING&period=year&page=-1&q=%20")),
         ).toEqual(NO_AUDIT_FILTERS);
+        expect(readAuditFilters(new URLSearchParams("category=PROBLEM")).category).toBeNull();
     });
 
     it("mặc định 7 ngày qua, nhưng xem nhật ký của một người thì mặc định mọi lúc", () => {
