@@ -16,8 +16,6 @@ final class AdminUserSpecifications {
 
     static final Sort NEWEST_FIRST = Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
 
-    private static final char LIKE_ESCAPE = '\\';
-
     private AdminUserSpecifications() {}
 
     static Specification<User> createdNoLaterThan(Instant instant) {
@@ -64,10 +62,10 @@ final class AdminUserSpecifications {
 
     private static Predicate containsKeyword(
             Root<User> root, CriteriaBuilder builder, String keyword) {
-        String pattern = "%" + escapeLike(keyword.trim()) + "%";
+        String pattern = LikePatterns.containing(keyword);
         return builder.or(
-                builder.like(root.get("username"), pattern, LIKE_ESCAPE),
-                builder.like(root.get("email"), pattern, LIKE_ESCAPE));
+                builder.like(root.get("username"), pattern, LikePatterns.ESCAPE),
+                builder.like(root.get("email"), pattern, LikePatterns.ESCAPE));
     }
 
     private static Predicate isBanned(Root<User> root, CriteriaBuilder builder, Instant now) {
@@ -76,9 +74,5 @@ final class AdminUserSpecifications {
                 builder.or(
                         builder.isNull(root.get("bannedUntil")),
                         builder.greaterThan(root.<Instant>get("bannedUntil"), now)));
-    }
-
-    private static String escapeLike(String value) {
-        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }

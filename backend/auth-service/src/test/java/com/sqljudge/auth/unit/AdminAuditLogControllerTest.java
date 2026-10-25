@@ -13,8 +13,10 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.sqljudge.auth.config.JwtKeyConfig;
 import com.sqljudge.auth.config.SecurityConfig;
 import com.sqljudge.auth.controller.AdminAuditLogController;
+import com.sqljudge.auth.dto.response.AuditActorsResponse;
 import com.sqljudge.auth.dto.response.AuditLogEntryResponse;
 import com.sqljudge.auth.entity.AdminActionType;
+import com.sqljudge.auth.entity.AuditCategory;
 import com.sqljudge.auth.service.AdminAuditLogService;
 import com.sqljudge.auth.service.AuditLogSearch;
 import com.sqljudge.common.config.CommonAutoConfiguration;
@@ -47,6 +49,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 class AdminAuditLogControllerTest {
 
     private static final String PATH = "/api/admin/audit-log";
+    private static final AuditLogSearch NO_FILTER =
+            new AuditLogSearch(null, null, null, null, null, null);
     private static final AuditLogEntryResponse ROLE_CHANGE =
             new AuditLogEntryResponse(
                     UUID.fromString("0192f3a0-0000-7000-8000-0000000000e1"),
@@ -78,6 +82,8 @@ class AdminAuditLogControllerTest {
                                 .param("user", "datahust")
                                 .param("actor", "admin.huy")
                                 .param("action", "UPDATE_ROLE")
+                                .param("category", "ACCOUNT")
+                                .param("q", " ra đề ")
                                 .param("from", "2026-10-06T17:00:00Z")
                                 .param("page", "2"))
                 .andExpect(status().isOk())
@@ -96,20 +102,34 @@ class AdminAuditLogControllerTest {
                                 "datahust",
                                 "admin.huy",
                                 AdminActionType.UPDATE_ROLE,
+                                AuditCategory.ACCOUNT,
+                                " ra đề ",
                                 Instant.parse("2026-10-06T17:00:00Z")));
     }
 
     @Test
     @DisplayName("Không lọc gì: điều kiện rỗng, trang 1, 20 dòng")
     void listAuditLog_noFilter_usesDefaults() throws Exception {
-        when(adminAuditLogService.search(new AuditLogSearch(null, null, null, null), 1, 20))
+        when(adminAuditLogService.search(NO_FILTER, 1, 20))
                 .thenReturn(new PageResponse<>(List.of(), 1, 20, 0, 0));
 
         mockMvc.perform(as("ADMIN", get(PATH)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items").isEmpty());
 
-        verify(adminAuditLogService).search(new AuditLogSearch(null, null, null, null), 1, 20);
+        verify(adminAuditLogService).search(NO_FILTER, 1, 20);
+    }
+
+    @Test
+    @DisplayName("Danh sách người thực hiện để lọc: trả tên theo thứ tự chữ cái")
+    void listActors_admin_returnsUsernames() throws Exception {
+        when(adminAuditLogService.listActors())
+                .thenReturn(new AuditActorsResponse(List.of("admin.huy", "mod.thu")));
+
+        mockMvc.perform(as("ADMIN", get(PATH + "/actors")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.usernames[0]").value("admin.huy"))
+                .andExpect(jsonPath("$.usernames[1]").value("mod.thu"));
     }
 
     @Test
@@ -125,6 +145,11 @@ class AdminAuditLogControllerTest {
                 .andExpect(status().isBadRequest());
         mockMvc.perform(as("ADMIN", get(PATH)).param("from", "hôm qua"))
                 .andExpect(status().isBadRequest());
+        mockMvc.perform(as("ADMIN", get(PATH)).param("category", "BILLING"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(as("ADMIN", get(PATH)).param("q", "x".repeat(101)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("q"));
 
         verifyNoInteractions(adminAuditLogService);
     }
@@ -134,8 +159,10 @@ class AdminAuditLogControllerTest {
     void listAuditLog_requiresAdminRole() throws Exception {
         for (String role : List.of("LEARNER", "SETTER", "MODERATOR")) {
             mockMvc.perform(as(role, get(PATH))).andExpect(status().isForbidden());
+            mockMvc.perform(as(role, get(PATH + "/actors"))).andExpect(status().isForbidden());
         }
         mockMvc.perform(get(PATH)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get(PATH + "/actors")).andExpect(status().isUnauthorized());
 
         verifyNoInteractions(adminAuditLogService);
     }

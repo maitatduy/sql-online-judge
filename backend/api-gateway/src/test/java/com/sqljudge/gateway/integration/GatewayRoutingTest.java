@@ -106,6 +106,12 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
                 .exchange()
                 .expectStatus()
                 .isUnauthorized();
+        webTestClient
+                .get()
+                .uri("/api/admin/audit-log/actors")
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
         webTestClient.get().uri("/api/admin/overview").exchange().expectStatus().isNotFound();
 
         assertThat(AUTH_SERVICE.forwardedRequestLines())
@@ -114,7 +120,8 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
                         "GET /api/admin/users/minh.anh",
                         "GET /api/admin/user-summary",
                         "POST /api/admin/user-exports",
-                        "GET /api/admin/audit-log?user=minh.anh&page=2");
+                        "GET /api/admin/audit-log?user=minh.anh&page=2",
+                        "GET /api/admin/audit-log/actors");
     }
 
     @Test

@@ -87,6 +87,24 @@ class AdminAuditLogIntegrationTest extends ContainerSupport {
         assertThat(firstPage.getBody())
                 .containsEntry("totalItems", 4)
                 .containsEntry("totalPages", 2);
+
+        assertThat(items(get(adminToken, "?actor=nk.admin&q=khoản phụ")))
+                .extracting("targetUsername")
+                .containsExactly("nk.khac");
+        assertThat(items(get(adminToken, "?actor=nk.admin&q=MUCTIEU")))
+                .extracting("action")
+                .containsExactly("BAN", "UPDATE_ROLE");
+        assertThat(items(get(adminToken, "?actor=nk.admin&q=%25"))).isEmpty();
+        assertThat(items(get(adminToken, "?actor=nk.admin&category=ACCOUNT"))).hasSize(4);
+        assertThat(items(get(adminToken, "?actor=nk.admin&category=PROBLEM"))).isEmpty();
+
+        ResponseEntity<Map> actors =
+                restTemplate.exchange(
+                        "/api/admin/audit-log/actors",
+                        HttpMethod.GET,
+                        new HttpEntity<>(bearer(adminToken)),
+                        Map.class);
+        assertThat((List<String>) actors.getBody().get("usernames")).contains("nk.admin");
     }
 
     @Test
