@@ -73,4 +73,19 @@ public class RoleInvitation extends BaseEntity {
         invitation.expiresAt = link.expiresAt();
         return invitation;
     }
+
+    public InvitationStatus statusAt(Instant now) {
+        if (acceptedAt != null) {
+            return InvitationStatus.ACCEPTED;
+        }
+        if (revokedAt != null) {
+            return InvitationStatus.REVOKED;
+        }
+        return now.isBefore(expiresAt) ? InvitationStatus.PENDING : InvitationStatus.EXPIRED;
+    }
+
+    public void accept(UUID userId, Instant now) {
+        acceptedBy = userId;
+        acceptedAt = now;
+    }
 }

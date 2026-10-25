@@ -1,6 +1,7 @@
 package com.sqljudge.auth.entity;
 
 import com.sqljudge.common.persistence.BaseEntity;
+import com.sqljudge.common.security.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -153,6 +154,14 @@ public class AdminAction extends BaseEntity {
         } else {
             action.targetUserId = invitee.getId();
         }
+        return action;
+    }
+
+    public static AdminAction acceptRoleInvitation(User invitee, Role previousRole) {
+        AdminAction action =
+                of(invitee.getId(), invitee, AdminActionType.ACCEPT_ROLE_INVITATION, null);
+        action.previousValue = previousRole.name();
+        action.newValue = invitee.getRole().name();
         return action;
     }
 
