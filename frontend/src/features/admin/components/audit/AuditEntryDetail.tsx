@@ -1,8 +1,6 @@
-import { X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 
-import { Button } from "@/components/ui/button";
 import { AUDIT_ACTION_LABELS } from "@/features/admin/audit/action-labels";
 import type { AuditLogEntry } from "@/features/admin/audit/types";
 import { formatAuditTime } from "@/features/admin/format";
@@ -11,39 +9,30 @@ import { ROUTES } from "@/lib/routes";
 
 interface AuditEntryDetailProps {
     entry: AuditLogEntry;
-    onClose: () => void;
+    focusRequest: number;
 }
 
 function hasValueChange({ previousValue, newValue }: AuditLogEntry): boolean {
     return previousValue !== null || newValue !== null;
 }
 
-export function AuditEntryDetail({ entry, onClose }: AuditEntryDetailProps) {
+export function AuditEntryDetail({ entry, focusRequest }: AuditEntryDetailProps) {
     const headingRef = useRef<HTMLHeadingElement>(null);
 
     useEffect(() => {
-        headingRef.current?.focus();
-    }, [entry.id]);
+        if (focusRequest > 0) {
+            headingRef.current?.focus();
+        }
+    }, [focusRequest]);
 
     return (
         <aside
             aria-label="Chi tiết thao tác"
             className="flex w-full flex-col gap-3 rounded-lg border bg-card p-4.5 lg:w-95 lg:flex-none"
         >
-            <div className="flex items-center justify-between gap-2">
-                <h2 ref={headingRef} tabIndex={-1} className="text-base font-bold outline-none">
-                    Chi tiết
-                </h2>
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Đóng chi tiết"
-                    onClick={onClose}
-                >
-                    <X aria-hidden="true" />
-                </Button>
-            </div>
+            <h2 ref={headingRef} tabIndex={-1} className="text-base font-bold outline-none">
+                Chi tiết
+            </h2>
             <dl className="flex flex-col gap-1 text-[13px]">
                 <div>
                     <dt className="inline text-muted-foreground">Thao tác: </dt>
@@ -88,12 +77,15 @@ export function AuditEntryDetail({ entry, onClose }: AuditEntryDetailProps) {
                 </div>
             ) : null}
             {entry.reason ? (
-                <div className="rounded-md border px-3 py-2 text-[13px] leading-relaxed">
+                <div className="rounded-lg border bg-surface px-3 py-2.5 text-[13px] leading-relaxed">
                     <span className="font-semibold">Lý do: </span>
                     <span>{entry.reason}</span>
                 </div>
             ) : null}
-            <p className="text-xs text-muted-foreground">Nhật ký không sửa hay xoá được.</p>
+            <p className="text-xs text-muted-foreground">
+                Nhật ký không sửa hay xoá được. Thao tác nhạy cảm (khoá, xoá tài khoản, đổi vai trò)
+                bắt buộc nhập lý do.
+            </p>
         </aside>
     );
 }

@@ -26,4 +26,11 @@ describe("pageRangeLabel", () => {
     it("báo không có kết quả khi danh sách rỗng", () => {
         expect(pageRangeLabel({ page: 1, size: 20, totalItems: 0 })).toBe("0 kết quả");
     });
+
+    it("thêm đơn vị khi được truyền vào", () => {
+        expect(pageRangeLabel({ page: 1, size: 12, totalItems: 486 }, "thao tác")).toBe(
+            "1-12 trong 486 thao tác",
+        );
+        expect(pageRangeLabel({ page: 1, size: 12, totalItems: 0 }, "thao tác")).toBe("0 thao tác");
+    });
 });

@@ -5,8 +5,9 @@ import { cn } from "@/lib/utils";
 
 import { AuditActionLabel } from "./AuditActionLabel";
 
-const HEADER_CELL_CLASS = "px-3.5 py-2.5 text-left text-xs font-semibold text-muted-foreground";
-const CELL_CLASS = "border-t px-3.5 py-2.5 align-top";
+const HEADER_CELL_CLASS =
+    "border-b bg-surface px-3 py-2.25 text-left text-xs font-semibold whitespace-nowrap text-muted-foreground";
+const CELL_CLASS = "border-b px-3 py-2.25 align-middle";
 
 interface AuditTableProps {
     entries: AuditLogEntry[];
@@ -38,11 +39,24 @@ export function AuditTable({ entries, selectedId, onSelect }: AuditTableProps) {
             </thead>
             <tbody>
                 {entries.map((entry) => (
-                    <tr key={entry.id} className={cn(entry.id === selectedId && "bg-brand-soft")}>
-                        <td className={CELL_CLASS}>
+                    <tr
+                        key={entry.id}
+                        aria-current={entry.id === selectedId ? "true" : undefined}
+                        onClick={() => onSelect(entry.id)}
+                        className={cn(
+                            "cursor-pointer hover:bg-surface",
+                            entry.id === selectedId && "bg-brand-soft hover:bg-brand-soft",
+                        )}
+                    >
+                        <td
+                            className={cn(
+                                CELL_CLASS,
+                                "border-l-3",
+                                entry.id === selectedId ? "border-l-brand" : "border-l-transparent",
+                            )}
+                        >
                             <button
                                 type="button"
-                                onClick={() => onSelect(entry.id)}
                                 aria-label={`Xem chi tiết: ${AUDIT_ACTION_LABELS[entry.action]} lúc ${formatAuditTime(entry.occurredAt)}`}
                                 className="text-left text-muted-foreground hover:text-brand hover:underline"
                             >

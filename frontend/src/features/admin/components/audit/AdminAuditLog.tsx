@@ -26,17 +26,24 @@ export function AdminAuditLog() {
     const { data, dataUpdatedAt, error, isPending, isPlaceholderData, isRefetchError, refetch } =
         useAuditLog(filters);
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const selected = data?.items.find((entry) => entry.id === selectedId) ?? null;
+    const [focusRequest, setFocusRequest] = useState(0);
+    const selected = data?.items.find((entry) => entry.id === selectedId) ?? data?.items[0] ?? null;
+
+    function handleSelect(entryId: string) {
+        setSelectedId(entryId);
+        setFocusRequest((request) => request + 1);
+    }
 
     return (
         <main id={MAIN_CONTENT_ID} className="flex flex-col gap-4 px-4 pt-6 pb-10 md:px-7">
             <div>
                 <h1 className="text-[26px] font-extrabold">Nhật ký thao tác</h1>
                 <p className="mt-0.5 text-[13px] text-muted-foreground">
-                    Mọi thay đổi của quản trị viên trên tài khoản người dùng, chỉ đọc
+                    Mọi thay đổi của quản trị viên và kiểm duyệt viên · chỉ đọc
                 </p>
             </div>
             {isRefetchError ? <StaleDataNotice updatedAtMs={dataUpdatedAt} /> : null}
+            <AuditFilterBar filters={filters} onChange={changeFilters} onClear={clearFilters} />
             <div className="flex flex-col items-start gap-4 lg:flex-row">
                 <section
                     aria-label="Bảng nhật ký"
@@ -46,11 +53,6 @@ export function AdminAuditLog() {
                         isPlaceholderData && "opacity-60",
                     )}
                 >
-                    <AuditFilterBar
-                        filters={filters}
-                        onChange={changeFilters}
-                        onClear={clearFilters}
-                    />
                     {isPending ? (
                         <div
                             role="status"
@@ -78,12 +80,13 @@ export function AdminAuditLog() {
                                 <AuditTable
                                     entries={data.items}
                                     selectedId={selected?.id ?? null}
-                                    onSelect={setSelectedId}
+                                    onSelect={handleSelect}
                                 />
                             </div>
                             <Pagination
                                 result={data}
                                 hrefOf={(page) => auditHref({ ...filters, page })}
+                                unit="thao tác"
                             />
                         </>
                     ) : null}
@@ -97,7 +100,7 @@ export function AdminAuditLog() {
                     ) : null}
                 </section>
                 {selected ? (
-                    <AuditEntryDetail entry={selected} onClose={() => setSelectedId(null)} />
+                    <AuditEntryDetail entry={selected} focusRequest={focusRequest} />
                 ) : null}
             </div>
         </main>

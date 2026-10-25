@@ -35,13 +35,27 @@ const DAY_MS = 24 * 60 * 60_000;
 const VIETNAM_OFFSET_MS = 7 * 60 * 60_000;
 const PERIOD_DAYS: Record<Exclude<AuditPeriod, "today">, number> = { "7d": 7, "30d": 30 };
 
+const DEFAULT_PERIOD: AuditPeriod = "7d";
+const ALL_TIME_PARAM = "all";
+
 export const NO_AUDIT_FILTERS: AuditFilters = {
     user: null,
     actor: null,
     action: null,
-    period: null,
+    period: DEFAULT_PERIOD,
     page: FIRST_PAGE,
 };
+
+function defaultPeriodOf(user: string | null): AuditPeriod | null {
+    return user ? null : DEFAULT_PERIOD;
+}
+
+function readPeriod(value: string | null, user: string | null): AuditPeriod | null {
+    if (value === ALL_TIME_PARAM) {
+        return null;
+    }
+    return knownValue(AUDIT_PERIODS, value) ?? defaultPeriodOf(user);
+}
 
 function knownValue<T extends string>(knownValues: readonly T[], value: string | null): T | null {
     return knownValues.find((knownValue) => knownValue === value) ?? null;
@@ -68,11 +82,12 @@ function fromOf(period: AuditPeriod, now: Date): Date {
 }
 
 export function readAuditFilters(searchParams: Pick<URLSearchParams, "get">): AuditFilters {
+    const user = readText(searchParams.get("user"));
     return {
-        user: readText(searchParams.get("user")),
+        user,
         actor: readText(searchParams.get("actor")),
         action: knownValue(AUDIT_ACTIONS, searchParams.get("action")),
-        period: knownValue(AUDIT_PERIODS, searchParams.get("period")),
+        period: readPeriod(searchParams.get("period"), user),
         page: readPage(searchParams.get("page")),
     };
 }
@@ -88,8 +103,8 @@ export function auditHref({ user, actor, action, period, page }: AuditFilters): 
     if (action) {
         query.set("action", action);
     }
-    if (period) {
-        query.set("period", period);
+    if (period !== defaultPeriodOf(user)) {
+        query.set("period", period ?? ALL_TIME_PARAM);
     }
     if (page > FIRST_PAGE) {
         query.set("page", String(page));
@@ -108,5 +123,5 @@ export function auditQueryOf({ user, actor, action, period }: AuditFilters, now:
 }
 
 export function hasActiveAuditFilter({ user, actor, action, period }: AuditFilters): boolean {
-    return user !== null || actor !== null || action !== null || period !== null;
+    return user !== null || actor !== null || action !== null || period !== defaultPeriodOf(user);
 }
