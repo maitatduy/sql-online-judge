@@ -135,6 +135,14 @@ public class AdminAction extends BaseEntity {
         return action;
     }
 
+    public static AdminAction exportAuditLog(UUID actorId, String details) {
+        AdminAction action = new AdminAction();
+        action.actorId = actorId;
+        action.action = AdminActionType.EXPORT_AUDIT_LOG;
+        action.details = details;
+        return action;
+    }
+
     private static String requireReason(String reason) {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("reason is required for this admin action");

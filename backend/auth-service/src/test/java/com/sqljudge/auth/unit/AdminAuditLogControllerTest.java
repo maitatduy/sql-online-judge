@@ -170,6 +170,7 @@ class AdminAuditLogControllerTest {
                                         HttpHeaders.CONTENT_DISPOSITION,
                                         "attachment; filename=\"audit-log-20261025-0530.csv\""))
                 .andExpect(content().string(CSV));
+        verify(adminAuditLogService).recordExport(expected, TestJwts.USER_ID);
     }
 
     @Test
@@ -197,8 +198,17 @@ class AdminAuditLogControllerTest {
                 .andExpect(status().isBadRequest());
         mockMvc.perform(as("ADMIN", get(PATH)).param("from", "hôm qua"))
                 .andExpect(status().isBadRequest());
-        mockMvc.perform(as("ADMIN", get(PATH)).param("category", "BILLING"))
-                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(adminAuditLogService);
+    }
+
+    @Test
+    @DisplayName("Nhóm ngoài Tài khoản hoặc từ khoá quá 100 ký tự trả 400")
+    void listAuditLog_invalidCategoryOrLongKeyword_returns400() throws Exception {
+        for (String category : List.of("BILLING", "PROBLEM", "CONTEST")) {
+            mockMvc.perform(as("ADMIN", get(PATH)).param("category", category))
+                    .andExpect(status().isBadRequest());
+        }
         mockMvc.perform(as("ADMIN", get(PATH)).param("q", "x".repeat(101)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[0].field").value("q"));

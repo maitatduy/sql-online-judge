@@ -7,6 +7,7 @@ import com.sqljudge.auth.entity.AuditCategory;
 import com.sqljudge.auth.service.AdminAuditLogService;
 import com.sqljudge.auth.service.AuditLogCsv;
 import com.sqljudge.auth.service.AuditLogSearch;
+import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.common.web.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -45,9 +46,9 @@ public class AdminAuditLogController {
     @Operation(
             summary = "Xuất nhật ký theo bộ lọc hiện tại ra file CSV tải về ngay",
             description =
-                    "Cùng bộ lọc với danh sách, không phân trang. Thời gian theo UTC. Giá trị bắt"
-                            + " đầu bằng = + - @, tab hoặc CR được thêm tiền tố ' để chống CSV"
-                            + " injection.")
+                    "Cùng bộ lọc với danh sách, không phân trang. Thời gian theo UTC. Mỗi lần xuất"
+                            + " được ghi nhật ký EXPORT_AUDIT_LOG kèm bộ lọc. Giá trị bắt đầu bằng"
+                            + " = + - @, tab hoặc CR được thêm tiền tố ' để chống CSV injection.")
     @ApiResponse(responseCode = "200", description = "File CSV, tên audit-log-yyyyMMdd-HHmm.csv")
     @ApiResponse(responseCode = "400", description = "Tham số lọc không hợp lệ")
     @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
@@ -62,6 +63,7 @@ public class AdminAuditLogController {
                     @Size(max = MAX_KEYWORD_LENGTH, message = "Từ khoá quá dài") String q,
             @RequestParam(required = false) Instant from) {
         AuditLogSearch search = new AuditLogSearch(user, actor, action, category, q, from);
+        adminAuditLogService.recordExport(search, SecurityUtils.requireCurrentUser().id());
         return ResponseEntity.ok()
                 .contentType(TEXT_CSV)
                 .header(

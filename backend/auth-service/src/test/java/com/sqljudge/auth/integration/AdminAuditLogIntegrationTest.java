@@ -96,7 +96,8 @@ class AdminAuditLogIntegrationTest extends ContainerSupport {
                 .containsExactly("BAN", "UPDATE_ROLE");
         assertThat(items(get(adminToken, "?actor=nk.admin&q=%25"))).isEmpty();
         assertThat(items(get(adminToken, "?actor=nk.admin&category=ACCOUNT"))).hasSize(4);
-        assertThat(items(get(adminToken, "?actor=nk.admin&category=PROBLEM"))).isEmpty();
+        assertThat(get(adminToken, "?category=PROBLEM").getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
 
         ResponseEntity<Map> actors =
                 restTemplate.exchange(
@@ -117,9 +118,19 @@ class AdminAuditLogIntegrationTest extends ContainerSupport {
                 .startsWith("audit-log-")
                 .endsWith(".csv");
         String[] lines = export.getBody().split("\n");
-        assertThat(lines).hasSize(5);
+        assertThat(lines).hasSize(6);
         assertThat(lines[0]).startsWith("occurredAt,actor,actorRole,action,target");
+        assertThat(lines[1])
+                .contains("EXPORT_AUDIT_LOG")
+                .endsWith("actor=nk.admin; category=ACCOUNT");
         assertThat(export.getBody()).contains("nk.admin,ADMIN,BAN,nk.khac");
+        assertThat(items(get(adminToken, "?actor=nk.admin&action=EXPORT_AUDIT_LOG")))
+                .singleElement()
+                .satisfies(
+                        exported ->
+                                assertThat(exported)
+                                        .containsEntry(
+                                                "details", "actor=nk.admin; category=ACCOUNT"));
     }
 
     @Test
