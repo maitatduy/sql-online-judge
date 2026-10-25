@@ -1,27 +1,49 @@
+import { X } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 
+import { Button } from "@/components/ui/button";
 import { AUDIT_ACTION_LABELS } from "@/features/admin/audit/action-labels";
 import type { AuditLogEntry } from "@/features/admin/audit/types";
+import { formatAuditTime } from "@/features/admin/format";
 import { ROLE_LABELS } from "@/features/admin/users/role-labels";
 import { ROUTES } from "@/lib/routes";
 
-import { formatAuditTime } from "./AuditTable";
-
 interface AuditEntryDetailProps {
     entry: AuditLogEntry;
+    onClose: () => void;
 }
 
 function hasValueChange({ previousValue, newValue }: AuditLogEntry): boolean {
     return previousValue !== null || newValue !== null;
 }
 
-export function AuditEntryDetail({ entry }: AuditEntryDetailProps) {
+export function AuditEntryDetail({ entry, onClose }: AuditEntryDetailProps) {
+    const headingRef = useRef<HTMLHeadingElement>(null);
+
+    useEffect(() => {
+        headingRef.current?.focus();
+    }, [entry.id]);
+
     return (
         <aside
             aria-label="Chi tiết thao tác"
             className="flex w-full flex-col gap-3 rounded-lg border bg-card p-4.5 lg:w-95 lg:flex-none"
         >
-            <h2 className="text-base font-bold">Chi tiết</h2>
+            <div className="flex items-center justify-between gap-2">
+                <h2 ref={headingRef} tabIndex={-1} className="text-base font-bold outline-none">
+                    Chi tiết
+                </h2>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Đóng chi tiết"
+                    onClick={onClose}
+                >
+                    <X aria-hidden="true" />
+                </Button>
+            </div>
             <dl className="flex flex-col gap-1 text-[13px]">
                 <div>
                     <dt className="inline text-muted-foreground">Thao tác: </dt>

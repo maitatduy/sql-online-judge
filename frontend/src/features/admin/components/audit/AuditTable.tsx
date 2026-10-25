@@ -1,9 +1,8 @@
 import { AUDIT_ACTION_LABELS } from "@/features/admin/audit/action-labels";
 import type { AuditLogEntry } from "@/features/admin/audit/types";
-import { formatDate } from "@/lib/format";
+import { formatAuditTime } from "@/features/admin/format";
 import { cn } from "@/lib/utils";
 
-import { formatVietnamTime } from "../../format";
 import { AuditActionLabel } from "./AuditActionLabel";
 
 const HEADER_CELL_CLASS = "px-3.5 py-2.5 text-left text-xs font-semibold text-muted-foreground";
@@ -12,11 +11,7 @@ const CELL_CLASS = "border-t px-3.5 py-2.5 align-top";
 interface AuditTableProps {
     entries: AuditLogEntry[];
     selectedId: string | null;
-    onSelect: (entry: AuditLogEntry) => void;
-}
-
-export function formatAuditTime(occurredAt: string): string {
-    return `${formatDate(occurredAt)} ${formatVietnamTime(occurredAt)}`;
+    onSelect: (entryId: string) => void;
 }
 
 export function AuditTable({ entries, selectedId, onSelect }: AuditTableProps) {
@@ -47,7 +42,7 @@ export function AuditTable({ entries, selectedId, onSelect }: AuditTableProps) {
                         <td className={CELL_CLASS}>
                             <button
                                 type="button"
-                                onClick={() => onSelect(entry)}
+                                onClick={() => onSelect(entry.id)}
                                 aria-label={`Xem chi tiết: ${AUDIT_ACTION_LABELS[entry.action]} lúc ${formatAuditTime(entry.occurredAt)}`}
                                 className="text-left text-muted-foreground hover:text-brand hover:underline"
                             >

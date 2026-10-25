@@ -89,6 +89,33 @@ describe("trang nhật ký thao tác", () => {
         );
     });
 
+    it("chọn dòng thì chuyển focus tới panel, bấm Đóng thì panel biến mất", async () => {
+        const table = await renderLog();
+
+        fireEvent.click((await findDetailButtons(table))[0]);
+
+        expect(screen.getByRole("heading", { level: 2, name: "Chi tiết" })).toHaveFocus();
+        fireEvent.click(screen.getByRole("button", { name: "Đóng chi tiết" }));
+        expect(
+            screen.queryByRole("complementary", { name: "Chi tiết thao tác" }),
+        ).not.toBeInTheDocument();
+    });
+
+    it("đổi bộ lọc làm dòng đang chọn biến khỏi bảng thì panel cũng biến mất", async () => {
+        const table = await renderLog();
+        fireEvent.click((await findDetailButtons(table))[0]);
+
+        fireEvent.change(screen.getByRole("combobox", { name: "Loại thao tác" }), {
+            target: { value: "BAN" },
+        });
+
+        await waitFor(() =>
+            expect(
+                screen.queryByRole("complementary", { name: "Chi tiết thao tác" }),
+            ).not.toBeInTheDocument(),
+        );
+    });
+
     it("không có kết quả thì hiện trạng thái trống", async () => {
         await renderLog("?actor=khong.ai");
 

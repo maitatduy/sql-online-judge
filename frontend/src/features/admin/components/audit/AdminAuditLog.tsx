@@ -10,10 +10,10 @@ import { Skeleton } from "@/components/shared/Skeleton";
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { StaleDataNotice } from "@/features/admin/components/StaleDataNotice";
 import { auditHref } from "@/features/admin/audit/search-params";
-import type { AuditLogEntry } from "@/features/admin/audit/types";
 import { useAuditFilters } from "@/features/admin/hooks/useAuditFilters";
 import { useAuditLog } from "@/features/admin/hooks/useAuditLog";
 import { ApiRequestError } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 
 import { AuditEntryDetail } from "./AuditEntryDetail";
 import { AuditFilterBar } from "./AuditFilterBar";
@@ -23,8 +23,10 @@ const SKELETON_ROW_COUNT = 8;
 
 export function AdminAuditLog() {
     const { filters, changeFilters, clearFilters } = useAuditFilters();
-    const { data, dataUpdatedAt, error, isPending, isRefetchError, refetch } = useAuditLog(filters);
-    const [selected, setSelected] = useState<AuditLogEntry | null>(null);
+    const { data, dataUpdatedAt, error, isPending, isPlaceholderData, isRefetchError, refetch } =
+        useAuditLog(filters);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const selected = data?.items.find((entry) => entry.id === selectedId) ?? null;
 
     return (
         <main id={MAIN_CONTENT_ID} className="flex flex-col gap-4 px-4 pt-6 pb-10 md:px-7">
@@ -38,7 +40,11 @@ export function AdminAuditLog() {
             <div className="flex flex-col items-start gap-4 lg:flex-row">
                 <section
                     aria-label="Bảng nhật ký"
-                    className="w-full min-w-0 flex-1 overflow-hidden rounded-lg border bg-card"
+                    aria-busy={isPlaceholderData}
+                    className={cn(
+                        "w-full min-w-0 flex-1 overflow-hidden rounded-lg border bg-card transition-opacity",
+                        isPlaceholderData && "opacity-60",
+                    )}
                 >
                     <AuditFilterBar
                         filters={filters}
@@ -72,7 +78,7 @@ export function AdminAuditLog() {
                                 <AuditTable
                                     entries={data.items}
                                     selectedId={selected?.id ?? null}
-                                    onSelect={setSelected}
+                                    onSelect={setSelectedId}
                                 />
                             </div>
                             <Pagination
@@ -90,7 +96,9 @@ export function AdminAuditLog() {
                         />
                     ) : null}
                 </section>
-                {selected ? <AuditEntryDetail entry={selected} /> : null}
+                {selected ? (
+                    <AuditEntryDetail entry={selected} onClose={() => setSelectedId(null)} />
+                ) : null}
             </div>
         </main>
     );

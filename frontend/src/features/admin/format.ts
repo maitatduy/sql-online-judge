@@ -1,3 +1,5 @@
+import { formatDate } from "@/lib/format";
+
 const MS_PER_SECOND = 1000;
 const VIETNAM_TIME_ZONE = "Asia/Ho_Chi_Minh";
 
@@ -12,6 +14,10 @@ const timeFormatter = new Intl.DateTimeFormat("en-GB", {
 
 export function formatVietnamTime(date: string | Date): string {
     return timeFormatter.format(new Date(date));
+}
+
+export function formatAuditTime(occurredAt: string): string {
+    return `${formatDate(occurredAt)} ${formatVietnamTime(occurredAt)}`;
 }
 
 export function formatWaitDuration(durationMs: number): string {
