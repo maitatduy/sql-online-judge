@@ -72,6 +72,27 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName("Xem và nhận lời mời vai trò được chuyển tới auth-service")
+    void roleInvitationPaths_areRoutedToAuthService() {
+        webTestClient
+                .get()
+                .uri("/api/role-invitations/abc")
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+        webTestClient
+                .post()
+                .uri("/api/role-invitations/abc/accept")
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+
+        assertThat(AUTH_SERVICE.forwardedRequestLines())
+                .containsExactly(
+                        "GET /api/role-invitations/abc", "POST /api/role-invitations/abc/accept");
+    }
+
+    @Test
     @DisplayName(
             "API quản lý người dùng của admin được chuyển tới auth-service; admin khác chưa có"
                     + " route")

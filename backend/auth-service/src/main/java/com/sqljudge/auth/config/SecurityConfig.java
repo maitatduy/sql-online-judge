@@ -58,7 +58,10 @@ public class SecurityConfig {
                         requests ->
                                 requests.requestMatchers(PUBLIC_PATHS)
                                         .permitAll()
-                                        .requestMatchers(HttpMethod.GET, "/api/users/availability")
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/api/users/availability",
+                                                "/api/role-invitations/*")
                                         .permitAll()
                                         .requestMatchers(
                                                 HttpMethod.POST,

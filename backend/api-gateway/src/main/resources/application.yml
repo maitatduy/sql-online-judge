@@ -24,7 +24,7 @@ spring:
             - id: auth-service
               uri: ${AUTH_SERVICE_URL}
               predicates:
-                - Path=/api/auth/**,/api/users/**,/api/admin/users/**,/api/admin/user-summary,/api/admin/user-exports,/api/admin/audit-log,/api/admin/audit-log/**,/api/admin/role-invitations,/api/admin/role-invitations/**
+                - Path=/api/auth/**,/api/users/**,/api/admin/users/**,/api/admin/user-summary,/api/admin/user-exports,/api/admin/audit-log,/api/admin/audit-log/**,/api/admin/role-invitations,/api/admin/role-invitations/**,/api/role-invitations/**
           globalcors:
             cors-configurations:
               '[/api/**]':
