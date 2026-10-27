@@ -7,10 +7,8 @@ test.describe("đăng nhập từ trang giới thiệu", () => {
         page,
     }) => {
         await page.goto("/");
-        await expect(async () => {
-            await page.getByRole("link", { name: "Đăng nhập" }).click();
-            await expect(page).toHaveURL("/login", { timeout: 5_000 });
-        }).toPass({ timeout: 30_000 });
+        await page.getByRole("link", { name: "Đăng nhập" }).click();
+        await expect(page).toHaveURL("/login", { timeout: 30_000 });
 
         await fillLoginForm(page, MOCK_LEARNER.email, MOCK_LEARNER.password);
         await expect(page).toHaveURL("/");

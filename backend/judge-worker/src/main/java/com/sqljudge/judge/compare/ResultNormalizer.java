@@ -105,8 +105,7 @@ public final class ResultNormalizer {
         throw unsupported(value);
     }
 
-    private IllegalArgumentException unsupported(Object value) {
-        return new IllegalArgumentException(
-                "Unsupported result value type: " + value.getClass().getName());
+    private UnsupportedColumnTypeException unsupported(Object value) {
+        return new UnsupportedColumnTypeException(value.getClass());
     }
 }

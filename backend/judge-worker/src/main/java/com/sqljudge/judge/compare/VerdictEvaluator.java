@@ -1,53 +1,93 @@
 package com.sqljudge.judge.compare;
 
 import com.sqljudge.judge.compare.ExecutionOutcome.Failed;
+import com.sqljudge.judge.compare.ExecutionOutcome.SandboxFailed;
 import com.sqljudge.judge.compare.ExecutionOutcome.Succeeded;
-import com.sqljudge.judge.compare.ExecutionOutcome.TimedOut;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class VerdictEvaluator {
 
+    private static final SanitizedMessage UNSUPPORTED_COLUMN_TYPE =
+            new SanitizedMessage("Kiểu dữ liệu của cột không được hỗ trợ");
+
     private final ResultNormalizer normalizer = new ResultNormalizer();
     private final ResultComparator comparator = new ResultComparator();
 
     public JudgeResult evaluate(
-            List<JudgeTestcase> testcases, CompareOptions options, TestcaseExecutor executor) {
+            List<JudgeTestcase> testcases, JudgeSettings settings, TestcaseExecutor executor) {
         if (testcases.isEmpty()) {
             throw new IllegalArgumentException("Problem has no testcases");
         }
         List<TestcaseOutcome> outcomes = new ArrayList<>();
         long maxRuntimeMs = 0;
         for (JudgeTestcase testcase : testcases) {
-            ExecutionOutcome execution = executor.execute(testcase);
+            boolean mayReveal = settings.mayReveal(testcase);
+            ExecutionOutcome execution = executor.execute(testcase, mayReveal);
             maxRuntimeMs = Math.max(maxRuntimeMs, execution.runtimeMs());
-            int number = testcase.number();
-            if (!(execution instanceof Succeeded succeeded)) {
-                Verdict verdict = failureVerdict(execution);
-                outcomes.add(new TestcaseOutcome(number, verdict, execution.runtimeMs(), 0));
-                String message = execution instanceof Failed failed ? failed.message() : null;
-                return new JudgeResult(verdict, number, maxRuntimeMs, outcomes, null, message);
-            }
-            NormalizedTable actual = normalizer.normalize(succeeded.table());
-            ComparisonResult comparison = comparator.compare(testcase.expected(), actual, options);
-            Verdict verdict = comparison.verdict();
-            outcomes.add(
-                    new TestcaseOutcome(
-                            number, verdict, succeeded.runtimeMs(), actual.rows().size()));
-            if (!comparison.isAccepted()) {
-                return new JudgeResult(verdict, number, maxRuntimeMs, outcomes, comparison, null);
+            Judged judged = judge(testcase, execution, settings.compareOptions());
+            outcomes.add(judged.outcome());
+            if (judged.outcome().verdict() != Verdict.AC) {
+                ComparisonResult revealedDiff = mayReveal ? judged.comparison() : null;
+                return new JudgeResult(
+                        judged.outcome().verdict(),
+                        testcase.number(),
+                        maxRuntimeMs,
+                        outcomes,
+                        revealedDiff,
+                        judged.errorMessage(),
+                        judged.systemErrorReason());
             }
         }
-        return new JudgeResult(Verdict.AC, null, maxRuntimeMs, outcomes, null, null);
+        return new JudgeResult(Verdict.AC, null, maxRuntimeMs, outcomes, null, null, null);
     }
 
-    private Verdict failureVerdict(ExecutionOutcome execution) {
-        if (execution instanceof Failed) {
-            return Verdict.RE;
+    private Judged judge(
+            JudgeTestcase testcase, ExecutionOutcome execution, CompareOptions options) {
+        int number = testcase.number();
+        long runtimeMs = execution.runtimeMs();
+        if (execution instanceof Succeeded succeeded) {
+            return compare(testcase, succeeded, options);
         }
-        if (execution instanceof TimedOut) {
-            return Verdict.TLE;
+        if (execution instanceof Failed failed) {
+            return Judged.error(
+                    new TestcaseOutcome(number, Verdict.RE, runtimeMs, 0), failed.message());
         }
-        return Verdict.SE;
+        if (execution instanceof SandboxFailed failed) {
+            return new Judged(
+                    new TestcaseOutcome(number, Verdict.SE, runtimeMs, 0),
+                    null,
+                    null,
+                    failed.reason());
+        }
+        return new Judged(new TestcaseOutcome(number, Verdict.TLE, runtimeMs, 0), null, null, null);
+    }
+
+    private Judged compare(JudgeTestcase testcase, Succeeded succeeded, CompareOptions options) {
+        int number = testcase.number();
+        NormalizedTable actual;
+        try {
+            actual = normalizer.normalize(succeeded.table());
+        } catch (UnsupportedColumnTypeException exception) {
+            return Judged.error(
+                    new TestcaseOutcome(number, Verdict.RE, succeeded.runtimeMs(), 0),
+                    UNSUPPORTED_COLUMN_TYPE);
+        }
+        ComparisonResult comparison = comparator.compare(testcase.expected(), actual, options);
+        TestcaseOutcome outcome =
+                new TestcaseOutcome(
+                        number, comparison.verdict(), succeeded.runtimeMs(), actual.rows().size());
+        return new Judged(outcome, comparison, null, null);
+    }
+
+    private record Judged(
+            TestcaseOutcome outcome,
+            ComparisonResult comparison,
+            SanitizedMessage errorMessage,
+            String systemErrorReason) {
+
+        static Judged error(TestcaseOutcome outcome, SanitizedMessage errorMessage) {
+            return new Judged(outcome, null, errorMessage, null);
+        }
     }
 }

@@ -7,8 +7,9 @@ public record JudgeResult(
         Integer firstFailedCase,
         long maxRuntimeMs,
         List<TestcaseOutcome> testcases,
-        ComparisonResult failedComparison,
-        String errorMessage) {
+        ComparisonResult revealedDiff,
+        SanitizedMessage errorMessage,
+        String systemErrorReason) {
 
     public JudgeResult {
         testcases = List.copyOf(testcases);
