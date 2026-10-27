@@ -1,61 +1,20 @@
-import Link from "next/link";
-
 import { ResultTable } from "@/components/shared/ResultTable";
 import { VerdictBadge } from "@/components/shared/VerdictBadge";
-import { Button } from "@/components/ui/button";
-import { ApiRequestError, isUnauthenticatedError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 import { VERDICT_LABELS } from "@/lib/verdict";
 
 import type { CodeRun, ProblemDetail } from "../types";
+import { ActionError } from "./ActionError";
 
 const MS_PER_SECOND = 1000;
-const RATE_LIMITED_STATUS = 429;
 
-interface RunPanelProps {
+interface RunContentProps {
     problem: ProblemDetail;
     run: CodeRun | null;
     isRunning: boolean;
     error: Error | null;
     onRetry: () => void;
-}
-
-function RunError({
-    error,
-    problem,
-    onRetry,
-}: Pick<RunPanelProps, "problem" | "onRetry"> & { error: Error }) {
-    if (isUnauthenticatedError(error)) {
-        return (
-            <p className="text-[13px]">
-                Đăng nhập để chạy thử.{" "}
-                <Link
-                    href={ROUTES.loginWithNext(ROUTES.problem(problem.slug))}
-                    className="font-semibold text-brand"
-                >
-                    Đăng nhập
-                </Link>
-            </p>
-        );
-    }
-    if (error instanceof ApiRequestError && error.status === RATE_LIMITED_STATUS) {
-        return (
-            <p role="alert" className="text-[13px]">
-                {error.retryAfterSeconds
-                    ? `Bạn chạy thử quá nhanh. Thử lại sau ${error.retryAfterSeconds} giây.`
-                    : "Bạn chạy thử quá nhanh. Thử lại sau ít phút."}
-            </p>
-        );
-    }
-    return (
-        <div role="alert" className="flex items-center gap-3 text-[13px]">
-            <span>{error.message}</span>
-            <Button type="button" size="sm" variant="outline" onClick={onRetry}>
-                Thử lại
-            </Button>
-        </div>
-    );
 }
 
 function RunOutcome({ run, problem }: { run: CodeRun; problem: ProblemDetail }) {
@@ -91,7 +50,7 @@ function RunOutcome({ run, problem }: { run: CodeRun; problem: ProblemDetail }) 
     );
 }
 
-function RunContent({ problem, run, isRunning, error, onRetry }: RunPanelProps) {
+export function RunContent({ problem, run, isRunning, error, onRetry }: RunContentProps) {
     if (isRunning) {
         return (
             <p
@@ -104,7 +63,15 @@ function RunContent({ problem, run, isRunning, error, onRetry }: RunPanelProps) 
         );
     }
     if (error) {
-        return <RunError error={error} problem={problem} onRetry={onRetry} />;
+        return (
+            <ActionError
+                error={error}
+                loginMessage="Đăng nhập để chạy thử."
+                loginHref={ROUTES.loginWithNext(ROUTES.problem(problem.slug))}
+                rateLimitedMessage="Bạn chạy thử quá nhanh."
+                onRetry={onRetry}
+            />
+        );
     }
     if (run) {
         return <RunOutcome run={run} problem={problem} />;
@@ -113,21 +80,5 @@ function RunContent({ problem, run, isRunning, error, onRetry }: RunPanelProps) 
         <p className="text-[13px] text-muted-foreground">
             Bấm Run hoặc Ctrl+Enter để chạy thử trên dữ liệu mẫu. Chạy thử không tính là lần nộp.
         </p>
-    );
-}
-
-export function RunPanel(props: RunPanelProps) {
-    return (
-        <section
-            aria-labelledby="run-panel-title"
-            className="flex h-2/5 min-h-40 shrink-0 flex-col border-t bg-card"
-        >
-            <h2 id="run-panel-title" className="border-b px-4 py-2.5 text-[13px] font-semibold">
-                Kết quả chạy thử
-            </h2>
-            <div className="min-h-0 flex-1 overflow-auto px-4 py-3">
-                <RunContent {...props} />
-            </div>
-        </section>
     );
 }

@@ -37,7 +37,7 @@ async function runCode(code?: string) {
         fireEvent.change(editor, { target: { value: code } });
     }
     fireEvent.click(screen.getByRole("button", { name: "Run" }));
-    return within(screen.getByRole("region", { name: "Kết quả chạy thử" }));
+    return within(screen.getByRole("tabpanel", { name: "Chạy thử" }));
 }
 
 describe("chạy thử trong Workspace", () => {
@@ -49,7 +49,7 @@ describe("chạy thử trong Workspace", () => {
     it("hướng dẫn cách chạy thử khi chưa chạy lần nào", async () => {
         renderWithProviders(<Workspace slug={SLUG} />);
 
-        const panel = within(await screen.findByRole("region", { name: "Kết quả chạy thử" }));
+        const panel = within(await screen.findByRole("tabpanel", { name: "Chạy thử" }));
         expect(panel.getByText(/Bấm Run hoặc Ctrl\+Enter/)).toBeInTheDocument();
     });
 

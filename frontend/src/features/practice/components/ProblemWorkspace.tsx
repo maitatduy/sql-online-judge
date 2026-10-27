@@ -1,6 +1,8 @@
 "use client";
 
-import { Database, Play } from "lucide-react";
+import { useState } from "react";
+
+import { Database, Play, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,12 +10,18 @@ import { DIALECT_LABELS } from "@/lib/dialect";
 
 import { useCodeRun } from "../hooks/useCodeRun";
 import { useEditorDraft } from "../hooks/useEditorDraft";
+import { useSubmission } from "../hooks/useSubmission";
 import type { ProblemDetail } from "../types";
 import { EditorPanel } from "./EditorPanel";
 import { ProblemStatement } from "./ProblemStatement";
-import { RunPanel } from "./RunPanel";
+import { ResultPanel, type ResultTab } from "./ResultPanel";
+import { RunContent } from "./RunContent";
 import { SchemaPanel } from "./SchemaPanel";
+import { SubmissionContent } from "./SubmissionContent";
 import { WorkspaceHeader } from "./WorkspaceHeader";
+
+const SHORTCUT_CLASS =
+    "rounded-sm bg-surface-2 px-1.5 font-mono text-[11px] text-muted-foreground max-md:hidden";
 
 interface ProblemWorkspaceProps {
     problem: ProblemDetail;
@@ -25,11 +33,21 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
         problem.id,
         problem.starterCode,
     );
-    const { run, isRunning, error, startRun } = useCodeRun(problem.id);
+    const codeRun = useCodeRun(problem.id);
+    const judging = useSubmission(problem.id);
+    const [resultTab, setResultTab] = useState<ResultTab>("run");
 
     function handleRun() {
-        if (!isRunning) {
-            startRun({ dialect, code });
+        setResultTab("run");
+        if (!codeRun.isRunning) {
+            codeRun.startRun({ dialect, code });
+        }
+    }
+
+    function handleSubmit() {
+        setResultTab("submission");
+        if (!judging.isJudging) {
+            judging.submit({ dialect, code });
         }
     }
 
@@ -40,18 +58,25 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    disabled={isRunning}
+                    disabled={codeRun.isRunning}
                     aria-keyshortcuts="Control+Enter"
                     onClick={handleRun}
                 >
                     <Play aria-hidden="true" />
                     Run
-                    <kbd
-                        aria-hidden="true"
-                        className="rounded-sm bg-surface-2 px-1.5 font-mono text-[11px] text-muted-foreground max-md:hidden"
-                    >
+                    <kbd aria-hidden="true" className={SHORTCUT_CLASS}>
                         Ctrl ↵
                     </kbd>
+                </Button>
+                <Button
+                    type="button"
+                    size="sm"
+                    disabled={judging.isJudging}
+                    aria-keyshortcuts="Control+Shift+Enter"
+                    onClick={handleSubmit}
+                >
+                    <Send aria-hidden="true" />
+                    Submit
                 </Button>
             </WorkspaceHeader>
             <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
@@ -82,13 +107,29 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
                         onChange={changeCode}
                         onReset={resetToStarter}
                         onRun={handleRun}
+                        onSubmit={handleSubmit}
                     />
-                    <RunPanel
-                        problem={problem}
-                        run={run}
-                        isRunning={isRunning}
-                        error={error}
-                        onRetry={handleRun}
+                    <ResultPanel
+                        activeTab={resultTab}
+                        onTabChange={setResultTab}
+                        runContent={
+                            <RunContent
+                                problem={problem}
+                                run={codeRun.run}
+                                isRunning={codeRun.isRunning}
+                                error={codeRun.error}
+                                onRetry={handleRun}
+                            />
+                        }
+                        submissionContent={
+                            <SubmissionContent
+                                problem={problem}
+                                submission={judging.submission}
+                                isJudging={judging.isJudging}
+                                error={judging.error}
+                                onRetry={handleSubmit}
+                            />
+                        }
                     />
                 </div>
             </div>
