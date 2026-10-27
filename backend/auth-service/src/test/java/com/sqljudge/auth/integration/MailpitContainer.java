@@ -14,7 +14,9 @@ final class MailpitContainer {
     private static final int SMTP_PORT = 1025;
     private static final int API_PORT = 8025;
     private static final GenericContainer<?> CONTAINER =
-            new GenericContainer<>("axllent/mailpit:v1.27").withExposedPorts(SMTP_PORT, API_PORT);
+            new GenericContainer<>("axllent/mailpit:v1.27")
+                    .withExposedPorts(SMTP_PORT, API_PORT)
+                    .withCreateContainerCmdModifier(ContainerSupport.memoryLimit(64));
 
     static {
         CONTAINER.start();
