@@ -1,4 +1,5 @@
 import type { Role } from "@/lib/current-user";
+import type { Page } from "@/lib/pagination";
 
 import type { UsersQuery } from "./users-query";
 
@@ -21,13 +22,7 @@ export interface AdminUserSummary {
     deletedAt: string | null;
 }
 
-export interface AdminUsersResponse {
-    items: AdminUserSummary[];
-    page: number;
-    size: number;
-    totalItems: number;
-    totalPages: number;
-}
+export type AdminUsersResponse = Page<AdminUserSummary>;
 
 export interface UserCountsResponse {
     total: number;
@@ -148,13 +143,7 @@ export interface ContestResult {
     finishedAt: string;
 }
 
-export interface ContestHistoryResponse {
-    items: ContestResult[];
-    page: number;
-    size: number;
-    totalItems: number;
-    totalPages: number;
-}
+export type ContestHistoryResponse = Page<ContestResult>;
 
 export interface UserSession {
     id: string;

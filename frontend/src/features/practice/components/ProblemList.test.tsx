@@ -76,7 +76,7 @@ describe("ProblemList", () => {
         });
 
         await waitFor(() =>
-            expect(window.location.search).toBe("?difficulty=HARD&topic=window-function"),
+            expect(window.location.search).toBe("?difficulty=HARD&tag=window-function"),
         );
         await waitFor(() => expect(table.getAllByRole("row")).toHaveLength(4));
         expect(

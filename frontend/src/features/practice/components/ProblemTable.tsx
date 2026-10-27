@@ -35,16 +35,16 @@ const PROBLEM_COLUMNS = [
             </Link>
         ),
     }),
-    column.accessor("topics", {
+    column.accessor("tags", {
         header: "Chủ đề",
         cell: (info) => (
             <span className="flex flex-wrap gap-1">
-                {info.getValue().map((topic) => (
+                {info.getValue().map((tag) => (
                     <span
-                        key={topic.slug}
+                        key={tag.slug}
                         className="rounded-sm bg-surface-2 px-1.5 py-0.5 text-xs text-muted-foreground"
                     >
-                        {topic.name}
+                        {tag.name}
                     </span>
                 ))}
             </span>
@@ -70,7 +70,7 @@ const COLUMNS_WITH_PROGRESS = column.columns([PROGRESS_COLUMN, ...PROBLEM_COLUMN
 const COLUMN_CLASSES: Record<string, string> = {
     progress: "w-16",
     number: "w-14 font-mono text-muted-foreground",
-    topics: "max-md:hidden",
+    tags: "max-md:hidden",
     acceptanceRate: "text-right font-mono",
     solvedCount: "text-right font-mono text-muted-foreground max-md:hidden",
 };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDate, formatNumber, formatPercent, formatRelativeTime } from "./format";
+import { formatDate, formatNumber, formatPercent, formatRelativeTime, formatTime } from "./format";
 
 describe("formatDate", () => {
     it("định dạng ngày theo dd/MM/yyyy", () => {
@@ -9,6 +9,16 @@ describe("formatDate", () => {
 
     it("đổi sang giờ Việt Nam trước khi lấy ngày", () => {
         expect(formatDate("2026-10-10T18:30:00Z")).toBe("11/10/2026");
+    });
+});
+
+describe("formatTime", () => {
+    it("đổi giờ UTC sang giờ phút Việt Nam", () => {
+        expect(formatTime("2026-10-10T13:06:00Z")).toBe("20:06");
+    });
+
+    it("dùng đồng hồ 24 giờ khi qua nửa đêm", () => {
+        expect(formatTime("2026-10-10T17:05:00Z")).toBe("00:05");
     });
 });
 

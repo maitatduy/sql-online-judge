@@ -1,4 +1,4 @@
-import { formatDate } from "@/lib/format";
+import { formatDate, formatTime } from "@/lib/format";
 
 const MS_PER_SECOND = 1000;
 const DAY_MS = 24 * 60 * 60_000;
@@ -16,24 +16,13 @@ const secondsTimeFormatter = new Intl.DateTimeFormat("en-GB", {
 
 const secondsFormatter = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
 
-const timeFormatter = new Intl.DateTimeFormat("en-GB", {
-    timeZone: VIETNAM_TIME_ZONE,
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-});
-
-export function formatVietnamTime(date: string | Date): string {
-    return timeFormatter.format(new Date(date));
-}
-
 export function formatAuditTime(occurredAt: string): string {
     return `${formatDate(occurredAt)} ${secondsTimeFormatter.format(new Date(occurredAt))}`;
 }
 
 export function formatAuditMoment(occurredAt: string, now: Date): string {
     const date = new Date(occurredAt);
-    const time = formatVietnamTime(date);
+    const time = formatTime(date);
     const daysAgo = vietnamDayNumber(now) - vietnamDayNumber(date);
     if (daysAgo === 0) {
         return `Hôm nay ${time}`;

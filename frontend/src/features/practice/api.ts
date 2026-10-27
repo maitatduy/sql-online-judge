@@ -2,7 +2,7 @@ import { apiClient } from "@/lib/api-client";
 import type { Page } from "@/lib/pagination";
 
 import { type ProblemFilters, problemsQueryOf } from "./problem-filters";
-import type { ProblemSummary, TopicsResponse } from "./types";
+import type { ProblemDetail, ProblemSummary, TagsResponse } from "./types";
 
 export const practiceApi = {
     listProblems: (filters: ProblemFilters, signal?: AbortSignal) =>
@@ -10,6 +10,7 @@ export const practiceApi = {
             params: problemsQueryOf(filters),
             signal,
         }),
-    listTopics: (signal?: AbortSignal) =>
-        apiClient.get<TopicsResponse>("/api/problems/topics", { signal }),
+    listTags: (signal?: AbortSignal) => apiClient.get<TagsResponse>("/api/tags", { signal }),
+    getProblem: (slug: string, signal?: AbortSignal) =>
+        apiClient.get<ProblemDetail>(`/api/problems/${encodeURIComponent(slug)}`, { signal }),
 };

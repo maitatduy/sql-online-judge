@@ -11,9 +11,9 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { ADMIN_ROUTES } from "@/lib/admin-navigation";
 import { ApiRequestError } from "@/lib/api-client";
+import { formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-import { formatVietnamTime } from "../format";
 import { useJudgeWorkers } from "../hooks/useJudgeWorkers";
 import { useWorkerRecoveryToast } from "../hooks/useWorkerRecoveryToast";
 import type { JudgeWorker } from "../types";
@@ -84,7 +84,7 @@ export function JudgeWorkersCard() {
                     {workers && workers.length > 0 ? <ActiveWorkersPill workers={workers} /> : null}
                     {workers ? (
                         <p className="text-xs text-muted-foreground">
-                            {`Cập nhật lúc ${formatVietnamTime(new Date(dataUpdatedAt))}`}
+                            {`Cập nhật lúc ${formatTime(new Date(dataUpdatedAt))}`}
                         </p>
                     ) : null}
                 </div>

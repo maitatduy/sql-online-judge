@@ -12,6 +12,12 @@ const RELATIVE_UNITS: [unit: Intl.RelativeTimeFormatUnit, seconds: number][] = [
 const numberFormatter = new Intl.NumberFormat("vi-VN");
 const percentFormatter = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
 const relativeTimeFormatter = new Intl.RelativeTimeFormat("vi", { numeric: "always" });
+const timeFormatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+});
 const dateFormatter = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Ho_Chi_Minh",
     day: "2-digit",
@@ -25,6 +31,10 @@ export function formatNumber(value: number): string {
 
 export function formatPercent(percent: number): string {
     return `${percentFormatter.format(percent)}%`;
+}
+
+export function formatTime(date: string | Date): string {
+    return timeFormatter.format(new Date(date));
 }
 
 export function formatDate(date: string | Date): string {
