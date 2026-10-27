@@ -33,3 +33,9 @@ export interface RoleInvitationSummary {
 }
 
 export type RoleInvitationsResponse = Page<RoleInvitationSummary>;
+
+export interface RoleInvitationFilters {
+    status: InvitationStatus | null;
+    q: string;
+    page: number;
+}

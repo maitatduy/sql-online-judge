@@ -6,7 +6,9 @@ import type { AuditActorsResponse, AuditLogResponse } from "./audit/types";
 import type {
     InviteRolesRequest,
     InviteRolesResponse,
+    RoleInvitationFilters,
     RoleInvitationsResponse,
+    RoleInvitationSummary,
 } from "./invitations/types";
 import type {
     AdminOverviewResponse,
@@ -16,9 +18,6 @@ import type {
     RestartWorkerResponse,
 } from "./types";
 import { USERS_PAGE_SIZE } from "./users/pagination";
-
-const INVITE_CANDIDATE_LIMIT = 8;
-const MAX_PAGE_SIZE = 100;
 import type { UsersFilters } from "./users/search-params";
 import type {
     AddUserNoteRequest,
@@ -47,6 +46,10 @@ import type {
     UserSessionsResponse,
 } from "./users/types";
 import { usersQueryOf } from "./users/users-query";
+
+const INVITE_CANDIDATE_LIMIT = 8;
+const MAX_PAGE_SIZE = 100;
+export const INVITATIONS_PAGE_SIZE = 10;
 
 export const adminApi = {
     getUsers: (filters: UsersFilters, signal?: AbortSignal) =>
@@ -184,4 +187,20 @@ export const adminApi = {
         }),
     inviteRoles: (request: InviteRolesRequest) =>
         apiClient.post<InviteRolesResponse>("/api/admin/role-invitations", request),
+    getRoleInvitations: (filters: RoleInvitationFilters, signal?: AbortSignal) =>
+        apiClient.get<RoleInvitationsResponse>("/api/admin/role-invitations", {
+            params: {
+                status: filters.status ?? undefined,
+                q: filters.q || undefined,
+                page: filters.page,
+                size: INVITATIONS_PAGE_SIZE,
+            },
+            signal,
+        }),
+    revokeInvitation: (id: string) =>
+        apiClient.post<void>(`/api/admin/role-invitations/${encodeURIComponent(id)}/revoke`),
+    resendInvitation: (id: string) =>
+        apiClient.post<RoleInvitationSummary>(
+            `/api/admin/role-invitations/${encodeURIComponent(id)}/resend`,
+        ),
 };
