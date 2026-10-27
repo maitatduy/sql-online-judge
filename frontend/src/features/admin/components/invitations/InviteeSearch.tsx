@@ -35,7 +35,7 @@ export function InviteeSearch({
     onAdd,
 }: InviteeSearchProps) {
     const [query, setQuery] = useState("");
-    const { searchText, changeSearchText } = useDebouncedSearch(query, setQuery);
+    const { searchText, changeSearchText, clearSearchText } = useDebouncedSearch(query, setQuery);
     const { data } = useInviteCandidates(query);
     const candidates = query.trim().length >= 2 ? (data?.items ?? []) : [];
     const typedEmail = normalizeEmail(query);
@@ -44,6 +44,12 @@ export function InviteeSearch({
         !selectedEmails.has(typedEmail) &&
         !candidates.some((candidate) => candidate.email.toLowerCase() === typedEmail);
 
+    function addInvitee(invitee: Invitee) {
+        onAdd(invitee);
+        clearSearchText();
+        setQuery("");
+    }
+
     return (
         <div className="flex flex-col gap-2">
             <label className="flex h-9 items-center gap-2 rounded-md border px-2.5 text-muted-foreground focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
@@ -51,7 +57,7 @@ export function InviteeSearch({
                 <input
                     type="search"
                     aria-label="Tìm người dùng"
-                    placeholder="Username hoặc email…"
+                    placeholder="Tên người dùng hoặc email…"
                     value={searchText}
                     onChange={(event) => changeSearchText(event.target.value)}
                     className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
@@ -69,7 +75,7 @@ export function InviteeSearch({
                                 <button
                                     type="button"
                                     disabled={reason !== null || isFull}
-                                    onClick={() => onAdd({ email, label: candidate.username })}
+                                    onClick={() => addInvitee({ email, label: candidate.username })}
                                     className={ROW_CLASS}
                                 >
                                     <span className="font-semibold">{candidate.username}</span>
@@ -89,7 +95,7 @@ export function InviteeSearch({
                             <button
                                 type="button"
                                 disabled={isFull}
-                                onClick={() => onAdd({ email: typedEmail, label: typedEmail })}
+                                onClick={() => addInvitee({ email: typedEmail, label: typedEmail })}
                                 className={ROW_CLASS}
                             >
                                 Mời email này: {typedEmail}

@@ -23,7 +23,7 @@ async function openInvitations() {
             <AdminUsers />
         </ToastProvider>,
     );
-    fireEvent.click(await screen.findByRole("button", { name: "Lời mời (2)" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Lời mời 2" }));
     const dialog = within(await screen.findByRole("dialog", { name: "Lời mời" }));
     await dialog.findAllByRole("row");
     return dialog;
@@ -80,7 +80,7 @@ describe("quản lý lời mời", () => {
             expect(dialog.queryByText("giang.vo@gmail.com")).not.toBeInTheDocument(),
         );
         expect(
-            await screen.findByRole("button", { name: "Lời mời (1)", hidden: true }),
+            await screen.findByRole("button", { name: "Lời mời 1", hidden: true }),
         ).toBeInTheDocument();
     });
 
