@@ -1,8 +1,9 @@
-import { Download, Plus, UserPlus } from "lucide-react";
+import { Download, Mail, Plus, UserPlus } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { usePendingInvitationCount } from "@/features/admin/hooks/usePendingInvitationCount";
 import { useUserCounts } from "@/features/admin/hooks/useUserCounts";
 import type { UsersFilters } from "@/features/admin/users/search-params";
 
@@ -22,7 +23,15 @@ const InviteSettersDialog = dynamic(
     { ssr: false },
 );
 
-type OpenDialog = "create" | "export" | "invite" | null;
+const InvitationsDialog = dynamic(
+    () =>
+        import("../invitations/InvitationsDialog").then(
+            (dialogModule) => dialogModule.InvitationsDialog,
+        ),
+    { ssr: false },
+);
+
+type OpenDialog = "create" | "export" | "invite" | "invitations" | null;
 
 interface UsersHeaderProps {
     filters: UsersFilters;
@@ -32,6 +41,7 @@ interface UsersHeaderProps {
 
 export function UsersHeader({ filters, filteredCount, selectedUsernames }: UsersHeaderProps) {
     const { data: counts } = useUserCounts();
+    const pendingInvitationCount = usePendingInvitationCount();
     const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
     const closeDialog = () => setOpenDialog(null);
 
@@ -62,6 +72,17 @@ export function UsersHeader({ filters, filteredCount, selectedUsernames }: Users
                     <UserPlus aria-hidden="true" />
                     Mời người ra đề
                 </Button>
+                <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setOpenDialog("invitations")}
+                >
+                    <Mail aria-hidden="true" />
+                    {pendingInvitationCount === null
+                        ? "Lời mời"
+                        : `Lời mời (${pendingInvitationCount})`}
+                </Button>
                 <Button type="button" size="sm" onClick={() => setOpenDialog("create")}>
                     <Plus aria-hidden="true" />
                     Tạo người dùng
@@ -69,6 +90,7 @@ export function UsersHeader({ filters, filteredCount, selectedUsernames }: Users
             </div>
             {openDialog === "create" ? <CreateUserDialog onClose={closeDialog} /> : null}
             {openDialog === "invite" ? <InviteSettersDialog onClose={closeDialog} /> : null}
+            {openDialog === "invitations" ? <InvitationsDialog onClose={closeDialog} /> : null}
             {openDialog === "export" ? (
                 <ExportUsersDialog
                     filters={filters}
