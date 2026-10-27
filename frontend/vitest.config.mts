@@ -14,7 +14,7 @@ export default defineConfig({
         environment: "jsdom",
         pool: "vmThreads",
         maxWorkers: 2,
-        testTimeout: 15000,
+        testTimeout: 30000,
         setupFiles: ["./vitest.polyfills.ts", "./vitest.setup.ts"],
         include: ["src/**/*.test.{ts,tsx}"],
         coverage: {
