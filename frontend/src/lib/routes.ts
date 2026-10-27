@@ -20,6 +20,8 @@ export const ROUTES = {
     adminAuditLog: "/admin/audit-log",
     adminUser: (username: string) => `/admin/users/${encodeURIComponent(username)}`,
     loginWithNext: (nextPath: string) => `/login?next=${encodeURIComponent(nextPath)}`,
+    registerWithNext: (nextPath: string) => `/register?next=${encodeURIComponent(nextPath)}`,
+    invitation: (token: string) => `/invitations/${encodeURIComponent(token)}`,
     profile: (username: string) => `/u/${encodeURIComponent(username)}`,
     problem: (slug: string) => `/problems/${encodeURIComponent(slug)}`,
 } as const;
