@@ -6,7 +6,7 @@ import { clearAccessToken, getAccessToken } from "@/lib/auth-session";
 import { server } from "@/mocks/server";
 import { renderWithProviders } from "@/test/render";
 
-import { savePendingVerificationEmail } from "../pending-verification";
+import { savePendingNextPath, savePendingVerificationEmail } from "../pending-verification";
 
 import { VerifyEmailFlow } from "./VerifyEmailFlow";
 
@@ -21,6 +21,7 @@ function submitCode(code: string) {
 describe("VerifyEmailFlow", () => {
     beforeEach(() => {
         sessionStorage.clear();
+        localStorage.clear();
         clearAccessToken();
         savePendingVerificationEmail(EMAIL);
     });
@@ -98,6 +99,36 @@ describe("VerifyEmailFlow", () => {
         expect(
             await screen.findByRole("heading", { level: 1, name: "Email đã được xác thực" }),
         ).toBeInTheDocument();
+    });
+
+    it("đăng ký từ lời mời thì nhập mã xong được đưa về trang lời mời", async () => {
+        savePendingNextPath("/invitations/abc");
+        renderWithProviders(<VerifyEmailFlow />);
+
+        submitCode(VALID_CODE);
+
+        expect(await screen.findByRole("link", { name: "Tiếp tục" })).toHaveAttribute(
+            "href",
+            "/invitations/abc",
+        );
+    });
+
+    it("mở link xác thực ở tab khác vẫn được đưa về trang lời mời", async () => {
+        sessionStorage.clear();
+        savePendingNextPath("/invitations/abc");
+        renderWithProviders(<VerifyEmailFlow token="valid-link-token" />);
+
+        expect(await screen.findByRole("link", { name: "Tiếp tục" })).toHaveAttribute(
+            "href",
+            "/invitations/abc",
+        );
+    });
+
+    it("đích quay lại không an toàn thì về trang chính", async () => {
+        savePendingNextPath("//evil.example");
+        renderWithProviders(<VerifyEmailFlow token="valid-link-token" />);
+
+        expect(await screen.findByRole("link", { name: "Tiếp tục" })).toHaveAttribute("href", "/");
     });
 
     it("mở bằng link hết hạn thì báo lỗi và cho quay lại đăng nhập", async () => {

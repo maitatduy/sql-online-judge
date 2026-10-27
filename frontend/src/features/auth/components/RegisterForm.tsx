@@ -11,7 +11,7 @@ import { ROUTES } from "@/lib/routes";
 import { useApiFormErrors } from "../hooks/useApiFormErrors";
 import { useRegister } from "../hooks/useRegister";
 import { useUsernameAvailability } from "../hooks/useUsernameAvailability";
-import { savePendingVerificationEmail } from "../pending-verification";
+import { savePendingNextPath, savePendingVerificationEmail } from "../pending-verification";
 import { registerSchema, type RegisterFormValues } from "../schemas";
 
 import { FormAlert } from "./FormAlert";
@@ -23,7 +23,11 @@ import { UsernameAvailability } from "./UsernameAvailability";
 const API_FIELDS = ["username", "email", "password"] as const;
 const TERMS_ERROR_ID = "register-terms-error";
 
-export function RegisterForm() {
+interface RegisterFormProps {
+    nextPath: string;
+}
+
+export function RegisterForm({ nextPath }: RegisterFormProps) {
     const router = useRouter();
     const registerAccount = useRegister();
     const {
@@ -48,6 +52,7 @@ export function RegisterForm() {
         registerAccount.mutate(values, {
             onSuccess: ({ email }) => {
                 savePendingVerificationEmail(email);
+                savePendingNextPath(nextPath);
                 router.push(ROUTES.verifyEmail);
             },
             onError: handleApiError,
