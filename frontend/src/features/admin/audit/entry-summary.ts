@@ -4,6 +4,10 @@ const CHANGED_FIELDS: Partial<Record<AuditAction, string>> = {
     UPDATE_ROLE: "role",
     UPDATE_DISPLAY_NAME: "displayName",
     UPDATE_RESTRICTIONS: "restrictions",
+    INVITE_ROLE: "role",
+    ACCEPT_ROLE_INVITATION: "role",
+    REVOKE_ROLE_INVITATION: "role",
+    RESEND_ROLE_INVITATION: "role",
 };
 
 export function hasValueChange({ previousValue, newValue }: AuditLogEntry): boolean {

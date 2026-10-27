@@ -16,6 +16,10 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     REMOVE_AVATAR: "Xoá ảnh đại diện",
     EXPORT_USER_EMAILS: "Xuất email người dùng",
     EXPORT_AUDIT_LOG: "Xuất nhật ký",
+    INVITE_ROLE: "Mời nhận vai trò",
+    ACCEPT_ROLE_INVITATION: "Nhận lời mời",
+    REVOKE_ROLE_INVITATION: "Huỷ lời mời",
+    RESEND_ROLE_INVITATION: "Gửi lại lời mời",
 };
 
 export const AUDIT_CATEGORY_LABELS: Record<AuditCategory, string> = {
