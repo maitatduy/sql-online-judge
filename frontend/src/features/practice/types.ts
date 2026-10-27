@@ -60,3 +60,25 @@ export interface ProblemDetail {
     acceptanceRate: number;
     solvedCount: number;
 }
+
+export type RunStatus = "PENDING" | "COMPLETED";
+
+export type RunOutcome = "OK" | "RE" | "TLE" | "FS";
+
+export interface StartRunRequest {
+    dialect: Dialect;
+    code: string;
+}
+
+export interface RunAccepted {
+    runId: string;
+}
+
+export interface CodeRun {
+    id: string;
+    status: RunStatus;
+    outcome: RunOutcome | null;
+    result: ResultSet | null;
+    errorMessage: string | null;
+    runtimeMs: number | null;
+}

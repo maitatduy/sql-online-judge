@@ -6,31 +6,33 @@ import { RotateCcw } from "lucide-react";
 
 import { LazySqlEditor } from "@/components/shared/LazySqlEditor";
 import { Button } from "@/components/ui/button";
-import { DIALECT_LABELS } from "@/lib/dialect";
 import { formatTime } from "@/lib/format";
 
-import { useEditorDraft } from "../hooks/useEditorDraft";
-import type { ProblemDetail } from "../types";
 import { ResetCodeDialog } from "./ResetCodeDialog";
 
 interface EditorPanelProps {
-    problem: ProblemDetail;
+    engineLabel: string;
+    code: string;
+    savedAt: Date | null;
+    onChange: (code: string) => void;
+    onReset: () => void;
+    onRun: () => void;
 }
 
-export function EditorPanel({ problem }: EditorPanelProps) {
-    const { code, savedAt, changeCode, resetToStarter } = useEditorDraft(
-        problem.id,
-        problem.starterCode,
-    );
+export function EditorPanel({
+    engineLabel,
+    code,
+    savedAt,
+    onChange,
+    onReset,
+    onRun,
+}: EditorPanelProps) {
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
-    const [dialect] = problem.dialects;
 
     return (
         <section aria-label="Editor" className="flex min-h-0 flex-1 flex-col">
             <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-card px-3">
-                <span className="rounded-md border px-2 py-0.5 text-[13px]">
-                    {problem.engineVersions[dialect] ?? DIALECT_LABELS[dialect]}
-                </span>
+                <span className="rounded-md border px-2 py-0.5 text-[13px]">{engineLabel}</span>
                 <Button
                     type="button"
                     variant="ghost"
@@ -48,14 +50,15 @@ export function EditorPanel({ problem }: EditorPanelProps) {
             </div>
             <LazySqlEditor
                 value={code}
-                onChange={changeCode}
+                onChange={onChange}
+                onRun={onRun}
                 ariaLabel="Mã SQL của bạn"
                 className="flex-1 bg-background"
             />
             <ResetCodeDialog
                 open={isResetDialogOpen}
                 onOpenChange={setIsResetDialogOpen}
-                onConfirm={resetToStarter}
+                onConfirm={onReset}
             />
         </section>
     );
