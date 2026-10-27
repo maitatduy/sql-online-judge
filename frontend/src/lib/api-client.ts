@@ -291,4 +291,5 @@ export const apiClient = {
         requestFile("POST", path, body, options),
     putForm: <T>(path: string, form: FormData, options: RequestOptions = {}) =>
         request<T>("PUT", path, form, options),
+    refreshSession: refreshOnce,
 };

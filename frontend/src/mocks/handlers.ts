@@ -12,6 +12,7 @@ import type { CurrentUser } from "@/lib/current-user";
 
 import { adminHandlers } from "./admin-handlers";
 import { apiError } from "./api-error";
+import { invitationHandlers } from "./invitation-handlers";
 import { practiceHandlers } from "./practice-handlers";
 import { profileHandlers } from "./profile-handlers";
 import {
@@ -161,4 +162,5 @@ export const handlers: RequestHandler[] = [
     ...profileHandlers,
     ...practiceHandlers,
     ...adminHandlers,
+    ...invitationHandlers,
 ];
