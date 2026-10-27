@@ -19,7 +19,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
 
     return (
         <AuthShell mode="register" nextPath={nextPath}>
-            <RegisterForm />
+            <RegisterForm nextPath={nextPath} />
         </AuthShell>
     );
 }

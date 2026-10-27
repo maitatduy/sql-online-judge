@@ -11,7 +11,7 @@ import { ROUTES } from "@/lib/routes";
 import { RESEND_COOLDOWN_SECONDS } from "../countdown";
 import { getFormErrorMessage } from "../form-errors";
 import { useConfirmEmail } from "../hooks/useConfirmEmail";
-import { readPendingVerificationEmail } from "../pending-verification";
+import { readPendingVerificationEmail, takePendingNextPath } from "../pending-verification";
 import type { AuthResponse } from "../types";
 
 import { ResendCodeButton } from "./ResendCodeButton";
@@ -35,11 +35,13 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
     const email = useSyncExternalStore(subscribe, readPendingVerificationEmail, readOnServer);
     const [step, setStep] = useState<Step>("sent");
     const [verifiedUsername, setVerifiedUsername] = useState<string | null>(null);
+    const [nextPath, setNextPath] = useState<string>(ROUTES.home);
     const confirmLink = useConfirmEmail();
     const hasRequestedLink = useRef(false);
 
     const handleVerified = ({ user }: AuthResponse) => {
         setVerifiedUsername(user.username);
+        setNextPath(takePendingNextPath());
         setStep("verified");
     };
 
@@ -79,7 +81,7 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
                 }
             >
                 <Button asChild size="lg" className="h-12.5 text-[15px]">
-                    <Link href={ROUTES.home}>Tiếp tục</Link>
+                    <Link href={nextPath}>Tiếp tục</Link>
                 </Button>
             </AuthStatusCard>
         );

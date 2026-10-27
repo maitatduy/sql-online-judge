@@ -23,7 +23,7 @@ function wait(durationMs: number): Promise<void> {
 
 describe("RegisterForm - kiểm tra tên người dùng", () => {
     it("báo còn trống khi tên chưa có ai dùng", async () => {
-        renderWithProviders(<RegisterForm />);
+        renderWithProviders(<RegisterForm nextPath="/" />);
 
         typeUsername("minh.anh");
 
@@ -31,7 +31,7 @@ describe("RegisterForm - kiểm tra tên người dùng", () => {
     });
 
     it("báo đã có người dùng khi tên bị trùng", async () => {
-        renderWithProviders(<RegisterForm />);
+        renderWithProviders(<RegisterForm nextPath="/" />);
 
         typeUsername("taken");
 
@@ -41,7 +41,7 @@ describe("RegisterForm - kiểm tra tên người dùng", () => {
     });
 
     it("hiện trạng thái đang kiểm tra ngay khi gõ tên hợp lệ", () => {
-        renderWithProviders(<RegisterForm />);
+        renderWithProviders(<RegisterForm nextPath="/" />);
 
         typeUsername("minh.anh");
 
@@ -56,7 +56,7 @@ describe("RegisterForm - kiểm tra tên người dùng", () => {
                 return HttpResponse.json({ available: true });
             }),
         );
-        renderWithProviders(<RegisterForm />);
+        renderWithProviders(<RegisterForm nextPath="/" />);
 
         typeUsername("ab");
         await wait(DEBOUNCE_SETTLE_MS);
@@ -74,7 +74,7 @@ describe("RegisterForm - kiểm tra tên người dùng", () => {
                 return HttpResponse.json({ available: true });
             }),
         );
-        renderWithProviders(<RegisterForm />);
+        renderWithProviders(<RegisterForm nextPath="/" />);
 
         typeUsername("min");
         typeUsername("minh");
@@ -86,7 +86,7 @@ describe("RegisterForm - kiểm tra tên người dùng", () => {
 
     it("không hiện gợi ý khi API kiểm tra tên bị lỗi", async () => {
         server.use(http.get("*/api/users/availability", () => HttpResponse.error()));
-        renderWithProviders(<RegisterForm />);
+        renderWithProviders(<RegisterForm nextPath="/" />);
 
         typeUsername("minh.anh");
 
