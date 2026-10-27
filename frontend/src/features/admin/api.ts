@@ -4,6 +4,11 @@ import { apiClient } from "@/lib/api-client";
 import { AUDIT_PAGE_SIZE, auditQueryOf, type AuditFilters } from "./audit/search-params";
 import type { AuditActorsResponse, AuditLogResponse } from "./audit/types";
 import type {
+    InviteRolesRequest,
+    InviteRolesResponse,
+    RoleInvitationsResponse,
+} from "./invitations/types";
+import type {
     AdminOverviewResponse,
     JudgeWorkersResponse,
     PendingTasksResponse,
@@ -11,6 +16,9 @@ import type {
     RestartWorkerResponse,
 } from "./types";
 import { USERS_PAGE_SIZE } from "./users/pagination";
+
+const INVITE_CANDIDATE_LIMIT = 8;
+const MAX_PAGE_SIZE = 100;
 import type { UsersFilters } from "./users/search-params";
 import type {
     AddUserNoteRequest,
@@ -164,4 +172,16 @@ export const adminApi = {
         apiClient.getForFile("/api/admin/audit-log/export", {
             params: { ...auditQueryOf(filters, new Date()) },
         }),
+    searchInviteCandidates: (q: string, signal?: AbortSignal) =>
+        apiClient.get<AdminUsersResponse>("/api/admin/users", {
+            params: { q, size: INVITE_CANDIDATE_LIMIT },
+            signal,
+        }),
+    getPendingInvitations: (signal?: AbortSignal) =>
+        apiClient.get<RoleInvitationsResponse>("/api/admin/role-invitations", {
+            params: { status: "PENDING", size: MAX_PAGE_SIZE },
+            signal,
+        }),
+    inviteRoles: (request: InviteRolesRequest) =>
+        apiClient.post<InviteRolesResponse>("/api/admin/role-invitations", request),
 };

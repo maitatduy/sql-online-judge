@@ -1,4 +1,4 @@
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, UserPlus } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
@@ -14,8 +14,15 @@ const ExportUsersDialog = dynamic(
     () => import("./ExportUsersDialog").then((dialogModule) => dialogModule.ExportUsersDialog),
     { ssr: false },
 );
+const InviteSettersDialog = dynamic(
+    () =>
+        import("../invitations/InviteSettersDialog").then(
+            (dialogModule) => dialogModule.InviteSettersDialog,
+        ),
+    { ssr: false },
+);
 
-type OpenDialog = "create" | "export" | null;
+type OpenDialog = "create" | "export" | "invite" | null;
 
 interface UsersHeaderProps {
     filters: UsersFilters;
@@ -46,12 +53,22 @@ export function UsersHeader({ filters, filteredCount, selectedUsernames }: Users
                     <Download aria-hidden="true" />
                     Xuất CSV
                 </Button>
+                <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setOpenDialog("invite")}
+                >
+                    <UserPlus aria-hidden="true" />
+                    Mời người ra đề
+                </Button>
                 <Button type="button" size="sm" onClick={() => setOpenDialog("create")}>
                     <Plus aria-hidden="true" />
                     Tạo người dùng
                 </Button>
             </div>
             {openDialog === "create" ? <CreateUserDialog onClose={closeDialog} /> : null}
+            {openDialog === "invite" ? <InviteSettersDialog onClose={closeDialog} /> : null}
             {openDialog === "export" ? (
                 <ExportUsersDialog
                     filters={filters}

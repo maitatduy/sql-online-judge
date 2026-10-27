@@ -22,7 +22,11 @@ export type AuditAction =
     | "REMOVE_AVATAR"
     | "EXPORT_USER_EMAILS"
     | "UPDATE_RESTRICTIONS"
-    | "EXPORT_AUDIT_LOG";
+    | "EXPORT_AUDIT_LOG"
+    | "INVITE_ROLE"
+    | "ACCEPT_ROLE_INVITATION"
+    | "REVOKE_ROLE_INVITATION"
+    | "RESEND_ROLE_INVITATION";
 
 export interface AuditLogEntry {
     id: string;
