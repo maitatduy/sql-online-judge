@@ -17,8 +17,10 @@ import com.sqljudge.judge.compare.Cell.TextCell;
 import com.sqljudge.judge.compare.NormalizedTable;
 import com.sqljudge.judge.compare.ResultNormalizer;
 import com.sqljudge.judge.compare.TemporalKind;
+import com.sqljudge.judge.compare.UnsupportedColumnTypeException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -60,7 +62,6 @@ class ResultNormalizerTest {
     void normalize_nullAndNullStringAreDifferent() {
         assertThat(normalizeOne(null)).isEqualTo(new NullCell());
         assertThat(normalizeOne("NULL")).isEqualTo(new TextCell("NULL"));
-        assertThat(new NullCell().display()).isNull();
     }
 
     @Test
@@ -74,7 +75,6 @@ class ResultNormalizerTest {
                 .isEqualTo(new NumberCell(new BigDecimal("7")));
         assertThat(normalizeOne(new BigDecimal("0.00")))
                 .isEqualTo(new NumberCell(new BigDecimal("0.00")));
-        assertThat(normalizeOne(new BigDecimal("12.50")).display()).isEqualTo("12.50");
     }
 
     @Test
@@ -92,7 +92,6 @@ class ResultNormalizerTest {
                 .isEqualTo(new NonFiniteNumberCell("Infinity"));
         assertThat(normalizeOne(Float.NEGATIVE_INFINITY))
                 .isEqualTo(new NonFiniteNumberCell("-Infinity"));
-        assertThat(new NonFiniteNumberCell("NaN").display()).isEqualTo("NaN");
     }
 
     @Test
@@ -108,10 +107,8 @@ class ResultNormalizerTest {
     @DisplayName("Boolean và byte[]")
     void normalize_booleanAndBytes() {
         assertThat(normalizeOne(true)).isEqualTo(new BooleanCell(true));
-        assertThat(new BooleanCell(false).display()).isEqualTo("false");
-        Cell bytes = normalizeOne(new byte[] {(byte) 0xde, (byte) 0xad, 0x01});
-        assertThat(bytes).isEqualTo(new BytesCell("dead01"));
-        assertThat(bytes.display()).isEqualTo("\\xdead01");
+        assertThat(normalizeOne(new byte[] {(byte) 0xde, (byte) 0xad, 0x01}))
+                .isEqualTo(new BytesCell("dead01"));
     }
 
     @Test
@@ -126,7 +123,6 @@ class ResultNormalizerTest {
         assertThat(normalizeOne(instant)).isEqualTo(expected);
         assertThat(normalizeOne(hanoi)).isEqualTo(expected);
         assertThat(normalizeOne(tokyo)).isEqualTo(expected);
-        assertThat(expected.display()).isEqualTo("2026-10-11T05:30:00Z");
     }
 
     @Test
@@ -149,13 +145,13 @@ class ResultNormalizerTest {
     }
 
     @Test
-    @DisplayName("Kiểu chưa hỗ trợ thì báo lỗi, không đoán bừa")
+    @DisplayName("Kiểu chưa hỗ trợ thì báo lỗi riêng, không đoán bừa")
     void normalize_unsupportedType_throws() {
-        assertThatThrownBy(() -> normalizeOne(new Object()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("java.lang.Object");
+        assertThatThrownBy(() -> normalizeOne(Timestamp.from(Instant.EPOCH)))
+                .isInstanceOf(UnsupportedColumnTypeException.class)
+                .hasMessageContaining("java.sql.Timestamp");
         assertThatThrownBy(() -> normalizeOne(new AtomicLong(1)))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(UnsupportedColumnTypeException.class)
                 .hasMessageContaining("AtomicLong");
     }
 }

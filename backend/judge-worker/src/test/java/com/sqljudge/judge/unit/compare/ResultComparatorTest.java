@@ -1,6 +1,5 @@
 package com.sqljudge.judge.unit.compare;
 
-import static com.sqljudge.judge.unit.compare.Tables.cells;
 import static com.sqljudge.judge.unit.compare.Tables.columns;
 import static com.sqljudge.judge.unit.compare.Tables.repeated;
 import static com.sqljudge.judge.unit.compare.Tables.row;
@@ -23,10 +22,16 @@ import org.junit.jupiter.api.Test;
 
 class ResultComparatorTest {
 
-    private static final CompareOptions UNORDERED = CompareOptions.defaults();
-    private static final CompareOptions ORDERED = CompareOptions.defaults().withOrdered(true);
+    private static final CompareOptions UNORDERED = options(false, false);
+    private static final CompareOptions ORDERED = options(true, false);
+    private static final CompareOptions UNORDERED_BY_NAME = options(false, true);
+    private static final CompareOptions ORDERED_BY_NAME = options(true, true);
 
     private final ResultComparator comparator = new ResultComparator();
+
+    private static CompareOptions options(boolean ordered, boolean compareColumnNames) {
+        return new CompareOptions(ordered, compareColumnNames, CompareOptions.DEFAULT_TOLERANCE);
+    }
 
     private Verdict verdictOf(NormalizedTable expected, NormalizedTable actual, CompareOptions o) {
         return comparator.compare(expected, actual, o).verdict();
@@ -58,8 +63,8 @@ class ResultComparatorTest {
         assertThat(result.verdict()).isEqualTo(Verdict.WA);
         assertThat(result.reason()).isEqualTo(MismatchReason.ROWS);
         assertThat(result.isAccepted()).isFalse();
-        assertThat(result.missingRows()).containsExactly(cells((Object) null));
-        assertThat(result.extraRows()).containsExactly(cells("NULL"));
+        assertThat(result.missingRows()).containsExactly(0);
+        assertThat(result.extraRows()).containsExactly(0);
     }
 
     @Test
@@ -116,7 +121,7 @@ class ResultComparatorTest {
     void compare_customTolerance_isApplied() {
         NormalizedTable expected = table(columns("avg"), row(new BigDecimal("2.500")));
         NormalizedTable actual = table(columns("avg"), row(new BigDecimal("2.501")));
-        CompareOptions loose = UNORDERED.withTolerance(new BigDecimal("0.01"));
+        CompareOptions loose = new CompareOptions(false, false, new BigDecimal("0.01"));
 
         assertThat(verdictOf(expected, actual, loose)).isEqualTo(Verdict.AC);
     }
@@ -130,6 +135,28 @@ class ResultComparatorTest {
 
         assertThat(verdictOf(expected, atBoundary, UNORDERED)).isEqualTo(Verdict.AC);
         assertThat(verdictOf(expected, beyond, UNORDERED)).isEqualTo(Verdict.WA);
+    }
+
+    @Test
+    @DisplayName("Số lớn dùng sai số tương đối: tổng double 1e12 lệch 0,5 vẫn AC, lệch 2e6 thì WA")
+    void compare_largeNumbers_useRelativeTolerance() {
+        NormalizedTable expected = table(columns("total"), row(new BigDecimal("1000000000000")));
+        NormalizedTable rounding = table(columns("total"), row(1000000000000.5d));
+        NormalizedTable wrong = table(columns("total"), row(1000002000000d));
+
+        assertThat(verdictOf(expected, rounding, UNORDERED)).isEqualTo(Verdict.AC);
+        assertThat(verdictOf(expected, wrong, UNORDERED)).isEqualTo(Verdict.WA);
+    }
+
+    @Test
+    @DisplayName("Số nhỏ hơn 1 vẫn dùng sai số tuyệt đối 1e-6")
+    void compare_smallNumbers_useAbsoluteTolerance() {
+        NormalizedTable expected = table(columns("rate"), row(new BigDecimal("0.0000001")));
+        NormalizedTable close = table(columns("rate"), row(new BigDecimal("0.0000009")));
+        NormalizedTable far = table(columns("rate"), row(new BigDecimal("0.0000020")));
+
+        assertThat(verdictOf(expected, close, UNORDERED)).isEqualTo(Verdict.AC);
+        assertThat(verdictOf(expected, far, UNORDERED)).isEqualTo(Verdict.WA);
     }
 
     @Test
@@ -176,7 +203,7 @@ class ResultComparatorTest {
 
         assertThat(result.verdict()).isEqualTo(Verdict.WA);
         assertThat(result.reason()).isEqualTo(MismatchReason.ROWS);
-        assertThat(result.missingRows()).containsExactly(cells("IT"));
+        assertThat(result.missingRows()).containsExactly(1);
         assertThat(result.extraRows()).isEmpty();
     }
 
@@ -190,7 +217,7 @@ class ResultComparatorTest {
 
         assertThat(result.verdict()).isEqualTo(Verdict.WA);
         assertThat(result.missingRows()).isEmpty();
-        assertThat(result.extraRows()).containsExactly(cells("HR"));
+        assertThat(result.extraRows()).containsExactly(2);
     }
 
     @Test
@@ -211,8 +238,34 @@ class ResultComparatorTest {
 
         assertThat(result.verdict()).isEqualTo(Verdict.OM);
         assertThat(result.reason()).isEqualTo(MismatchReason.ORDER);
+        assertThat(result.firstOrderMismatchRow()).isZero();
         assertThat(result.missingRows()).isEmpty();
         assertThat(result.extraRows()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("OM chỉ ra dòng đầu tiên lệch thứ tự")
+    void compare_orderMismatch_reportsFirstMismatchedRow() {
+        NormalizedTable expected = table(columns("id"), row(1), row(2), row(3));
+        NormalizedTable actual = table(columns("id"), row(1), row(3), row(2));
+
+        ComparisonResult result = comparator.compare(expected, actual, ORDERED);
+
+        assertThat(result.verdict()).isEqualTo(Verdict.OM);
+        assertThat(result.firstOrderMismatchRow()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Chỉ số dòng thiếu/thừa theo thứ tự gốc của bảng, không theo thứ tự sắp xếp")
+    void compare_diffIndices_followOriginalOrder() {
+        NormalizedTable expected = table(columns("v"), row("c"), row("a"), row("b"));
+        NormalizedTable actual = table(columns("v"), row("z"), row("a"), row("y"));
+
+        ComparisonResult result = comparator.compare(expected, actual, UNORDERED);
+
+        assertThat(result.missingRows()).containsExactly(0, 2);
+        assertThat(result.extraRows()).containsExactly(0, 2);
+        assertThat(result.firstOrderMismatchRow()).isNull();
     }
 
     @Test
@@ -243,8 +296,8 @@ class ResultComparatorTest {
 
         assertThat(result.verdict()).isEqualTo(Verdict.WA);
         assertThat(result.reason()).isEqualTo(MismatchReason.ROWS);
-        assertThat(result.missingRows()).containsExactly(cells(1));
-        assertThat(result.extraRows()).containsExactly(cells(3));
+        assertThat(result.missingRows()).containsExactly(0);
+        assertThat(result.extraRows()).containsExactly(1);
     }
 
     @Test
@@ -256,7 +309,7 @@ class ResultComparatorTest {
         ComparisonResult result = comparator.compare(expected, actual, ORDERED);
 
         assertThat(result.verdict()).isEqualTo(Verdict.WA);
-        assertThat(result.missingRows()).containsExactly(cells(2));
+        assertThat(result.missingRows()).containsExactly(1);
     }
 
     @Nested
@@ -282,7 +335,7 @@ class ResultComparatorTest {
             ComparisonResult result = comparator.compare(expected, actual, UNORDERED);
 
             assertThat(result.verdict()).isEqualTo(Verdict.WA);
-            assertThat(result.extraRows()).containsExactly(cells(1));
+            assertThat(result.extraRows()).containsExactly(0);
         }
 
         @Test
@@ -294,7 +347,7 @@ class ResultComparatorTest {
             ComparisonResult result = comparator.compare(expected, actual, ORDERED);
 
             assertThat(result.verdict()).isEqualTo(Verdict.WA);
-            assertThat(result.missingRows()).containsExactly(cells(1));
+            assertThat(result.missingRows()).containsExactly(0);
         }
     }
 
@@ -329,8 +382,7 @@ class ResultComparatorTest {
         @Test
         @DisplayName("compare_column_names bật -> WA, lý do COLUMN_NAMES")
         void compare_differentNames_whenCompared_returnsWrongAnswer() {
-            ComparisonResult result =
-                    comparator.compare(expected, renamed, UNORDERED.withCompareColumnNames(true));
+            ComparisonResult result = comparator.compare(expected, renamed, UNORDERED_BY_NAME);
 
             assertThat(result.verdict()).isEqualTo(Verdict.WA);
             assertThat(result.reason()).isEqualTo(MismatchReason.COLUMN_NAMES);
@@ -341,17 +393,15 @@ class ResultComparatorTest {
         void compare_sameNames_whenCompared_returnsAccepted() {
             NormalizedTable same = table(columns("department", "max_salary"), row("IT", 1));
 
-            assertThat(verdictOf(expected, same, ORDERED.withCompareColumnNames(true)))
-                    .isEqualTo(Verdict.AC);
+            assertThat(verdictOf(expected, same, ORDERED_BY_NAME)).isEqualTo(Verdict.AC);
         }
 
         @Test
-        @DisplayName("compare_column_names bật, chỉ khác hoa thường -> WA")
-        void compare_namesDifferInCase_whenCompared_returnsWrongAnswer() {
-            NormalizedTable upper = table(columns("Department", "max_salary"), row("IT", 1));
+        @DisplayName("compare_column_names bật, chỉ khác hoa thường -> AC")
+        void compare_namesDifferInCase_whenCompared_returnsAccepted() {
+            NormalizedTable upper = table(columns("Department", "MAX_SALARY"), row("IT", 1));
 
-            assertThat(verdictOf(expected, upper, UNORDERED.withCompareColumnNames(true)))
-                    .isEqualTo(Verdict.WA);
+            assertThat(verdictOf(expected, upper, UNORDERED_BY_NAME)).isEqualTo(Verdict.AC);
         }
     }
 
@@ -449,8 +499,8 @@ class ResultComparatorTest {
         ComparisonResult result = comparator.compare(expected, actual, UNORDERED);
 
         assertThat(result.verdict()).isEqualTo(Verdict.WA);
-        assertThat(result.missingRows()).containsExactly(cells(1, "x"));
-        assertThat(result.extraRows()).containsExactly(cells(1, "z"));
+        assertThat(result.missingRows()).containsExactly(0);
+        assertThat(result.extraRows()).containsExactly(1);
     }
 
     @Test
@@ -497,7 +547,7 @@ class ResultComparatorTest {
 
             assertThat(result.verdict()).isEqualTo(Verdict.WA);
             assertThat(result.missingRows()).isEmpty();
-            assertThat(result.extraRows()).containsExactly(cells(MAX_ROWS - 1, "row-9999"));
+            assertThat(result.extraRows()).containsExactly(MAX_ROWS - 1);
         }
     }
 }
