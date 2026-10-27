@@ -6,6 +6,7 @@ const baseURL = `http://localhost:${E2E_PORT}`;
 export default defineConfig({
     testDir: "./e2e",
     globalSetup: "./e2e/support/global-setup.ts",
+    workers: 1,
     timeout: 60_000,
     expect: { timeout: 15_000 },
     use: {
@@ -28,6 +29,6 @@ export default defineConfig({
         url: baseURL,
         reuseExistingServer: true,
         timeout: 300_000,
-        env: { NEXT_PUBLIC_API_MOCKING: "enabled" },
+        env: { NEXT_PUBLIC_API_MOCKING: "enabled", NEXT_DIST_DIR: ".next-e2e" },
     },
 });

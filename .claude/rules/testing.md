@@ -54,7 +54,7 @@ void compare_sameRowsWrongOrder_returnsOrderMismatch() {
 
 ### Luồng E2E bắt buộc (Playwright)
 
-Playwright chưa được cài trong `frontend/`. Thêm khi bắt đầu luồng đầu tiên dưới đây có backend thật.
+Playwright đã cài trong `frontend/`, test đặt ở `frontend/e2e/`. Chạy bằng `npm run test:e2e`: Playwright tự bật `next dev` ở cổng 3100 với MSW và thư mục build `.next-e2e`, không đụng `next dev` đang chạy ở cổng mặc định. Smoke test được chạy trên API giả của MSW. Năm luồng bắt buộc dưới đây vẫn phải chạy với backend thật.
 
 1. Đăng ký → onboarding → dashboard.
 2. Mở bài → Run → Submit sai (WA, thấy diff) → sửa → AC.
@@ -78,7 +78,7 @@ cd backend && ./mvnw -pl <service> -am test     # unit + integration của một
 cd backend && ./mvnw verify                     # mọi module, kèm Spotless và JaCoCo (fail nếu dưới 80% dòng)
 cd frontend && npm run test                     # Vitest
 cd frontend && npm run test:coverage            # ngưỡng 80% dòng cho lib/ và features/*/hooks
-cd frontend && npx playwright test              # khi đã cài Playwright, cần docker compose dev đang chạy
+cd frontend && npm run test:e2e                 # Playwright; luồng có backend thật cần docker compose dev đang chạy
 ```
 
 Integration test backend dùng Testcontainers nên cần Docker. Thiếu Docker thì test đỏ, không tự bỏ qua (không dùng `disabledWithoutDocker`). Sau khi IDE build vào `target/` mà gặp lỗi "Unresolved compilation problem", chạy `./mvnw clean verify`.
