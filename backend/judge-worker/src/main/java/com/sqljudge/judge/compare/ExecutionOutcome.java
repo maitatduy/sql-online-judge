@@ -6,7 +6,7 @@ public sealed interface ExecutionOutcome {
 
     record Succeeded(ResultTable table, long runtimeMs) implements ExecutionOutcome {}
 
-    record Failed(String message, long runtimeMs) implements ExecutionOutcome {}
+    record Failed(SanitizedMessage message, long runtimeMs) implements ExecutionOutcome {}
 
     record TimedOut(long runtimeMs) implements ExecutionOutcome {}
 
