@@ -69,14 +69,16 @@ const DETAIL_CONTENT: Record<string, DetailContent> = {
             "",
             "Sắp xếp theo `salary` giảm dần, rồi theo `employee` tăng dần.",
         ].join("\n"),
-        starterCode: "SELECT\n    d.name AS department\nFROM departments d;\n",
+        starterCode: "SELECT *\nFROM employees;",
         schema: COMPANY_SCHEMA,
         examples: [
             {
                 columns: ["department", "employee", "salary"],
                 rows: [
                     ["Kỹ thuật", "Hoàng Quốc Bảo", "48000000"],
-                    ["Kinh doanh", "Trần Thu Hà", "32000000"],
+                    ["Kỹ thuật", "Nguyễn Văn An", "48000000"],
+                    ["Kinh doanh", "Trần Thị Bình", "32000000"],
+                    ["Nhân sự", "Lê Minh Châu", "27500000"],
                 ],
                 isTruncated: false,
             },
