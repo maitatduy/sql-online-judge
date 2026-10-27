@@ -21,7 +21,7 @@ const FIRST_PAGE = 1;
 export interface ProblemFilters {
     q: string;
     difficulty: Difficulty | null;
-    topic: string | null;
+    tag: string | null;
     progress: ProblemProgress | null;
     page: number;
 }
@@ -29,7 +29,7 @@ export interface ProblemFilters {
 export const NO_PROBLEM_FILTERS: ProblemFilters = {
     q: "",
     difficulty: null,
-    topic: null,
+    tag: null,
     progress: null,
     page: FIRST_PAGE,
 };
@@ -47,17 +47,17 @@ export function readProblemFilters(searchParams: Pick<URLSearchParams, "get">): 
     return {
         q: searchParams.get("q")?.trim() ?? "",
         difficulty: knownValue(DIFFICULTIES, searchParams.get("difficulty")),
-        topic: searchParams.get("topic") || null,
+        tag: searchParams.get("tag") || null,
         progress: knownValue(PROBLEM_PROGRESSES, searchParams.get("progress")),
         page: readPage(searchParams.get("page")),
     };
 }
 
-function activeFilterParams({ q, difficulty, topic, progress }: ProblemFilters) {
+function activeFilterParams({ q, difficulty, tag, progress }: ProblemFilters) {
     return {
         ...(q ? { q } : {}),
         ...(difficulty ? { difficulty } : {}),
-        ...(topic ? { topic } : {}),
+        ...(tag ? { tag } : {}),
         ...(progress ? { progress } : {}),
     };
 }
@@ -75,11 +75,6 @@ export function problemsHref(filters: ProblemFilters): string {
     return queryString ? `${ROUTES.problems}?${queryString}` : ROUTES.problems;
 }
 
-export function hasActiveProblemFilter({
-    q,
-    difficulty,
-    topic,
-    progress,
-}: ProblemFilters): boolean {
-    return q !== "" || difficulty !== null || topic !== null || progress !== null;
+export function hasActiveProblemFilter({ q, difficulty, tag, progress }: ProblemFilters): boolean {
+    return q !== "" || difficulty !== null || tag !== null || progress !== null;
 }

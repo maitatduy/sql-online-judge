@@ -1,7 +1,7 @@
-import type { ProblemProgress, ProblemSummary, Topic } from "@/features/practice/types";
+import type { ProblemProgress, ProblemSummary, Tag } from "@/features/practice/types";
 import type { Difficulty } from "@/lib/difficulty";
 
-export const PRACTICE_TOPICS: Topic[] = [
+export const PRACTICE_TAGS: Tag[] = [
     { slug: "select-where", name: "SELECT/WHERE" },
     { slug: "join", name: "JOIN" },
     { slug: "group-by", name: "GROUP BY/HAVING" },
@@ -17,7 +17,7 @@ type ProblemSeed = [
     slug: string,
     title: string,
     difficulty: Difficulty,
-    topicSlugs: string[],
+    tagSlugs: string[],
     acceptanceRate: number,
     solvedCount: number,
 ];
@@ -206,23 +206,23 @@ const DEMO_PROGRESS: Record<number, ProblemProgress> = {
     126: "ATTEMPTED",
 };
 
-function topicOf(slug: string): Topic {
-    const topic = PRACTICE_TOPICS.find((knownTopic) => knownTopic.slug === slug);
-    if (!topic) {
-        throw new Error(`Unknown topic ${slug}`);
+function tagOf(slug: string): Tag {
+    const tag = PRACTICE_TAGS.find((knownTag) => knownTag.slug === slug);
+    if (!tag) {
+        throw new Error(`Unknown tag ${slug}`);
     }
-    return topic;
+    return tag;
 }
 
 export function buildProblemSummaries(isSignedIn: boolean): ProblemSummary[] {
     return PROBLEM_SEEDS.map(
-        ([number, slug, title, difficulty, topicSlugs, acceptanceRate, solvedCount]) => ({
+        ([number, slug, title, difficulty, tagSlugs, acceptanceRate, solvedCount]) => ({
             id: `0192f3b0-0000-7000-8000-${number.toString(16).padStart(12, "0")}`,
             number,
             slug,
             title,
             difficulty,
-            topics: topicSlugs.map(topicOf),
+            tags: tagSlugs.map(tagOf),
             acceptanceRate,
             solvedCount,
             progress: isSignedIn ? (DEMO_PROGRESS[number] ?? "NOT_STARTED") : null,

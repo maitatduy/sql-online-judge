@@ -9,7 +9,7 @@ import { DIFFICULTIES, DIFFICULTY_LABELS, type Difficulty } from "@/lib/difficul
 import { useDebouncedSearch } from "@/lib/useDebouncedSearch";
 
 import type { ProblemFilterChange } from "../hooks/useProblemFilters";
-import { useTopics } from "../hooks/useTopics";
+import { useTags } from "../hooks/useTags";
 import {
     hasActiveProblemFilter,
     PROBLEM_PROGRESSES,
@@ -26,7 +26,7 @@ interface ProblemFiltersProps {
 }
 
 export function ProblemFilters({ filters, showProgress, onChange, onClear }: ProblemFiltersProps) {
-    const { data: topics } = useTopics();
+    const { data: tags } = useTags();
     const { searchText, changeSearchText, clearSearchText } = useDebouncedSearch(filters.q, (q) =>
         onChange({ q }),
     );
@@ -68,13 +68,13 @@ export function ProblemFilters({ filters, showProgress, onChange, onClear }: Pro
             </NativeSelect>
             <NativeSelect
                 aria-label="Lọc theo chủ đề"
-                value={filters.topic ?? ""}
-                onChange={(event) => onChange({ topic: event.target.value || null })}
+                value={filters.tag ?? ""}
+                onChange={(event) => onChange({ tag: event.target.value || null })}
             >
                 <option value="">Mọi chủ đề</option>
-                {topics?.items.map((topic) => (
-                    <option key={topic.slug} value={topic.slug}>
-                        {topic.name}
+                {tags?.items.map((tag) => (
+                    <option key={tag.slug} value={tag.slug}>
+                        {tag.name}
                     </option>
                 ))}
             </NativeSelect>

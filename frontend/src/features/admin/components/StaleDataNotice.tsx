@@ -1,8 +1,7 @@
 import { TriangleAlert } from "lucide-react";
 
+import { formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-import { formatVietnamTime } from "../format";
 
 interface StaleDataNoticeProps {
     updatedAtMs: number;
@@ -20,7 +19,7 @@ export function StaleDataNotice({ updatedAtMs, className }: StaleDataNoticeProps
         >
             <TriangleAlert aria-hidden="true" className="size-4 shrink-0 text-status-busy" />
             <p>
-                {`Chưa cập nhật được số liệu mới. Đang hiện số liệu lúc ${formatVietnamTime(new Date(updatedAtMs))}.`}
+                {`Chưa cập nhật được số liệu mới. Đang hiện số liệu lúc ${formatTime(new Date(updatedAtMs))}.`}
             </p>
         </div>
     );

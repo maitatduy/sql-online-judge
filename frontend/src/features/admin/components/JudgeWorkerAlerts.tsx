@@ -1,8 +1,8 @@
 import { TriangleAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { formatTime } from "@/lib/format";
 
-import { formatVietnamTime } from "../format";
 import type { JudgeWorker } from "../types";
 
 const ALERT_CLASS = "mx-4.5 mt-3.5 flex items-center gap-3 rounded-lg border px-3.5 py-3 text-sm";
@@ -23,7 +23,7 @@ function DisconnectedAlert({ worker, onRestart }: WorkerAlertProps) {
             <TriangleAlert aria-hidden="true" className="size-4.5 shrink-0 text-status-down" />
             <span className="flex-1">
                 <strong className="font-mono">{worker.name}</strong> mất kết nối
-                {worker.disconnectedAt ? ` từ ${formatVietnamTime(worker.disconnectedAt)}` : ""}
+                {worker.disconnectedAt ? ` từ ${formatTime(worker.disconnectedAt)}` : ""}
             </span>
             <Button
                 type="button"

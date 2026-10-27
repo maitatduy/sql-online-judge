@@ -1,13 +1,15 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import { PROBLEM_PROGRESSES } from "@/features/practice/problem-filters";
-import type { ProblemSummary, TopicsResponse } from "@/features/practice/types";
+import type { ProblemSummary, TagsResponse } from "@/features/practice/types";
 import type { ApiFieldError } from "@/lib/api-client";
 import { DIFFICULTIES } from "@/lib/difficulty";
 import type { Page } from "@/lib/pagination";
 
 import { validationFailed } from "./admin-user-errors";
-import { buildProblemSummaries, PRACTICE_TOPICS } from "./practice-fixtures";
+import { apiError } from "./api-error";
+import { buildProblemSummaries, PRACTICE_TAGS } from "./practice-fixtures";
+import { buildProblemDetail } from "./practice-problem-details";
 import { readMockSession } from "./session";
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -43,21 +45,21 @@ function invalidParam(query: URLSearchParams): ApiFieldError | null {
 function matchesQuery(problem: ProblemSummary, query: URLSearchParams): boolean {
     const keyword = query.get("q")?.trim().toLocaleLowerCase(SEARCH_LOCALE) ?? "";
     const difficulty = query.get("difficulty");
-    const topic = query.get("topic");
+    const tag = query.get("tag");
     const progress = query.get("progress");
     return (
         (problem.title.toLocaleLowerCase(SEARCH_LOCALE).includes(keyword) ||
             String(problem.number) === keyword) &&
         (difficulty === null || problem.difficulty === difficulty) &&
-        (topic === null || problem.topics.some((problemTopic) => problemTopic.slug === topic)) &&
+        (tag === null || problem.tags.some((problemTag) => problemTag.slug === tag)) &&
         (progress === null || problem.progress === progress)
     );
 }
 
 export const practiceHandlers: RequestHandler[] = [
-    http.get("*/api/problems/topics", async () => {
+    http.get("*/api/tags", async () => {
         await delay();
-        const response: TopicsResponse = { items: PRACTICE_TOPICS };
+        const response: TagsResponse = { items: PRACTICE_TAGS };
         return HttpResponse.json(response);
     }),
 
@@ -82,5 +84,16 @@ export const practiceHandlers: RequestHandler[] = [
             totalPages: Math.ceil(problems.length / size),
         };
         return HttpResponse.json(response);
+    }),
+
+    http.get("*/api/problems/:slug", async ({ params }) => {
+        await delay();
+        const summary = buildProblemSummaries(readMockSession() !== null).find(
+            (problem) => problem.slug === params.slug,
+        );
+        if (!summary) {
+            return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
+        }
+        return HttpResponse.json(buildProblemDetail(summary));
     }),
 ];

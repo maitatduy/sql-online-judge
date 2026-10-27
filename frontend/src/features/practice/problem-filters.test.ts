@@ -11,13 +11,13 @@ import {
 describe("readProblemFilters", () => {
     it("đọc từ khoá, độ khó, chủ đề, tiến độ và trang từ URL", () => {
         const filters = readProblemFilters(
-            new URLSearchParams("q=+lương+&difficulty=MEDIUM&topic=join&progress=SOLVED&page=3"),
+            new URLSearchParams("q=+lương+&difficulty=MEDIUM&tag=join&progress=SOLVED&page=3"),
         );
 
         expect(filters).toEqual({
             q: "lương",
             difficulty: "MEDIUM",
-            topic: "join",
+            tag: "join",
             progress: "SOLVED",
             page: 3,
         });
@@ -25,7 +25,7 @@ describe("readProblemFilters", () => {
 
     it("bỏ qua giá trị lạ và trang không hợp lệ", () => {
         const filters = readProblemFilters(
-            new URLSearchParams("difficulty=EXTREME&progress=DONE&page=-2&topic="),
+            new URLSearchParams("difficulty=EXTREME&progress=DONE&page=-2&tag="),
         );
 
         expect(filters).toEqual(NO_PROBLEM_FILTERS);
@@ -34,8 +34,8 @@ describe("readProblemFilters", () => {
 
 describe("problemsHref", () => {
     it("chỉ ghi những bộ lọc đang bật và bỏ trang 1", () => {
-        expect(problemsHref({ ...NO_PROBLEM_FILTERS, topic: "window-function", page: 1 })).toBe(
-            "/problems?topic=window-function",
+        expect(problemsHref({ ...NO_PROBLEM_FILTERS, tag: "window-function", page: 1 })).toBe(
+            "/problems?tag=window-function",
         );
     });
 
@@ -44,11 +44,11 @@ describe("problemsHref", () => {
             problemsHref({
                 q: "join",
                 difficulty: "HARD",
-                topic: "cte",
+                tag: "cte",
                 progress: "ATTEMPTED",
                 page: 2,
             }),
-        ).toBe("/problems?q=join&difficulty=HARD&topic=cte&progress=ATTEMPTED&page=2");
+        ).toBe("/problems?q=join&difficulty=HARD&tag=cte&progress=ATTEMPTED&page=2");
     });
 
     it("trả về đường dẫn gốc khi không có bộ lọc", () => {
