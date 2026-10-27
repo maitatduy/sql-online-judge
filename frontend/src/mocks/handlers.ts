@@ -15,6 +15,7 @@ import { apiError } from "./api-error";
 import { invitationHandlers } from "./invitation-handlers";
 import { practiceHandlers } from "./practice-handlers";
 import { practiceRunHandlers } from "./practice-run-handlers";
+import { practiceSubmissionHandlers } from "./practice-submission-handlers";
 import { profileHandlers } from "./profile-handlers";
 import {
     ADMIN_SESSION_USER,
@@ -163,6 +164,7 @@ export const handlers: RequestHandler[] = [
     ...profileHandlers,
     ...practiceHandlers,
     ...practiceRunHandlers,
+    ...practiceSubmissionHandlers,
     ...adminHandlers,
     ...invitationHandlers,
 ];

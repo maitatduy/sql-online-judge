@@ -8,18 +8,11 @@ import type {
 } from "@/features/practice/types";
 import type { ResultSet } from "@/lib/result-set";
 
-import { validationFailed } from "./admin-user-errors";
 import { apiError } from "./api-error";
-import { buildProblemSummaries } from "./practice-fixtures";
-import { buildProblemDetail } from "./practice-problem-details";
+import { checkQuery, findProblem, invalidQueryRequest } from "./practice-sql";
 import { readMockSession } from "./session";
 
-const MAX_CODE_BYTES = 64 * 1024;
 const MOCK_RUNTIME_MS = 41;
-const FORBIDDEN_STATEMENT = /\b(INSERT|UPDATE|DELETE|DROP|TRUNCATE|ALTER|CREATE|GRANT)\b/i;
-const SLOW_QUERY = /\bpg_sleep\b/i;
-const MISSPELLED_KEYWORD = /\bFORM\b/i;
-const QUERY_START = /^(SELECT|WITH)\b/i;
 const FALLBACK_RESULT: ResultSet = { columns: ["?column?"], rows: [["1"]], isTruncated: false };
 
 interface StoredRun {
@@ -32,62 +25,22 @@ type RunOutcomeFields = Pick<CodeRun, "outcome" | "result" | "errorMessage" | "r
 
 const runs = new Map<string, StoredRun>();
 
-function findProblem(problemId: string): ProblemDetail | null {
-    const summary = buildProblemSummaries(true).find((problem) => problem.id === problemId);
-    return summary ? buildProblemDetail(summary) : null;
-}
-
-function syntaxError(token: string): RunOutcomeFields {
-    return {
-        outcome: "RE",
-        result: null,
-        errorMessage: `ERROR:  syntax error at or near "${token}"`,
-        runtimeMs: null,
-    };
-}
-
 function outcomeOf(problem: ProblemDetail, code: string): RunOutcomeFields {
-    const query = code.trim();
-    if (FORBIDDEN_STATEMENT.test(query)) {
+    const check = checkQuery(problem, code);
+    if (check.outcome === "VALID") {
         return {
-            outcome: "FS",
-            result: null,
-            errorMessage: `Bài này chỉ cho phép ${problem.allowedStatements.join(", ")}.`,
-            runtimeMs: null,
+            outcome: "OK",
+            result: problem.examples[0] ?? FALLBACK_RESULT,
+            errorMessage: null,
+            runtimeMs: MOCK_RUNTIME_MS,
         };
     }
-    if (SLOW_QUERY.test(query)) {
-        return { outcome: "TLE", result: null, errorMessage: null, runtimeMs: null };
-    }
-    const misspelled = MISSPELLED_KEYWORD.exec(query);
-    if (misspelled) {
-        return syntaxError(misspelled[0]);
-    }
-    if (!QUERY_START.test(query)) {
-        return syntaxError(query.split(/\s+/)[0]);
-    }
     return {
-        outcome: "OK",
-        result: problem.examples[0] ?? FALLBACK_RESULT,
-        errorMessage: null,
-        runtimeMs: MOCK_RUNTIME_MS,
+        outcome: check.outcome,
+        result: null,
+        errorMessage: check.outcome === "TLE" ? null : check.errorMessage,
+        runtimeMs: null,
     };
-}
-
-function invalidRequest(problem: ProblemDetail, request: StartRunRequest) {
-    if (!request.code?.trim()) {
-        return validationFailed({ field: "code", message: "Không được để trống" });
-    }
-    if (new TextEncoder().encode(request.code).length > MAX_CODE_BYTES) {
-        return validationFailed({ field: "code", message: "Mã nguồn tối đa 64 KB" });
-    }
-    if (!problem.dialects.includes(request.dialect)) {
-        return validationFailed({
-            field: "dialect",
-            message: "Bài này không hỗ trợ dialect đã chọn",
-        });
-    }
-    return null;
 }
 
 export const practiceRunHandlers: RequestHandler[] = [
@@ -102,7 +55,7 @@ export const practiceRunHandlers: RequestHandler[] = [
             return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
         }
         const body = (await request.json()) as StartRunRequest;
-        const invalid = invalidRequest(problem, body);
+        const invalid = invalidQueryRequest(problem, body);
         if (invalid) {
             return invalid;
         }

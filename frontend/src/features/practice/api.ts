@@ -8,6 +8,9 @@ import type {
     ProblemSummary,
     RunAccepted,
     StartRunRequest,
+    Submission,
+    SubmissionAccepted,
+    SubmitSolutionRequest,
     TagsResponse,
 } from "./types";
 
@@ -24,4 +27,14 @@ export const practiceApi = {
         apiClient.post<RunAccepted>(`/api/problems/${encodeURIComponent(problemId)}/runs`, request),
     getRun: (runId: string, signal?: AbortSignal) =>
         apiClient.get<CodeRun>(`/api/runs/${encodeURIComponent(runId)}`, { signal }),
+    submitSolution: (problemId: string, request: SubmitSolutionRequest, idempotencyKey: string) =>
+        apiClient.post<SubmissionAccepted>(
+            `/api/problems/${encodeURIComponent(problemId)}/submissions`,
+            request,
+            { headers: { "Idempotency-Key": idempotencyKey } },
+        ),
+    getSubmission: (submissionId: string, signal?: AbortSignal) =>
+        apiClient.get<Submission>(`/api/submissions/${encodeURIComponent(submissionId)}`, {
+            signal,
+        }),
 };

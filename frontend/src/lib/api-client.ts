@@ -78,6 +78,7 @@ export interface DownloadedFile {
 interface RequestOptions {
     params?: QueryParams;
     signal?: AbortSignal;
+    headers?: Record<string, string>;
 }
 
 function getBaseUrl(): string {
@@ -206,7 +207,7 @@ function sendRequest(
         method,
         credentials: "include",
         signal: options.signal,
-        headers: buildHeaders(path, body),
+        headers: { ...options.headers, ...buildHeaders(path, body) },
         body: isJsonBody(body) ? JSON.stringify(body) : (body as FormData | undefined),
     });
 }

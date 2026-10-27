@@ -1,6 +1,7 @@
 import type { Dialect } from "@/lib/dialect";
 import type { Difficulty } from "@/lib/difficulty";
 import type { ResultSet } from "@/lib/result-set";
+import type { Verdict } from "@/lib/verdict";
 
 export type ProblemProgress = "SOLVED" | "ATTEMPTED" | "NOT_STARTED";
 
@@ -81,4 +82,39 @@ export interface CodeRun {
     result: ResultSet | null;
     errorMessage: string | null;
     runtimeMs: number | null;
+}
+
+export type SubmitSolutionRequest = StartRunRequest;
+
+export interface SubmissionAccepted {
+    submissionId: string;
+}
+
+export type SubmissionStatus = "PENDING" | "JUDGING" | "COMPLETED";
+
+export interface SubmissionDiff {
+    expected: ResultSet;
+    actual: ResultSet;
+    missingRows: number[];
+    extraRows: number[];
+}
+
+export interface FailedTestcase {
+    index: number;
+    isHidden: boolean;
+    diff: SubmissionDiff | null;
+}
+
+export interface Submission {
+    id: string;
+    problemId: string;
+    dialect: Dialect;
+    status: SubmissionStatus;
+    verdict: Verdict | null;
+    judgedTestcases: number;
+    totalTestcases: number;
+    runtimeMs: number | null;
+    errorMessage: string | null;
+    firstFailedTestcase: FailedTestcase | null;
+    submittedAt: string;
 }
