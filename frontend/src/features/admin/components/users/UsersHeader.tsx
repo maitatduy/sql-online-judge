@@ -79,9 +79,12 @@ export function UsersHeader({ filters, filteredCount, selectedUsernames }: Users
                     onClick={() => setOpenDialog("invitations")}
                 >
                     <Mail aria-hidden="true" />
-                    {pendingInvitationCount === null
-                        ? "Lời mời"
-                        : `Lời mời (${pendingInvitationCount})`}
+                    Lời mời{" "}
+                    {pendingInvitationCount === null ? null : (
+                        <span className="rounded-full bg-surface-2 px-1.5 font-mono text-xs text-muted-foreground">
+                            {pendingInvitationCount}
+                        </span>
+                    )}
                 </Button>
                 <Button type="button" size="sm" onClick={() => setOpenDialog("create")}>
                     <Plus aria-hidden="true" />

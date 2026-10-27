@@ -43,7 +43,7 @@ describe("hộp mời người ra đề", () => {
         visit("/admin/users");
     });
 
-    it("tìm theo username hoặc email; người không mời được bị mờ kèm lý do", async () => {
+    it("tìm theo tên người dùng hoặc email; người không mời được bị mờ kèm lý do", async () => {
         const dialog = await openInviteDialog();
 
         search(dialog, "viet");
@@ -57,17 +57,30 @@ describe("hộp mời người ra đề", () => {
 
     it("chọn người thì thêm xuống danh sách, bấm bỏ thì xoá khỏi danh sách", async () => {
         const dialog = await openInviteDialog();
-        expect(dialog.getByRole("button", { name: "Gửi lời mời (0)" })).toBeDisabled();
+        expect(dialog.getByRole("button", { name: "Gửi lời mời" })).toBeDisabled();
 
         search(dialog, "viet");
         fireEvent.click(await suggestion(dialog, "viet.luu"));
 
         expect(invitees(dialog).getByText("viet.luu")).toBeInTheDocument();
-        expect(dialog.getByRole("button", { name: "Gửi lời mời (1)" })).toBeEnabled();
+        expect(dialog.getByRole("button", { name: "Gửi 1 lời mời" })).toBeEnabled();
 
         fireEvent.click(dialog.getByRole("button", { name: "Bỏ viet.luu" }));
 
-        expect(dialog.getByRole("button", { name: "Gửi lời mời (0)" })).toBeDisabled();
+        expect(dialog.getByRole("button", { name: "Gửi lời mời" })).toBeDisabled();
+    });
+
+    it("chọn xong thì ô tìm được xoá và gợi ý biến mất, tìm lại thì gợi ý hiện lại", async () => {
+        const dialog = await openInviteDialog();
+
+        search(dialog, "viet");
+        fireEvent.click(await suggestion(dialog, "viet.luu"));
+
+        expect(dialog.getByRole("searchbox", { name: "Tìm người dùng" })).toHaveValue("");
+        expect(dialog.queryByRole("list", { name: "Gợi ý" })).not.toBeInTheDocument();
+
+        search(dialog, "viet");
+        expect(await dialog.findByRole("list", { name: "Gợi ý" })).toBeInTheDocument();
     });
 
     it("gõ email chưa có tài khoản thì mời được email đó", async () => {
@@ -135,11 +148,11 @@ describe("hộp mời người ra đề", () => {
         fireEvent.click(
             await dialog.findByRole("button", { name: "Mời email này: ban.moi@gmail.com" }),
         );
-        fireEvent.change(dialog.getByRole("textbox", { name: "Lời nhắn (không bắt buộc)" }), {
+        fireEvent.change(dialog.getByRole("textbox", { name: "Lời nhắn" }), {
             target: { value: "Kiểm duyệt cộng đồng" },
         });
 
-        fireEvent.click(dialog.getByRole("button", { name: "Gửi lời mời (2)" }));
+        fireEvent.click(dialog.getByRole("button", { name: "Gửi 2 lời mời" }));
 
         expect(await dialog.findByText("Đã gửi 1 lời mời.")).toBeInTheDocument();
         expect(dialog.getByText("ban.moi@gmail.com")).toBeInTheDocument();
