@@ -5,13 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.sqljudge.common.config.CommonAutoConfiguration;
 import com.sqljudge.problem.entity.Dialect;
-import com.sqljudge.problem.entity.Difficulty;
-import com.sqljudge.problem.entity.ExpectedResult;
 import com.sqljudge.problem.entity.LogicalType;
 import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.entity.ProblemRevision;
-import com.sqljudge.problem.entity.ProblemStatus;
-import com.sqljudge.problem.entity.ProblemVisibility;
 import com.sqljudge.problem.entity.ReferenceSolution;
 import com.sqljudge.problem.entity.RevisionColumn;
 import com.sqljudge.problem.entity.RevisionTable;
@@ -22,8 +18,6 @@ import com.sqljudge.problem.entity.TestcaseData;
 import com.sqljudge.problem.repository.ProblemRepository;
 import com.sqljudge.problem.repository.TagRepository;
 import jakarta.persistence.EntityManager;
-import java.time.Instant;
-import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,7 +46,7 @@ class ProblemRepositoryTest extends ContainerSupport {
     @Test
     @DisplayName("Lưu bài đã xuất bản cùng revision, schema, testcase, đáp án và đọc lại đủ")
     void save_publishedProblemWithRevision_roundTripsWholeGraph() {
-        Problem problem = publishedProblem("highest-salary-per-department", 184);
+        Problem problem = ProblemFixtures.publishedProblem("highest-salary-per-department", 184);
         problem.getTags().add(tag("join", "JOIN"));
         problemRepository.saveAndFlush(problem);
         entityManager.clear();
@@ -87,19 +81,25 @@ class ProblemRepositoryTest extends ContainerSupport {
     @Test
     @DisplayName("Trùng slug hoặc trùng số bài thì DB chặn bằng unique index")
     void save_duplicateSlugOrNumber_isRejectedByUniqueIndex() {
-        problemRepository.saveAndFlush(publishedProblem("trung-slug", 1));
+        problemRepository.saveAndFlush(ProblemFixtures.publishedProblem("trung-slug", 1));
 
-        assertThatThrownBy(() -> problemRepository.saveAndFlush(publishedProblem("trung-slug", 2)))
+        assertThatThrownBy(
+                        () ->
+                                problemRepository.saveAndFlush(
+                                        ProblemFixtures.publishedProblem("trung-slug", 2)))
                 .isInstanceOf(DataIntegrityViolationException.class);
         entityManager.clear();
-        assertThatThrownBy(() -> problemRepository.saveAndFlush(publishedProblem("slug-khac", 1)))
+        assertThatThrownBy(
+                        () ->
+                                problemRepository.saveAndFlush(
+                                        ProblemFixtures.publishedProblem("slug-khac", 1)))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     @DisplayName("Mỗi revision chỉ có một đáp án chuẩn cho mỗi dialect")
     void save_twoSolutionsForSameDialect_isRejected() {
-        Problem problem = publishedProblem("hai-dap-an", 3);
+        Problem problem = ProblemFixtures.publishedProblem("hai-dap-an", 3);
         problem.getPublishedRevision()
                 .addReferenceSolution(new ReferenceSolution(Dialect.POSTGRESQL, "SELECT 2;"));
 
@@ -110,7 +110,8 @@ class ProblemRepositoryTest extends ContainerSupport {
     @Test
     @DisplayName("Bỏ testcase khỏi revision thì xoá luôn dữ liệu và kết quả mong đợi của nó")
     void removeTestcase_deletesItsDataAndExpectedResult() {
-        Problem problem = problemRepository.saveAndFlush(publishedProblem("xoa-testcase", 4));
+        Problem problem =
+                problemRepository.saveAndFlush(ProblemFixtures.publishedProblem("xoa-testcase", 4));
 
         problem.getPublishedRevision().getTestcases().remove(0);
         problemRepository.saveAndFlush(problem);
@@ -129,50 +130,5 @@ class ProblemRepositoryTest extends ContainerSupport {
         tag.setSlug(slug);
         tag.setName(name);
         return tagRepository.save(tag);
-    }
-
-    private static Problem publishedProblem(String slug, int number) {
-        Problem problem = new Problem();
-        problem.setSlug(slug);
-        problem.setNumber(number);
-        problem.setTitle("Lương cao nhất mỗi phòng ban");
-        problem.setDifficulty(Difficulty.MEDIUM);
-        problem.setStatus(ProblemStatus.PUBLISHED);
-        problem.setVisibility(ProblemVisibility.PUBLIC);
-        problem.setAuthorId(AUTHOR_ID);
-        problem.setStatementMarkdown("Tìm nhân viên có **lương cao nhất**.");
-        problem.setStarterCode("SELECT *\nFROM employees;");
-        problem.setTimeLimitMs(2000);
-        problem.setRequiresOrder(true);
-        problem.setAllowedStatements(Set.of(StatementType.SELECT, StatementType.WITH));
-        problem.setPublishedAt(Instant.parse("2026-07-30T00:00:00Z"));
-
-        ProblemRevision revision = problem.addRevision(1);
-        revision.setFrozenAt(Instant.parse("2026-07-30T00:00:00Z"));
-        RevisionTable departments = revision.addTable("departments");
-        departments.addColumn("id", LogicalType.INTEGER).setPrimaryKey(true);
-        departments.addColumn("name", LogicalType.TEXT);
-        RevisionTable employees = revision.addTable("employees");
-        employees.addColumn("id", LogicalType.INTEGER).setPrimaryKey(true);
-        RevisionColumn departmentId = employees.addColumn("department_id", LogicalType.INTEGER);
-        departmentId.setNullable(true);
-        departmentId.setReferencesTable("departments");
-        departmentId.setReferencesColumn("id");
-        revision.addReferenceSolution(new ReferenceSolution(Dialect.POSTGRESQL, "SELECT 1;"));
-        revision.addReferenceSolution(new ReferenceSolution(Dialect.MYSQL, "SELECT 1;"));
-
-        Testcase example = revision.addTestcase("Ví dụ trong đề", true);
-        example.addData("departments", "id,name\n1,Kỹ thuật\n2,Kinh doanh\n", 2);
-        example.addData("employees", "id,department_id\n1,1\n2,1\n3,2\n", 3);
-        example.setExpectedResult(
-                new ExpectedResult(
-                        "[\"department\",\"employee\"]", "[[\"a\",\"b\"],[\"c\",\"d\"]]", 2, "x"));
-        Testcase hidden = revision.addTestcase("Nhiều người cùng lương", false);
-        hidden.addData("departments", "id,name\n1,Kỹ thuật\n", 1);
-        hidden.addData("employees", "id,department_id\n1,1\n", 1);
-        hidden.setExpectedResult(new ExpectedResult("[\"department\"]", "[]", 0, "y"));
-
-        problem.setPublishedRevision(revision);
-        return problem;
     }
 }

@@ -34,6 +34,13 @@ management:
         enabled: true
       show-details: never
 
+sqljudge:
+  judge:
+    engine-versions:
+      POSTGRESQL: PostgreSQL 16
+      MYSQL: MySQL 8
+      SQLITE: SQLite 3
+
 springdoc:
   api-docs:
     enabled: false
