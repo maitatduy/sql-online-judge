@@ -118,3 +118,17 @@ export interface Submission {
     firstFailedTestcase: FailedTestcase | null;
     submittedAt: string;
 }
+
+export interface ProblemSubmissionSummary {
+    id: string;
+    status: SubmissionStatus;
+    verdict: Verdict | null;
+    dialect: Dialect;
+    runtimeMs: number | null;
+    submittedAt: string;
+}
+
+export interface ProblemSubmissionsResponse {
+    items: ProblemSubmissionSummary[];
+    nextCursor: string | null;
+}

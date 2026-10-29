@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useToast } from "@/components/shared/ToastProvider";
 
 import { practiceApi } from "../api";
 import type { SubmitSolutionRequest } from "../types";
+import { problemSubmissionsQueryKey } from "./useProblemSubmissions";
 import { submissionQueryKey, useSubmissionEvents } from "./useSubmissionEvents";
 
 const SUBMISSION_POLL_INTERVAL_MS = 2000;
@@ -18,6 +19,7 @@ interface SubmitVariables {
 
 export function useSubmission(problemId: string) {
     const showToast = useToast();
+    const queryClient = useQueryClient();
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const start = useMutation({
         mutationFn: ({ request, idempotencyKey }: SubmitVariables) =>
@@ -38,8 +40,15 @@ export function useSubmission(problemId: string) {
     });
 
     const submission = submissionId === null ? null : (submissionQuery.data ?? null);
-    const isJudging =
-        start.isPending || (submissionId !== null && submission?.status !== "COMPLETED");
+    const isCompleted = submission?.status === "COMPLETED";
+
+    useEffect(() => {
+        if (isCompleted) {
+            void queryClient.invalidateQueries({ queryKey: problemSubmissionsQueryKey(problemId) });
+        }
+    }, [isCompleted, problemId, queryClient]);
+
+    const isJudging = start.isPending || (submissionId !== null && !isCompleted);
 
     function submit(request: SubmitSolutionRequest) {
         start.mutate({ request, idempotencyKey: crypto.randomUUID() });
