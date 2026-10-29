@@ -12,8 +12,20 @@ import { Workspace } from "./Workspace";
 vi.mock("next/navigation", () => ({ notFound: vi.fn() }));
 
 vi.mock("@/components/shared/LazySqlEditor", () => ({
-    LazySqlEditor: ({ value, ariaLabel }: { value: string; ariaLabel: string }) => (
-        <textarea aria-label={ariaLabel} value={value} readOnly />
+    LazySqlEditor: ({
+        value,
+        onChange,
+        ariaLabel,
+    }: {
+        value: string;
+        onChange: (value: string) => void;
+        ariaLabel: string;
+    }) => (
+        <textarea
+            aria-label={ariaLabel}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+        />
     ),
 }));
 
@@ -42,13 +54,41 @@ function submissionOf(overrides: Partial<Submission>): Submission {
     };
 }
 
-function judgeAs(submission: Submission) {
-    server.use(http.get("*/api/submissions/:submissionId", () => HttpResponse.json(submission)));
+const CORRECT_QUERY =
+    "SELECT * FROM employees e WHERE e.salary = (SELECT MAX(salary) FROM employees) ORDER BY 1;";
+const CONNECTION_LOST_MESSAGE = "Mất kết nối máy chấm, đang thử lại…";
+
+function eventStreamOf(submission: Submission): ReadableStream<Uint8Array> {
+    const event = submission.status === "COMPLETED" ? "completed" : "progress";
+    const message = `event: ${event}\ndata: ${JSON.stringify(submission)}\n\n`;
+    return new ReadableStream({
+        start(controller) {
+            controller.enqueue(new TextEncoder().encode(message));
+            if (event === "completed") {
+                controller.close();
+            }
+        },
+    });
 }
 
-async function submitCode() {
+function judgeAs(submission: Submission) {
+    server.use(
+        http.get(
+            "*/api/submissions/:submissionId/events",
+            () =>
+                new HttpResponse(eventStreamOf(submission), {
+                    headers: { "Content-Type": "text/event-stream" },
+                }),
+        ),
+    );
+}
+
+async function submitCode(code?: string) {
     renderWithProviders(<Workspace slug={SLUG} />);
-    await screen.findByRole("textbox", { name: "Mã SQL của bạn" });
+    const editor = await screen.findByRole("textbox", { name: "Mã SQL của bạn" });
+    if (code !== undefined) {
+        fireEvent.change(editor, { target: { value: code } });
+    }
     fireEvent.click(screen.getByRole("button", { name: "Submit" }));
     return within(screen.getByRole("tabpanel", { name: "Nộp bài" }));
 }
@@ -188,5 +228,33 @@ describe("nộp bài trong Workspace", () => {
         expect(
             await panel.findByText("Bạn nộp bài quá nhanh. Thử lại sau 30 giây."),
         ).toBeInTheDocument();
+    });
+
+    it("nhận tiến độ và verdict qua SSE mà không hỏi lại máy chủ", async () => {
+        let pollCount = 0;
+        server.events.on("request:start", ({ request }) => {
+            if (/\/api\/submissions\/[^/]+$/.test(new URL(request.url).pathname)) {
+                pollCount += 1;
+            }
+        });
+
+        const panel = await submitCode(CORRECT_QUERY);
+
+        expect(await panel.findByText("3/3 testcase · 48 ms")).toBeInTheDocument();
+        expect(pollCount).toBe(0);
+        expect(screen.queryByText(CONNECTION_LOST_MESSAGE)).not.toBeInTheDocument();
+        server.events.removeAllListeners();
+    });
+
+    it("báo mất kết nối và chuyển sang hỏi lại khi luồng SSE lỗi", async () => {
+        server.use(
+            http.get("*/api/submissions/:submissionId/events", () => HttpResponse.error()),
+            http.get("*/api/submissions/:submissionId", () => HttpResponse.json(submissionOf({}))),
+        );
+
+        const panel = await submitCode();
+
+        expect(await screen.findByText(CONNECTION_LOST_MESSAGE)).toBeInTheDocument();
+        expect(await panel.findByText("3/3 testcase · 48 ms")).toBeInTheDocument();
     });
 });

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
+import { ToastProvider } from "@/components/shared/ToastProvider";
 
 import { isProblemNotFound, useProblemDetail } from "../hooks/useProblemDetail";
 import { ProblemWorkspace } from "./ProblemWorkspace";
@@ -33,7 +34,11 @@ export function Workspace({ slug }: WorkspaceProps) {
 
     return (
         <div className="dark flex h-screen flex-col overflow-hidden bg-background text-foreground">
-            {problem ? <ProblemWorkspace key={problem.id} problem={problem} /> : null}
+            {problem ? (
+                <ToastProvider>
+                    <ProblemWorkspace key={problem.id} problem={problem} />
+                </ToastProvider>
+            ) : null}
             {!problem ? <WorkspaceHeader title={null} /> : null}
             {isPending ? <WorkspaceSkeleton /> : null}
             {!problem && error ? (

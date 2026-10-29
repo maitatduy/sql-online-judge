@@ -87,20 +87,50 @@ function judge(problem: ProblemDetail, code: string, total: number): Judgement {
     };
 }
 
+function inProgress(result: Submission, judgedTestcases: number): Submission {
+    return {
+        ...result,
+        status: judgedTestcases === 0 ? "PENDING" : "JUDGING",
+        verdict: null,
+        judgedTestcases,
+        runtimeMs: null,
+        errorMessage: null,
+        firstFailedTestcase: null,
+    };
+}
+
 function progressOf(stored: StoredSubmission): Submission {
     const judgedSoFar = stored.pollCount - 1;
     if (judgedSoFar >= stored.result.judgedTestcases && stored.pollCount > 1) {
         return stored.result;
     }
-    return {
-        ...stored.result,
-        status: stored.pollCount === 1 ? "PENDING" : "JUDGING",
-        verdict: null,
-        judgedTestcases: Math.max(judgedSoFar, 0),
-        runtimeMs: null,
-        errorMessage: null,
-        firstFailedTestcase: null,
-    };
+    return inProgress(stored.result, Math.max(judgedSoFar, 0));
+}
+
+function sseMessage(event: string, submission: Submission): Uint8Array {
+    return new TextEncoder().encode(`event: ${event}
+data: ${JSON.stringify(submission)}
+
+`);
+}
+
+function judgingStream(result: Submission): ReadableStream<Uint8Array> {
+    return new ReadableStream({
+        async start(controller) {
+            for (let judged = 0; judged < result.judgedTestcases; judged += 1) {
+                await delay();
+                controller.enqueue(sseMessage("progress", inProgress(result, judged)));
+            }
+            await delay();
+            controller.enqueue(sseMessage("completed", result));
+            controller.close();
+        },
+    });
+}
+
+function findOwnSubmission(submissionId: string): StoredSubmission | null {
+    const stored = submissions.get(submissionId);
+    return stored && stored.userId === readMockSession()?.id ? stored : null;
 }
 
 function createSubmission(problem: ProblemDetail, request: SubmitSolutionRequest): Submission {
@@ -149,11 +179,21 @@ export const practiceSubmissionHandlers: RequestHandler[] = [
 
     http.get("*/api/submissions/:submissionId", async ({ params }) => {
         await delay();
-        const stored = submissions.get(String(params.submissionId));
-        if (!stored || stored.userId !== readMockSession()?.id) {
+        const stored = findOwnSubmission(String(params.submissionId));
+        if (!stored) {
             return apiError(404, "SUBMISSION_NOT_FOUND", "Không tìm thấy bài nộp");
         }
         stored.pollCount += 1;
         return HttpResponse.json(progressOf(stored));
+    }),
+
+    http.get("*/api/submissions/:submissionId/events", ({ params }) => {
+        const stored = findOwnSubmission(String(params.submissionId));
+        if (!stored) {
+            return apiError(404, "SUBMISSION_NOT_FOUND", "Không tìm thấy bài nộp");
+        }
+        return new HttpResponse(judgingStream(stored.result), {
+            headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
+        });
     }),
 ];

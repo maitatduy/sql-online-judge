@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Submission, SubmissionAccepted } from "@/features/practice/types";
 import { apiClient } from "@/lib/api-client";
+import { type ServerSentEvent, streamEvents } from "@/lib/sse";
 
 import { DEMO_SESSION_USER, writeMockSession } from "./session";
 
@@ -128,5 +129,34 @@ describe("nộp bài", () => {
             status: 404,
             code: "SUBMISSION_NOT_FOUND",
         });
+    });
+
+    it("phát tiến độ chấm qua SSE rồi đóng luồng sau sự kiện completed", async () => {
+        const { submissionId } = await submit(CORRECT_QUERY);
+        const events: ServerSentEvent[] = [];
+
+        await streamEvents(`/api/submissions/${submissionId}/events`, {
+            onEvent: (event) => events.push(event),
+        });
+
+        expect(events.map((event) => event.event)).toEqual([
+            "progress",
+            "progress",
+            "progress",
+            "completed",
+        ]);
+        const judged = events.map(
+            (event) => (JSON.parse(event.data) as Submission).judgedTestcases,
+        );
+        expect(judged).toEqual([0, 1, 2, 3]);
+        expect(JSON.parse(events[3].data)).toMatchObject({ status: "COMPLETED", verdict: "AC" });
+    });
+
+    it("không mở luồng SSE cho bài nộp của người khác", async () => {
+        await expect(
+            streamEvents("/api/submissions/0192f3b0-0000-7000-8000-ffffffffffff/events", {
+                onEvent: () => undefined,
+            }),
+        ).rejects.toMatchObject({ status: 404, code: "SUBMISSION_NOT_FOUND" });
     });
 });
