@@ -2,27 +2,21 @@
 
 import { useState } from "react";
 
-import { Database, History, Play, Send } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DIALECT_LABELS } from "@/lib/dialect";
+import { cn } from "@/lib/utils";
 
 import { useCodeRun } from "../hooks/useCodeRun";
 import { useEditorDraft } from "../hooks/useEditorDraft";
 import { useSubmission } from "../hooks/useSubmission";
 import type { ProblemDetail } from "../types";
 import { EditorPanel } from "./EditorPanel";
-import { ProblemStatement } from "./ProblemStatement";
+import { ProblemTabs } from "./ProblemTabs";
 import { ResultPanel, type ResultTab } from "./ResultPanel";
 import { RunContent } from "./RunContent";
-import { SchemaPanel } from "./SchemaPanel";
 import { SubmissionContent } from "./SubmissionContent";
-import { SubmissionHistory } from "./SubmissionHistory";
+import { WorkspaceActions } from "./WorkspaceActions";
+import { type WorkspaceArea, WorkspaceAreaTabs, workspaceAreaId } from "./WorkspaceAreaTabs";
 import { WorkspaceHeader } from "./WorkspaceHeader";
-
-const SHORTCUT_CLASS =
-    "rounded-sm bg-surface-2 px-1.5 font-mono text-[11px] text-muted-foreground max-md:hidden";
 
 interface ProblemWorkspaceProps {
     problem: ProblemDetail;
@@ -37,9 +31,17 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
     const codeRun = useCodeRun(problem.id);
     const judging = useSubmission(problem.id);
     const [resultTab, setResultTab] = useState<ResultTab>("run");
+    const [activeArea, setActiveArea] = useState<WorkspaceArea>("problem");
+    const latestVerdict =
+        judging.submission?.status === "COMPLETED" ? judging.submission.verdict : null;
+
+    function visibleOnNarrowWhen(area: WorkspaceArea): string | false {
+        return activeArea !== area && "max-lg:hidden";
+    }
 
     function handleRun() {
         setResultTab("run");
+        setActiveArea("result");
         if (!codeRun.isRunning) {
             codeRun.startRun({ dialect, code });
         }
@@ -47,6 +49,7 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
 
     function handleSubmit() {
         setResultTab("submission");
+        setActiveArea("result");
         if (!judging.isJudging) {
             judging.submit({ dialect, code });
         }
@@ -55,69 +58,47 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
     return (
         <>
             <WorkspaceHeader title={`#${problem.number} · ${problem.title}`}>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={codeRun.isRunning}
-                    aria-keyshortcuts="Control+Enter"
-                    onClick={handleRun}
-                >
-                    <Play aria-hidden="true" />
-                    Run
-                    <kbd aria-hidden="true" className={SHORTCUT_CLASS}>
-                        Ctrl ↵
-                    </kbd>
-                </Button>
-                <Button
-                    type="button"
-                    size="sm"
-                    disabled={judging.isJudging}
-                    aria-keyshortcuts="Control+Shift+Enter"
-                    onClick={handleSubmit}
-                >
-                    <Send aria-hidden="true" />
-                    Submit
-                </Button>
+                <WorkspaceActions
+                    isRunning={codeRun.isRunning}
+                    isJudging={judging.isJudging}
+                    onRun={handleRun}
+                    onSubmit={handleSubmit}
+                />
             </WorkspaceHeader>
-            <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-                <Tabs
-                    defaultValue="statement"
-                    aria-label="Đề bài và schema"
-                    className="min-h-0 border-b lg:w-[38%] lg:min-w-[420px] lg:border-r lg:border-b-0"
+            <WorkspaceAreaTabs
+                activeArea={activeArea}
+                onAreaChange={setActiveArea}
+                resultVerdict={latestVerdict}
+            />
+            <div className="flex min-h-0 flex-1 flex-col max-lg:pb-[68px] lg:flex-row">
+                <ProblemTabs
+                    problem={problem}
+                    id={workspaceAreaId("problem")}
+                    className={cn(visibleOnNarrowWhen("problem"))}
+                />
+                <div
+                    className={cn(
+                        "flex min-h-0 min-w-0 flex-1 flex-col",
+                        activeArea === "problem" && "max-lg:hidden",
+                    )}
                 >
-                    <TabsList>
-                        <TabsTrigger value="statement">Đề bài</TabsTrigger>
-                        <TabsTrigger value="schema">
-                            <Database aria-hidden="true" />
-                            Schema
-                        </TabsTrigger>
-                        <TabsTrigger value="history">
-                            <History aria-hidden="true" />
-                            Lịch sử nộp
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="statement" className="overflow-y-auto">
-                        <ProblemStatement problem={problem} />
-                    </TabsContent>
-                    <TabsContent value="schema" className="overflow-y-auto">
-                        <SchemaPanel tables={problem.schema} />
-                    </TabsContent>
-                    <TabsContent value="history" className="overflow-y-auto">
-                        <SubmissionHistory problem={problem} />
-                    </TabsContent>
-                </Tabs>
-                <div className="flex min-h-[560px] min-w-0 flex-1 flex-col">
-                    <EditorPanel
-                        engineLabel={problem.engineVersions[dialect] ?? DIALECT_LABELS[dialect]}
-                        code={code}
-                        savedAt={savedAt}
-                        onChange={changeCode}
-                        onReset={resetToStarter}
-                        onRun={handleRun}
-                        onSubmit={handleSubmit}
-                    />
+                    <div
+                        id={workspaceAreaId("code")}
+                        className={cn("flex min-h-0 flex-1 flex-col", visibleOnNarrowWhen("code"))}
+                    >
+                        <EditorPanel
+                            engineLabel={problem.engineVersions[dialect] ?? DIALECT_LABELS[dialect]}
+                            code={code}
+                            savedAt={savedAt}
+                            onChange={changeCode}
+                            onReset={resetToStarter}
+                            onRun={handleRun}
+                            onSubmit={handleSubmit}
+                        />
+                    </div>
                     <ResultPanel
+                        id={workspaceAreaId("result")}
+                        className={cn(visibleOnNarrowWhen("result"))}
                         activeTab={resultTab}
                         onTabChange={setResultTab}
                         runContent={
