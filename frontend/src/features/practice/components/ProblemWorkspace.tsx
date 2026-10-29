@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Database, Play, Send } from "lucide-react";
+import { Database, History, Play, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +18,7 @@ import { ResultPanel, type ResultTab } from "./ResultPanel";
 import { RunContent } from "./RunContent";
 import { SchemaPanel } from "./SchemaPanel";
 import { SubmissionContent } from "./SubmissionContent";
+import { SubmissionHistory } from "./SubmissionHistory";
 import { WorkspaceHeader } from "./WorkspaceHeader";
 
 const SHORTCUT_CLASS =
@@ -91,12 +92,19 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
                             <Database aria-hidden="true" />
                             Schema
                         </TabsTrigger>
+                        <TabsTrigger value="history">
+                            <History aria-hidden="true" />
+                            Lịch sử nộp
+                        </TabsTrigger>
                     </TabsList>
                     <TabsContent value="statement" className="overflow-y-auto">
                         <ProblemStatement problem={problem} />
                     </TabsContent>
                     <TabsContent value="schema" className="overflow-y-auto">
                         <SchemaPanel tables={problem.schema} />
+                    </TabsContent>
+                    <TabsContent value="history" className="overflow-y-auto">
+                        <SubmissionHistory problem={problem} />
                     </TabsContent>
                 </Tabs>
                 <div className="flex min-h-[560px] min-w-0 flex-1 flex-col">

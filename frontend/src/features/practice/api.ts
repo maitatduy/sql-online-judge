@@ -5,6 +5,7 @@ import { type ProblemFilters, problemsQueryOf } from "./problem-filters";
 import type {
     CodeRun,
     ProblemDetail,
+    ProblemSubmissionsResponse,
     ProblemSummary,
     RunAccepted,
     StartRunRequest,
@@ -37,4 +38,9 @@ export const practiceApi = {
         apiClient.get<Submission>(`/api/submissions/${encodeURIComponent(submissionId)}`, {
             signal,
         }),
+    listProblemSubmissions: (problemId: string, cursor: string | undefined, signal?: AbortSignal) =>
+        apiClient.get<ProblemSubmissionsResponse>(
+            `/api/problems/${encodeURIComponent(problemId)}/submissions`,
+            { params: { cursor }, signal },
+        ),
 };

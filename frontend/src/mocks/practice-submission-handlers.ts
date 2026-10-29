@@ -35,6 +35,12 @@ interface StoredSubmission {
 const submissions = new Map<string, StoredSubmission>();
 const submissionIdsByKey = new Map<string, string>();
 
+export function listOwnSubmissions(userId: string, problemId: string): Submission[] {
+    return [...submissions.values()]
+        .filter((stored) => stored.userId === userId && stored.result.problemId === problemId)
+        .map((stored) => stored.result);
+}
+
 function failedAt(testcase: FailedTestcase, verdict: Verdict): Judgement {
     return {
         verdict,
