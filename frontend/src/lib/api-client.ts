@@ -78,6 +78,7 @@ export interface DownloadedFile {
 interface RequestOptions {
     params?: QueryParams;
     signal?: AbortSignal;
+    headers?: Record<string, string>;
 }
 
 function getBaseUrl(): string {
@@ -206,7 +207,7 @@ function sendRequest(
         method,
         credentials: "include",
         signal: options.signal,
-        headers: buildHeaders(path, body),
+        headers: { ...options.headers, ...buildHeaders(path, body) },
         body: isJsonBody(body) ? JSON.stringify(body) : (body as FormData | undefined),
     });
 }
@@ -285,6 +286,11 @@ export const apiClient = {
         request<T>("PATCH", path, body, options),
     delete: <T>(path: string, body?: unknown, options: RequestOptions = {}) =>
         request<T>("DELETE", path, body, options),
+    openStream: (path: string, options: RequestOptions = {}) =>
+        requestOk("GET", path, undefined, {
+            ...options,
+            headers: { ...options.headers, Accept: "text/event-stream" },
+        }),
     getForFile: (path: string, options: RequestOptions = {}) =>
         requestFile("GET", path, undefined, options),
     postForFile: (path: string, body?: unknown, options: RequestOptions = {}) =>

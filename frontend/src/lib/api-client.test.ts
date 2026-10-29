@@ -52,6 +52,22 @@ describe("apiClient", () => {
         });
     });
 
+    it("gửi kèm header riêng của request, ví dụ Idempotency-Key", async () => {
+        server.use(
+            http.post("*/api/echo", ({ request }) =>
+                HttpResponse.json({ key: request.headers.get("Idempotency-Key") }),
+            ),
+        );
+
+        const result = await apiClient.post(
+            "/api/echo",
+            { code: "SELECT 1;" },
+            { headers: { "Idempotency-Key": "key-1" } },
+        );
+
+        expect(result).toEqual({ key: "key-1" });
+    });
+
     it("patch gửi body dạng JSON bằng phương thức PATCH", async () => {
         server.use(
             http.patch("*/api/admin/users/viet.luu", async ({ request }) =>

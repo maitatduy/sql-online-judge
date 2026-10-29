@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import Link from "next/link";
 import { describe, expect, it } from "vitest";
 
 import { EmptyState } from "./EmptyState";
@@ -9,7 +10,7 @@ describe("EmptyState", () => {
             <EmptyState
                 title="Chưa có bài nộp nào"
                 description="Bài nộp đầu tiên của bạn sẽ hiện ở đây."
-                action={<a href="/problems">Giải bài đầu tiên</a>}
+                action={<Link href="/problems">Giải bài đầu tiên</Link>}
             />,
         );
 

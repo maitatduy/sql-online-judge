@@ -71,4 +71,18 @@ describe("ResultTable", () => {
 
         expect(screen.getByRole("cell", { name: "0 dòng" })).toHaveAttribute("colspan", "2");
     });
+
+    it("đánh dấu dòng thiếu và dòng thừa bằng chữ, không chỉ bằng màu", () => {
+        render(
+            <ResultTable
+                label="Kết quả"
+                result={{ columns: ["id"], rows: [["1"], ["2"], ["3"]], isTruncated: false }}
+                rowMarks={{ 0: "missing", 2: "extra" }}
+            />,
+        );
+
+        expect(screen.getByRole("row", { name: "Thiếu 1" })).toHaveClass("bg-diff-added/12");
+        expect(screen.getByRole("row", { name: "2" })).toBeInTheDocument();
+        expect(screen.getByRole("row", { name: "Thừa 3" })).toHaveClass("bg-diff-removed/12");
+    });
 });
