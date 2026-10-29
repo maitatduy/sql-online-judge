@@ -9,12 +9,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.HeaderWriterFilter;
 
 @Configuration
 @EnableMethodSecurity
@@ -43,6 +45,7 @@ public class SecurityConfig {
         return http.addFilterBefore(
                         new TrustedOriginFilter(securityProperties, apiErrorWriter, clock),
                         BearerTokenAuthenticationFilter.class)
+                .headers(headers -> headers.withObjectPostProcessor(writeHeadersEagerly()))
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -85,5 +88,15 @@ public class SecurityConfig {
                                                         jwt.jwtAuthenticationConverter(
                                                                 new JwtCurrentUserConverter())))
                 .build();
+    }
+
+    private static ObjectPostProcessor<HeaderWriterFilter> writeHeadersEagerly() {
+        return new ObjectPostProcessor<>() {
+            @Override
+            public <O extends HeaderWriterFilter> O postProcess(O filter) {
+                filter.setShouldWriteHeadersEagerly(true);
+                return filter;
+            }
+        };
     }
 }
