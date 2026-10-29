@@ -11,7 +11,7 @@
 | TS định dạng | Prettier | `npm run format`, kiểm tra: `npm run format:check` |
 | SQL migration | Từ khoá viết HOA, 1 cột 1 dòng trong CREATE TABLE | - |
 
-`./mvnw verify` chạy `spotless:check`, sai định dạng là build đỏ. Chưa có workflow CI: trước khi mở PR tự chạy `./mvnw verify` và `npm run format:check && npm run lint && npm run typecheck`. Checkstyle, SpotBugs chưa cấu hình; muốn thêm thì hỏi người dùng theo `tech-stack.md`.
+`./mvnw verify` chạy `spotless:check`, sai định dạng là build đỏ. Workflow CI (`.github/workflows/ci.yml`) chạy lại các bước này trên mỗi PR; trước khi mở PR vẫn tự chạy `./mvnw verify` và `npm run format:check && npm run lint && npm run typecheck` để bắt lỗi sớm. Checkstyle, SpotBugs chưa cấu hình; muốn thêm thì hỏi người dùng theo `tech-stack.md`.
 
 ## Java
 
