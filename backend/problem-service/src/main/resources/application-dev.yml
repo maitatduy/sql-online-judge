@@ -1,0 +1,18 @@
+spring:
+  config:
+    import: optional:file:../../infra/.env[.properties]
+  datasource:
+    url: jdbc:mysql://localhost:${MYSQL_PORT}/sqljudge_problem
+    username: sqljudge_problem
+    password: ${MYSQL_PROBLEM_PASSWORD}
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

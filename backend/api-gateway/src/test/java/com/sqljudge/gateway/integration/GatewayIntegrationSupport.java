@@ -1,6 +1,7 @@
 package com.sqljudge.gateway.integration;
 
 import java.time.Duration;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -26,6 +27,8 @@ abstract class GatewayIntegrationSupport {
                             command ->
                                     command.getHostConfig().withMemory(REDIS_MEMORY_LIMIT_BYTES));
 
+    static final AuthServiceStub PROBLEM_SERVICE = AuthServiceStub.start("{\"keys\":[]}", 404);
+
     static {
         REDIS.start();
     }
@@ -37,6 +40,12 @@ abstract class GatewayIntegrationSupport {
         registry.add("REDIS_HOST", REDIS::getHost);
         registry.add("REDIS_PORT", () -> REDIS.getMappedPort(REDIS_PORT));
         registry.add("REDIS_PASSWORD", () -> "");
+        registry.add("PROBLEM_SERVICE_URL", PROBLEM_SERVICE::baseUrl);
+    }
+
+    @BeforeEach
+    void clearProblemServiceRequests() {
+        PROBLEM_SERVICE.clear();
     }
 
     @Autowired

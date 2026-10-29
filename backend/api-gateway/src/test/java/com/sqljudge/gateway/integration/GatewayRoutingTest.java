@@ -175,6 +175,31 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName("Tag và bài tập được chuyển tới problem-service, không tới auth-service")
+    void problemPaths_areRoutedToProblemService() {
+        webTestClient.get().uri("/api/tags").exchange().expectStatus().isNotFound();
+        webTestClient
+                .get()
+                .uri("/api/problems?difficulty=MEDIUM&page=2")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+        webTestClient
+                .get()
+                .uri("/api/problems/highest-salary-per-department")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        assertThat(PROBLEM_SERVICE.forwardedRequestLines())
+                .containsExactly(
+                        "GET /api/tags",
+                        "GET /api/problems?difficulty=MEDIUM&page=2",
+                        "GET /api/problems/highest-salary-per-department");
+        assertThat(AUTH_SERVICE.forwardedRequestLines()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Đường dẫn nội bộ /internal/** không được định tuyến ra ngoài")
     void internalPath_isNotRouted() {
         webTestClient.get().uri("/internal/jwks").exchange().expectStatus().isNotFound();

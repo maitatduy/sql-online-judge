@@ -25,6 +25,10 @@ spring:
               uri: ${AUTH_SERVICE_URL}
               predicates:
                 - Path=/api/auth/**,/api/users/**,/api/admin/users/**,/api/admin/user-summary,/api/admin/user-exports,/api/admin/audit-log,/api/admin/audit-log/**,/api/admin/role-invitations,/api/admin/role-invitations/**,/api/role-invitations/**
+            - id: problem-service
+              uri: ${PROBLEM_SERVICE_URL}
+              predicates:
+                - Path=/api/tags,/api/problems,/api/problems/**
           globalcors:
             cors-configurations:
               '[/api/**]':
