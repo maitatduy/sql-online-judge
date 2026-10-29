@@ -18,7 +18,7 @@ export function WorkspaceHeader({ title, children }: WorkspaceHeaderProps) {
                     <ChevronLeft aria-hidden="true" />
                 </Link>
             </Button>
-            <Link href={ROUTES.home} aria-label="Trang chủ">
+            <Link href={ROUTES.home} aria-label="Trang chủ" className="max-sm:hidden">
                 <Logo className="[&>span]:hidden [&>svg]:size-7" />
             </Link>
             {title ? <span className="min-w-0 truncate font-semibold">{title}</span> : null}
