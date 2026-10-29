@@ -68,6 +68,20 @@ class DevSeedIntegrationTest {
                                         + " AND published_revision_id IS NOT NULL"))
                 .isEqualTo(24);
         assertThat(count("SELECT COUNT(*) FROM reference_solutions")).isEqualTo(72);
+        assertThat(count("SELECT COUNT(*) FROM problem_stats")).isEqualTo(24);
+    }
+
+    @Test
+    @DisplayName("Thống kê seed của bài #184 khớp mock: 41,2% AC, 12.380 người giải")
+    void seed_featuredProblemStatsMatchMock() {
+        Long[] stats =
+                jdbcTemplate.queryForObject(
+                        "SELECT accepted_count, submission_count, solved_user_count"
+                                + " FROM problem_stats WHERE problem_id = UUID_TO_BIN(?)",
+                        (row, index) -> new Long[] {row.getLong(1), row.getLong(2), row.getLong(3)},
+                        FEATURED_PROBLEM_ID);
+
+        assertThat(stats).containsExactly(412L, 1000L, 12380L);
     }
 
     @Test
