@@ -17,7 +17,7 @@ sql-online-judge/
 │   ├── mysql/init/          # tạo database + user riêng cho từng service
 │   ├── sandbox/             # sẽ thêm: Dockerfile + cấu hình các DB sandbox
 │   └── monitoring/          # sẽ thêm: prometheus.yml, dashboard Grafana, rule cảnh báo
-└── .github/workflows/       # sẽ thêm: CI và deploy
+└── .github/workflows/       # ci.yml; sẽ thêm: deploy
 ```
 
 Không tạo thư mục tài liệu (`docs/`…) trong repo. Đặc tả, kế hoạch, quyết định kiến trúc trình bày trong cuộc trò chuyện và tóm tắt vào mô tả PR.

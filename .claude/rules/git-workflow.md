@@ -51,7 +51,7 @@ Trước khi commit: `git status`, không stage `.env*` (trừ `.env.example`), 
 
 - Tiêu đề theo định dạng commit. Mô tả gồm: làm gì, vì sao, cách kiểm tra, ảnh chụp nếu đổi giao diện (kèm mã màn hình, ví dụ "6.6 Workspace").
 - Dưới ~400 dòng thay đổi (không tính file sinh tự động). Lớn hơn thì tách.
-- CI bắt buộc xanh: build, lint, test, coverage, kiểm tra bảo mật phụ thuộc. Khi chưa có workflow CI, tự chạy `cd backend && ./mvnw verify` và `cd frontend && npm run format:check && npm run lint && npm run typecheck && npm run test` rồi ghi kết quả vào mô tả PR.
+- CI bắt buộc xanh. Workflow `.github/workflows/ci.yml` có 3 job chạy trên mỗi PR vào `main`: Frontend (format, lint, typecheck, Vitest), Backend (`./mvnw verify`: Spotless, test, JaCoCo) và E2E smoke (Playwright trên API giả). Kiểm tra bảo mật phụ thuộc chưa có trong CI.
 - Thay đổi chạm `judge-worker`, `security` hoặc migration cần review kỹ trục bảo mật (`/review-code`).
 - Merge bằng **squash**; xoá nhánh sau khi merge.
 
