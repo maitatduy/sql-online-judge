@@ -26,6 +26,7 @@ import {
     SETTER_SESSION_USER,
     writeMockSession,
 } from "./session";
+import { studioDatasetHandlers } from "./studio-datasets";
 import { studioProblemHandlers } from "./studio-problems";
 
 const DEMO_PASSWORD = "mock-password";
@@ -171,6 +172,7 @@ export const handlers: RequestHandler[] = [
     ...practiceSubmissionHandlers,
     ...practiceSubmissionHistoryHandlers,
     ...studioProblemHandlers,
+    ...studioDatasetHandlers,
     ...adminHandlers,
     ...invitationHandlers,
 ];

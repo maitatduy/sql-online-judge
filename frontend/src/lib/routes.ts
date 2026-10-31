@@ -14,6 +14,7 @@ export const ROUTES = {
     settings: "/settings",
     admin: "/admin",
     studioProblems: "/studio/problems",
+    studioDatasets: "/studio/datasets",
     adminUsers: "/admin/users",
     adminMessages: "/admin/messages",
     adminReports: "/admin/reports",

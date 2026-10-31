@@ -12,6 +12,20 @@ export const createProblemSchema = z.object({
 
 export type CreateProblemValues = z.infer<typeof createProblemSchema>;
 
+const MAX_DATASET_NAME_LENGTH = 120;
+const MAX_DATASET_DESCRIPTION_LENGTH = 500;
+
+export const createDatasetSchema = z.object({
+    name: z
+        .string()
+        .trim()
+        .min(1, "Không được để trống")
+        .max(MAX_DATASET_NAME_LENGTH, "Tối đa 120 ký tự"),
+    description: z.string().trim().max(MAX_DATASET_DESCRIPTION_LENGTH, "Tối đa 500 ký tự"),
+});
+
+export type CreateDatasetValues = z.infer<typeof createDatasetSchema>;
+
 const MAX_SLUG_LENGTH = 160;
 export const MAX_TAGS = 5;
 export const MAX_STATEMENT_LENGTH = 51_200;

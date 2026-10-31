@@ -14,6 +14,7 @@ import { validationFailed } from "./admin-user-errors";
 import { apiError } from "./api-error";
 import { PRACTICE_TAGS } from "./practice-fixtures";
 import { readMockSession, SETTER_SESSION_USER } from "./session";
+import { folded } from "./text";
 
 const STORAGE_KEY = "sqljudge:mock:studio-problems";
 const HOUR_MS = 60 * 60_000;
@@ -106,15 +107,6 @@ export function readStudioProblems(): StoredProblem[] {
 
 export function writeStudioProblems(problems: StoredProblem[]): void {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(problems));
-}
-
-function folded(text: string): string {
-    return text
-        .normalize("NFD")
-        .replace(/\p{M}/gu, "")
-        .replace(/đ/g, "d")
-        .replace(/Đ/g, "D")
-        .toLowerCase();
 }
 
 function toSummary(problem: StoredProblem): StudioProblemSummary {
