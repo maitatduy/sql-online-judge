@@ -5,6 +5,7 @@ import { type MyDatasetFilters, myDatasetsQueryOf } from "./my-dataset-filters";
 import { type MyProblemFilters, myProblemsQueryOf } from "./my-problem-filters";
 import type { CreateDatasetValues, CreateProblemValues } from "./schemas";
 import type {
+    DatasetTable,
     StudioDataset,
     StudioDatasetSummary,
     StatusCounts,
@@ -13,6 +14,10 @@ import type {
     StudioTag,
     UpdateProblemRequest,
 } from "./types";
+
+function datasetPath(datasetId: string): string {
+    return `/api/studio/datasets/${encodeURIComponent(datasetId)}`;
+}
 
 export const studioApi = {
     listMyProblems: (filters: MyProblemFilters, signal?: AbortSignal) =>
@@ -42,4 +47,10 @@ export const studioApi = {
         }),
     createDataset: (values: CreateDatasetValues) =>
         apiClient.post<StudioDataset>("/api/studio/datasets", values),
+    getDataset: (datasetId: string, signal?: AbortSignal) =>
+        apiClient.get<StudioDataset>(datasetPath(datasetId), { signal }),
+    replaceDatasetSchema: (datasetId: string, tables: DatasetTable[]) =>
+        apiClient.put<StudioDataset>(`${datasetPath(datasetId)}/schema`, { tables }),
+    createDatasetDraft: (datasetId: string) =>
+        apiClient.post<StudioDataset>(`${datasetPath(datasetId)}/versions`),
 };

@@ -25,5 +25,6 @@ export const ROUTES = {
     registerWithNext: (nextPath: string) => `/register?next=${encodeURIComponent(nextPath)}`,
     invitation: (token: string) => `/invitations/${encodeURIComponent(token)}`,
     profile: (username: string) => `/u/${encodeURIComponent(username)}`,
+    studioDataset: (datasetId: string) => `/studio/datasets/${encodeURIComponent(datasetId)}`,
     problem: (slug: string) => `/problems/${encodeURIComponent(slug)}`,
 } as const;

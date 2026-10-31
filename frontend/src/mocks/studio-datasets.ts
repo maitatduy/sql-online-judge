@@ -1,11 +1,12 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
-import type { StudioDataset, StudioDatasetSummary } from "@/features/studio/types";
+import type { DatasetTable, StudioDataset, StudioDatasetSummary } from "@/features/studio/types";
 import type { Page } from "@/lib/pagination";
 
 import { validationFailed } from "./admin-user-errors";
 import { apiError } from "./api-error";
 import { readMockSession, SETTER_SESSION_USER } from "./session";
+import { SEED_SCHEMAS } from "./studio-dataset-fixtures";
 import { folded } from "./text";
 
 const STORAGE_KEY = "sqljudge:mock:studio-datasets";
@@ -13,6 +14,8 @@ const HOUR_MS = 60 * 60_000;
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_NAME_LENGTH = 120;
 const FIRST_SLUG_SUFFIX = 2;
+const IDENTIFIER = /^[a-z_][a-z0-9_]*$/;
+const RESERVED_WORDS = new Set(["group", "order", "select", "table", "user", "where"]);
 
 interface StoredDataset extends StudioDataset {
     ownerId: string;
@@ -49,7 +52,7 @@ function seedDatasets(): StoredDataset[] {
             schema: {
                 versionNumber: latestVersion,
                 isDraft: hasDraft,
-                tables: [],
+                tables: SEED_SCHEMAS[index],
             },
             variants: [],
             updatedAt,
@@ -110,7 +113,99 @@ function toDetail(dataset: StoredDataset): StudioDataset {
     };
 }
 
+function findDataset(datasetId: string, canModerate: boolean): StoredDataset | undefined {
+    const user = readMockSession();
+    return readStudioDatasets().find(
+        (dataset) =>
+            dataset.id === datasetId &&
+            (dataset.ownerId === user?.id ||
+                user?.role === "ADMIN" ||
+                (canModerate && user?.role === "MODERATOR")),
+    );
+}
+
+function saveDataset(changed: StoredDataset): void {
+    writeStudioDatasets(
+        readStudioDatasets().map((dataset) => (dataset.id === changed.id ? changed : dataset)),
+    );
+}
+
+function nameProblem(name: string): string | null {
+    if (!IDENTIFIER.test(name)) {
+        return "Chỉ gồm chữ thường không dấu, số và dấu gạch dưới, không bắt đầu bằng số";
+    }
+    return RESERVED_WORDS.has(name) ? "Tên này trùng từ khoá SQL" : null;
+}
+
+function invalidSchemaField(tables: DatasetTable[]): { field: string; message: string } | null {
+    if (tables.length === 0) {
+        return { field: "tables", message: "Cần từ 1 đến 10 bảng" };
+    }
+    for (const [tableIndex, table] of tables.entries()) {
+        const tableProblem = nameProblem(table.name);
+        if (tableProblem) {
+            return { field: `tables[${tableIndex}].name`, message: tableProblem };
+        }
+        for (const [columnIndex, column] of table.columns.entries()) {
+            const columnProblem = nameProblem(column.name);
+            if (columnProblem) {
+                return {
+                    field: `tables[${tableIndex}].columns[${columnIndex}].name`,
+                    message: columnProblem,
+                };
+            }
+        }
+    }
+    return null;
+}
+
+const notFound = () => apiError(404, "DATASET_NOT_FOUND", "Không tìm thấy dataset");
+
 export const studioDatasetHandlers: RequestHandler[] = [
+    http.get("*/api/studio/datasets/:datasetId", async ({ params }) => {
+        await delay();
+        const dataset = findDataset(String(params.datasetId), true);
+        return dataset ? HttpResponse.json(toDetail(dataset)) : notFound();
+    }),
+
+    http.put("*/api/studio/datasets/:datasetId/schema", async ({ params, request }) => {
+        await delay();
+        const dataset = findDataset(String(params.datasetId), false);
+        if (!dataset) {
+            return notFound();
+        }
+        if (!dataset.schema.isDraft) {
+            return apiError(422, "DATASET_VERSION_FROZEN", "Phiên bản mới nhất đã chốt");
+        }
+        const { tables } = (await request.json()) as { tables: DatasetTable[] };
+        const problem = invalidSchemaField(tables);
+        if (problem) {
+            return validationFailed(problem);
+        }
+        const changed: StoredDataset = { ...dataset, schema: { ...dataset.schema, tables } };
+        saveDataset(changed);
+        return HttpResponse.json(toDetail(changed));
+    }),
+
+    http.post("*/api/studio/datasets/:datasetId/versions", async ({ params }) => {
+        await delay();
+        const dataset = findDataset(String(params.datasetId), false);
+        if (!dataset) {
+            return notFound();
+        }
+        if (dataset.schema.isDraft) {
+            return apiError(422, "DATASET_DRAFT_EXISTS", "Dataset đang có bản nháp");
+        }
+        const number = dataset.schema.versionNumber + 1;
+        const changed: StoredDataset = {
+            ...dataset,
+            versions: [...dataset.versions, { number, frozenAt: null }],
+            schema: { ...dataset.schema, versionNumber: number, isDraft: true },
+        };
+        saveDataset(changed);
+        return HttpResponse.json(toDetail(changed), { status: 201 });
+    }),
+
     http.get("*/api/studio/datasets", async ({ request }) => {
         await delay();
         const user = readMockSession();
