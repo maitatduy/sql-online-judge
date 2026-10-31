@@ -18,6 +18,14 @@ export const ADMIN_SESSION_USER: CurrentUser = {
     currentStreakDays: 0,
 };
 
+export const SETTER_SESSION_USER: CurrentUser = {
+    id: "0192f3a0-0000-7000-8000-0000000000c1",
+    username: "an.bui",
+    displayName: "Bùi An",
+    role: "SETTER",
+    currentStreakDays: 0,
+};
+
 export function readMockSession(): CurrentUser | null {
     const storedUser = sessionStorage.getItem(SESSION_STORAGE_KEY);
     return storedUser ? (JSON.parse(storedUser) as CurrentUser) : null;
