@@ -50,7 +50,10 @@ public class SecurityConfig {
                                 requests.requestMatchers(PUBLIC_PATHS)
                                         .permitAll()
                                         .requestMatchers(
-                                                HttpMethod.GET, "/api/tags", "/api/problems")
+                                                HttpMethod.GET,
+                                                "/api/tags",
+                                                "/api/problems",
+                                                "/api/problems/*")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

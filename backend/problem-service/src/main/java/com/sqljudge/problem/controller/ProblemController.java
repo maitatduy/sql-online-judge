@@ -1,9 +1,11 @@
 package com.sqljudge.problem.controller;
 
 import com.sqljudge.common.web.PageResponse;
+import com.sqljudge.problem.dto.response.ProblemDetailResponse;
 import com.sqljudge.problem.dto.response.ProblemProgress;
 import com.sqljudge.problem.dto.response.ProblemSummaryResponse;
 import com.sqljudge.problem.entity.Difficulty;
+import com.sqljudge.problem.service.ProblemDetailService;
 import com.sqljudge.problem.service.ProblemQueryService;
 import com.sqljudge.problem.service.ProblemSearch;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +16,7 @@ import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +30,7 @@ public class ProblemController {
     private static final int MAX_KEYWORD_LENGTH = 100;
 
     private final ProblemQueryService problemQueryService;
+    private final ProblemDetailService problemDetailService;
 
     @GetMapping
     @PreAuthorize("permitAll()")
@@ -48,5 +52,14 @@ public class ProblemController {
                     @Min(value = 1, message = "Phải từ 1 đến 100") @Max(value = MAX_PAGE_SIZE, message = "Phải từ 1 đến 100") int size) {
         return problemQueryService.listPublished(
                 new ProblemSearch(q, difficulty, tag, progress), page, size);
+    }
+
+    @GetMapping("/{slug}")
+    @PreAuthorize("permitAll()")
+    @Operation(summary = "Đề bài đã xuất bản: đề, schema, ví dụ của testcase công khai, ràng buộc")
+    @ApiResponse(responseCode = "200", description = "Đề bài, không kèm dữ liệu testcase ẩn")
+    @ApiResponse(responseCode = "404", description = "Không có bài, bài đang ẩn hoặc chưa xuất bản")
+    public ProblemDetailResponse getProblem(@PathVariable String slug) {
+        return problemDetailService.getPublished(slug);
     }
 }

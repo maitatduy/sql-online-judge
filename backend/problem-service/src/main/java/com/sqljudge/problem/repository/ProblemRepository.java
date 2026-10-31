@@ -35,6 +35,9 @@ public interface ProblemRepository extends JpaRepository<Problem, UUID> {
 
     Optional<Problem> findBySlug(String slug);
 
+    Optional<Problem> findBySlugAndStatusAndVisibilityAndDeletedAtIsNull(
+            String slug, ProblemStatus status, ProblemVisibility visibility);
+
     @Query(
             value =
                     "SELECT new com.sqljudge.problem.repository.ProblemSummaryRow(p.id, p.number,"
