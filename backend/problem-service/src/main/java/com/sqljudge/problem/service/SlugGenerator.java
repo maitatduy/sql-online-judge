@@ -1,6 +1,7 @@
 package com.sqljudge.problem.service;
 
 import java.text.Normalizer;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -8,6 +9,7 @@ public final class SlugGenerator {
 
     public static final int MAX_BASE_LENGTH = 150;
     private static final String FALLBACK_SLUG = "bai-tap";
+    private static final int FIRST_SUFFIX = 2;
     private static final Pattern COMBINING_MARKS = Pattern.compile("\\p{M}+");
     private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^a-z0-9]+");
     private static final Pattern EDGE_HYPHENS = Pattern.compile("^-+|-+$");
@@ -27,6 +29,17 @@ public final class SlugGenerator {
             slug = trimHyphens(slug.substring(0, MAX_BASE_LENGTH));
         }
         return slug.isEmpty() ? FALLBACK_SLUG : slug;
+    }
+
+    public static String firstFree(String base, Collection<String> taken) {
+        if (!taken.contains(base)) {
+            return base;
+        }
+        int suffix = FIRST_SUFFIX;
+        while (taken.contains(base + "-" + suffix)) {
+            suffix += 1;
+        }
+        return base + "-" + suffix;
     }
 
     private static String trimHyphens(String value) {

@@ -57,6 +57,10 @@ public class DatasetVersion extends BaseEntity {
         this.number = number;
     }
 
+    public boolean isDraft() {
+        return frozenAt == null;
+    }
+
     public DatasetTable addTable(String name) {
         DatasetTable table = new DatasetTable(this, name, tables.size());
         tables.add(table);
