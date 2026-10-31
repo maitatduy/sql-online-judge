@@ -129,10 +129,11 @@ function toSummary(problem: StoredProblem): StudioProblemSummary {
     };
 }
 
-function findOwn(problemId: string): StoredProblem | undefined {
+function findAccessible(problemId: string): StoredProblem | undefined {
     const user = readMockSession();
     return readStudioProblems().find(
-        (problem) => problem.id === problemId && problem.authorId === user?.id,
+        (problem) =>
+            problem.id === problemId && (problem.authorId === user?.id || user?.role === "ADMIN"),
     );
 }
 
@@ -212,7 +213,7 @@ export const studioProblemHandlers: RequestHandler[] = [
 
     http.get("*/api/studio/problems/:problemId", async ({ params }) => {
         await delay();
-        const problem = findOwn(String(params.problemId));
+        const problem = findAccessible(String(params.problemId));
         return problem
             ? HttpResponse.json(toDetail(problem))
             : apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
@@ -220,7 +221,7 @@ export const studioProblemHandlers: RequestHandler[] = [
 
     http.patch("*/api/studio/problems/:problemId", async ({ params, request }) => {
         await delay();
-        const problem = findOwn(String(params.problemId));
+        const problem = findAccessible(String(params.problemId));
         if (!problem) {
             return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
         }

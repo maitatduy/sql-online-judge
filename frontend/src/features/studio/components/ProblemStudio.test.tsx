@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { ToastProvider } from "@/components/shared/ToastProvider";
 import { server } from "@/mocks/server";
-import { SETTER_SESSION_USER, writeMockSession } from "@/mocks/session";
+import { ADMIN_SESSION_USER, SETTER_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
 
 import { ProblemStudio } from "./ProblemStudio";
@@ -118,6 +118,15 @@ describe("ProblemStudio - bước Thông tin", () => {
             await screen.findByText("Bài đang chờ duyệt nên chưa sửa được."),
         ).toBeInTheDocument();
         expect(screen.getByRole("textbox", { name: "Tên bài" })).toBeDisabled();
+    });
+
+    it("cho admin mở bài của setter khác", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+        renderStudio();
+
+        expect(await screen.findByRole("textbox", { name: "Tên bài" })).toHaveValue(
+            "Phễu chuyển đổi 4 bước",
+        );
     });
 
     it("báo không tìm thấy khi bài không tồn tại hoặc không phải của mình", async () => {
