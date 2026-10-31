@@ -1,5 +1,10 @@
 package com.sqljudge.problem.integration;
 
+import com.sqljudge.problem.entity.Dataset;
+import com.sqljudge.problem.entity.DatasetColumn;
+import com.sqljudge.problem.entity.DatasetTable;
+import com.sqljudge.problem.entity.DatasetVariant;
+import com.sqljudge.problem.entity.DatasetVersion;
 import com.sqljudge.problem.entity.Dialect;
 import com.sqljudge.problem.entity.Difficulty;
 import com.sqljudge.problem.entity.ExpectedResult;
@@ -9,8 +14,6 @@ import com.sqljudge.problem.entity.ProblemRevision;
 import com.sqljudge.problem.entity.ProblemStatus;
 import com.sqljudge.problem.entity.ProblemVisibility;
 import com.sqljudge.problem.entity.ReferenceSolution;
-import com.sqljudge.problem.entity.RevisionColumn;
-import com.sqljudge.problem.entity.RevisionTable;
 import com.sqljudge.problem.entity.StatementType;
 import com.sqljudge.problem.entity.Testcase;
 import java.time.Instant;
@@ -27,7 +30,35 @@ final class ProblemFixtures {
 
     private ProblemFixtures() {}
 
-    static Problem publishedProblem(String slug, int number) {
+    static Dataset companyDataset(String slug) {
+        Dataset dataset = new Dataset();
+        dataset.setOwnerId(AUTHOR_ID);
+        dataset.setSlug(slug);
+        dataset.setName("Công ty");
+        dataset.setDescription("Nhân viên và phòng ban");
+
+        DatasetVersion version = dataset.addVersion(1);
+        version.setFrozenAt(PUBLISHED_AT);
+        DatasetTable departments = version.addTable("departments");
+        departments.addColumn("id", LogicalType.INTEGER).setPrimaryKey(true);
+        departments.addColumn("name", LogicalType.TEXT);
+        DatasetTable employees = version.addTable("employees");
+        employees.addColumn("id", LogicalType.INTEGER).setPrimaryKey(true);
+        DatasetColumn departmentId = employees.addColumn("department_id", LogicalType.INTEGER);
+        departmentId.setNullable(true);
+        departmentId.setReferencesTable("departments");
+        departmentId.setReferencesColumn("id");
+
+        DatasetVariant sample = version.addVariant("Mẫu", true);
+        sample.addTable("departments", "id,name\n1,Kỹ thuật\n2,Kinh doanh\n", 2);
+        sample.addTable("employees", "id,department_id\n1,1\n2,1\n3,2\n", 3);
+        DatasetVariant hidden = version.addVariant("Nhiều người cùng lương", false);
+        hidden.addTable("departments", "id,name\n1," + HIDDEN_DATA_MARKER + "\n", 1);
+        hidden.addTable("employees", "id,department_id\n1,1\n", 1);
+        return dataset;
+    }
+
+    static Problem publishedProblem(String slug, int number, Dataset dataset) {
         Problem problem = new Problem();
         problem.setSlug(slug);
         problem.setNumber(number);
@@ -43,34 +74,23 @@ final class ProblemFixtures {
         problem.setAllowedStatements(Set.of(StatementType.SELECT, StatementType.WITH));
         problem.setPublishedAt(PUBLISHED_AT);
 
+        DatasetVersion datasetVersion = dataset.getVersions().get(0);
         ProblemRevision revision = problem.addRevision(1);
         revision.setFrozenAt(PUBLISHED_AT);
-        RevisionTable departments = revision.addTable("departments");
-        departments.addColumn("id", LogicalType.INTEGER).setPrimaryKey(true);
-        departments.addColumn("name", LogicalType.TEXT);
-        RevisionTable employees = revision.addTable("employees");
-        employees.addColumn("id", LogicalType.INTEGER).setPrimaryKey(true);
-        RevisionColumn departmentId = employees.addColumn("department_id", LogicalType.INTEGER);
-        departmentId.setNullable(true);
-        departmentId.setReferencesTable("departments");
-        departmentId.setReferencesColumn("id");
+        revision.setDatasetVersion(datasetVersion);
         revision.addReferenceSolution(
                 new ReferenceSolution(Dialect.POSTGRESQL, REFERENCE_SOLUTION_MARKER));
         revision.addReferenceSolution(
                 new ReferenceSolution(Dialect.MYSQL, REFERENCE_SOLUTION_MARKER));
 
-        Testcase example = revision.addTestcase("Ví dụ trong đề", true);
-        example.addData("departments", "id,name\n1,Kỹ thuật\n2,Kinh doanh\n", 2);
-        example.addData("employees", "id,department_id\n1,1\n2,1\n3,2\n", 3);
+        Testcase example = revision.addTestcase(datasetVersion.getVariants().get(0));
         example.setExpectedResult(
                 new ExpectedResult(
                         "[\"department\",\"employee\"]",
                         "[[\"Kỹ thuật\",\"Hoàng Quốc Bảo\"],[\"Kinh doanh\",null]]",
                         2,
                         "x"));
-        Testcase hidden = revision.addTestcase("Nhiều người cùng lương", false);
-        hidden.addData("departments", "id,name\n1," + HIDDEN_DATA_MARKER + "\n", 1);
-        hidden.addData("employees", "id,department_id\n1,1\n", 1);
+        Testcase hidden = revision.addTestcase(datasetVersion.getVariants().get(1));
         hidden.setExpectedResult(
                 new ExpectedResult(
                         "[\"department\"]", "[[\"" + HIDDEN_DATA_MARKER + "\"]]", 1, "y"));

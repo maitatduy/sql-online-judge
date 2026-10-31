@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.sqljudge.problem.entity.Dataset;
 import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.entity.ProblemStats;
 import com.sqljudge.problem.entity.ProblemStatus;
 import com.sqljudge.problem.entity.ProblemVisibility;
 import com.sqljudge.problem.entity.Tag;
+import com.sqljudge.problem.repository.DatasetRepository;
 import com.sqljudge.problem.repository.ProblemRepository;
 import com.sqljudge.problem.repository.ProblemStatsRepository;
 import com.sqljudge.problem.repository.TagRepository;
@@ -40,14 +42,19 @@ class ProblemDetailApiIntegrationTest extends ContainerSupport {
 
     @Autowired private ProblemStatsRepository problemStatsRepository;
 
+    @Autowired private DatasetRepository datasetRepository;
+
     @Autowired private JdbcTemplate jdbcTemplate;
+
+    private Dataset dataset;
 
     @BeforeEach
     void seedProblem() {
+        dataset = datasetRepository.save(ProblemFixtures.companyDataset("cong-ty"));
         Tag join = new Tag();
         join.setSlug("join");
         join.setName("JOIN");
-        Problem problem = ProblemFixtures.publishedProblem(SLUG, 184);
+        Problem problem = ProblemFixtures.publishedProblem(SLUG, 184, dataset);
         problem.getTags().add(tagRepository.save(join));
         problemRepository.save(problem);
         problemStatsRepository.save(new ProblemStats(problem.getId(), 1000, 412, 12380));
@@ -57,6 +64,7 @@ class ProblemDetailApiIntegrationTest extends ContainerSupport {
     void deleteProblems() {
         jdbcTemplate.update("UPDATE problems SET published_revision_id = NULL");
         jdbcTemplate.update("DELETE FROM problems");
+        jdbcTemplate.update("DELETE FROM datasets");
         jdbcTemplate.update("DELETE FROM tags");
     }
 
@@ -126,9 +134,9 @@ class ProblemDetailApiIntegrationTest extends ContainerSupport {
     @Test
     @DisplayName("Bài không tồn tại, đang ẩn hoặc chưa xuất bản đều trả 404 PROBLEM_NOT_FOUND")
     void detail_unknownHiddenOrDraftProblem_returnsNotFound() {
-        Problem hidden = ProblemFixtures.publishedProblem("hidden-problem", 2);
+        Problem hidden = ProblemFixtures.publishedProblem("hidden-problem", 2, dataset);
         hidden.setVisibility(ProblemVisibility.HIDDEN);
-        Problem draft = ProblemFixtures.publishedProblem("draft-problem", 3);
+        Problem draft = ProblemFixtures.publishedProblem("draft-problem", 3, dataset);
         draft.setStatus(ProblemStatus.DRAFT);
         problemRepository.saveAll(List.of(hidden, draft));
 

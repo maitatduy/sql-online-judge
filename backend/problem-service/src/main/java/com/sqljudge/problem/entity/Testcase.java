@@ -8,11 +8,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,14 +31,9 @@ public class Testcase extends BaseEntity {
     @Column(name = "position", nullable = false)
     private int position;
 
-    @Column(name = "description", nullable = false, length = 200)
-    private String description;
-
-    @Column(name = "is_public", nullable = false)
-    private boolean isPublic;
-
-    @OneToMany(mappedBy = "testcase", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TestcaseData> data = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "dataset_variant_id", nullable = false)
+    private DatasetVariant datasetVariant;
 
     @OneToOne(
             mappedBy = "testcase",
@@ -50,15 +42,14 @@ public class Testcase extends BaseEntity {
             orphanRemoval = true)
     private ExpectedResult expectedResult;
 
-    Testcase(ProblemRevision revision, int position, String description, boolean isPublic) {
+    Testcase(ProblemRevision revision, int position, DatasetVariant datasetVariant) {
         this.revision = revision;
         this.position = position;
-        this.description = description;
-        this.isPublic = isPublic;
+        this.datasetVariant = datasetVariant;
     }
 
-    public void addData(String tableName, String csv, int rowCount) {
-        data.add(new TestcaseData(this, tableName, csv, rowCount));
+    public boolean isPublic() {
+        return datasetVariant.isPublic();
     }
 
     public void setExpectedResult(ExpectedResult result) {

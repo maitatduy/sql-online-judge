@@ -18,19 +18,19 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-        name = "revision_tables",
+        name = "dataset_tables",
         indexes =
                 @Index(
-                        name = "uk_revision_tables_revision_id_name",
-                        columnList = "revision_id, name",
+                        name = "uk_dataset_tables_version_id_name",
+                        columnList = "version_id, name",
                         unique = true))
 @Getter
 @NoArgsConstructor
-public class RevisionTable extends BaseEntity {
+public class DatasetTable extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "revision_id", nullable = false)
-    private ProblemRevision revision;
+    @JoinColumn(name = "version_id", nullable = false)
+    private DatasetVersion version;
 
     @Column(name = "name", nullable = false, length = 64)
     private String name;
@@ -40,16 +40,16 @@ public class RevisionTable extends BaseEntity {
 
     @OneToMany(mappedBy = "table", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position")
-    private List<RevisionColumn> columns = new ArrayList<>();
+    private List<DatasetColumn> columns = new ArrayList<>();
 
-    RevisionTable(ProblemRevision revision, String name, int position) {
-        this.revision = revision;
+    DatasetTable(DatasetVersion version, String name, int position) {
+        this.version = version;
         this.name = name;
         this.position = position;
     }
 
-    public RevisionColumn addColumn(String columnName, LogicalType logicalType) {
-        RevisionColumn column = new RevisionColumn(this, columnName, logicalType, columns.size());
+    public DatasetColumn addColumn(String columnName, LogicalType logicalType) {
+        DatasetColumn column = new DatasetColumn(this, columnName, logicalType, columns.size());
         columns.add(column);
         return column;
     }

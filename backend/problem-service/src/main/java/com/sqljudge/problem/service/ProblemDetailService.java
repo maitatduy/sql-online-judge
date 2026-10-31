@@ -13,6 +13,9 @@ import com.sqljudge.problem.dto.response.ProblemDetailResponse.ResultSetResponse
 import com.sqljudge.problem.dto.response.ProblemDetailResponse.SchemaColumnResponse;
 import com.sqljudge.problem.dto.response.ProblemDetailResponse.SchemaTableResponse;
 import com.sqljudge.problem.dto.response.TagResponse;
+import com.sqljudge.problem.entity.DatasetColumn;
+import com.sqljudge.problem.entity.DatasetTable;
+import com.sqljudge.problem.entity.DatasetVersion;
 import com.sqljudge.problem.entity.Dialect;
 import com.sqljudge.problem.entity.ExpectedResult;
 import com.sqljudge.problem.entity.Problem;
@@ -21,8 +24,6 @@ import com.sqljudge.problem.entity.ProblemStats;
 import com.sqljudge.problem.entity.ProblemStatus;
 import com.sqljudge.problem.entity.ProblemVisibility;
 import com.sqljudge.problem.entity.ReferenceSolution;
-import com.sqljudge.problem.entity.RevisionColumn;
-import com.sqljudge.problem.entity.RevisionTable;
 import com.sqljudge.problem.entity.Testcase;
 import com.sqljudge.problem.repository.ProblemRepository;
 import com.sqljudge.problem.repository.ProblemStatsRepository;
@@ -83,7 +84,7 @@ public class ProblemDetailService {
                 dialects,
                 engineVersionsOf(dialects),
                 problem.getStarterCode(),
-                revision.getTables().stream().map(ProblemDetailService::toSchemaTable).toList(),
+                schemaOf(revision),
                 revision.getTestcases().stream()
                         .filter(Testcase::isPublic)
                         .map(testcase -> toResultSet(testcase.getExpectedResult()))
@@ -118,13 +119,22 @@ public class ProblemDetailService {
         }
     }
 
-    private static SchemaTableResponse toSchemaTable(RevisionTable table) {
+    private static List<SchemaTableResponse> schemaOf(ProblemRevision revision) {
+        DatasetVersion datasetVersion = revision.getDatasetVersion();
+        return datasetVersion == null
+                ? List.of()
+                : datasetVersion.getTables().stream()
+                        .map(ProblemDetailService::toSchemaTable)
+                        .toList();
+    }
+
+    private static SchemaTableResponse toSchemaTable(DatasetTable table) {
         return new SchemaTableResponse(
                 table.getName(),
                 table.getColumns().stream().map(ProblemDetailService::toSchemaColumn).toList());
     }
 
-    private static SchemaColumnResponse toSchemaColumn(RevisionColumn column) {
+    private static SchemaColumnResponse toSchemaColumn(DatasetColumn column) {
         ColumnReferenceResponse references =
                 column.getReferencesTable() == null
                         ? null
