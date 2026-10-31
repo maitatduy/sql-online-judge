@@ -23,6 +23,7 @@ import {
     clearMockSession,
     DEMO_SESSION_USER,
     readMockSession,
+    SETTER_SESSION_USER,
     writeMockSession,
 } from "./session";
 
@@ -30,6 +31,7 @@ const DEMO_PASSWORD = "mock-password";
 const DEMO_ACCOUNTS: Record<string, CurrentUser> = {
     "demo@sqljudge.dev": DEMO_SESSION_USER,
     "admin@sqljudge.dev": ADMIN_SESSION_USER,
+    "setter@sqljudge.dev": SETTER_SESSION_USER,
 };
 const LOCKED_EMAIL = "locked@sqljudge.dev";
 const UNVERIFIED_EMAIL = "unverified@sqljudge.dev";

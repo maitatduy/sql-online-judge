@@ -13,6 +13,7 @@ export const ROUTES = {
     ai: "/ai",
     settings: "/settings",
     admin: "/admin",
+    studioProblems: "/studio/problems",
     adminUsers: "/admin/users",
     adminMessages: "/admin/messages",
     adminReports: "/admin/reports",
