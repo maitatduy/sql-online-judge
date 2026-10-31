@@ -26,11 +26,15 @@ final class TestJwts {
     private TestJwts() {}
 
     static String learnerToken() {
+        return token(LEARNER_ID, "LEARNER");
+    }
+
+    static String token(UUID userId, String role) {
         JWTClaimsSet claims =
                 new JWTClaimsSet.Builder()
-                        .subject(LEARNER_ID.toString())
-                        .claim("username", "minh.anh")
-                        .claim("role", "LEARNER")
+                        .subject(userId.toString())
+                        .claim("username", "user-" + userId.toString().substring(30))
+                        .claim("role", role)
                         .issueTime(new Date())
                         .expirationTime(Date.from(Instant.now().plus(ACCESS_TOKEN_TTL)))
                         .build();

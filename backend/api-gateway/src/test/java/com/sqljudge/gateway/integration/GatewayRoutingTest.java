@@ -190,12 +190,21 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
                 .exchange()
                 .expectStatus()
                 .isNotFound();
+        webTestClient.post().uri("/api/studio/problems").exchange().expectStatus().isNotFound();
+        webTestClient
+                .get()
+                .uri("/api/studio/problems/status-counts")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
 
         assertThat(PROBLEM_SERVICE.forwardedRequestLines())
                 .containsExactly(
                         "GET /api/tags",
                         "GET /api/problems?difficulty=MEDIUM&page=2",
-                        "GET /api/problems/highest-salary-per-department");
+                        "GET /api/problems/highest-salary-per-department",
+                        "POST /api/studio/problems",
+                        "GET /api/studio/problems/status-counts");
         assertThat(AUTH_SERVICE.forwardedRequestLines()).isEmpty();
     }
 
