@@ -1,6 +1,7 @@
 package com.sqljudge.problem.service;
 
 import com.sqljudge.common.exception.InvalidFieldException;
+import com.sqljudge.problem.entity.DatasetTable;
 import com.sqljudge.problem.entity.LogicalType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,6 +50,18 @@ public final class CsvTableParser {
             rows.add(row);
         }
         return new ParsedCsv(rows.size(), rows);
+    }
+
+    public static List<CsvColumn> columnsOf(DatasetTable table) {
+        return table.getColumns().stream()
+                .map(
+                        column ->
+                                new CsvColumn(
+                                        column.getName(),
+                                        column.getLogicalType(),
+                                        column.isPrimaryKey(),
+                                        column.isNullable()))
+                .toList();
     }
 
     private static void requireHeader(List<Field> header, List<CsvColumn> columns) {

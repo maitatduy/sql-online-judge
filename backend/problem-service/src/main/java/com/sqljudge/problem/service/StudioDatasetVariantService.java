@@ -14,8 +14,6 @@ import com.sqljudge.problem.entity.DatasetTable;
 import com.sqljudge.problem.entity.DatasetVariant;
 import com.sqljudge.problem.entity.DatasetVersion;
 import com.sqljudge.problem.repository.DatasetRepository;
-import com.sqljudge.problem.service.CsvTableParser.CsvColumn;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -75,7 +73,8 @@ public class StudioDatasetVariantService {
                                 () ->
                                         new InvalidFieldException(
                                                 "tableName", "Bảng không có trong schema"));
-        int rowCount = CsvTableParser.parse(request.csv(), columnsOf(table)).rowCount();
+        int rowCount =
+                CsvTableParser.parse(request.csv(), CsvTableParser.columnsOf(table)).rowCount();
         variant.putTable(tableName, request.csv(), rowCount);
         return StudioDatasetResponse.from(datasetRepository.saveAndFlush(dataset));
     }
@@ -91,18 +90,6 @@ public class StudioDatasetVariantService {
                                 new NotFoundException(
                                         ErrorCode.DATASET_VARIANT_NOT_FOUND,
                                         "Bộ dữ liệu chưa có CSV cho bảng này"));
-    }
-
-    private static List<CsvColumn> columnsOf(DatasetTable table) {
-        return table.getColumns().stream()
-                .map(
-                        column ->
-                                new CsvColumn(
-                                        column.getName(),
-                                        column.getLogicalType(),
-                                        column.isPrimaryKey(),
-                                        column.isNullable()))
-                .toList();
     }
 
     private static void requireFreeName(DatasetVersion draft, String name, UUID exceptVariantId) {

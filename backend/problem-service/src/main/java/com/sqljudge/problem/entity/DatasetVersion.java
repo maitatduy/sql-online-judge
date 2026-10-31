@@ -85,6 +85,31 @@ public class DatasetVersion extends BaseEntity {
                                         && !variant.getId().equals(exceptVariantId));
     }
 
+    void copyFrom(DatasetVersion source) {
+        for (DatasetTable sourceTable : source.getTables()) {
+            DatasetTable table = addTable(sourceTable.getName());
+            for (DatasetColumn sourceColumn : sourceTable.getColumns()) {
+                DatasetColumn column =
+                        table.addColumn(sourceColumn.getName(), sourceColumn.getLogicalType());
+                column.setPrimaryKey(sourceColumn.isPrimaryKey());
+                column.setNullable(sourceColumn.isNullable());
+                column.setReferencesTable(sourceColumn.getReferencesTable());
+                column.setReferencesColumn(sourceColumn.getReferencesColumn());
+            }
+        }
+        for (DatasetVariant sourceVariant : source.getVariants()) {
+            DatasetVariant variant = addVariant(sourceVariant.getName(), sourceVariant.isPublic());
+            sourceVariant
+                    .getTables()
+                    .forEach(
+                            data ->
+                                    variant.addTable(
+                                            data.getTableName(),
+                                            data.getCsv(),
+                                            data.getRowCount()));
+        }
+    }
+
     public DatasetVariant addVariant(String name, boolean isPublic) {
         DatasetVariant variant = new DatasetVariant(this, name, variants.size(), isPublic);
         variants.add(variant);
