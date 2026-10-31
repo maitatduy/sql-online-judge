@@ -20,7 +20,7 @@ const readFrom = (tokens: Record<string, string>) => (name: string) => tokens[na
 
 describe("editorThemeFrom", () => {
     it("dựng theme tối của Monaco từ token màu của design system", () => {
-        const theme = editorThemeFrom(readFrom(DARK_TOKENS));
+        const theme = editorThemeFrom(readFrom(DARK_TOKENS), "vs-dark");
 
         expect(theme.base).toBe("vs-dark");
         expect(theme.inherit).toBe(true);
@@ -36,7 +36,7 @@ describe("editorThemeFrom", () => {
     });
 
     it("tô cú pháp SQL bằng các token syntax, bỏ dấu # theo định dạng của Monaco", () => {
-        const theme = editorThemeFrom(readFrom(DARK_TOKENS));
+        const theme = editorThemeFrom(readFrom(DARK_TOKENS), "vs-dark");
 
         expect(theme.rules).toEqual(
             expect.arrayContaining([
@@ -50,7 +50,10 @@ describe("editorThemeFrom", () => {
     });
 
     it("chuẩn hoá giá trị token có khoảng trắng và chữ hoa", () => {
-        const theme = editorThemeFrom(readFrom({ ...DARK_TOKENS, "--bg": "  #0B0F17 " }));
+        const theme = editorThemeFrom(
+            readFrom({ ...DARK_TOKENS, "--bg": "  #0B0F17 " }),
+            "vs-dark",
+        );
 
         expect(theme.colors["editor.background"]).toBe("#0b0f17");
     });
@@ -58,9 +61,14 @@ describe("editorThemeFrom", () => {
     it("bỏ qua token thiếu hoặc không phải mã hex 6 chữ số thay vì đưa màu hỏng cho Monaco", () => {
         const theme = editorThemeFrom(
             readFrom({ ...DARK_TOKENS, "--syntax-string": "", "--bg": "oklch(0.2 0 0)" }),
+            "vs-dark",
         );
 
         expect(theme.colors).not.toHaveProperty("editor.background");
         expect(theme.rules.map((rule) => rule.token)).not.toContain("string");
+    });
+
+    it("dựng trên theme sáng của Monaco khi editor nằm trên nền sáng", () => {
+        expect(editorThemeFrom(readFrom(DARK_TOKENS), "vs").base).toBe("vs");
     });
 });

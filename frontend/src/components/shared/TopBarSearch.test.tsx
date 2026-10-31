@@ -4,31 +4,19 @@ import { describe, expect, it } from "vitest";
 import { TopBarSearch } from "./TopBarSearch";
 
 describe("TopBarSearch", () => {
-    it("có ô tìm kiếm kèm gợi ý phím tắt", () => {
+    it("có ô tìm kiếm, không kèm gợi ý phím tắt", () => {
         render(<TopBarSearch />);
 
-        expect(screen.getByRole("searchbox", { name: "Tìm kiếm" })).toHaveAttribute(
-            "placeholder",
-            "Tìm bài, contest, người dùng…",
-        );
-        expect(screen.getByText("Ctrl K")).toBeInTheDocument();
+        const search = screen.getByRole("searchbox", { name: "Tìm kiếm" });
+        expect(search).toHaveAttribute("placeholder", "Tìm bài, contest, người dùng…");
+        expect(search).not.toHaveAttribute("aria-keyshortcuts");
+        expect(screen.queryByText(/Ctrl/)).not.toBeInTheDocument();
     });
 
-    it.each([{ ctrlKey: true }, { metaKey: true }])(
-        "nhấn K cùng phím bổ trợ %j thì đưa con trỏ vào ô tìm kiếm",
-        (modifier) => {
-            render(<TopBarSearch />);
-
-            fireEvent.keyDown(window, { key: "k", ...modifier });
-
-            expect(screen.getByRole("searchbox", { name: "Tìm kiếm" })).toHaveFocus();
-        },
-    );
-
-    it("nhấn K không kèm phím bổ trợ thì không làm gì", () => {
+    it("nhấn Ctrl+K không chiếm con trỏ của trang", () => {
         render(<TopBarSearch />);
 
-        fireEvent.keyDown(window, { key: "k" });
+        fireEvent.keyDown(window, { key: "k", ctrlKey: true });
 
         expect(screen.getByRole("searchbox", { name: "Tìm kiếm" })).not.toHaveFocus();
     });

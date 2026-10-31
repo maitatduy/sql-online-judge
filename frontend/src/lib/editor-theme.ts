@@ -24,8 +24,10 @@ interface EditorThemeRule {
     fontStyle?: string;
 }
 
+export type EditorBase = "vs" | "vs-dark";
+
 interface EditorTheme {
-    base: "vs-dark";
+    base: EditorBase;
     inherit: true;
     colors: Record<string, string>;
     rules: EditorThemeRule[];
@@ -38,7 +40,7 @@ function hexOf(readToken: ReadToken, cssVariable: string): string | null {
     return HEX_COLOR.test(value) ? value : null;
 }
 
-export function editorThemeFrom(readToken: ReadToken): EditorTheme {
+export function editorThemeFrom(readToken: ReadToken, base: EditorBase): EditorTheme {
     const colors = Object.fromEntries(
         Object.entries(COLOR_TOKENS).flatMap(([colorKey, cssVariable]) => {
             const hex = hexOf(readToken, cssVariable);
@@ -49,5 +51,5 @@ export function editorThemeFrom(readToken: ReadToken): EditorTheme {
         const hex = hexOf(readToken, cssVariable);
         return hex ? [{ token, foreground: hex.slice(1), ...style }] : [];
     });
-    return { base: "vs-dark", inherit: true, colors, rules };
+    return { base, inherit: true, colors, rules };
 }

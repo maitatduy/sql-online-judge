@@ -50,7 +50,8 @@ describe("chạy thử trong Workspace", () => {
         renderWithProviders(<Workspace slug={SLUG} />);
 
         const panel = within(await screen.findByRole("tabpanel", { name: "Chạy thử" }));
-        expect(panel.getByText(/Bấm Run hoặc Ctrl\+Enter/)).toBeInTheDocument();
+        expect(panel.getByText(/Bấm Run để chạy thử/)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Run" })).not.toHaveTextContent("Ctrl");
     });
 
     it("khoá nút Run khi đang chạy rồi hiện bảng kết quả trên dữ liệu mẫu", async () => {

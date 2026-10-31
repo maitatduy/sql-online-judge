@@ -1,14 +1,18 @@
 "use client";
 
 import { Editor, type OnMount } from "@monaco-editor/react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
-import { editorThemeFrom } from "@/lib/editor-theme";
+import { type EditorBase, editorThemeFrom } from "@/lib/editor-theme";
 import { cn } from "@/lib/utils";
 
 import "./monaco-setup";
 
-const THEME_NAME = "sqljudge-dark";
+const THEME_NAMES: Record<EditorBase, string> = {
+    vs: "sqljudge-light",
+    "vs-dark": "sqljudge-dark",
+};
+const DARK_SURFACE_SELECTOR = ".dark";
 const EDITOR_LANGUAGE = "pgsql";
 const EDITOR_FONT_SIZE = 14;
 const EDITOR_LINE_HEIGHT = 22;
@@ -17,8 +21,6 @@ interface SqlEditorProps {
     value: string;
     onChange: (value: string) => void;
     ariaLabel: string;
-    onRun?: () => void;
-    onSubmit?: () => void;
     readOnly?: boolean;
     className?: string;
 }
@@ -27,35 +29,24 @@ export function SqlEditor({
     value,
     onChange,
     ariaLabel,
-    onRun,
-    onSubmit,
     readOnly = false,
     className,
 }: SqlEditorProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const shortcutsRef = useRef({ onRun, onSubmit });
-
-    useEffect(() => {
-        shortcutsRef.current = { onRun, onSubmit };
-    }, [onRun, onSubmit]);
 
     const handleMount: OnMount = (editor, monaco) => {
-        const style = getComputedStyle(containerRef.current ?? document.documentElement);
+        const container = containerRef.current ?? document.documentElement;
+        const style = getComputedStyle(container);
+        const base: EditorBase = container.closest(DARK_SURFACE_SELECTOR) ? "vs-dark" : "vs";
         monaco.editor.defineTheme(
-            THEME_NAME,
-            editorThemeFrom((name) => style.getPropertyValue(name)),
+            THEME_NAMES[base],
+            editorThemeFrom((name) => style.getPropertyValue(name), base),
         );
-        monaco.editor.setTheme(THEME_NAME);
+        monaco.editor.setTheme(THEME_NAMES[base]);
         const fontFamily = style.getPropertyValue("--font-mono").trim();
         if (fontFamily) {
             editor.updateOptions({ fontFamily });
         }
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () =>
-            shortcutsRef.current.onRun?.(),
-        );
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () =>
-            shortcutsRef.current.onSubmit?.(),
-        );
     };
 
     return (
@@ -63,7 +54,6 @@ export function SqlEditor({
             <Editor
                 value={value}
                 language={EDITOR_LANGUAGE}
-                theme={THEME_NAME}
                 onChange={(nextValue) => onChange(nextValue ?? "")}
                 onMount={handleMount}
                 options={{

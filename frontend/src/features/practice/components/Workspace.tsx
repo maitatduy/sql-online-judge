@@ -33,7 +33,7 @@ export function Workspace({ slug }: WorkspaceProps) {
     }
 
     return (
-        <div className="dark flex h-screen flex-col overflow-hidden bg-background text-foreground">
+        <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
             {problem ? (
                 <ToastProvider>
                     <ProblemWorkspace key={problem.id} problem={problem} />

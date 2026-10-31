@@ -18,8 +18,6 @@ interface FakeEditor {
 }
 
 interface FakeMonaco {
-    KeyMod: { CtrlCmd: number; Shift: number };
-    KeyCode: { Enter: number };
     editor: {
         defineTheme: (name: string, theme: unknown) => void;
         setTheme: (name: string) => void;
@@ -37,10 +35,6 @@ vi.mock("@monaco-editor/react", () => ({
     },
 }));
 
-const CTRL_CMD = 1 << 11;
-const SHIFT = 1 << 10;
-const ENTER = 3;
-
 function fakeMonaco() {
     const commands = new Map<number, () => void>();
     const editor: FakeEditor = {
@@ -48,8 +42,6 @@ function fakeMonaco() {
         updateOptions: vi.fn(),
     };
     const monaco: FakeMonaco = {
-        KeyMod: { CtrlCmd: CTRL_CMD, Shift: SHIFT },
-        KeyCode: { Enter: ENTER },
         editor: { defineTheme: vi.fn(), setTheme: vi.fn() },
     };
     return { editor, monaco, commands };
@@ -85,34 +77,32 @@ describe("SqlEditor", () => {
         expect(handleChange.mock.calls).toEqual([["SELECT 2;"], [""]]);
     });
 
-    it("gắn Ctrl+Enter để chạy thử và Ctrl+Shift+Enter để nộp bài, luôn gọi handler mới nhất", () => {
-        const firstRun = vi.fn();
-        const latestRun = vi.fn();
-        const handleSubmit = vi.fn();
-        const { rerender } = render(
-            <SqlEditor value="" onChange={vi.fn()} ariaLabel="Mã SQL" onRun={firstRun} />,
-        );
+    it("không gắn phím tắt nào vào editor", () => {
+        render(<SqlEditor value="" onChange={vi.fn()} ariaLabel="Mã SQL" />);
+
         const { commands } = mountEditor();
-        rerender(
-            <SqlEditor
-                value=""
-                onChange={vi.fn()}
-                ariaLabel="Mã SQL"
-                onRun={latestRun}
-                onSubmit={handleSubmit}
-            />,
-        );
 
-        commands.get(CTRL_CMD | ENTER)?.();
-        commands.get(CTRL_CMD | SHIFT | ENTER)?.();
-
-        expect(firstRun).not.toHaveBeenCalled();
-        expect(latestRun).toHaveBeenCalledTimes(1);
-        expect(handleSubmit).toHaveBeenCalledTimes(1);
+        expect(commands.size).toBe(0);
     });
 
-    it("áp theme dựng từ token màu khi editor sẵn sàng", () => {
+    it("dùng theme sáng khi editor nằm trên nền sáng", () => {
         render(<SqlEditor value="" onChange={vi.fn()} ariaLabel="Mã SQL" />);
+
+        const { monaco } = mountEditor();
+
+        expect(monaco.editor.defineTheme).toHaveBeenCalledWith(
+            "sqljudge-light",
+            expect.objectContaining({ base: "vs" }),
+        );
+        expect(monaco.editor.setTheme).toHaveBeenCalledWith("sqljudge-light");
+    });
+
+    it("dùng theme tối khi editor nằm trong vùng nền tối", () => {
+        render(
+            <div className="dark">
+                <SqlEditor value="" onChange={vi.fn()} ariaLabel="Mã SQL" />
+            </div>,
+        );
 
         const { monaco } = mountEditor();
 

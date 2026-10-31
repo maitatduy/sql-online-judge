@@ -16,19 +16,9 @@ interface EditorPanelProps {
     savedAt: Date | null;
     onChange: (code: string) => void;
     onReset: () => void;
-    onRun: () => void;
-    onSubmit: () => void;
 }
 
-export function EditorPanel({
-    engineLabel,
-    code,
-    savedAt,
-    onChange,
-    onReset,
-    onRun,
-    onSubmit,
-}: EditorPanelProps) {
+export function EditorPanel({ engineLabel, code, savedAt, onChange, onReset }: EditorPanelProps) {
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
 
     return (
@@ -53,8 +43,6 @@ export function EditorPanel({
             <LazySqlEditor
                 value={code}
                 onChange={onChange}
-                onRun={onRun}
-                onSubmit={onSubmit}
                 ariaLabel="Mã SQL của bạn"
                 className="flex-1 bg-background"
             />

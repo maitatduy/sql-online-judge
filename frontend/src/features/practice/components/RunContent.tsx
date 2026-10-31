@@ -78,7 +78,7 @@ export function RunContent({ problem, run, isRunning, error, onRetry }: RunConte
     }
     return (
         <p className="text-[13px] text-muted-foreground">
-            Bấm Run hoặc Ctrl+Enter để chạy thử trên dữ liệu mẫu. Chạy thử không tính là lần nộp.
+            Bấm Run để chạy thử trên dữ liệu mẫu. Chạy thử không tính là lần nộp.
         </p>
     );
 }
