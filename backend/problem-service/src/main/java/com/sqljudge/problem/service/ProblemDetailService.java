@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.NotFoundException;
+import com.sqljudge.problem.config.CacheConfig;
 import com.sqljudge.problem.config.JudgeEngineProperties;
 import com.sqljudge.problem.dto.response.ProblemDetailResponse;
 import com.sqljudge.problem.dto.response.ProblemDetailResponse.ColumnReferenceResponse;
@@ -30,6 +31,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,7 @@ public class ProblemDetailService {
     private final JudgeEngineProperties judgeEngineProperties;
     private final ObjectMapper objectMapper;
 
+    @Cacheable(cacheNames = CacheConfig.PROBLEM_DETAIL, key = "#slug")
     @Transactional(readOnly = true)
     public ProblemDetailResponse getPublished(String slug) {
         Problem problem =
