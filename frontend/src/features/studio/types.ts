@@ -40,4 +40,6 @@ export interface UpdateProblemRequest {
     statementMarkdown?: string;
 }
 
+export type StudioStep = "info" | "statement";
+
 export const EDITABLE_STATUSES: readonly ProblemStatus[] = ["DRAFT", "CHANGES_REQUESTED"];

@@ -8,6 +8,12 @@ export const PROBLEM_STATUS_LABELS: Record<ProblemStatus, string> = {
     PUBLISHED: "Đã xuất bản",
 };
 
+export const LOCKED_MESSAGES: Partial<Record<ProblemStatus, string>> = {
+    PENDING_REVIEW: "Bài đang chờ duyệt nên chưa sửa được.",
+    REJECTED: "Bài đã bị từ chối nên không sửa được.",
+    PUBLISHED: "Bài đã xuất bản nên chưa sửa được.",
+};
+
 export const STATUS_TABS: readonly ProblemStatus[] = [
     "DRAFT",
     "PENDING_REVIEW",

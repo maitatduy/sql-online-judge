@@ -11,23 +11,13 @@ import { DIFFICULTIES, DIFFICULTY_LABELS } from "@/lib/difficulty";
 
 import { useStudioTags } from "../hooks/useStudioProblem";
 import { MAX_TAGS, problemInfoSchema, type ProblemInfoValues } from "../schemas";
-import {
-    EDITABLE_STATUSES,
-    type ProblemStatus,
-    type StudioProblem,
-    type UpdateProblemRequest,
-} from "../types";
+import type { StudioProblem, UpdateProblemRequest } from "../types";
 
 type InfoField = keyof ProblemInfoValues;
 
-const LOCKED_MESSAGES: Partial<Record<ProblemStatus, string>> = {
-    PENDING_REVIEW: "Bài đang chờ duyệt nên chưa sửa được.",
-    REJECTED: "Bài đã bị từ chối nên không sửa được.",
-    PUBLISHED: "Bài đã xuất bản nên chưa sửa được.",
-};
-
 interface InfoStepProps {
     problem: StudioProblem;
+    disabled: boolean;
     saveError: Error | null;
     onChange: (change: UpdateProblemRequest) => void;
 }
@@ -42,9 +32,8 @@ function serverErrorOf(error: Error | null, field: InfoField): string | undefine
     return error.errors.find((fieldError) => fieldError.field === field)?.message;
 }
 
-export function InfoStep({ problem, saveError, onChange }: InfoStepProps) {
+export function InfoStep({ problem, disabled, saveError, onChange }: InfoStepProps) {
     const { data: tags } = useStudioTags();
-    const isEditable = EDITABLE_STATUSES.includes(problem.status);
     const {
         register,
         trigger,
@@ -102,13 +91,8 @@ export function InfoStep({ problem, saveError, onChange }: InfoStepProps) {
             <h2 id="info-step-title" className="text-base font-bold">
                 Thông tin
             </h2>
-            {isEditable ? null : (
-                <p className="mt-2 rounded-md bg-surface-2 px-3 py-2 text-[13px]">
-                    {LOCKED_MESSAGES[problem.status]}
-                </p>
-            )}
             <form noValidate onSubmit={(event) => event.preventDefault()}>
-                <fieldset disabled={!isEditable} className="mt-4 flex flex-col gap-4">
+                <fieldset disabled={disabled} className="mt-4 flex flex-col gap-4">
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="problem-title">Tên bài</Label>
                         <Input

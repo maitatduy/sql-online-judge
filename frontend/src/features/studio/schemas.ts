@@ -14,6 +14,7 @@ export type CreateProblemValues = z.infer<typeof createProblemSchema>;
 
 const MAX_SLUG_LENGTH = 160;
 export const MAX_TAGS = 5;
+export const MAX_STATEMENT_LENGTH = 51_200;
 
 export const problemInfoSchema = z.object({
     title: z
