@@ -7,6 +7,7 @@ import com.sqljudge.problem.entity.Tag;
 import com.sqljudge.problem.repository.DatasetRepository;
 import com.sqljudge.problem.repository.ProblemRepository;
 import com.sqljudge.problem.repository.TagRepository;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +16,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -23,6 +29,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @TestPropertySource(properties = "spring.cache.type=redis")
+@Import(TestJwts.DecoderConfig.class)
 class ProblemCacheIntegrationTest extends ContainerSupport {
 
     private static final String SLUG = "highest-salary-per-department";
@@ -100,6 +107,27 @@ class ProblemCacheIntegrationTest extends ContainerSupport {
         assertThat(cached).contains("\"name\":\"JOIN\"");
         assertThat(redisTemplate.getExpire(TAGS_KEY, TimeUnit.SECONDS))
                 .isBetween(1L, TAGS_TTL_SECONDS);
+    }
+
+    @Test
+    @DisplayName("ADMIN xoá bài đã xuất bản thì cache chi tiết bị xoá, trang chi tiết trả 404")
+    void delete_publishedProblemByAdmin_evictsDetailCache() {
+        restTemplate.getForObject("/api/problems/" + SLUG, String.class);
+        String problemId =
+                jdbcTemplate.queryForObject(
+                        "SELECT BIN_TO_UUID(id) FROM problems WHERE slug = ?", String.class, SLUG);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(TestJwts.token(UUID.randomUUID(), "ADMIN"));
+
+        restTemplate.exchange(
+                "/api/studio/problems/" + problemId,
+                HttpMethod.DELETE,
+                new HttpEntity<>(headers),
+                Void.class);
+
+        assertThat(redisTemplate.hasKey(DETAIL_KEY)).isFalse();
+        assertThat(restTemplate.getForEntity("/api/problems/" + SLUG, String.class).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     private void flushCache() {

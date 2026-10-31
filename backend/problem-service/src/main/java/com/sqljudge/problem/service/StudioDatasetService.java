@@ -1,5 +1,7 @@
 package com.sqljudge.problem.service;
 
+import com.sqljudge.common.error.ErrorCode;
+import com.sqljudge.common.exception.ConflictException;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.request.CreateDatasetRequest;
@@ -14,6 +16,8 @@ import com.sqljudge.problem.entity.DatasetColumn;
 import com.sqljudge.problem.entity.DatasetTable;
 import com.sqljudge.problem.entity.DatasetVersion;
 import com.sqljudge.problem.repository.DatasetRepository;
+import com.sqljudge.problem.repository.ProblemRepository;
+import java.time.Clock;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -31,6 +35,8 @@ public class StudioDatasetService {
 
     private final DatasetRepository datasetRepository;
     private final DatasetAccess datasetAccess;
+    private final ProblemRepository problemRepository;
+    private final Clock clock;
 
     @Transactional
     public StudioDatasetResponse create(CreateDatasetRequest request) {
@@ -70,6 +76,19 @@ public class StudioDatasetService {
             dataset.setDescription(request.description().trim());
         }
         return StudioDatasetResponse.from(datasetRepository.saveAndFlush(dataset));
+    }
+
+    @Transactional
+    public void delete(UUID datasetId) {
+        Dataset dataset = datasetAccess.editable(datasetId);
+        long usingProblems = problemRepository.countUsingDataset(datasetId);
+        if (usingProblems > 0) {
+            throw new ConflictException(
+                    ErrorCode.DATASET_IN_USE,
+                    "Dataset đang được " + usingProblems + " bài dùng nên chưa xoá được");
+        }
+        dataset.setDeletedAt(clock.instant());
+        datasetRepository.saveAndFlush(dataset);
     }
 
     @Transactional

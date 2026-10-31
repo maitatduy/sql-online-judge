@@ -35,6 +35,11 @@ public interface ProblemRepository extends JpaRepository<Problem, UUID> {
 
     Optional<Problem> findBySlug(String slug);
 
+    @Query(
+            "SELECT COUNT(DISTINCT p) FROM Problem p JOIN p.revisions r"
+                    + " WHERE r.datasetVersion.dataset.id = :datasetId AND p.deletedAt IS NULL")
+    long countUsingDataset(@Param("datasetId") UUID datasetId);
+
     Optional<Problem> findByIdAndDeletedAtIsNull(UUID id);
 
     boolean existsBySlugAndIdNot(String slug, UUID id);
