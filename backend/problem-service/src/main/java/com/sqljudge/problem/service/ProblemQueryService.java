@@ -13,7 +13,6 @@ import com.sqljudge.problem.repository.ProblemRepository;
 import com.sqljudge.problem.repository.ProblemSummaryRow;
 import com.sqljudge.problem.repository.ProblemTagRow;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -29,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProblemQueryService {
 
     private static final Pattern PROBLEM_NUMBER = Pattern.compile("\\d{1,9}");
-    private static final Pattern LIKE_SPECIAL_CHARACTERS = Pattern.compile("([!%_])");
 
     private final ProblemRepository problemRepository;
 
@@ -46,7 +44,7 @@ public class ProblemQueryService {
                         userId,
                         search.difficulty(),
                         search.tag(),
-                        keyword.isEmpty() ? null : titlePattern(keyword),
+                        LikePatterns.containingIgnoreCase(keyword),
                         PROBLEM_NUMBER.matcher(keyword).matches() ? Integer.valueOf(keyword) : null,
                         progress == ProblemProgress.NOT_STARTED,
                         progressStatusOf(progress),
@@ -100,10 +98,5 @@ public class ProblemQueryService {
 
     private static long zeroIfNull(Long value) {
         return value == null ? 0 : value;
-    }
-
-    private static String titlePattern(String keyword) {
-        String lowered = keyword.toLowerCase(Locale.ROOT);
-        return "%" + LIKE_SPECIAL_CHARACTERS.matcher(lowered).replaceAll("!$1") + "%";
     }
 }

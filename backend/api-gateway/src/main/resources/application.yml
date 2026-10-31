@@ -28,7 +28,7 @@ spring:
             - id: problem-service
               uri: ${PROBLEM_SERVICE_URL}
               predicates:
-                - Path=/api/tags,/api/problems,/api/problems/**
+                - Path=/api/tags,/api/problems,/api/problems/**,/api/studio/**
           globalcors:
             cors-configurations:
               '[/api/**]':
