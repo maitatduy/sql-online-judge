@@ -2,6 +2,8 @@ package com.sqljudge.problem.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -26,6 +28,7 @@ import org.springframework.test.context.TestPropertySource;
 class DevSeedIntegrationTest {
 
     private static final String SEED_DATABASE = "dev_seed";
+    private static final String SEED_SCRIPT = "db/seed/R__dev_seed_problems.sql";
     private static final String ROOT_USER = "root";
     private static final int MYSQL_PORT = 3306;
     private static final String FEATURED_PROBLEM_ID = "0192f3b0-0000-7000-8000-0000000000b8";
@@ -85,6 +88,35 @@ class DevSeedIntegrationTest {
     }
 
     @Test
+    @DisplayName(
+            "Chuỗi trong file seed không kéo dài qua nhiều dòng, để dữ liệu không phụ thuộc kiểu"
+                    + " xuống dòng khi checkout")
+    void seedFile_hasNoStringLiteralSpanningLines() throws IOException {
+        String script =
+                new ClassPathResource(SEED_SCRIPT).getContentAsString(StandardCharsets.UTF_8);
+
+        assertThat(literalsSpanningLines(script)).isZero();
+    }
+
+    private static int literalsSpanningLines(String script) {
+        int count = 0;
+        boolean insideLiteral = false;
+        boolean literalHasLineBreak = false;
+        for (char character : script.toCharArray()) {
+            if (character == '\'') {
+                if (insideLiteral && literalHasLineBreak) {
+                    count += 1;
+                }
+                insideLiteral = !insideLiteral;
+                literalHasLineBreak = false;
+            } else if (insideLiteral && (character == '\n' || character == '\r')) {
+                literalHasLineBreak = true;
+            }
+        }
+        return count;
+    }
+
+    @Test
     @DisplayName("Bài #184 có đủ schema, 1 testcase công khai, 2 testcase ẩn và kết quả mong đợi")
     void seed_featuredProblemHasFullContent() {
         String revision = "(SELECT published_revision_id FROM problems WHERE id = UUID_TO_BIN(?))";
@@ -121,8 +153,7 @@ class DevSeedIntegrationTest {
     @Test
     @DisplayName("Chạy lại seed không nhân đôi dữ liệu")
     void seed_runTwice_keepsSameRows() {
-        new ResourceDatabasePopulator(new ClassPathResource("db/seed/R__dev_seed_problems.sql"))
-                .execute(dataSource);
+        new ResourceDatabasePopulator(new ClassPathResource(SEED_SCRIPT)).execute(dataSource);
 
         assertThat(count("SELECT COUNT(*) FROM problems")).isEqualTo(24);
         assertThat(count("SELECT COUNT(*) FROM tags")).isEqualTo(8);
