@@ -5,6 +5,7 @@ const baseURL = `http://localhost:${E2E_PORT}`;
 
 export default defineConfig({
     testDir: "./e2e",
+    testIgnore: "backend/**",
     globalSetup: "./e2e/support/global-setup.ts",
     workers: 1,
     timeout: 60_000,

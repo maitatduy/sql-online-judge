@@ -54,7 +54,7 @@ void compare_sameRowsWrongOrder_returnsOrderMismatch() {
 
 ### Luồng E2E bắt buộc (Playwright)
 
-Playwright đã cài trong `frontend/`, test đặt ở `frontend/e2e/`. Chạy bằng `npm run test:e2e`: Playwright tự bật `next dev` ở cổng 3100 với MSW và thư mục build `.next-e2e`, không đụng `next dev` đang chạy ở cổng mặc định. Smoke test được chạy trên API giả của MSW. Năm luồng bắt buộc dưới đây vẫn phải chạy với backend thật.
+Playwright đã cài trong `frontend/`, test đặt ở `frontend/e2e/`. Chạy bằng `npm run test:e2e`: Playwright tự bật `next dev` ở cổng 3100 với MSW và thư mục build `.next-e2e`, không đụng `next dev` đang chạy ở cổng mặc định. Smoke test được chạy trên API giả của MSW. Test với backend thật đặt ở `frontend/e2e/backend/`, chạy bằng `npm run test:e2e:backend` (cổng 3000 vì CORS của gateway, cần docker compose dev, gateway và service liên quan đang chạy; CI chưa chạy bộ này). Năm luồng bắt buộc dưới đây vẫn phải chạy với backend thật.
 
 1. Đăng ký → onboarding → dashboard.
 2. Mở bài → Run → Submit sai (WA, thấy diff) → sửa → AC.
