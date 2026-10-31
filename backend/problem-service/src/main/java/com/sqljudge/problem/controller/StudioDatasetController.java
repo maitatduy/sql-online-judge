@@ -7,6 +7,7 @@ import com.sqljudge.problem.dto.request.UpdateDatasetSchemaRequest;
 import com.sqljudge.problem.dto.response.StudioDatasetResponse;
 import com.sqljudge.problem.dto.response.StudioDatasetSummaryResponse;
 import com.sqljudge.problem.service.StudioDatasetService;
+import com.sqljudge.problem.service.StudioDatasetVersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -39,6 +40,7 @@ public class StudioDatasetController {
     private static final int MAX_KEYWORD_LENGTH = 100;
 
     private final StudioDatasetService studioDatasetService;
+    private final StudioDatasetVersionService studioDatasetVersionService;
 
     @PostMapping
     @Operation(summary = "Tạo dataset mới kèm phiên bản 1 dạng nháp, slug sinh từ tên")
@@ -95,5 +97,26 @@ public class StudioDatasetController {
     public StudioDatasetResponse replaceSchema(
             @PathVariable UUID datasetId, @Valid @RequestBody UpdateDatasetSchemaRequest request) {
         return studioDatasetService.replaceSchema(datasetId, request);
+    }
+
+    @PostMapping("/{datasetId}/freeze")
+    @Operation(summary = "Chốt bản nháp: kiểm tra đủ dữ liệu và khoá ngoại, ghi checksum")
+    @ApiResponse(responseCode = "200", description = "Dataset với phiên bản vừa chốt")
+    @ApiResponse(responseCode = "404", description = "Không có dataset hoặc không được sửa")
+    @ApiResponse(
+            responseCode = "422",
+            description = "Bản nháp chưa đủ điều kiện, hoặc phiên bản mới nhất đã chốt")
+    public StudioDatasetResponse freeze(@PathVariable UUID datasetId) {
+        return studioDatasetVersionService.freeze(datasetId);
+    }
+
+    @PostMapping("/{datasetId}/versions")
+    @Operation(summary = "Tạo bản nháp mới, sao chép từ phiên bản đã chốt mới nhất")
+    @ApiResponse(responseCode = "201", description = "Dataset với bản nháp mới")
+    @ApiResponse(responseCode = "404", description = "Không có dataset hoặc không được sửa")
+    @ApiResponse(responseCode = "422", description = "Dataset đang có bản nháp")
+    public ResponseEntity<StudioDatasetResponse> createDraft(@PathVariable UUID datasetId) {
+        StudioDatasetResponse dataset = studioDatasetVersionService.createDraft(datasetId);
+        return ResponseEntity.created(URI.create(PATH + "/" + datasetId)).body(dataset);
     }
 }

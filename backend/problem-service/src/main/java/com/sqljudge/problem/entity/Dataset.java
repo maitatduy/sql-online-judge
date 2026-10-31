@@ -56,6 +56,13 @@ public class Dataset extends BaseEntity {
         return versions.get(versions.size() - 1);
     }
 
+    public DatasetVersion addDraftFromLatest() {
+        DatasetVersion latest = latestVersion();
+        DatasetVersion draft = addVersion(latest.getNumber() + 1);
+        draft.copyFrom(latest);
+        return draft;
+    }
+
     public DatasetVersion addVersion(int versionNumber) {
         DatasetVersion datasetVersion = new DatasetVersion(this, versionNumber);
         versions.add(datasetVersion);
