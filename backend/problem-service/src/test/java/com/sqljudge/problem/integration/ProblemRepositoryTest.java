@@ -4,17 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.sqljudge.common.config.CommonAutoConfiguration;
+import com.sqljudge.problem.entity.DatasetTable;
+import com.sqljudge.problem.entity.DatasetVariant;
 import com.sqljudge.problem.entity.Dialect;
-import com.sqljudge.problem.entity.LogicalType;
 import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.entity.ProblemRevision;
 import com.sqljudge.problem.entity.ReferenceSolution;
-import com.sqljudge.problem.entity.RevisionColumn;
-import com.sqljudge.problem.entity.RevisionTable;
 import com.sqljudge.problem.entity.StatementType;
 import com.sqljudge.problem.entity.Tag;
 import com.sqljudge.problem.entity.Testcase;
-import com.sqljudge.problem.entity.TestcaseData;
+import com.sqljudge.problem.repository.DatasetRepository;
 import com.sqljudge.problem.repository.ProblemRepository;
 import com.sqljudge.problem.repository.TagRepository;
 import jakarta.persistence.EntityManager;
@@ -39,14 +38,16 @@ class ProblemRepositoryTest extends ContainerSupport {
 
     @Autowired private TagRepository tagRepository;
 
+    @Autowired private DatasetRepository datasetRepository;
+
     @Autowired private EntityManager entityManager;
 
     @Autowired private JdbcTemplate jdbcTemplate;
 
     @Test
-    @DisplayName("Lưu bài đã xuất bản cùng revision, schema, testcase, đáp án và đọc lại đủ")
+    @DisplayName("Lưu bài đã xuất bản cùng revision, dataset, testcase, đáp án và đọc lại đủ")
     void save_publishedProblemWithRevision_roundTripsWholeGraph() {
-        Problem problem = ProblemFixtures.publishedProblem("highest-salary-per-department", 184);
+        Problem problem = problem("highest-salary-per-department", 184);
         problem.getTags().add(tag("join", "JOIN"));
         problemRepository.saveAndFlush(problem);
         entityManager.clear();
@@ -60,20 +61,17 @@ class ProblemRepositoryTest extends ContainerSupport {
         assertThat(loaded.getTags()).extracting(Tag::getSlug).containsExactly("join");
         ProblemRevision revision = loaded.getPublishedRevision();
         assertThat(revision.getFrozenAt()).isNotNull();
-        assertThat(revision.getTables())
-                .extracting(RevisionTable::getName)
+        assertThat(revision.getDatasetVersion().getTables())
+                .extracting(DatasetTable::getName)
                 .containsExactly("departments", "employees");
-        assertThat(revision.getTables().get(1).getColumns())
-                .extracting(RevisionColumn::getName, RevisionColumn::getLogicalType)
-                .containsExactly(
-                        org.assertj.core.groups.Tuple.tuple("id", LogicalType.INTEGER),
-                        org.assertj.core.groups.Tuple.tuple("department_id", LogicalType.INTEGER));
         assertThat(revision.getReferenceSolutions())
                 .extracting(ReferenceSolution::getDialect)
                 .containsExactlyInAnyOrder(Dialect.POSTGRESQL, Dialect.MYSQL);
         Testcase example = revision.getTestcases().get(0);
         assertThat(example.isPublic()).isTrue();
-        assertThat(example.getData()).extracting(TestcaseData::getRowCount).containsExactly(2, 3);
+        assertThat(example.getDatasetVariant())
+                .extracting(DatasetVariant::getName)
+                .isEqualTo("Mẫu");
         assertThat(example.getExpectedResult().getRowCount()).isEqualTo(2);
         assertThat(revision.getTestcases().get(1).isPublic()).isFalse();
     }
@@ -81,25 +79,19 @@ class ProblemRepositoryTest extends ContainerSupport {
     @Test
     @DisplayName("Trùng slug hoặc trùng số bài thì DB chặn bằng unique index")
     void save_duplicateSlugOrNumber_isRejectedByUniqueIndex() {
-        problemRepository.saveAndFlush(ProblemFixtures.publishedProblem("trung-slug", 1));
+        problemRepository.saveAndFlush(problem("trung-slug", 1));
 
-        assertThatThrownBy(
-                        () ->
-                                problemRepository.saveAndFlush(
-                                        ProblemFixtures.publishedProblem("trung-slug", 2)))
+        assertThatThrownBy(() -> problemRepository.saveAndFlush(problem("trung-slug", 2)))
                 .isInstanceOf(DataIntegrityViolationException.class);
         entityManager.clear();
-        assertThatThrownBy(
-                        () ->
-                                problemRepository.saveAndFlush(
-                                        ProblemFixtures.publishedProblem("slug-khac", 1)))
+        assertThatThrownBy(() -> problemRepository.saveAndFlush(problem("slug-khac", 1)))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     @DisplayName("Mỗi revision chỉ có một đáp án chuẩn cho mỗi dialect")
     void save_twoSolutionsForSameDialect_isRejected() {
-        Problem problem = ProblemFixtures.publishedProblem("hai-dap-an", 3);
+        Problem problem = problem("hai-dap-an", 3);
         problem.getPublishedRevision()
                 .addReferenceSolution(new ReferenceSolution(Dialect.POSTGRESQL, "SELECT 2;"));
 
@@ -108,17 +100,23 @@ class ProblemRepositoryTest extends ContainerSupport {
     }
 
     @Test
-    @DisplayName("Bỏ testcase khỏi revision thì xoá luôn dữ liệu và kết quả mong đợi của nó")
-    void removeTestcase_deletesItsDataAndExpectedResult() {
-        Problem problem =
-                problemRepository.saveAndFlush(ProblemFixtures.publishedProblem("xoa-testcase", 4));
+    @DisplayName("Bỏ testcase khỏi revision thì xoá kết quả mong đợi, giữ nguyên bộ dữ liệu")
+    void removeTestcase_deletesExpectedResultButKeepsVariant() {
+        Problem problem = problemRepository.saveAndFlush(problem("xoa-testcase", 4));
 
         problem.getPublishedRevision().getTestcases().remove(0);
         problemRepository.saveAndFlush(problem);
 
         assertThat(count("testcases")).isEqualTo(1);
-        assertThat(count("testcase_data")).isEqualTo(2);
         assertThat(count("expected_results")).isEqualTo(1);
+        assertThat(count("dataset_variants")).isEqualTo(2);
+    }
+
+    private Problem problem(String slug, int number) {
+        return ProblemFixtures.publishedProblem(
+                slug,
+                number,
+                datasetRepository.save(ProblemFixtures.companyDataset(slug + "-" + number)));
     }
 
     private long count(String table) {

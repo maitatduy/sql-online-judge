@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jayway.jsonpath.JsonPath;
 import com.sqljudge.problem.entity.Tag;
+import com.sqljudge.problem.repository.DatasetRepository;
 import com.sqljudge.problem.repository.ProblemRepository;
 import com.sqljudge.problem.repository.TagRepository;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,8 @@ class ProblemCacheIntegrationTest extends ContainerSupport {
 
     @Autowired private TagRepository tagRepository;
 
+    @Autowired private DatasetRepository datasetRepository;
+
     @Autowired private JdbcTemplate jdbcTemplate;
 
     @Autowired private StringRedisTemplate redisTemplate;
@@ -47,7 +50,11 @@ class ProblemCacheIntegrationTest extends ContainerSupport {
         join.setSlug("join");
         join.setName("JOIN");
         tagRepository.save(join);
-        problemRepository.save(ProblemFixtures.publishedProblem(SLUG, 184));
+        problemRepository.save(
+                ProblemFixtures.publishedProblem(
+                        SLUG,
+                        184,
+                        datasetRepository.save(ProblemFixtures.companyDataset("cong-ty"))));
     }
 
     @AfterEach
@@ -55,6 +62,7 @@ class ProblemCacheIntegrationTest extends ContainerSupport {
         flushCache();
         jdbcTemplate.update("UPDATE problems SET published_revision_id = NULL");
         jdbcTemplate.update("DELETE FROM problems");
+        jdbcTemplate.update("DELETE FROM datasets");
         jdbcTemplate.update("DELETE FROM tags");
     }
 

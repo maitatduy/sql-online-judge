@@ -117,22 +117,37 @@ class DevSeedIntegrationTest {
     }
 
     @Test
-    @DisplayName("Bài #184 có đủ schema, 1 testcase công khai, 2 testcase ẩn và kết quả mong đợi")
+    @DisplayName(
+            "Bài #184 dùng dataset Công ty đã chốt: đủ schema, 1 testcase công khai, 2 testcase ẩn"
+                    + " và kết quả mong đợi")
     void seed_featuredProblemHasFullContent() {
         String revision = "(SELECT published_revision_id FROM problems WHERE id = UUID_TO_BIN(?))";
 
+        String dataset =
+                jdbcTemplate.queryForObject(
+                        "SELECT d.slug FROM datasets d"
+                                + " JOIN dataset_versions v ON v.dataset_id = d.id"
+                                + " JOIN problem_revisions r ON r.dataset_version_id = v.id"
+                                + " WHERE v.frozen_at IS NOT NULL AND r.id = "
+                                + revision,
+                        String.class,
+                        FEATURED_PROBLEM_ID);
         List<String> tables =
                 jdbcTemplate.queryForList(
-                        "SELECT name FROM revision_tables WHERE revision_id = "
+                        "SELECT t.name FROM dataset_tables t"
+                                + " JOIN problem_revisions r ON r.dataset_version_id = t.version_id"
+                                + " WHERE r.id = "
                                 + revision
-                                + " ORDER BY position",
+                                + " ORDER BY t.position",
                         String.class,
                         FEATURED_PROBLEM_ID);
         List<Boolean> visibility =
                 jdbcTemplate.queryForList(
-                        "SELECT is_public FROM testcases WHERE revision_id = "
+                        "SELECT v.is_public FROM testcases t"
+                                + " JOIN dataset_variants v ON v.id = t.dataset_variant_id"
+                                + " WHERE t.revision_id = "
                                 + revision
-                                + " ORDER BY position",
+                                + " ORDER BY t.position",
                         Boolean.class,
                         FEATURED_PROBLEM_ID);
         List<Integer> expectedRowCounts =
@@ -145,6 +160,7 @@ class DevSeedIntegrationTest {
                         Integer.class,
                         FEATURED_PROBLEM_ID);
 
+        assertThat(dataset).isEqualTo("cong-ty");
         assertThat(tables).containsExactly("departments", "employees");
         assertThat(visibility).containsExactly(true, false, false);
         assertThat(expectedRowCounts).containsExactly(4, 2, 3);
@@ -158,6 +174,8 @@ class DevSeedIntegrationTest {
         assertThat(count("SELECT COUNT(*) FROM problems")).isEqualTo(24);
         assertThat(count("SELECT COUNT(*) FROM tags")).isEqualTo(8);
         assertThat(count("SELECT COUNT(*) FROM testcases")).isEqualTo(3);
+        assertThat(count("SELECT COUNT(*) FROM datasets")).isEqualTo(1);
+        assertThat(count("SELECT COUNT(*) FROM dataset_variants")).isEqualTo(3);
     }
 
     private long count(String sql) {

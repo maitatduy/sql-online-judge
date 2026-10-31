@@ -13,19 +13,19 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-        name = "testcase_data",
+        name = "dataset_variant_tables",
         indexes =
                 @Index(
-                        name = "uk_testcase_data_testcase_id_table_name",
-                        columnList = "testcase_id, table_name",
+                        name = "uk_dataset_variant_tables_variant_id_table_name",
+                        columnList = "variant_id, table_name",
                         unique = true))
 @Getter
 @NoArgsConstructor
-public class TestcaseData extends BaseEntity {
+public class DatasetVariantTable extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "testcase_id", nullable = false)
-    private Testcase testcase;
+    @JoinColumn(name = "variant_id", nullable = false)
+    private DatasetVariant variant;
 
     @Column(name = "table_name", nullable = false, length = 64)
     private String tableName;
@@ -36,8 +36,8 @@ public class TestcaseData extends BaseEntity {
     @Column(name = "row_count", nullable = false)
     private int rowCount;
 
-    TestcaseData(Testcase testcase, String tableName, String csv, int rowCount) {
-        this.testcase = testcase;
+    DatasetVariantTable(DatasetVariant variant, String tableName, String csv, int rowCount) {
+        this.variant = variant;
         this.tableName = tableName;
         this.csv = csv;
         this.rowCount = rowCount;

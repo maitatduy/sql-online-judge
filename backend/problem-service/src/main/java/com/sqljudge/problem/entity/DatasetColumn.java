@@ -16,20 +16,20 @@ import lombok.Setter;
 
 @Entity
 @Table(
-        name = "revision_columns",
+        name = "dataset_columns",
         indexes =
                 @Index(
-                        name = "uk_revision_columns_table_id_name",
+                        name = "uk_dataset_columns_table_id_name",
                         columnList = "table_id, name",
                         unique = true))
 @Getter
 @Setter
 @NoArgsConstructor
-public class RevisionColumn extends BaseEntity {
+public class DatasetColumn extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "table_id", nullable = false)
-    private RevisionTable table;
+    private DatasetTable table;
 
     @Column(name = "name", nullable = false, length = 64)
     private String name;
@@ -53,7 +53,7 @@ public class RevisionColumn extends BaseEntity {
     @Column(name = "position", nullable = false)
     private int position;
 
-    RevisionColumn(RevisionTable table, String name, LogicalType logicalType, int position) {
+    DatasetColumn(DatasetTable table, String name, LogicalType logicalType, int position) {
         this.table = table;
         this.name = name;
         this.logicalType = logicalType;

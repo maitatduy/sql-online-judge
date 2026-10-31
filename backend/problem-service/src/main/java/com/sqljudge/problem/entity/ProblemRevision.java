@@ -44,9 +44,9 @@ public class ProblemRevision extends BaseEntity {
     @Column(name = "checksum", columnDefinition = "CHAR(64)")
     private String checksum;
 
-    @OneToMany(mappedBy = "revision", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("position")
-    private List<RevisionTable> tables = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dataset_version_id")
+    private DatasetVersion datasetVersion;
 
     @OneToMany(mappedBy = "revision", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReferenceSolution> referenceSolutions = new ArrayList<>();
@@ -60,19 +60,13 @@ public class ProblemRevision extends BaseEntity {
         this.number = number;
     }
 
-    public RevisionTable addTable(String name) {
-        RevisionTable table = new RevisionTable(this, name, tables.size());
-        tables.add(table);
-        return table;
-    }
-
     public void addReferenceSolution(ReferenceSolution solution) {
         solution.setRevision(this);
         referenceSolutions.add(solution);
     }
 
-    public Testcase addTestcase(String description, boolean isPublic) {
-        Testcase testcase = new Testcase(this, testcases.size(), description, isPublic);
+    public Testcase addTestcase(DatasetVariant variant) {
+        Testcase testcase = new Testcase(this, testcases.size(), variant);
         testcases.add(testcase);
         return testcase;
     }
