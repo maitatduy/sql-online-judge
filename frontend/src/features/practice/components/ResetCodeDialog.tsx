@@ -19,7 +19,7 @@ interface ResetCodeDialogProps {
 export function ResetCodeDialog({ open, onOpenChange, onConfirm }: ResetCodeDialogProps) {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
-            <AlertDialogContent className="dark">
+            <AlertDialogContent>
                 <AlertDialogTitle>Đặt lại mã?</AlertDialogTitle>
                 <AlertDialogDescription>
                     Mã bạn đang viết sẽ bị thay bằng mã khởi đầu của bài. Bản nháp đã lưu cũng bị

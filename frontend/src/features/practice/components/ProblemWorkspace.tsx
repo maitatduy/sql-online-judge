@@ -92,8 +92,6 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
                             savedAt={savedAt}
                             onChange={changeCode}
                             onReset={resetToStarter}
-                            onRun={handleRun}
-                            onSubmit={handleSubmit}
                         />
                     </div>
                     <ResultPanel
