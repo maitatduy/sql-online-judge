@@ -31,6 +31,7 @@ class DevSeedIntegrationTest {
     private static final String SEED_SCRIPT = "db/seed/R__dev_seed_problems.sql";
     private static final String ROOT_USER = "root";
     private static final int MYSQL_PORT = 3306;
+    private static final String STUDIO_PROBLEM_ID = "0192f3d0-0000-7000-8000-0000000000aa";
     private static final String FEATURED_PROBLEM_ID = "0192f3b0-0000-7000-8000-0000000000b8";
 
     @Autowired private JdbcTemplate jdbcTemplate;
@@ -176,6 +177,39 @@ class DevSeedIntegrationTest {
         assertThat(count("SELECT COUNT(*) FROM testcases")).isEqualTo(3);
         assertThat(count("SELECT COUNT(*) FROM datasets")).isEqualTo(1);
         assertThat(count("SELECT COUNT(*) FROM dataset_variants")).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("Chạy lại seed khi bài tạo trong Studio đang gắn tag của seed vẫn thành công")
+    void seed_rerunWhileStudioProblemUsesSeedTag_keepsTheTagLink() {
+        jdbcTemplate.update(
+                "INSERT INTO problems (id, slug, title, difficulty, status, author_id,"
+                        + " statement_markdown, starter_code, time_limit_ms, requires_order,"
+                        + " compare_column_names, float_tolerance, allowed_statements, version,"
+                        + " created_at, updated_at) VALUES (UUID_TO_BIN(?), 'bai-studio',"
+                        + " 'Bài Studio', 'EASY', 'DRAFT', UUID_TO_BIN(?), '', '', 2000,"
+                        + " FALSE, FALSE, 0.000001, 'SELECT', 0, NOW(6), NOW(6))",
+                STUDIO_PROBLEM_ID,
+                STUDIO_PROBLEM_ID);
+        jdbcTemplate.update(
+                "INSERT INTO problem_tags (problem_id, tag_id)"
+                        + " SELECT UUID_TO_BIN(?), id FROM tags WHERE slug = 'join'",
+                STUDIO_PROBLEM_ID);
+        try {
+            new ResourceDatabasePopulator(new ClassPathResource(SEED_SCRIPT)).execute(dataSource);
+
+            assertThat(
+                            count(
+                                    "SELECT COUNT(*) FROM problem_tags pt JOIN tags t"
+                                            + " ON t.id = pt.tag_id WHERE t.slug = 'join'"
+                                            + " AND pt.problem_id = UUID_TO_BIN('"
+                                            + STUDIO_PROBLEM_ID
+                                            + "')"))
+                    .isEqualTo(1);
+        } finally {
+            jdbcTemplate.update(
+                    "DELETE FROM problems WHERE id = UUID_TO_BIN(?)", STUDIO_PROBLEM_ID);
+        }
     }
 
     private long count(String sql) {
