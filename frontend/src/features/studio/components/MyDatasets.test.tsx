@@ -50,6 +50,10 @@ describe("MyDatasets", () => {
         const company = within(table.getByRole("row", { name: /Công ty/ }));
         expect(company.getByText("Phòng ban và nhân viên kèm lương")).toBeInTheDocument();
         expect(company.getByText("v2 · Nháp")).toBeInTheDocument();
+        expect(company.getByRole("link", { name: "Công ty" })).toHaveAttribute(
+            "href",
+            "/studio/datasets/0192f3e0-0000-7000-8000-000000000001",
+        );
         const school = within(table.getByRole("row", { name: /Trường học/ }));
         expect(school.getByText("v1")).toBeInTheDocument();
         expect(school.getByText("2 ngày trước")).toBeInTheDocument();

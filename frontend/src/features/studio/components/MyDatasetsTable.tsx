@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 
+import Link from "next/link";
+
 import { formatRelativeTime } from "@/lib/format";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 import type { StudioDatasetSummary } from "../types";
@@ -46,7 +49,14 @@ export function MyDatasetsTable({ datasets }: MyDatasetsTableProps) {
                 <tbody>
                     {datasets.map((dataset) => (
                         <tr key={dataset.id}>
-                            <td className={cn(CELL_CLASS, "font-semibold")}>{dataset.name}</td>
+                            <td className={cn(CELL_CLASS, "font-semibold")}>
+                                <Link
+                                    href={ROUTES.studioDataset(dataset.id)}
+                                    className="hover:text-brand hover:underline"
+                                >
+                                    {dataset.name}
+                                </Link>
+                            </td>
                             <td className={cn(CELL_CLASS, "text-[13px] text-muted-foreground")}>
                                 {dataset.description}
                             </td>
