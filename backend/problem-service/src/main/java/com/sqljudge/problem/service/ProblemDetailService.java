@@ -8,13 +8,9 @@ import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.problem.config.CacheConfig;
 import com.sqljudge.problem.config.JudgeEngineProperties;
 import com.sqljudge.problem.dto.response.ProblemDetailResponse;
-import com.sqljudge.problem.dto.response.ProblemDetailResponse.ColumnReferenceResponse;
 import com.sqljudge.problem.dto.response.ProblemDetailResponse.ResultSetResponse;
-import com.sqljudge.problem.dto.response.ProblemDetailResponse.SchemaColumnResponse;
 import com.sqljudge.problem.dto.response.ProblemDetailResponse.SchemaTableResponse;
 import com.sqljudge.problem.dto.response.TagResponse;
-import com.sqljudge.problem.entity.DatasetColumn;
-import com.sqljudge.problem.entity.DatasetTable;
 import com.sqljudge.problem.entity.DatasetVersion;
 import com.sqljudge.problem.entity.Dialect;
 import com.sqljudge.problem.entity.ExpectedResult;
@@ -121,30 +117,6 @@ public class ProblemDetailService {
 
     private static List<SchemaTableResponse> schemaOf(ProblemRevision revision) {
         DatasetVersion datasetVersion = revision.getDatasetVersion();
-        return datasetVersion == null
-                ? List.of()
-                : datasetVersion.getTables().stream()
-                        .map(ProblemDetailService::toSchemaTable)
-                        .toList();
-    }
-
-    private static SchemaTableResponse toSchemaTable(DatasetTable table) {
-        return new SchemaTableResponse(
-                table.getName(),
-                table.getColumns().stream().map(ProblemDetailService::toSchemaColumn).toList());
-    }
-
-    private static SchemaColumnResponse toSchemaColumn(DatasetColumn column) {
-        ColumnReferenceResponse references =
-                column.getReferencesTable() == null
-                        ? null
-                        : new ColumnReferenceResponse(
-                                column.getReferencesTable(), column.getReferencesColumn());
-        return new SchemaColumnResponse(
-                column.getName(),
-                column.getLogicalType().name(),
-                column.isPrimaryKey(),
-                column.isNullable(),
-                references);
+        return datasetVersion == null ? List.of() : DatasetSchemas.tablesOf(datasetVersion);
     }
 }

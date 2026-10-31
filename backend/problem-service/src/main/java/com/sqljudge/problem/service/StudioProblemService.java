@@ -13,7 +13,6 @@ import com.sqljudge.problem.repository.StatusCountRow;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +25,6 @@ public class StudioProblemService {
 
     private static final int DEFAULT_TIME_LIMIT_MS = 2000;
     private static final int FIRST_REVISION = 1;
-    private static final int FIRST_SLUG_SUFFIX = 2;
 
     private final ProblemRepository problemRepository;
 
@@ -73,14 +71,7 @@ public class StudioProblemService {
     }
 
     private String uniqueSlug(String base) {
-        Set<String> taken = new HashSet<>(problemRepository.findSlugsLike(base, base + "-%"));
-        if (!taken.contains(base)) {
-            return base;
-        }
-        int suffix = FIRST_SLUG_SUFFIX;
-        while (taken.contains(base + "-" + suffix)) {
-            suffix += 1;
-        }
-        return base + "-" + suffix;
+        return SlugGenerator.firstFree(
+                base, new HashSet<>(problemRepository.findSlugsLike(base, base + "-%")));
     }
 }

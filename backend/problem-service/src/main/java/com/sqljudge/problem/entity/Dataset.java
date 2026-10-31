@@ -52,6 +52,10 @@ public class Dataset extends BaseEntity {
     @OrderBy("number")
     private List<DatasetVersion> versions = new ArrayList<>();
 
+    public DatasetVersion latestVersion() {
+        return versions.get(versions.size() - 1);
+    }
+
     public DatasetVersion addVersion(int versionNumber) {
         DatasetVersion datasetVersion = new DatasetVersion(this, versionNumber);
         versions.add(datasetVersion);
