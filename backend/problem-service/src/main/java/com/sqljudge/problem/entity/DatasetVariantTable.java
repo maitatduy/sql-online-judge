@@ -42,4 +42,9 @@ public class DatasetVariantTable extends BaseEntity {
         this.csv = csv;
         this.rowCount = rowCount;
     }
+
+    public void replaceData(String newCsv, int newRowCount) {
+        this.csv = newCsv;
+        this.rowCount = newRowCount;
+    }
 }
