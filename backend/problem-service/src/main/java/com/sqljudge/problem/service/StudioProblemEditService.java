@@ -14,6 +14,7 @@ import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.entity.Tag;
 import com.sqljudge.problem.repository.ProblemRepository;
 import com.sqljudge.problem.repository.TagRepository;
+import java.time.Clock;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,8 @@ public class StudioProblemEditService {
 
     private final ProblemRepository problemRepository;
     private final TagRepository tagRepository;
+    private final ProblemDetailCache problemDetailCache;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     public StudioProblemResponse get(UUID problemId) {
@@ -57,6 +62,29 @@ public class StudioProblemEditService {
             problem.setStatementMarkdown(request.statementMarkdown());
         }
         return StudioProblemResponse.from(problemRepository.saveAndFlush(problem));
+    }
+
+    @Transactional
+    public void delete(UUID problemId) {
+        Problem problem = findAccessible(problemId);
+        boolean isAdmin = SecurityUtils.requireCurrentUser().hasRole(Role.ADMIN);
+        if (!problem.isEditableBySetter() && !isAdmin) {
+            throw new BusinessRuleException(
+                    ErrorCode.PROBLEM_LOCKED, "Chỉ xoá được bài nháp hoặc bài cần sửa");
+        }
+        problem.setDeletedAt(clock.instant());
+        problemRepository.saveAndFlush(problem);
+        evictDetailAfterCommit(problem.getSlug());
+    }
+
+    private void evictDetailAfterCommit(String slug) {
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        problemDetailCache.evict(slug);
+                    }
+                });
     }
 
     private Problem findAccessible(UUID problemId) {

@@ -19,6 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -97,6 +98,16 @@ public class StudioDatasetController {
     public StudioDatasetResponse replaceSchema(
             @PathVariable UUID datasetId, @Valid @RequestBody UpdateDatasetSchemaRequest request) {
         return studioDatasetService.replaceSchema(datasetId, request);
+    }
+
+    @DeleteMapping("/{datasetId}")
+    @Operation(summary = "Xoá mềm dataset chưa bài nào dùng")
+    @ApiResponse(responseCode = "204", description = "Đã xoá")
+    @ApiResponse(responseCode = "404", description = "Không có dataset hoặc không được sửa")
+    @ApiResponse(responseCode = "409", description = "Dataset đang được bài dùng")
+    public ResponseEntity<Void> delete(@PathVariable UUID datasetId) {
+        studioDatasetService.delete(datasetId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{datasetId}/freeze")

@@ -20,6 +20,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -103,5 +104,19 @@ public class StudioProblemController {
     public StudioProblemResponse updateProblem(
             @PathVariable UUID problemId, @Valid @RequestBody UpdateProblemRequest request) {
         return studioProblemEditService.update(problemId, request);
+    }
+
+    @DeleteMapping("/{problemId}")
+    @Operation(summary = "Xoá mềm bài; người ra đề chỉ xoá được bài nháp hoặc cần sửa")
+    @ApiResponse(responseCode = "204", description = "Đã xoá")
+    @ApiResponse(
+            responseCode = "404",
+            description = "Không có bài hoặc không phải bài của người gọi")
+    @ApiResponse(
+            responseCode = "422",
+            description = "Bài đã gửi duyệt hoặc xuất bản và người gọi không phải ADMIN")
+    public ResponseEntity<Void> deleteProblem(@PathVariable UUID problemId) {
+        studioProblemEditService.delete(problemId);
+        return ResponseEntity.noContent().build();
     }
 }
