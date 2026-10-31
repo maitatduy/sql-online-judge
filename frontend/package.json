@@ -12,7 +12,8 @@
         "format:check": "prettier --check .",
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
-        "test:e2e": "playwright test"
+        "test:e2e": "playwright test",
+        "test:e2e:backend": "playwright test --config playwright.backend.config.ts"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.9.1",
