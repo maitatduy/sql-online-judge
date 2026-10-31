@@ -4,6 +4,8 @@ import { RoleGate } from "@/components/shared/RoleGate";
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { TopBar } from "@/components/shared/TopBar";
 
+import { StudioNav } from "./StudioNav";
+
 const STUDIO_ROLES = ["SETTER", "ADMIN"] as const;
 
 interface StudioShellProps {
@@ -21,6 +23,7 @@ export function StudioShell({ children }: StudioShellProps) {
             {() => (
                 <>
                     <TopBar />
+                    <StudioNav />
                     <main id={MAIN_CONTENT_ID}>{children}</main>
                 </>
             )}

@@ -1,9 +1,12 @@
 import { apiClient } from "@/lib/api-client";
 import type { Page } from "@/lib/pagination";
 
+import { type MyDatasetFilters, myDatasetsQueryOf } from "./my-dataset-filters";
 import { type MyProblemFilters, myProblemsQueryOf } from "./my-problem-filters";
-import type { CreateProblemValues } from "./schemas";
+import type { CreateDatasetValues, CreateProblemValues } from "./schemas";
 import type {
+    StudioDataset,
+    StudioDatasetSummary,
     StatusCounts,
     StudioProblem,
     StudioProblemSummary,
@@ -32,4 +35,11 @@ export const studioApi = {
         ),
     listTags: (signal?: AbortSignal) =>
         apiClient.get<{ items: StudioTag[] }>("/api/tags", { signal }),
+    listMyDatasets: (filters: MyDatasetFilters, signal?: AbortSignal) =>
+        apiClient.get<Page<StudioDatasetSummary>>("/api/studio/datasets", {
+            params: myDatasetsQueryOf(filters),
+            signal,
+        }),
+    createDataset: (values: CreateDatasetValues) =>
+        apiClient.post<StudioDataset>("/api/studio/datasets", values),
 };
