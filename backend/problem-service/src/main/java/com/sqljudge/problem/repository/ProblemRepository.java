@@ -38,6 +38,28 @@ public interface ProblemRepository extends JpaRepository<Problem, UUID> {
     Optional<Problem> findBySlugAndStatusAndVisibilityAndDeletedAtIsNull(
             String slug, ProblemStatus status, ProblemVisibility visibility);
 
+    @Query("SELECT p.slug FROM Problem p WHERE p.slug = :base OR p.slug LIKE :prefix")
+    List<String> findSlugsLike(@Param("base") String base, @Param("prefix") String prefix);
+
+    @Query(
+            """
+            SELECT p FROM Problem p
+            WHERE p.authorId = :authorId AND p.deletedAt IS NULL
+              AND (:status IS NULL OR p.status = :status)
+              AND (:titlePattern IS NULL OR LOWER(p.title) LIKE :titlePattern ESCAPE '!')
+            ORDER BY p.updatedAt DESC
+            """)
+    Page<Problem> findOwned(
+            @Param("authorId") UUID authorId,
+            @Param("status") ProblemStatus status,
+            @Param("titlePattern") String titlePattern,
+            Pageable pageable);
+
+    @Query(
+            "SELECT p.status AS status, COUNT(p) AS total FROM Problem p"
+                    + " WHERE p.authorId = :authorId AND p.deletedAt IS NULL GROUP BY p.status")
+    List<StatusCountRow> countOwnedByStatus(@Param("authorId") UUID authorId);
+
     @Query(
             value =
                     "SELECT new com.sqljudge.problem.repository.ProblemSummaryRow(p.id, p.number,"
