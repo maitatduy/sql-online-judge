@@ -12,21 +12,24 @@ import { formatTime } from "@/lib/format";
 
 import { useProblemAutosave } from "../hooks/useProblemAutosave";
 import { useStudioProblem } from "../hooks/useStudioProblem";
-import { PROBLEM_STATUS_LABELS } from "../status-labels";
+import { LOCKED_MESSAGES, PROBLEM_STATUS_LABELS } from "../status-labels";
+import { EDITABLE_STATUSES, type StudioStep } from "../types";
 import { InfoStep } from "./InfoStep";
+import { StatementStep } from "./StatementStep";
 import { StudioSteps } from "./StudioSteps";
 
 const FIELD_ERROR_CODES = ["SLUG_TAKEN", "VALIDATION_FAILED"];
 
 interface ProblemStudioProps {
     problemId: string;
+    step?: StudioStep;
 }
 
 function isFieldError(error: Error): boolean {
     return error instanceof ApiRequestError && FIELD_ERROR_CODES.includes(error.code);
 }
 
-export function ProblemStudio({ problemId }: ProblemStudioProps) {
+export function ProblemStudio({ problemId, step = "info" }: ProblemStudioProps) {
     const showToast = useToast();
     const { data: problem, error, isPending, refetch } = useStudioProblem(problemId);
     const autosave = useProblemAutosave(problemId, (saveError) => {
@@ -34,6 +37,8 @@ export function ProblemStudio({ problemId }: ProblemStudioProps) {
             showToast(`Chưa lưu được thay đổi. ${saveError.message}`, "error");
         }
     });
+
+    const isEditable = problem !== undefined && EDITABLE_STATUSES.includes(problem.status);
 
     return (
         <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-6 pt-7 pb-16">
@@ -86,14 +91,30 @@ export function ProblemStudio({ problemId }: ProblemStudioProps) {
                             </span>
                         </div>
                     </div>
+                    {isEditable ? null : (
+                        <p className="rounded-md bg-surface-2 px-3 py-2 text-[13px]">
+                            {LOCKED_MESSAGES[problem.status]}
+                        </p>
+                    )}
                     <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-                        <StudioSteps problemId={problem.id} />
-                        <InfoStep
-                            key={problem.id}
-                            problem={problem}
-                            saveError={autosave.error}
-                            onChange={autosave.queueSave}
-                        />
+                        <StudioSteps problemId={problem.id} currentStep={step} />
+                        {step === "info" ? (
+                            <InfoStep
+                                key={problem.id}
+                                problem={problem}
+                                disabled={!isEditable}
+                                saveError={autosave.error}
+                                onChange={autosave.queueSave}
+                            />
+                        ) : (
+                            <StatementStep
+                                key={problem.id}
+                                problem={problem}
+                                disabled={!isEditable}
+                                saveError={autosave.error}
+                                onChange={autosave.queueSave}
+                            />
+                        )}
                     </div>
                 </>
             ) : null}
