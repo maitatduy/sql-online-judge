@@ -1,11 +1,14 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { useState } from "react";
+
+import { Plus, Search } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Pagination } from "@/components/shared/Pagination";
 import { Skeleton } from "@/components/shared/Skeleton";
+import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
 import { useDebouncedSearch } from "@/lib/useDebouncedSearch";
@@ -14,6 +17,7 @@ import { useMyProblemFilters } from "../hooks/useMyProblemFilters";
 import { useMyProblems, useStatusCounts } from "../hooks/useMyProblems";
 import { myProblemsHref } from "../my-problem-filters";
 import type { StatusCounts } from "../types";
+import { CreateProblemDialog } from "./CreateProblemDialog";
 import { MyProblemsTable } from "./MyProblemsTable";
 import { StatusTabs } from "./StatusTabs";
 
@@ -32,18 +36,28 @@ export function MyProblems() {
         changeFilters({ q }),
     );
     const hasFilter = filters.status !== null || filters.q !== "";
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     return (
         <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-6 pt-7 pb-16">
-            <div>
-                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    Khu vực người ra đề
-                </p>
-                <h1 className="mt-1.5 text-[28px] font-extrabold tracking-[-0.02em]">
-                    Bài của tôi
-                </h1>
-                {counts ? <p className="mt-1 text-muted-foreground">{summaryOf(counts)}</p> : null}
+            <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                        Khu vực người ra đề
+                    </p>
+                    <h1 className="mt-1.5 text-[28px] font-extrabold tracking-[-0.02em]">
+                        Bài của tôi
+                    </h1>
+                    {counts ? (
+                        <p className="mt-1 text-muted-foreground">{summaryOf(counts)}</p>
+                    ) : null}
+                </div>
+                <Button type="button" onClick={() => setIsCreateOpen(true)}>
+                    <Plus aria-hidden="true" />
+                    Tạo bài mới
+                </Button>
             </div>
+            <CreateProblemDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <StatusTabs
                     activeStatus={filters.status}

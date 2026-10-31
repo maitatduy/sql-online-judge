@@ -4,12 +4,15 @@ import type { ProblemStatus, StatusCounts, StudioProblemSummary } from "@/featur
 import type { Difficulty } from "@/lib/difficulty";
 import type { Page } from "@/lib/pagination";
 
+import { validationFailed } from "./admin-user-errors";
 import { apiError } from "./api-error";
 import { readMockSession, SETTER_SESSION_USER } from "./session";
 
 const STORAGE_KEY = "sqljudge:mock:studio-problems";
 const HOUR_MS = 60 * 60_000;
 const DEFAULT_PAGE_SIZE = 20;
+const MAX_TITLE_LENGTH = 200;
+const FIRST_SLUG_SUFFIX = 2;
 const STATUSES: readonly ProblemStatus[] = [
     "DRAFT",
     "PENDING_REVIEW",
@@ -113,7 +116,51 @@ function ownProblems(userId: string): StoredProblem[] {
         .sort((first, second) => Date.parse(second.updatedAt) - Date.parse(first.updatedAt));
 }
 
+function uniqueSlug(title: string, problems: StoredProblem[]): string {
+    const base =
+        folded(title)
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "") || "bai-tap";
+    const taken = new Set(problems.map((problem) => problem.slug));
+    let slug = base;
+    for (let suffix = FIRST_SLUG_SUFFIX; taken.has(slug); suffix += 1) {
+        slug = `${base}-${suffix}`;
+    }
+    return slug;
+}
+
 export const studioProblemHandlers: RequestHandler[] = [
+    http.post("*/api/studio/problems", async ({ request }) => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return apiError(401, "UNAUTHENTICATED", "Bạn chưa đăng nhập");
+        }
+        const title = ((await request.json()) as { title?: string }).title?.trim() ?? "";
+        if (title === "" || title.length > MAX_TITLE_LENGTH) {
+            return validationFailed({
+                field: "title",
+                message: title === "" ? "Không được để trống" : "Tối đa 200 ký tự",
+            });
+        }
+        const problems = readStudioProblems();
+        const created: StoredProblem = {
+            id: crypto.randomUUID(),
+            authorId: user.id,
+            number: null,
+            slug: uniqueSlug(title, problems),
+            title,
+            status: "DRAFT",
+            difficulty: "MEDIUM",
+            updatedAt: new Date().toISOString(),
+        };
+        writeStudioProblems([...problems, created]);
+        return HttpResponse.json(toSummary(created), {
+            status: 201,
+            headers: { Location: `/api/studio/problems/${created.id}` },
+        });
+    }),
+
     http.get("*/api/studio/problems/status-counts", async () => {
         await delay();
         const user = readMockSession();

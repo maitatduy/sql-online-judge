@@ -2,6 +2,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ToastProvider } from "@/components/shared/ToastProvider";
 import { server } from "@/mocks/server";
 import { ADMIN_SESSION_USER, SETTER_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
@@ -17,7 +18,11 @@ const TABLE_NAME = "Bài của tôi";
 
 async function renderMyProblems(search = "") {
     visit(`/studio/problems${search}`);
-    renderWithProviders(<MyProblems />);
+    renderWithProviders(
+        <ToastProvider>
+            <MyProblems />
+        </ToastProvider>,
+    );
     return within(await screen.findByRole("table", { name: TABLE_NAME }));
 }
 
@@ -92,7 +97,11 @@ describe("MyProblems", () => {
     it("báo khi chưa có bài nào", async () => {
         writeMockSession(ADMIN_SESSION_USER);
         visit("/studio/problems");
-        renderWithProviders(<MyProblems />);
+        renderWithProviders(
+            <ToastProvider>
+                <MyProblems />
+            </ToastProvider>,
+        );
 
         expect(await screen.findByText("Bạn chưa có bài nào.")).toBeInTheDocument();
     });
@@ -107,7 +116,11 @@ describe("MyProblems", () => {
             ),
         );
         visit("/studio/problems");
-        renderWithProviders(<MyProblems />);
+        renderWithProviders(
+            <ToastProvider>
+                <MyProblems />
+            </ToastProvider>,
+        );
 
         const alert = await screen.findByRole("alert");
         expect(alert).toHaveTextContent("Không tải được danh sách bài");
