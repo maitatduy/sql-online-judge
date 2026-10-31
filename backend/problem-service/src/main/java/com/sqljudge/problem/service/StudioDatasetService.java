@@ -1,10 +1,5 @@
 package com.sqljudge.problem.service;
 
-import com.sqljudge.common.error.ErrorCode;
-import com.sqljudge.common.exception.BusinessRuleException;
-import com.sqljudge.common.exception.NotFoundException;
-import com.sqljudge.common.security.CurrentUser;
-import com.sqljudge.common.security.Role;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.request.CreateDatasetRequest;
@@ -20,8 +15,9 @@ import com.sqljudge.problem.entity.DatasetTable;
 import com.sqljudge.problem.entity.DatasetVersion;
 import com.sqljudge.problem.repository.DatasetRepository;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -34,6 +30,7 @@ public class StudioDatasetService {
     private static final int FIRST_VERSION = 1;
 
     private final DatasetRepository datasetRepository;
+    private final DatasetAccess datasetAccess;
 
     @Transactional
     public StudioDatasetResponse create(CreateDatasetRequest request) {
@@ -60,12 +57,12 @@ public class StudioDatasetService {
 
     @Transactional(readOnly = true)
     public StudioDatasetResponse get(UUID datasetId) {
-        return StudioDatasetResponse.from(find(datasetId, StudioDatasetService::canRead));
+        return StudioDatasetResponse.from(datasetAccess.readable(datasetId));
     }
 
     @Transactional
     public StudioDatasetResponse update(UUID datasetId, UpdateDatasetRequest request) {
-        Dataset dataset = find(datasetId, StudioDatasetService::canEdit);
+        Dataset dataset = datasetAccess.editable(datasetId);
         if (request.name() != null) {
             dataset.setName(request.name().trim());
         }
@@ -77,17 +74,15 @@ public class StudioDatasetService {
 
     @Transactional
     public StudioDatasetResponse replaceSchema(UUID datasetId, UpdateDatasetSchemaRequest request) {
-        Dataset dataset = find(datasetId, StudioDatasetService::canEdit);
-        DatasetVersion draft = dataset.latestVersion();
-        if (!draft.isDraft()) {
-            throw new BusinessRuleException(
-                    ErrorCode.DATASET_VERSION_FROZEN,
-                    "Phiên bản mới nhất đã chốt, hãy tạo bản nháp mới để sửa");
-        }
+        Dataset dataset = datasetAccess.editable(datasetId);
+        DatasetVersion draft = datasetAccess.editableDraft(dataset);
         DatasetSchemaValidator.validate(request);
         draft.getTables().clear();
         datasetRepository.flush();
         request.tables().forEach(table -> addTable(draft, table));
+        Set<String> tableNames =
+                request.tables().stream().map(SchemaTableRequest::name).collect(Collectors.toSet());
+        draft.getVariants().forEach(variant -> variant.keepTablesNamed(tableNames));
         return StudioDatasetResponse.from(datasetRepository.saveAndFlush(dataset));
     }
 
@@ -102,25 +97,6 @@ public class StudioDatasetService {
                 column.setReferencesColumn(columnRequest.references().column());
             }
         }
-    }
-
-    private Dataset find(UUID datasetId, BiPredicate<Dataset, CurrentUser> allowed) {
-        CurrentUser user = SecurityUtils.requireCurrentUser();
-        return datasetRepository
-                .findByIdAndDeletedAtIsNull(datasetId)
-                .filter(dataset -> allowed.test(dataset, user))
-                .orElseThrow(
-                        () ->
-                                new NotFoundException(
-                                        ErrorCode.DATASET_NOT_FOUND, "Không tìm thấy dataset"));
-    }
-
-    private static boolean canEdit(Dataset dataset, CurrentUser user) {
-        return dataset.getOwnerId().equals(user.id()) || user.hasRole(Role.ADMIN);
-    }
-
-    private static boolean canRead(Dataset dataset, CurrentUser user) {
-        return canEdit(dataset, user) || user.hasRole(Role.MODERATOR);
     }
 
     private String uniqueSlug(String base) {

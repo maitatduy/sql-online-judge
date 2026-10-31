@@ -12,8 +12,11 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(
@@ -24,6 +27,7 @@ import lombok.NoArgsConstructor;
                         columnList = "version_id, name",
                         unique = true))
 @Getter
+@Setter
 @NoArgsConstructor
 public class DatasetVariant extends BaseEntity {
 
@@ -52,5 +56,20 @@ public class DatasetVariant extends BaseEntity {
 
     public void addTable(String tableName, String csv, int rowCount) {
         tables.add(new DatasetVariantTable(this, tableName, csv, rowCount));
+    }
+
+    public Optional<DatasetVariantTable> findTable(String tableName) {
+        return tables.stream().filter(table -> table.getTableName().equals(tableName)).findFirst();
+    }
+
+    public void putTable(String tableName, String csv, int rowCount) {
+        findTable(tableName)
+                .ifPresentOrElse(
+                        table -> table.replaceData(csv, rowCount),
+                        () -> addTable(tableName, csv, rowCount));
+    }
+
+    public void keepTablesNamed(Set<String> tableNames) {
+        tables.removeIf(table -> !tableNames.contains(table.getTableName()));
     }
 }

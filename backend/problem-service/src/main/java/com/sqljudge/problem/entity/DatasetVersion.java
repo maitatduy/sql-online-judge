@@ -14,6 +14,8 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -65,6 +67,22 @@ public class DatasetVersion extends BaseEntity {
         DatasetTable table = new DatasetTable(this, name, tables.size());
         tables.add(table);
         return table;
+    }
+
+    public Optional<DatasetVariant> findVariant(UUID variantId) {
+        return variants.stream().filter(variant -> variant.getId().equals(variantId)).findFirst();
+    }
+
+    public Optional<DatasetTable> findTable(String tableName) {
+        return tables.stream().filter(table -> table.getName().equals(tableName)).findFirst();
+    }
+
+    public boolean hasVariantNamed(String variantName, UUID exceptVariantId) {
+        return variants.stream()
+                .anyMatch(
+                        variant ->
+                                variant.getName().equals(variantName)
+                                        && !variant.getId().equals(exceptVariantId));
     }
 
     public DatasetVariant addVariant(String name, boolean isPublic) {
