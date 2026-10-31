@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import Link from "next/link";
+
 import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
 import { formatRelativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -44,7 +46,14 @@ export function MyProblemsTable({ problems }: MyProblemsTableProps) {
                 <tbody>
                     {problems.map((problem) => (
                         <tr key={problem.id}>
-                            <td className={cn(CELL_CLASS, "font-semibold")}>{problem.title}</td>
+                            <td className={cn(CELL_CLASS, "font-semibold")}>
+                                <Link
+                                    href={`/studio/problems/${problem.id}`}
+                                    className="hover:text-brand hover:underline"
+                                >
+                                    {problem.title}
+                                </Link>
+                            </td>
                             <td className={CELL_CLASS}>
                                 <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold">
                                     {PROBLEM_STATUS_LABELS[problem.status]}

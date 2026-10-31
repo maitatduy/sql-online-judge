@@ -1,11 +1,18 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
-import type { ProblemStatus, StatusCounts, StudioProblemSummary } from "@/features/studio/types";
+import type {
+    ProblemStatus,
+    StatusCounts,
+    StudioProblem,
+    StudioProblemSummary,
+    UpdateProblemRequest,
+} from "@/features/studio/types";
 import type { Difficulty } from "@/lib/difficulty";
 import type { Page } from "@/lib/pagination";
 
 import { validationFailed } from "./admin-user-errors";
 import { apiError } from "./api-error";
+import { PRACTICE_TAGS } from "./practice-fixtures";
 import { readMockSession, SETTER_SESSION_USER } from "./session";
 
 const STORAGE_KEY = "sqljudge:mock:studio-problems";
@@ -13,6 +20,7 @@ const HOUR_MS = 60 * 60_000;
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_TITLE_LENGTH = 200;
 const FIRST_SLUG_SUFFIX = 2;
+const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const STATUSES: readonly ProblemStatus[] = [
     "DRAFT",
     "PENDING_REVIEW",
@@ -23,6 +31,8 @@ const STATUSES: readonly ProblemStatus[] = [
 
 interface StoredProblem extends StudioProblemSummary {
     authorId: string;
+    tagSlugs: string[];
+    statementMarkdown: string;
 }
 
 type ProblemSeed = [
@@ -77,12 +87,21 @@ function seedProblems(): StoredProblem[] {
         status,
         difficulty,
         updatedAt: new Date(Date.now() - hoursAgo * HOUR_MS).toISOString(),
+        tagSlugs: [],
+        statementMarkdown: "",
     }));
 }
 
 export function readStudioProblems(): StoredProblem[] {
     const stored = sessionStorage.getItem(STORAGE_KEY);
-    return stored ? (JSON.parse(stored) as StoredProblem[]) : seedProblems();
+    if (!stored) {
+        return seedProblems();
+    }
+    return (JSON.parse(stored) as StoredProblem[]).map((problem) => ({
+        ...problem,
+        tagSlugs: problem.tagSlugs ?? [],
+        statementMarkdown: problem.statementMarkdown ?? "",
+    }));
 }
 
 export function writeStudioProblems(problems: StoredProblem[]): void {
@@ -107,6 +126,21 @@ function toSummary(problem: StoredProblem): StudioProblemSummary {
         status: problem.status,
         difficulty: problem.difficulty,
         updatedAt: problem.updatedAt,
+    };
+}
+
+function findOwn(problemId: string): StoredProblem | undefined {
+    const user = readMockSession();
+    return readStudioProblems().find(
+        (problem) => problem.id === problemId && problem.authorId === user?.id,
+    );
+}
+
+function toDetail(problem: StoredProblem): StudioProblem {
+    return {
+        ...toSummary(problem),
+        tags: PRACTICE_TAGS.filter((tag) => problem.tagSlugs.includes(tag.slug)),
+        statementMarkdown: problem.statementMarkdown,
     };
 }
 
@@ -153,6 +187,8 @@ export const studioProblemHandlers: RequestHandler[] = [
             status: "DRAFT",
             difficulty: "MEDIUM",
             updatedAt: new Date().toISOString(),
+            tagSlugs: [],
+            statementMarkdown: "",
         };
         writeStudioProblems([...problems, created]);
         return HttpResponse.json(toSummary(created), {
@@ -172,6 +208,43 @@ export const studioProblemHandlers: RequestHandler[] = [
             counts[problem.status] += 1;
         });
         return HttpResponse.json(counts);
+    }),
+
+    http.get("*/api/studio/problems/:problemId", async ({ params }) => {
+        await delay();
+        const problem = findOwn(String(params.problemId));
+        return problem
+            ? HttpResponse.json(toDetail(problem))
+            : apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
+    }),
+
+    http.patch("*/api/studio/problems/:problemId", async ({ params, request }) => {
+        await delay();
+        const problem = findOwn(String(params.problemId));
+        if (!problem) {
+            return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
+        }
+        if (problem.status !== "DRAFT" && problem.status !== "CHANGES_REQUESTED") {
+            return apiError(422, "PROBLEM_LOCKED", "Bài đang chờ duyệt hoặc đã xuất bản");
+        }
+        const change = (await request.json()) as UpdateProblemRequest;
+        const problems = readStudioProblems();
+        if (change.slug !== undefined && !SLUG_PATTERN.test(change.slug)) {
+            return validationFailed({ field: "slug", message: "Slug không hợp lệ" });
+        }
+        if (problems.some((other) => other.slug === change.slug && other.id !== problem.id)) {
+            return apiError(409, "SLUG_TAKEN", "Slug đã được bài khác dùng");
+        }
+        if (change.tagSlugs?.some((slug) => !PRACTICE_TAGS.some((tag) => tag.slug === slug))) {
+            return validationFailed({ field: "tagSlugs", message: "Có chủ đề không tồn tại" });
+        }
+        const updated: StoredProblem = {
+            ...problem,
+            ...change,
+            updatedAt: new Date().toISOString(),
+        };
+        writeStudioProblems(problems.map((other) => (other.id === problem.id ? updated : other)));
+        return HttpResponse.json(toDetail(updated));
     }),
 
     http.get("*/api/studio/problems", async ({ request }) => {

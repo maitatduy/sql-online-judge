@@ -62,6 +62,9 @@ describe("MyProblems", () => {
         expect(needsFix.getByText("Cần sửa")).toBeInTheDocument();
         expect(needsFix.getByText("Khó")).toHaveClass("text-difficulty-hard");
         expect(needsFix.getByText("1 ngày trước")).toBeInTheDocument();
+        expect(
+            needsFix.getByRole("link", { name: "Chuỗi ngày hoạt động dài nhất" }),
+        ).toHaveAttribute("href", expect.stringMatching(/^\/studio\/problems\/0192f3d0-/));
     });
 
     it("chọn tab Nháp thì chỉ còn bài nháp và ghi trạng thái lên URL", async () => {
