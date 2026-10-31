@@ -118,6 +118,10 @@ public class Problem extends BaseEntity {
     @OneToMany(mappedBy = "problem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProblemRevision> revisions = new ArrayList<>();
 
+    public boolean isEditableBySetter() {
+        return status == ProblemStatus.DRAFT || status == ProblemStatus.CHANGES_REQUESTED;
+    }
+
     public ProblemRevision addRevision(int revisionNumber) {
         ProblemRevision revision = new ProblemRevision(this, revisionNumber);
         revisions.add(revision);

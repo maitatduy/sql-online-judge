@@ -2,8 +2,11 @@ package com.sqljudge.problem.controller;
 
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.request.CreateProblemRequest;
+import com.sqljudge.problem.dto.request.UpdateProblemRequest;
+import com.sqljudge.problem.dto.response.StudioProblemResponse;
 import com.sqljudge.problem.dto.response.StudioProblemSummaryResponse;
 import com.sqljudge.problem.entity.ProblemStatus;
+import com.sqljudge.problem.service.StudioProblemEditService;
 import com.sqljudge.problem.service.StudioProblemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,10 +16,13 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +40,7 @@ public class StudioProblemController {
     private static final int MAX_KEYWORD_LENGTH = 100;
 
     private final StudioProblemService studioProblemService;
+    private final StudioProblemEditService studioProblemEditService;
 
     @PostMapping
     @Operation(summary = "Tạo bài nháp mới, slug sinh từ tiêu đề")
@@ -68,5 +75,33 @@ public class StudioProblemController {
     @ApiResponse(responseCode = "403", description = "Không phải SETTER hoặc ADMIN")
     public Map<ProblemStatus, Long> countOwnedByStatus() {
         return studioProblemService.countOwnedByStatus();
+    }
+
+    @GetMapping("/{problemId}")
+    @Operation(summary = "Đọc bài để soạn trong Studio")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Bài của người gọi, hoặc bài bất kỳ nếu là ADMIN")
+    @ApiResponse(
+            responseCode = "404",
+            description = "Không có bài hoặc không phải bài của người gọi")
+    public StudioProblemResponse getProblem(@PathVariable UUID problemId) {
+        return studioProblemEditService.get(problemId);
+    }
+
+    @PatchMapping("/{problemId}")
+    @Operation(summary = "Sửa thông tin và đề bài; trường không gửi lên giữ nguyên")
+    @ApiResponse(responseCode = "200", description = "Bài sau khi sửa")
+    @ApiResponse(
+            responseCode = "400",
+            description = "Dữ liệu không hợp lệ hoặc chủ đề không tồn tại")
+    @ApiResponse(
+            responseCode = "404",
+            description = "Không có bài hoặc không phải bài của người gọi")
+    @ApiResponse(responseCode = "409", description = "Slug đã được bài khác dùng")
+    @ApiResponse(responseCode = "422", description = "Bài đang chờ duyệt hoặc đã xuất bản")
+    public StudioProblemResponse updateProblem(
+            @PathVariable UUID problemId, @Valid @RequestBody UpdateProblemRequest request) {
+        return studioProblemEditService.update(problemId, request);
     }
 }
