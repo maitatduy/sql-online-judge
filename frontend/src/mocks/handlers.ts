@@ -26,6 +26,7 @@ import {
     SETTER_SESSION_USER,
     writeMockSession,
 } from "./session";
+import { studioProblemHandlers } from "./studio-problems";
 
 const DEMO_PASSWORD = "mock-password";
 const DEMO_ACCOUNTS: Record<string, CurrentUser> = {
@@ -169,6 +170,7 @@ export const handlers: RequestHandler[] = [
     ...practiceRunHandlers,
     ...practiceSubmissionHandlers,
     ...practiceSubmissionHistoryHandlers,
+    ...studioProblemHandlers,
     ...adminHandlers,
     ...invitationHandlers,
 ];
