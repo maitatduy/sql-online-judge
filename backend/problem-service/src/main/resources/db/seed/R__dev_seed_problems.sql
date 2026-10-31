@@ -78,104 +78,76 @@ INSERT INTO problems (id, slug, number, title, difficulty, status, visibility, a
     published_at, version, created_at, updated_at) VALUES
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000008'), 'count-orders-by-status', 8, 'Đếm đơn hàng theo trạng thái', 'EASY', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Đếm đơn hàng theo trạng thái**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-00000000000c'), 'customers-who-never-order', 12, 'Khách hàng chưa từng đặt hàng', 'EASY', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Khách hàng chưa từng đặt hàng**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000012'), 'employees-and-manager-names', 18, 'Nhân viên và tên quản lý', 'EASY', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Nhân viên và tên quản lý**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-00000000001b'), 'unsold-products', 27, 'Sản phẩm chưa bán được', 'EASY', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Sản phẩm chưa bán được**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-00000000001f'), 'employees-without-manager', 31, 'Nhân viên không có quản lý', 'EASY', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Nhân viên không có quản lý**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000022'), 'orders-with-customer-and-product', 34, 'Đơn hàng kèm tên khách và sản phẩm', 'EASY', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Đơn hàng kèm tên khách và sản phẩm**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000029'), 'classmate-pairs', 41, 'Cặp sinh viên cùng lớp', 'MEDIUM', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Cặp sinh viên cùng lớp**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000034'), 'revenue-by-category', 52, 'Doanh thu theo danh mục', 'MEDIUM', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Doanh thu theo danh mục**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000042'), 'connecting-flights', 66, 'Chuyến bay nối chuyến', 'MEDIUM', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Chuyến bay nối chuyến**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000049'), 'customers-who-bought-all-products', 73, 'Khách hàng mua đủ mọi sản phẩm', 'HARD', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Khách hàng mua đủ mọi sản phẩm**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-00000000004d'), 'top-three-products-per-month', 77, 'Top 3 sản phẩm bán chạy mỗi tháng', 'HARD', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Top 3 sản phẩm bán chạy mỗi tháng**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-00000000004f'), 'departments-without-employees', 79, 'Phòng ban không có nhân viên', 'EASY', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Phòng ban không có nhân viên**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-00000000005f'), 'students-and-enrolled-courses', 95, 'Học viên và khoá học đã đăng ký', 'EASY', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Học viên và khoá học đã đăng ký**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000066'), 'friends-of-friends', 102, 'Bạn của bạn', 'MEDIUM', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Bạn của bạn**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000075'), 'booking-gaps', 117, 'Khoảng trống trong lịch đặt phòng', 'HARD', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Khoảng trống trong lịch đặt phòng**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-00000000007e'), 'price-at-order-time', 126, 'Giá sản phẩm tại thời điểm đặt', 'MEDIUM', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Giá sản phẩm tại thời điểm đặt**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-00000000008c'), 'compare-sales-of-two-years', 140, 'So sánh doanh số hai năm', 'MEDIUM', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **So sánh doanh số hai năm**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000098'), 'missing-size-color-combinations', 152, 'Tổ hợp size và màu còn thiếu', 'MEDIUM', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Tổ hợp size và màu còn thiếu**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-0000000000a8'), 'customer-referral-chain', 168, 'Chuỗi giới thiệu khách hàng', 'HARD', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Chuỗi giới thiệu khách hàng**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-0000000000b8'), 'highest-salary-per-department', 184, 'Lương cao nhất mỗi phòng ban', 'MEDIUM', 'PUBLISHED', 'PUBLIC',
-     UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Tìm nhân viên có **lương cao nhất trong mỗi phòng ban**.
-
-Trả về các cột `department`, `employee`, `salary`. Nếu nhiều người cùng lương cao nhất thì trả về tất cả.
-
-Sắp xếp theo `salary` giảm dần, rồi theo `employee` tăng dần.',
-     'SELECT *
-FROM employees;', 2000, TRUE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Tìm nhân viên có **lương cao nhất trong mỗi phòng ban**.\n\nTrả về các cột `department`, `employee`, `salary`. Nếu nhiều người cùng lương cao nhất thì trả về tất cả.\n\nSắp xếp theo `salary` giảm dần, rồi theo `employee` tăng dần.',
+     'SELECT *\nFROM employees;', 2000, TRUE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-0000000000bf'), 'drivers-and-cancelled-trips', 191, 'Tài xế và chuyến đi bị huỷ', 'MEDIUM', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Tài xế và chuyến đi bị huỷ**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-0000000000cd'), 'users-active-on-both-platforms', 205, 'Người dùng hoạt động cả hai nền tảng', 'MEDIUM', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Người dùng hoạt động cả hai nền tảng**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-0000000000d5'), 'longest-login-streak', 213, 'Chuỗi ngày đăng nhập liên tiếp dài nhất', 'HARD', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Chuỗi ngày đăng nhập liên tiếp dài nhất**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b0-0000-7000-8000-0000000000db'), 'reconcile-two-transaction-tables', 219, 'Đối soát hai bảng giao dịch', 'HARD', 'PUBLISHED', 'PUBLIC',
      UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'Viết câu truy vấn cho bài **Đối soát hai bảng giao dịch**.',
-     'SELECT 1;
-', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000');
+     'SELECT 1;\n', 2000, FALSE, FALSE, 0.000001, 'SELECT,WITH', '2026-10-01 00:00:00.000000', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000');
 
 INSERT INTO problem_revisions (id, problem_id, number, frozen_at, created_at, updated_at) VALUES
     (UUID_TO_BIN('0192f3b1-0000-7000-8000-000000000008'), UUID_TO_BIN('0192f3b0-0000-7000-8000-000000000008'), 1, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
@@ -358,27 +330,9 @@ INSERT INTO reference_solutions (id, revision_id, dialect, code, created_at, upd
     (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000690'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000a8'), 'POSTGRESQL', 'SELECT 1;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000691'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000a8'), 'MYSQL', 'SELECT 1;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000692'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000a8'), 'SQLITE', 'SELECT 1;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
-    (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000730'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000b8'), 'POSTGRESQL', 'SELECT d.name AS department, e.full_name AS employee, e.salary
-FROM employees e
-JOIN departments d ON d.id = e.department_id
-WHERE e.salary = (
-    SELECT MAX(s.salary) FROM employees s WHERE s.department_id = e.department_id
-)
-ORDER BY e.salary DESC, employee;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
-    (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000731'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000b8'), 'MYSQL', 'SELECT d.name AS department, e.full_name AS employee, e.salary
-FROM employees e
-JOIN departments d ON d.id = e.department_id
-WHERE e.salary = (
-    SELECT MAX(s.salary) FROM employees s WHERE s.department_id = e.department_id
-)
-ORDER BY e.salary DESC, employee;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
-    (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000732'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000b8'), 'SQLITE', 'SELECT d.name AS department, e.full_name AS employee, e.salary
-FROM employees e
-JOIN departments d ON d.id = e.department_id
-WHERE e.salary = (
-    SELECT MAX(s.salary) FROM employees s WHERE s.department_id = e.department_id
-)
-ORDER BY e.salary DESC, employee;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+    (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000730'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000b8'), 'POSTGRESQL', 'SELECT d.name AS department, e.full_name AS employee, e.salary\nFROM employees e\nJOIN departments d ON d.id = e.department_id\nWHERE e.salary = (\n    SELECT MAX(s.salary) FROM employees s WHERE s.department_id = e.department_id\n)\nORDER BY e.salary DESC, employee;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+    (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000731'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000b8'), 'MYSQL', 'SELECT d.name AS department, e.full_name AS employee, e.salary\nFROM employees e\nJOIN departments d ON d.id = e.department_id\nWHERE e.salary = (\n    SELECT MAX(s.salary) FROM employees s WHERE s.department_id = e.department_id\n)\nORDER BY e.salary DESC, employee;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+    (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000732'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000b8'), 'SQLITE', 'SELECT d.name AS department, e.full_name AS employee, e.salary\nFROM employees e\nJOIN departments d ON d.id = e.department_id\nWHERE e.salary = (\n    SELECT MAX(s.salary) FROM employees s WHERE s.department_id = e.department_id\n)\nORDER BY e.salary DESC, employee;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000776'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000bf'), 'POSTGRESQL', 'SELECT 1;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000777'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000bf'), 'MYSQL', 'SELECT 1;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b5-0000-7000-8000-000000000778'), UUID_TO_BIN('0192f3b1-0000-7000-8000-0000000000bf'), 'SQLITE', 'SELECT 1;', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
@@ -418,42 +372,17 @@ INSERT INTO testcases (id, revision_id, position, description, is_public, create
 
 INSERT INTO testcase_data (id, testcase_id, table_name, csv, row_count, created_at, updated_at) VALUES
     (UUID_TO_BIN('0192f3b7-0000-7000-8000-000000000001'), UUID_TO_BIN('0192f3b6-0000-7000-8000-000000000001'), 'departments',
-     'id,name
-1,Kỹ thuật
-2,Kinh doanh
-3,Nhân sự
-', 3, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'id,name\n1,Kỹ thuật\n2,Kinh doanh\n3,Nhân sự\n', 3, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b7-0000-7000-8000-000000000002'), UUID_TO_BIN('0192f3b6-0000-7000-8000-000000000001'), 'employees',
-     'id,full_name,salary,department_id
-1,Hoàng Quốc Bảo,48000000,1
-2,Nguyễn Văn An,48000000,1
-3,Phạm Minh Tuấn,35000000,1
-4,Trần Thị Bình,32000000,2
-5,Đỗ Thu Hà,29000000,2
-6,Lê Minh Châu,27500000,3
-', 6, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'id,full_name,salary,department_id\n1,Hoàng Quốc Bảo,48000000,1\n2,Nguyễn Văn An,48000000,1\n3,Phạm Minh Tuấn,35000000,1\n4,Trần Thị Bình,32000000,2\n5,Đỗ Thu Hà,29000000,2\n6,Lê Minh Châu,27500000,3\n', 6, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b7-0000-7000-8000-000000000003'), UUID_TO_BIN('0192f3b6-0000-7000-8000-000000000002'), 'departments',
-     'id,name
-1,Kế toán
-2,Pháp chế
-', 2, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'id,name\n1,Kế toán\n2,Pháp chế\n', 2, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b7-0000-7000-8000-000000000004'), UUID_TO_BIN('0192f3b6-0000-7000-8000-000000000002'), 'employees',
-     'id,full_name,salary,department_id
-1,Vũ Hải,20000000,1
-2,Mai Lan,30000000,
-3,Đặng Khoa,25000000,2
-', 3, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'id,full_name,salary,department_id\n1,Vũ Hải,20000000,1\n2,Mai Lan,30000000,\n3,Đặng Khoa,25000000,2\n', 3, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b7-0000-7000-8000-000000000005'), UUID_TO_BIN('0192f3b6-0000-7000-8000-000000000003'), 'departments',
-     'id,name
-1,Vận hành
-', 1, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
+     'id,name\n1,Vận hành\n', 1, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
     (UUID_TO_BIN('0192f3b7-0000-7000-8000-000000000006'), UUID_TO_BIN('0192f3b6-0000-7000-8000-000000000003'), 'employees',
-     'id,full_name,salary,department_id
-1,Lý Ánh,15000000,1
-2,Hồ Bình,15000000,1
-3,Tạ Cường,15000000,1
-4,Kiều Dũng,12000000,1
-', 4, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000');
+     'id,full_name,salary,department_id\n1,Lý Ánh,15000000,1\n2,Hồ Bình,15000000,1\n3,Tạ Cường,15000000,1\n4,Kiều Dũng,12000000,1\n', 4, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000');
 
 INSERT INTO expected_results (id, testcase_id, columns_json, rows_json, row_count, checksum, created_at, updated_at) VALUES
     (UUID_TO_BIN('0192f3b8-0000-7000-8000-000000000001'), UUID_TO_BIN('0192f3b6-0000-7000-8000-000000000001'), '["department","employee","salary"]',
