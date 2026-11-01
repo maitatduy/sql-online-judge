@@ -6,7 +6,7 @@ import type { Page } from "@/lib/pagination";
 import { validationFailed } from "./admin-user-errors";
 import { apiError } from "./api-error";
 import { readMockSession, SETTER_SESSION_USER } from "./session";
-import { SEED_SCHEMAS, SEED_VARIANTS } from "./studio-dataset-fixtures";
+import { SEED_SCHEMAS, SEED_VARIANT_CSVS, SEED_VARIANTS } from "./studio-dataset-fixtures";
 import { folded } from "./text";
 
 const STORAGE_KEY = "sqljudge:mock:studio-datasets";
@@ -20,6 +20,7 @@ const RESERVED_WORDS = new Set(["group", "order", "select", "table", "user", "wh
 interface StoredDataset extends StudioDataset {
     ownerId: string;
     usedByProblems: number;
+    csvs?: Record<string, string>;
     deletedAt?: string;
 }
 
@@ -60,6 +61,7 @@ function seedDatasets(): StoredDataset[] {
                     tables: SEED_SCHEMAS[index],
                 },
                 variants: SEED_VARIANTS[index],
+                csvs: SEED_VARIANT_CSVS,
                 updatedAt,
             };
         },
@@ -185,6 +187,10 @@ function invalidSchemaField(tables: DatasetTable[]): { field: string; message: s
     return null;
 }
 
+function csvRowCount(csv: string): number {
+    return csv.split("\n").filter((line) => line.trim() !== "").length - 1;
+}
+
 const variantNameTaken = () =>
     apiError(409, "DATASET_VARIANT_NAME_TAKEN", "Tên bộ dữ liệu đã được dùng");
 
@@ -307,6 +313,71 @@ export const studioDatasetHandlers: RequestHandler[] = [
         });
         return new HttpResponse(null, { status: 204 });
     }),
+
+    http.get(
+        "*/api/studio/datasets/:datasetId/variants/:variantId/tables/:tableName",
+        async ({ params }) => {
+            await delay();
+            const dataset = findDataset(String(params.datasetId), true);
+            const tableName = String(params.tableName);
+            const csv = dataset?.csvs?.[`${String(params.variantId)}/${tableName}`];
+            if (csv === undefined) {
+                return apiError(
+                    404,
+                    "DATASET_VARIANT_NOT_FOUND",
+                    "Bộ dữ liệu chưa có CSV cho bảng này",
+                );
+            }
+            return HttpResponse.json({ tableName, csv, rowCount: csvRowCount(csv) });
+        },
+    ),
+
+    http.put(
+        "*/api/studio/datasets/:datasetId/variants/:variantId/tables/:tableName",
+        async ({ params, request }) => {
+            await delay();
+            const dataset = findDataset(String(params.datasetId), false);
+            const variantId = String(params.variantId);
+            const tableName = String(params.tableName);
+            const table = dataset?.schema.tables.find((candidate) => candidate.name === tableName);
+            if (
+                !dataset ||
+                !table ||
+                !dataset.variants.some((variant) => variant.id === variantId)
+            ) {
+                return notFound();
+            }
+            const { csv } = (await request.json()) as { csv: string };
+            const header = table.columns.map((column) => column.name).join(",");
+            if (csv.split("\n")[0].trim() !== header) {
+                return validationFailed({
+                    field: "csv",
+                    message: `Dòng tiêu đề phải là: ${header}`,
+                });
+            }
+            const rowCount = csvRowCount(csv);
+            const draft = editableDraft(dataset);
+            const changed: StoredDataset = {
+                ...draft,
+                csvs: { ...draft.csvs, [`${variantId}/${tableName}`]: csv },
+                variants: draft.variants.map((variant) =>
+                    variant.id === variantId
+                        ? {
+                              ...variant,
+                              tables: [
+                                  ...variant.tables.filter(
+                                      (existing) => existing.tableName !== tableName,
+                                  ),
+                                  { tableName, rowCount },
+                              ],
+                          }
+                        : variant,
+                ),
+            };
+            saveDataset(changed);
+            return HttpResponse.json(toDetail(changed));
+        },
+    ),
 
     http.patch("*/api/studio/datasets/:datasetId", async ({ params, request }) => {
         await delay();

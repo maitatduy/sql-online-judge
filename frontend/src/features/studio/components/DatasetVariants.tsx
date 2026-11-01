@@ -15,8 +15,14 @@ import { useDatasetVariants } from "../hooks/useDatasetVariants";
 import type { DatasetVariant, StudioDataset } from "../types";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { VariantDialog } from "./VariantDialog";
+import { VariantTableEditor } from "./VariantTableEditor";
 
 const NEW_VARIANT = { name: "", isPublic: false };
+
+interface SelectedTable {
+    variantId: string;
+    tableName: string;
+}
 
 interface DatasetVariantsProps {
     dataset: StudioDataset;
@@ -35,6 +41,8 @@ export function DatasetVariants({ dataset }: DatasetVariantsProps) {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [editing, setEditing] = useState<DatasetVariant | null>(null);
     const [deleting, setDeleting] = useState<DatasetVariant | null>(null);
+    const [selected, setSelected] = useState<SelectedTable | null>(null);
+    const selectedVariant = dataset.variants.find((variant) => variant.id === selected?.variantId);
 
     function confirmDelete() {
         if (!deleting) {
@@ -99,12 +107,39 @@ export function DatasetVariants({ dataset }: DatasetVariantsProps) {
                         </div>
                         <ul className="mt-2 flex flex-col gap-0.5 text-[13px] text-muted-foreground">
                             {dataset.schema.tables.map((table) => (
-                                <li key={table.name}>{rowCountLabel(variant, table.name)}</li>
+                                <li key={table.name}>
+                                    <button
+                                        type="button"
+                                        aria-label={`Nhập dữ liệu bảng ${table.name}`}
+                                        aria-pressed={
+                                            selected?.variantId === variant.id &&
+                                            selected.tableName === table.name
+                                        }
+                                        onClick={() =>
+                                            setSelected({
+                                                variantId: variant.id,
+                                                tableName: table.name,
+                                            })
+                                        }
+                                        className="rounded-sm text-left hover:text-brand hover:underline aria-pressed:font-semibold aria-pressed:text-brand"
+                                    >
+                                        {rowCountLabel(variant, table.name)}
+                                    </button>
+                                </li>
                             ))}
                         </ul>
                     </li>
                 ))}
             </ul>
+            {selected && selectedVariant ? (
+                <VariantTableEditor
+                    key={`${selected.variantId}/${selected.tableName}`}
+                    dataset={dataset}
+                    variant={selectedVariant}
+                    tableName={selected.tableName}
+                    onClose={() => setSelected(null)}
+                />
+            ) : null}
             <VariantDialog
                 open={isAddOpen}
                 title="Thêm bộ dữ liệu"
