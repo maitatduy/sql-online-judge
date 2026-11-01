@@ -13,6 +13,7 @@ import { validationFailed } from "./admin-user-errors";
 import { apiError } from "./api-error";
 import { PRACTICE_TAGS } from "./practice-fixtures";
 import { readMockSession, SETTER_SESSION_USER } from "./session";
+import { datasetNotReadyReason, readStudioDatasets } from "./studio-datasets";
 import { folded } from "./text";
 
 const STORAGE_KEY = "sqljudge:mock:studio-problems";
@@ -26,7 +27,13 @@ interface StoredProblem extends StudioProblemSummary {
     deletedAt?: string;
     tagSlugs: string[];
     statementMarkdown: string;
+    datasetId?: string;
 }
+
+const COMPANY_DATASET_ID = "0192f3e0-0000-7000-8000-000000000001";
+const SEEDED_DATASETS: Record<string, string> = {
+    "median-salary-per-department": COMPANY_DATASET_ID,
+};
 
 type ProblemSeed = [
     title: string,
@@ -82,6 +89,7 @@ function seedProblems(): StoredProblem[] {
         updatedAt: new Date(Date.now() - hoursAgo * HOUR_MS).toISOString(),
         tagSlugs: [],
         statementMarkdown: "",
+        datasetId: SEEDED_DATASETS[slug],
     }));
 }
 
@@ -128,7 +136,23 @@ function toDetail(problem: StoredProblem): StudioProblem {
         ...toSummary(problem),
         tags: PRACTICE_TAGS.filter((tag) => problem.tagSlugs.includes(tag.slug)),
         statementMarkdown: problem.statementMarkdown,
+        dataset: datasetOf(problem.datasetId),
     };
+}
+
+function datasetOf(datasetId: string | undefined): StudioProblem["dataset"] {
+    const dataset = readStudioDatasets().find((candidate) => candidate.id === datasetId);
+    return dataset ? { id: dataset.id, name: dataset.name } : null;
+}
+
+function isEditable(problem: StoredProblem): boolean {
+    return problem.status === "DRAFT" || problem.status === "CHANGES_REQUESTED";
+}
+
+function saveProblem(changed: StoredProblem): void {
+    writeStudioProblems(
+        readStudioProblems().map((problem) => (problem.id === changed.id ? changed : problem)),
+    );
 }
 
 function sortedProblems(problems: StoredProblem[], sort: string): StoredProblem[] {
@@ -205,8 +229,7 @@ export const studioProblemHandlers: RequestHandler[] = [
         if (!problem) {
             return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
         }
-        const isEditable = problem.status === "DRAFT" || problem.status === "CHANGES_REQUESTED";
-        if (!isEditable && readMockSession()?.role !== "ADMIN") {
+        if (!isEditable(problem) && readMockSession()?.role !== "ADMIN") {
             return apiError(422, "PROBLEM_LOCKED", "Chỉ xoá được bài nháp hoặc bài cần sửa");
         }
         writeStudioProblems(
@@ -219,13 +242,45 @@ export const studioProblemHandlers: RequestHandler[] = [
         return new HttpResponse(null, { status: 204 });
     }),
 
+    http.put("*/api/studio/problems/:problemId/dataset", async ({ params, request }) => {
+        await delay();
+        const problem = findAccessible(String(params.problemId));
+        if (!problem) {
+            return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
+        }
+        if (!isEditable(problem)) {
+            return apiError(422, "PROBLEM_LOCKED", "Bài đang chờ duyệt hoặc đã xuất bản");
+        }
+        const { datasetId } = (await request.json()) as { datasetId?: string };
+        if (!datasetId) {
+            return validationFailed({ field: "datasetId", message: "Chưa chọn database" });
+        }
+        const user = readMockSession();
+        const dataset = readStudioDatasets().find(
+            (candidate) =>
+                candidate.id === datasetId &&
+                !candidate.deletedAt &&
+                (candidate.ownerId === user?.id || user?.role === "ADMIN"),
+        );
+        if (!dataset) {
+            return apiError(404, "DATASET_NOT_FOUND", "Không tìm thấy database");
+        }
+        const notReadyReason = datasetNotReadyReason(dataset);
+        if (notReadyReason) {
+            return apiError(422, "DATASET_NOT_READY", notReadyReason);
+        }
+        const updated = { ...problem, datasetId, updatedAt: new Date().toISOString() };
+        saveProblem(updated);
+        return HttpResponse.json(toDetail(updated));
+    }),
+
     http.patch("*/api/studio/problems/:problemId", async ({ params, request }) => {
         await delay();
         const problem = findAccessible(String(params.problemId));
         if (!problem) {
             return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
         }
-        if (problem.status !== "DRAFT" && problem.status !== "CHANGES_REQUESTED") {
+        if (!isEditable(problem)) {
             return apiError(422, "PROBLEM_LOCKED", "Bài đang chờ duyệt hoặc đã xuất bản");
         }
         const change = (await request.json()) as UpdateProblemRequest;

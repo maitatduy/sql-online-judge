@@ -79,10 +79,24 @@ export const SEED_VARIANTS: DatasetVariant[][] = [
         },
     ],
     [],
-    [],
+    [
+        {
+            id: "0192f3e1-0000-7000-8000-000000000003",
+            name: "Mẫu",
+            isPublic: true,
+            tables: [
+                { tableName: "customers", rowCount: 2 },
+                { tableName: "orders", rowCount: 2 },
+            ],
+        },
+    ],
 ];
 
 export const SEED_VARIANT_CSVS: Record<string, string> = {
+    "0192f3e1-0000-7000-8000-000000000003/customers":
+        "id,full_name\n1,Lê Văn Hải\n2,Ngô Thu Trang\n",
+    "0192f3e1-0000-7000-8000-000000000003/orders":
+        "id,customer_id,ordered_at\n1,1,2026-01-05 09:30:00\n2,2,2026-01-06 14:00:00\n",
     "0192f3e1-0000-7000-8000-000000000001/departments":
         "id,name\n1,Kỹ thuật\n2,Kinh doanh\n3,Nhân sự\n",
     "0192f3e1-0000-7000-8000-000000000001/employees":

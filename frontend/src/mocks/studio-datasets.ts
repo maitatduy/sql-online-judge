@@ -81,6 +81,24 @@ export function readStudioDatasets(): StoredDataset[] {
     return stored ? (JSON.parse(stored) as StoredDataset[]) : seedDatasets();
 }
 
+export function datasetNotReadyReason(dataset: StoredDataset): string | null {
+    if (dataset.schema.tables.length === 0) {
+        return "Cần ít nhất một bảng trong schema";
+    }
+    if (!dataset.variants.some((variant) => variant.isPublic)) {
+        return "Cần ít nhất một bộ dữ liệu công khai";
+    }
+    for (const variant of dataset.variants) {
+        const missing = dataset.schema.tables.find(
+            (table) => !variant.tables.some((data) => data.tableName === table.name),
+        );
+        if (missing) {
+            return `Bộ dữ liệu ${variant.name} chưa có CSV cho bảng ${missing.name}`;
+        }
+    }
+    return null;
+}
+
 function writeStudioDatasets(datasets: StoredDataset[]): void {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(datasets));
 }

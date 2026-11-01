@@ -49,7 +49,11 @@ describe("ProblemStudio - bước Thông tin", () => {
             "aria-current",
             "step",
         );
-        expect(steps.getByText("Database và schema")).toBeInTheDocument();
+        expect(steps.getByRole("link", { name: /Database/ })).toHaveAttribute(
+            "href",
+            `/studio/problems/${DRAFT_ID}/database`,
+        );
+        expect(screen.queryByText("Nháp")).not.toBeInTheDocument();
         expect(screen.getByRole("link", { name: "Quay lại Bài của tôi" })).toHaveAttribute(
             "href",
             "/studio/problems",
