@@ -2,12 +2,15 @@ package com.sqljudge.problem.controller;
 
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.request.CreateDatasetRequest;
+import com.sqljudge.problem.dto.request.DatasetVersionFilter;
+import com.sqljudge.problem.dto.request.StudioDatasetQuery;
 import com.sqljudge.problem.dto.request.UpdateDatasetRequest;
 import com.sqljudge.problem.dto.request.UpdateDatasetSchemaRequest;
 import com.sqljudge.problem.dto.response.StudioDatasetResponse;
 import com.sqljudge.problem.dto.response.StudioDatasetSummaryResponse;
 import com.sqljudge.problem.service.StudioDatasetService;
 import com.sqljudge.problem.service.StudioDatasetVersionService;
+import com.sqljudge.problem.service.StudioSorts;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -55,17 +58,19 @@ public class StudioDatasetController {
     }
 
     @GetMapping
-    @Operation(summary = "Dataset của tôi: tìm theo tên, mới sửa nhất trước")
+    @Operation(summary = "Dataset của tôi: lọc theo trạng thái phiên bản, tìm theo tên, sắp xếp")
     @ApiResponse(responseCode = "200", description = "Một trang dataset do chính người gọi tạo")
     @ApiResponse(responseCode = "400", description = "Tham số tìm kiếm hoặc phân trang sai")
     @ApiResponse(responseCode = "403", description = "Không phải SETTER hoặc ADMIN")
     public PageResponse<StudioDatasetSummaryResponse> listOwned(
+            @RequestParam(required = false) DatasetVersionFilter status,
+            @RequestParam(defaultValue = StudioSorts.NEWEST_FIRST) String sort,
             @RequestParam(required = false)
                     @Size(max = MAX_KEYWORD_LENGTH, message = "Từ khoá quá dài") String q,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Phải từ 1 trở lên") int page,
             @RequestParam(defaultValue = "20")
                     @Min(value = 1, message = "Phải từ 1 đến 100") @Max(value = MAX_PAGE_SIZE, message = "Phải từ 1 đến 100") int size) {
-        return studioDatasetService.listOwned(q, page, size);
+        return studioDatasetService.listOwned(new StudioDatasetQuery(status, q, sort, page, size));
     }
 
     @GetMapping("/{datasetId}")

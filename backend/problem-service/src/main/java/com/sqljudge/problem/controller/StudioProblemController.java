@@ -2,12 +2,15 @@ package com.sqljudge.problem.controller;
 
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.request.CreateProblemRequest;
+import com.sqljudge.problem.dto.request.StudioProblemQuery;
 import com.sqljudge.problem.dto.request.UpdateProblemRequest;
 import com.sqljudge.problem.dto.response.StudioProblemResponse;
 import com.sqljudge.problem.dto.response.StudioProblemSummaryResponse;
+import com.sqljudge.problem.entity.Difficulty;
 import com.sqljudge.problem.entity.ProblemStatus;
 import com.sqljudge.problem.service.StudioProblemEditService;
 import com.sqljudge.problem.service.StudioProblemService;
+import com.sqljudge.problem.service.StudioSorts;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -56,18 +59,21 @@ public class StudioProblemController {
     }
 
     @GetMapping
-    @Operation(summary = "Bài của tôi: lọc theo trạng thái, tìm theo tên, mới sửa nhất trước")
+    @Operation(summary = "Bài của tôi: lọc theo trạng thái và độ khó, tìm theo tên, sắp xếp")
     @ApiResponse(responseCode = "200", description = "Một trang bài do chính người gọi tạo")
     @ApiResponse(responseCode = "400", description = "Tham số lọc hoặc phân trang không hợp lệ")
     @ApiResponse(responseCode = "403", description = "Không phải SETTER hoặc ADMIN")
     public PageResponse<StudioProblemSummaryResponse> listOwned(
             @RequestParam(required = false) ProblemStatus status,
+            @RequestParam(required = false) Difficulty difficulty,
+            @RequestParam(defaultValue = StudioSorts.NEWEST_FIRST) String sort,
             @RequestParam(required = false)
                     @Size(max = MAX_KEYWORD_LENGTH, message = "Từ khoá quá dài") String q,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Phải từ 1 trở lên") int page,
             @RequestParam(defaultValue = "20")
                     @Min(value = 1, message = "Phải từ 1 đến 100") @Max(value = MAX_PAGE_SIZE, message = "Phải từ 1 đến 100") int size) {
-        return studioProblemService.listOwned(status, q, page, size);
+        return studioProblemService.listOwned(
+                new StudioProblemQuery(status, difficulty, q, sort, page, size));
     }
 
     @GetMapping("/status-counts")

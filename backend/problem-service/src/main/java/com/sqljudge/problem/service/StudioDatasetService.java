@@ -5,6 +5,8 @@ import com.sqljudge.common.exception.ConflictException;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.request.CreateDatasetRequest;
+import com.sqljudge.problem.dto.request.DatasetVersionFilter;
+import com.sqljudge.problem.dto.request.StudioDatasetQuery;
 import com.sqljudge.problem.dto.request.UpdateDatasetRequest;
 import com.sqljudge.problem.dto.request.UpdateDatasetSchemaRequest;
 import com.sqljudge.problem.dto.request.UpdateDatasetSchemaRequest.SchemaColumnRequest;
@@ -51,13 +53,16 @@ public class StudioDatasetService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<StudioDatasetSummaryResponse> listOwned(
-            String keyword, int page, int size) {
+    public PageResponse<StudioDatasetSummaryResponse> listOwned(StudioDatasetQuery query) {
         return PageResponse.from(
                 datasetRepository.findOwnedSummaries(
                         SecurityUtils.requireCurrentUser().id(),
-                        LikePatterns.containingIgnoreCase(keyword),
-                        PageRequest.of(page - 1, size)),
+                        LikePatterns.containingIgnoreCase(query.q()),
+                        hasDraftOf(query.status()),
+                        PageRequest.of(
+                                query.page() - 1,
+                                query.size(),
+                                StudioSorts.forDatasets(query.sort()))),
                 StudioDatasetSummaryResponse::from);
     }
 
@@ -116,6 +121,10 @@ public class StudioDatasetService {
                 column.setReferencesColumn(columnRequest.references().column());
             }
         }
+    }
+
+    private static Boolean hasDraftOf(DatasetVersionFilter status) {
+        return status == null ? null : status == DatasetVersionFilter.DRAFT;
     }
 
     private String uniqueSlug(String base) {
