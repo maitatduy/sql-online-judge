@@ -3,11 +3,12 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { studioApi } from "../api";
-import type { DatasetTable, StudioDataset, UpdateDatasetRequest } from "../types";
+import type { DatasetTable, PendingImport, StudioDataset, UpdateDatasetRequest } from "../types";
 
 export interface DatasetChanges {
     info: UpdateDatasetRequest | null;
     tables: DatasetTable[] | null;
+    pendingImport: PendingImport | null;
 }
 
 export function studioDatasetQueryKey(datasetId: string) {
@@ -22,28 +23,61 @@ export function useStudioDataset(datasetId: string) {
     });
 }
 
-async function saveChanges(datasetId: string, changes: DatasetChanges): Promise<StudioDataset> {
-    let saved: StudioDataset | null = null;
-    if (changes.info) {
-        saved = await studioApi.updateDataset(datasetId, changes.info);
+function variantIdOf(dataset: StudioDataset, variantName: string): string {
+    const variant = dataset.variants.find((candidate) => candidate.name === variantName);
+    if (!variant) {
+        throw new Error(`Không tìm thấy bộ dữ liệu ${variantName}`);
     }
-    if (changes.tables) {
-        saved = await studioApi.replaceDatasetSchema(datasetId, changes.tables);
-    }
-    if (!saved) {
-        throw new Error("Không có thay đổi nào để lưu");
+    return variant.id;
+}
+
+async function saveImport(
+    datasetId: string,
+    current: StudioDataset,
+    pendingImport: PendingImport,
+): Promise<StudioDataset> {
+    let saved = pendingImport.createsVariant
+        ? await studioApi.addDatasetVariant(datasetId, {
+              name: pendingImport.variantName,
+              isPublic: false,
+          })
+        : current;
+    for (const table of pendingImport.data) {
+        saved = await studioApi.saveVariantCsv(
+            datasetId,
+            variantIdOf(saved, pendingImport.variantName),
+            table.tableName,
+            table.csv,
+        );
     }
     return saved;
 }
 
-export function useSaveDataset(datasetId: string, onError: (error: Error) => void) {
+async function saveChanges(
+    dataset: StudioDataset,
+    changes: DatasetChanges,
+): Promise<StudioDataset> {
+    let saved = dataset;
+    if (changes.info) {
+        saved = await studioApi.updateDataset(dataset.id, changes.info);
+    }
+    if (changes.tables) {
+        saved = await studioApi.replaceDatasetSchema(dataset.id, changes.tables);
+    }
+    if (changes.pendingImport) {
+        saved = await saveImport(dataset.id, saved, changes.pendingImport);
+    }
+    return saved;
+}
+
+export function useSaveDataset(dataset: StudioDataset, onError: (error: Error) => void) {
     const queryClient = useQueryClient();
     const [savedAt, setSavedAt] = useState<string | null>(null);
     const mutation = useMutation({
-        mutationFn: (changes: DatasetChanges) => saveChanges(datasetId, changes),
-        onSuccess: (dataset: StudioDataset) => {
+        mutationFn: (changes: DatasetChanges) => saveChanges(dataset, changes),
+        onSuccess: (saved: StudioDataset) => {
             setSavedAt(new Date().toISOString());
-            queryClient.setQueryData(studioDatasetQueryKey(datasetId), dataset);
+            queryClient.setQueryData(studioDatasetQueryKey(saved.id), saved);
             void queryClient.invalidateQueries({ queryKey: ["studio-datasets"] });
         },
         onError,

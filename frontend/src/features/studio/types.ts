@@ -79,6 +79,17 @@ export interface StudioDataset {
     updatedAt: string;
 }
 
+export interface SqlImportPreview {
+    tables: DatasetTable[];
+    data: { tableName: string; csv: string; rowCount: number }[];
+}
+
+export interface PendingImport {
+    data: SqlImportPreview["data"];
+    variantName: string;
+    createsVariant: boolean;
+}
+
 export interface VariantCsv {
     tableName: string;
     csv: string;
