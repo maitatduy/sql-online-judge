@@ -1,55 +1,22 @@
 "use client";
 
-import { useState } from "react";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ApiRequestError } from "@/lib/api-client";
 
-import type { StudioDataset, UpdateDatasetRequest } from "../types";
-
-const MAX_NAME_LENGTH = 120;
-const MAX_DESCRIPTION_LENGTH = 500;
+export interface DatasetInfoValues {
+    name: string;
+    description: string;
+}
 
 interface DatasetInfoFormProps {
-    dataset: StudioDataset;
-    saveError: Error | null;
-    onChange: (change: UpdateDatasetRequest) => void;
+    values: DatasetInfoValues;
+    errorOf: (field: keyof DatasetInfoValues) => string | undefined;
+    onChange: (values: DatasetInfoValues) => void;
 }
 
-function serverErrorOf(error: Error | null, field: keyof UpdateDatasetRequest) {
-    return error instanceof ApiRequestError
-        ? error.errors.find((fieldError) => fieldError.field === field)?.message
-        : undefined;
-}
-
-export function DatasetInfoForm({ dataset, saveError, onChange }: DatasetInfoFormProps) {
-    const [name, setName] = useState(dataset.name);
-    const [description, setDescription] = useState(dataset.description);
-    const nameError =
-        name.trim() === ""
-            ? "Không được để trống"
-            : name.length > MAX_NAME_LENGTH
-              ? "Tối đa 120 ký tự"
-              : serverErrorOf(saveError, "name");
-    const descriptionError =
-        description.length > MAX_DESCRIPTION_LENGTH
-            ? "Tối đa 500 ký tự"
-            : serverErrorOf(saveError, "description");
-
-    function changeName(value: string) {
-        setName(value);
-        if (value.trim() !== "" && value.length <= MAX_NAME_LENGTH) {
-            onChange({ name: value });
-        }
-    }
-
-    function changeDescription(value: string) {
-        setDescription(value);
-        if (value.length <= MAX_DESCRIPTION_LENGTH) {
-            onChange({ description: value });
-        }
-    }
+export function DatasetInfoForm({ values, errorOf, onChange }: DatasetInfoFormProps) {
+    const nameError = errorOf("name");
+    const descriptionError = errorOf("description");
 
     return (
         <section
@@ -60,11 +27,11 @@ export function DatasetInfoForm({ dataset, saveError, onChange }: DatasetInfoFor
                 <Label htmlFor="database-name">Tên database</Label>
                 <Input
                     id="database-name"
-                    value={name}
+                    value={values.name}
                     autoComplete="off"
                     aria-invalid={nameError ? true : undefined}
                     aria-describedby={nameError ? "database-name-error" : undefined}
-                    onChange={(event) => changeName(event.target.value)}
+                    onChange={(event) => onChange({ ...values, name: event.target.value })}
                 />
                 {nameError ? (
                     <p id="database-name-error" className="text-[13px] text-destructive">
@@ -76,12 +43,12 @@ export function DatasetInfoForm({ dataset, saveError, onChange }: DatasetInfoFor
                 <Label htmlFor="database-description">Mô tả</Label>
                 <Input
                     id="database-description"
-                    value={description}
+                    value={values.description}
                     autoComplete="off"
                     placeholder="Ví dụ: Phòng ban và nhân viên kèm lương"
                     aria-invalid={descriptionError ? true : undefined}
                     aria-describedby={descriptionError ? "database-description-error" : undefined}
-                    onChange={(event) => changeDescription(event.target.value)}
+                    onChange={(event) => onChange({ ...values, description: event.target.value })}
                 />
                 {descriptionError ? (
                     <p id="database-description-error" className="text-[13px] text-destructive">

@@ -1,54 +1,20 @@
 "use client";
 
-import { useState } from "react";
-
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ApiRequestError } from "@/lib/api-client";
 
-import { addTable, schemaErrors } from "../schema-editing";
+import { addTable } from "../schema-editing";
 import type { DatasetTable } from "../types";
 import { SchemaTableCard } from "./SchemaTableCard";
 
 interface SchemaEditorProps {
-    initialTables: DatasetTable[];
-    saveError: Error | null;
-    onValidChange: (tables: DatasetTable[]) => void;
-    onInvalidChange: () => void;
+    tables: DatasetTable[];
+    errorOf: (path: string) => string | undefined;
+    onChange: (tables: DatasetTable[]) => void;
 }
 
-function serverErrorsOf(error: Error | null): Record<string, string> {
-    return error instanceof ApiRequestError
-        ? Object.fromEntries(
-              error.errors.map((fieldError) => [fieldError.field, fieldError.message]),
-          )
-        : {};
-}
-
-export function SchemaEditor({
-    initialTables,
-    saveError,
-    onValidChange,
-    onInvalidChange,
-}: SchemaEditorProps) {
-    const [tables, setTables] = useState(initialTables);
-    const clientErrors = schemaErrors(tables);
-    const serverErrors = serverErrorsOf(saveError);
-
-    function changeTables(next: DatasetTable[]) {
-        setTables(next);
-        if (Object.keys(schemaErrors(next)).length === 0) {
-            onValidChange(next);
-        } else {
-            onInvalidChange();
-        }
-    }
-
-    function errorOf(path: string): string | undefined {
-        return clientErrors[path] ?? serverErrors[path];
-    }
-
+export function SchemaEditor({ tables, errorOf, onChange }: SchemaEditorProps) {
     return (
         <section aria-labelledby="schema-title" className="flex flex-col gap-4">
             <div>
@@ -65,18 +31,14 @@ export function SchemaEditor({
                     tables={tables}
                     tableIndex={tableIndex}
                     errorOf={errorOf}
-                    onTablesChange={changeTables}
+                    onTablesChange={onChange}
                 />
             ))}
             {errorOf("tables") ? (
                 <p className="text-[13px] text-destructive">{errorOf("tables")}</p>
             ) : null}
             <div>
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => changeTables(addTable(tables))}
-                >
+                <Button type="button" variant="outline" onClick={() => onChange(addTable(tables))}>
                     <Plus aria-hidden="true" />
                     Thêm bảng
                 </Button>

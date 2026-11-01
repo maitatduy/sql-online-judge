@@ -58,7 +58,7 @@ describe("DatasetStudio - soạn schema", () => {
         );
     });
 
-    it("tự lưu cả schema sau khi đổi tên cột rồi báo đã lưu", async () => {
+    it("bấm Lưu thì gửi cả schema sau khi đổi tên cột rồi báo đã lưu", async () => {
         const puts = recordSchemaPuts();
         renderStudio();
 
@@ -69,6 +69,7 @@ describe("DatasetStudio - soạn schema", () => {
             },
         );
 
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
         expect(await screen.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
         expect(puts).toHaveLength(1);
         expect(puts[0].map((table) => table.name)).toEqual(["departments", "employees"]);
@@ -82,6 +83,7 @@ describe("DatasetStudio - soạn schema", () => {
         fireEvent.click(await screen.findByRole("button", { name: "Thêm bảng" }));
 
         expect(screen.getByRole("textbox", { name: "Tên bảng 3" })).toHaveValue("new_table");
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
         await screen.findByText(/^Đã lưu/);
         expect(puts[0][2]).toEqual({
             name: "new_table",
@@ -95,6 +97,22 @@ describe("DatasetStudio - soạn schema", () => {
                 },
             ],
         });
+    });
+
+    it("chưa bấm Lưu thì chưa gửi gì, nút Lưu chỉ bật khi có thay đổi", async () => {
+        const puts = recordSchemaPuts();
+        renderStudio();
+
+        const save = await screen.findByRole("button", { name: "Lưu" });
+        expect(save).toBeDisabled();
+        fireEvent.change(screen.getByRole("textbox", { name: "Tên bảng 1" }), {
+            target: { value: "teams" },
+        });
+
+        expect(screen.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
+        expect(save).toBeEnabled();
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        expect(puts).toEqual([]);
     });
 
     it("tên cột có dấu thì báo lỗi ngay và không gửi lên máy chủ", async () => {
@@ -121,6 +139,7 @@ describe("DatasetStudio - soạn schema", () => {
             target: { value: "order" },
         });
 
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
         expect(await screen.findByText("Tên này trùng từ khoá SQL")).toBeInTheDocument();
         expect(screen.getByRole("textbox", { name: "Tên bảng 1" })).toHaveAttribute(
             "aria-invalid",
@@ -149,6 +168,7 @@ describe("DatasetStudio - soạn schema", () => {
 
         fireEvent.click(await screen.findByRole("button", { name: "Xoá bảng departments" }));
 
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
         await screen.findByText(/^Đã lưu/);
         expect(puts[0].map((table) => table.name)).toEqual(["employees"]);
         expect(puts[0][0].columns[3].references).toBeNull();
@@ -163,11 +183,12 @@ describe("DatasetStudio - soạn schema", () => {
         expect(screen.queryByRole("button", { name: "Tạo bản nháp mới" })).not.toBeInTheDocument();
         fireEvent.change(tableName, { target: { value: "school_classes" } });
 
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
         expect(await screen.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
         expect(puts[0][0].name).toBe("school_classes");
     });
 
-    it("tự lưu tên database và cập nhật tiêu đề", async () => {
+    it("bấm Lưu thì lưu tên database và cập nhật tiêu đề", async () => {
         const patches: unknown[] = [];
         server.events.on("request:start", async ({ request }) => {
             if (request.method === "PATCH") {
@@ -180,6 +201,7 @@ describe("DatasetStudio - soạn schema", () => {
             target: { value: "Tập đoàn" },
         });
 
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
         expect(await screen.findByRole("heading", { name: "Tập đoàn" })).toBeInTheDocument();
         expect(patches).toEqual([{ name: "Tập đoàn" }]);
     });

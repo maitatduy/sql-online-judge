@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { studioApi } from "../api";
 import type { DatasetTable, StudioDataset, UpdateDatasetRequest } from "../types";
 
-export const DATASET_AUTOSAVE_DELAY_MS = 800;
+export interface DatasetChanges {
+    info: UpdateDatasetRequest | null;
+    tables: DatasetTable[] | null;
+}
 
 export function studioDatasetQueryKey(datasetId: string) {
     return ["studio-dataset", datasetId] as const;
@@ -19,20 +22,25 @@ export function useStudioDataset(datasetId: string) {
     });
 }
 
-interface DebouncedSaveOptions<T> {
-    datasetId: string;
-    save: (value: T) => Promise<StudioDataset>;
-    merge: (pending: T | null, change: T) => T;
-    onError: (error: Error) => void;
+async function saveChanges(datasetId: string, changes: DatasetChanges): Promise<StudioDataset> {
+    let saved: StudioDataset | null = null;
+    if (changes.info) {
+        saved = await studioApi.updateDataset(datasetId, changes.info);
+    }
+    if (changes.tables) {
+        saved = await studioApi.replaceDatasetSchema(datasetId, changes.tables);
+    }
+    if (!saved) {
+        throw new Error("Không có thay đổi nào để lưu");
+    }
+    return saved;
 }
 
-function useDebouncedDatasetSave<T>({ datasetId, save, merge, onError }: DebouncedSaveOptions<T>) {
+export function useSaveDataset(datasetId: string, onError: (error: Error) => void) {
     const queryClient = useQueryClient();
     const [savedAt, setSavedAt] = useState<string | null>(null);
-    const pending = useRef<T | null>(null);
-    const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
     const mutation = useMutation({
-        mutationFn: save,
+        mutationFn: (changes: DatasetChanges) => saveChanges(datasetId, changes),
         onSuccess: (dataset: StudioDataset) => {
             setSavedAt(new Date().toISOString());
             queryClient.setQueryData(studioDatasetQueryKey(datasetId), dataset);
@@ -40,56 +48,11 @@ function useDebouncedDatasetSave<T>({ datasetId, save, merge, onError }: Debounc
         },
         onError,
     });
-    const saveRef = useRef(mutation.mutate);
 
-    useEffect(() => {
-        saveRef.current = mutation.mutate;
-    }, [mutation.mutate]);
-
-    useEffect(
-        () => () => {
-            clearTimeout(timer.current);
-            if (pending.current !== null) {
-                saveRef.current(pending.current);
-            }
-        },
-        [],
-    );
-
-    function queueSave(change: T) {
-        pending.current = merge(pending.current, change);
-        clearTimeout(timer.current);
-        timer.current = setTimeout(() => {
-            const latest = pending.current;
-            pending.current = null;
-            if (latest !== null) {
-                saveRef.current(latest);
-            }
-        }, DATASET_AUTOSAVE_DELAY_MS);
-    }
-
-    function cancelSave() {
-        clearTimeout(timer.current);
-        pending.current = null;
-    }
-
-    return { queueSave, cancelSave, isSaving: mutation.isPending, error: mutation.error, savedAt };
-}
-
-export function useDatasetSchemaAutosave(datasetId: string, onError: (error: Error) => void) {
-    return useDebouncedDatasetSave<DatasetTable[]>({
-        datasetId,
-        save: (tables) => studioApi.replaceDatasetSchema(datasetId, tables),
-        merge: (_, tables) => tables,
-        onError,
-    });
-}
-
-export function useDatasetInfoAutosave(datasetId: string, onError: (error: Error) => void) {
-    return useDebouncedDatasetSave<UpdateDatasetRequest>({
-        datasetId,
-        save: (change) => studioApi.updateDataset(datasetId, change),
-        merge: (pending, change) => ({ ...pending, ...change }),
-        onError,
-    });
+    return {
+        save: mutation.mutate,
+        isSaving: mutation.isPending,
+        error: mutation.error,
+        savedAt,
+    };
 }
