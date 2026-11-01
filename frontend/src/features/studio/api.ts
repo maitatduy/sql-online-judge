@@ -12,6 +12,7 @@ import type {
     StudioProblem,
     StudioProblemSummary,
     StudioTag,
+    UpdateDatasetRequest,
     UpdateProblemRequest,
 } from "./types";
 
@@ -54,6 +55,6 @@ export const studioApi = {
     replaceDatasetSchema: (datasetId: string, tables: DatasetTable[]) =>
         apiClient.put<StudioDataset>(`${datasetPath(datasetId)}/schema`, { tables }),
     deleteDataset: (datasetId: string) => apiClient.delete<void>(datasetPath(datasetId)),
-    createDatasetDraft: (datasetId: string) =>
-        apiClient.post<StudioDataset>(`${datasetPath(datasetId)}/versions`),
+    updateDataset: (datasetId: string, change: UpdateDatasetRequest) =>
+        apiClient.patch<StudioDataset>(datasetPath(datasetId), change),
 };

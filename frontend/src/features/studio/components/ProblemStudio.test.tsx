@@ -49,7 +49,7 @@ describe("ProblemStudio - bước Thông tin", () => {
             "aria-current",
             "step",
         );
-        expect(steps.getByText("Dataset và schema")).toBeInTheDocument();
+        expect(steps.getByText("Database và schema")).toBeInTheDocument();
         expect(screen.getByRole("link", { name: "Quay lại Bài của tôi" })).toHaveAttribute(
             "href",
             "/studio/problems",

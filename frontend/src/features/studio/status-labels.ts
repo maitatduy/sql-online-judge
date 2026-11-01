@@ -14,7 +14,7 @@ export const LOCKED_MESSAGES: Partial<Record<ProblemStatus, string>> = {
     PUBLISHED: "Bài đã xuất bản nên chưa sửa được.",
 };
 
-export const STATUS_TABS: readonly ProblemStatus[] = [
+export const STATUS_FILTERS: readonly ProblemStatus[] = [
     "DRAFT",
     "PENDING_REVIEW",
     "CHANGES_REQUESTED",

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 const ITEMS = [
     { href: ROUTES.studioProblems, label: "Bài của tôi" },
-    { href: ROUTES.studioDatasets, label: "Dataset của tôi" },
+    { href: ROUTES.studioDatasets, label: "Database của tôi" },
 ];
 
 export function StudioNav() {

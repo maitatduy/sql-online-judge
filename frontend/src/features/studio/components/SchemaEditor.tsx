@@ -13,7 +13,6 @@ import { SchemaTableCard } from "./SchemaTableCard";
 
 interface SchemaEditorProps {
     initialTables: DatasetTable[];
-    disabled: boolean;
     saveError: Error | null;
     onValidChange: (tables: DatasetTable[]) => void;
     onInvalidChange: () => void;
@@ -29,7 +28,6 @@ function serverErrorsOf(error: Error | null): Record<string, string> {
 
 export function SchemaEditor({
     initialTables,
-    disabled,
     saveError,
     onValidChange,
     onInvalidChange,
@@ -66,7 +64,6 @@ export function SchemaEditor({
                     key={tableIndex}
                     tables={tables}
                     tableIndex={tableIndex}
-                    disabled={disabled}
                     errorOf={errorOf}
                     onTablesChange={changeTables}
                 />
@@ -78,7 +75,6 @@ export function SchemaEditor({
                 <Button
                     type="button"
                     variant="outline"
-                    disabled={disabled}
                     onClick={() => changeTables(addTable(tables))}
                 >
                     <Plus aria-hidden="true" />

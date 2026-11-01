@@ -20,10 +20,6 @@ interface DatasetDetailDialogProps {
 function SchemaSummary({ dataset }: { dataset: StudioDataset }) {
     return (
         <div className="flex flex-col gap-3">
-            <p className="w-fit rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold">
-                Phiên bản {dataset.schema.versionNumber}
-                {dataset.schema.isDraft ? " · Nháp" : ""}
-            </p>
             {dataset.schema.tables.length === 0 ? (
                 <p className="text-[13px] text-muted-foreground">Chưa có bảng nào.</p>
             ) : null}
@@ -75,14 +71,14 @@ function DatasetDetailBody({ datasetId }: { datasetId: string }) {
 
     if (error) {
         return (
-            <p className="text-[13px] text-destructive">Không tải được dataset. {error.message}</p>
+            <p className="text-[13px] text-destructive">Không tải được database. {error.message}</p>
         );
     }
     if (!data) {
         return (
             <div
                 role="status"
-                aria-label="Đang tải chi tiết dataset"
+                aria-label="Đang tải chi tiết database"
                 className="flex flex-col gap-2"
             >
                 <Skeleton className="h-4 w-40" />
@@ -107,7 +103,7 @@ export function DatasetDetailDialog({ dataset, onClose }: DatasetDetailDialogPro
                         Đóng
                     </Button>
                     <Button asChild>
-                        <Link href={ROUTES.studioDataset(dataset.id)}>Sửa dataset</Link>
+                        <Link href={ROUTES.studioDataset(dataset.id)}>Sửa database</Link>
                     </Button>
                 </div>
             </DialogContent>

@@ -15,17 +15,12 @@ import { useDebouncedSearch } from "@/lib/useDebouncedSearch";
 
 import { useMyDatasetFilters, useMyDatasets } from "../hooks/useMyDatasets";
 import { DATASET_SORTS } from "../list-options";
-import {
-    DATASET_VERSION_FILTER_LABELS,
-    type DatasetVersionFilter,
-    myDatasetsHref,
-} from "../my-dataset-filters";
+import { myDatasetsHref } from "../my-dataset-filters";
 import { CreateDatasetDialog } from "./CreateDatasetDialog";
 import { ListFooter } from "./ListFooter";
 import { MyDatasetsTable } from "./MyDatasetsTable";
 
 const SKELETON_ROW_COUNT = 4;
-const DATASET_VERSION_FILTERS: readonly DatasetVersionFilter[] = ["DRAFT", "FROZEN"];
 
 export function MyDatasets() {
     const { filters, changeFilters } = useMyDatasetFilters();
@@ -43,17 +38,17 @@ export function MyDatasets() {
                         Khu vực người ra đề
                     </p>
                     <h1 className="mt-1.5 text-[28px] font-extrabold tracking-[-0.02em]">
-                        Dataset của tôi
+                        Database của tôi
                     </h1>
                     {data ? (
                         <p className="mt-1 text-muted-foreground">
-                            {formatNumber(data.totalItems)} dataset
+                            {formatNumber(data.totalItems)} database
                         </p>
                     ) : null}
                 </div>
                 <Button type="button" onClick={() => setIsCreateOpen(true)}>
                     <Plus aria-hidden="true" />
-                    Tạo dataset
+                    Tạo database
                 </Button>
             </div>
             <CreateDatasetDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
@@ -62,29 +57,13 @@ export function MyDatasets() {
                     <Search aria-hidden="true" className="size-4 shrink-0" />
                     <input
                         type="search"
-                        aria-label="Tìm dataset"
-                        placeholder="Tìm dataset…"
+                        aria-label="Tìm database"
+                        placeholder="Tìm database…"
                         value={searchText}
                         onChange={(event) => changeSearchText(event.target.value)}
                         className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
                     />
                 </label>
-                <NativeSelect
-                    aria-label="Trạng thái phiên bản"
-                    value={filters.status ?? ""}
-                    onChange={(event) =>
-                        changeFilters({
-                            status: (event.target.value || null) as DatasetVersionFilter | null,
-                        })
-                    }
-                >
-                    <option value="">Mọi trạng thái</option>
-                    {DATASET_VERSION_FILTERS.map((status) => (
-                        <option key={status} value={status}>
-                            {DATASET_VERSION_FILTER_LABELS[status]}
-                        </option>
-                    ))}
-                </NativeSelect>
                 <NativeSelect
                     aria-label="Sắp xếp"
                     value={filters.sort}
@@ -100,7 +79,7 @@ export function MyDatasets() {
             {isPending ? (
                 <div
                     role="status"
-                    aria-label="Đang tải danh sách dataset"
+                    aria-label="Đang tải danh sách database"
                     className="flex flex-col gap-3"
                 >
                     {Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
@@ -110,7 +89,7 @@ export function MyDatasets() {
             ) : null}
             {error && !data ? (
                 <ErrorState
-                    title="Không tải được danh sách dataset"
+                    title="Không tải được danh sách database"
                     message={error.message}
                     traceId={error instanceof ApiRequestError ? error.traceId : undefined}
                     onRetry={() => void refetch()}
@@ -119,9 +98,9 @@ export function MyDatasets() {
             {data && data.items.length === 0 ? (
                 <EmptyState
                     title={
-                        filters.q || filters.status
-                            ? "Không có dataset nào khớp bộ lọc."
-                            : "Bạn chưa có dataset nào."
+                        filters.q
+                            ? "Không có database nào khớp bộ lọc."
+                            : "Bạn chưa có database nào."
                     }
                 />
             ) : null}
@@ -131,7 +110,7 @@ export function MyDatasets() {
                     <ListFooter
                         result={data}
                         hrefOf={(page) => myDatasetsHref({ ...filters, page })}
-                        unit="dataset"
+                        unit="database"
                         size={filters.size}
                         onSizeChange={(size) => changeFilters({ size })}
                     />

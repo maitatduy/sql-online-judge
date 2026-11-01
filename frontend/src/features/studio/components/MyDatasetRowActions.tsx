@@ -25,8 +25,8 @@ export function MyDatasetRowActions({ dataset }: MyDatasetRowActionsProps) {
 
     function confirmDelete() {
         deleteDataset.mutate(dataset.id, {
-            onSuccess: () => showToast(`Đã xoá dataset ${dataset.name}.`),
-            onError: (error) => showToast(`Chưa xoá được dataset. ${error.message}`, "error"),
+            onSuccess: () => showToast(`Đã xoá database ${dataset.name}.`),
+            onError: (error) => showToast(`Chưa xoá được database. ${error.message}`, "error"),
             onSettled: () => setIsDeleteOpen(false),
         });
     }
@@ -58,9 +58,9 @@ export function MyDatasetRowActions({ dataset }: MyDatasetRowActionsProps) {
             <DeleteConfirmDialog
                 open={isDeleteOpen}
                 onOpenChange={setIsDeleteOpen}
-                title={`Xoá dataset ${dataset.name}?`}
-                description="Chỉ xoá được dataset chưa bài nào dùng. Bạn không hoàn tác được trên giao diện."
-                confirmLabel="Xoá dataset"
+                title={`Xoá database ${dataset.name}?`}
+                description="Chỉ xoá được database chưa bài nào dùng. Bạn không hoàn tác được trên giao diện."
+                confirmLabel="Xoá database"
                 isPending={deleteDataset.isPending}
                 onConfirm={confirmDelete}
             />

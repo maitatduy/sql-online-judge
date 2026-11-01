@@ -94,15 +94,24 @@ function uniqueSlug(name: string, datasets: StoredDataset[]): string {
 }
 
 function toSummary(dataset: StoredDataset): StudioDatasetSummary {
-    const latest = dataset.versions[dataset.versions.length - 1];
     return {
         id: dataset.id,
         slug: dataset.slug,
         name: dataset.name,
         description: dataset.description,
-        latestVersionNumber: latest.number,
-        hasDraft: latest.frozenAt === null,
         updatedAt: dataset.updatedAt,
+    };
+}
+
+function editableDraft(dataset: StoredDataset): StoredDataset {
+    if (dataset.schema.isDraft) {
+        return dataset;
+    }
+    const number = dataset.schema.versionNumber + 1;
+    return {
+        ...dataset,
+        versions: [...dataset.versions, { number, frozenAt: null }],
+        schema: { ...dataset.schema, versionNumber: number, isDraft: true },
     };
 }
 
@@ -176,7 +185,7 @@ function invalidSchemaField(tables: DatasetTable[]): { field: string; message: s
     return null;
 }
 
-const notFound = () => apiError(404, "DATASET_NOT_FOUND", "Không tìm thấy dataset");
+const notFound = () => apiError(404, "DATASET_NOT_FOUND", "Không tìm thấy database");
 
 export const studioDatasetHandlers: RequestHandler[] = [
     http.get("*/api/studio/datasets/:datasetId", async ({ params }) => {
@@ -195,7 +204,7 @@ export const studioDatasetHandlers: RequestHandler[] = [
             return apiError(
                 409,
                 "DATASET_IN_USE",
-                `Dataset đang được ${dataset.usedByProblems} bài dùng nên chưa xoá được`,
+                `Database đang được ${dataset.usedByProblems} bài dùng nên chưa xoá được`,
             );
         }
         saveDataset({ ...dataset, deletedAt: new Date().toISOString() });
@@ -208,36 +217,35 @@ export const studioDatasetHandlers: RequestHandler[] = [
         if (!dataset) {
             return notFound();
         }
-        if (!dataset.schema.isDraft) {
-            return apiError(422, "DATASET_VERSION_FROZEN", "Phiên bản mới nhất đã chốt");
-        }
         const { tables } = (await request.json()) as { tables: DatasetTable[] };
         const problem = invalidSchemaField(tables);
         if (problem) {
             return validationFailed(problem);
         }
-        const changed: StoredDataset = { ...dataset, schema: { ...dataset.schema, tables } };
+        const draft = editableDraft(dataset);
+        const changed: StoredDataset = { ...draft, schema: { ...draft.schema, tables } };
         saveDataset(changed);
         return HttpResponse.json(toDetail(changed));
     }),
 
-    http.post("*/api/studio/datasets/:datasetId/versions", async ({ params }) => {
+    http.patch("*/api/studio/datasets/:datasetId", async ({ params, request }) => {
         await delay();
         const dataset = findDataset(String(params.datasetId), false);
         if (!dataset) {
             return notFound();
         }
-        if (dataset.schema.isDraft) {
-            return apiError(422, "DATASET_DRAFT_EXISTS", "Dataset đang có bản nháp");
+        const change = (await request.json()) as { name?: string; description?: string };
+        if (change.name !== undefined && change.name.trim() === "") {
+            return validationFailed({ field: "name", message: "Không được để trống" });
         }
-        const number = dataset.schema.versionNumber + 1;
         const changed: StoredDataset = {
             ...dataset,
-            versions: [...dataset.versions, { number, frozenAt: null }],
-            schema: { ...dataset.schema, versionNumber: number, isDraft: true },
+            name: change.name?.trim() ?? dataset.name,
+            description: change.description?.trim() ?? dataset.description,
+            updatedAt: new Date().toISOString(),
         };
         saveDataset(changed);
-        return HttpResponse.json(toDetail(changed), { status: 201 });
+        return HttpResponse.json(toDetail(changed));
     }),
 
     http.get("*/api/studio/datasets", async ({ request }) => {
@@ -248,7 +256,6 @@ export const studioDatasetHandlers: RequestHandler[] = [
         }
         const query = new URL(request.url).searchParams;
         const keyword = folded(query.get("q")?.trim() ?? "");
-        const status = query.get("status");
         const sort = query.get("sort") ?? "updatedAt,desc";
         const page = Number(query.get("page") ?? 1);
         const size = Number(query.get("size") ?? DEFAULT_PAGE_SIZE);
@@ -257,8 +264,7 @@ export const studioDatasetHandlers: RequestHandler[] = [
                 (dataset) =>
                     dataset.ownerId === user.id &&
                     !dataset.deletedAt &&
-                    folded(dataset.name).includes(keyword) &&
-                    (status === null || (status === "DRAFT") === dataset.schema.isDraft),
+                    folded(dataset.name).includes(keyword),
             ),
             sort,
         );

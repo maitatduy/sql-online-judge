@@ -22,7 +22,7 @@ import type { StatusCounts } from "../types";
 import { CreateProblemDialog } from "./CreateProblemDialog";
 import { ListFooter } from "./ListFooter";
 import { MyProblemsTable } from "./MyProblemsTable";
-import { StatusTabs } from "./StatusTabs";
+import { StatusSelect } from "./StatusSelect";
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -61,12 +61,7 @@ export function MyProblems() {
                 </Button>
             </div>
             <CreateProblemDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <StatusTabs
-                    activeStatus={filters.status}
-                    counts={counts}
-                    onChange={(status) => changeFilters({ status })}
-                />
+            <div className="flex flex-wrap items-center gap-3">
                 <label className="flex h-9 w-full items-center gap-2 rounded-md border px-3 text-muted-foreground focus-within:ring-2 focus-within:ring-ring sm:w-72">
                     <Search aria-hidden="true" className="size-4 shrink-0" />
                     <input
@@ -78,8 +73,11 @@ export function MyProblems() {
                         className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
                     />
                 </label>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
+                <StatusSelect
+                    value={filters.status}
+                    counts={counts}
+                    onChange={(status) => changeFilters({ status })}
+                />
                 <NativeSelect
                     aria-label="Độ khó"
                     value={filters.difficulty ?? ""}

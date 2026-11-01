@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { StudioNav } from "./StudioNav";
 
-const pathname = vi.hoisted(() => ({ current: "/studio/datasets" }));
+const pathname = vi.hoisted(() => ({ current: "/studio/databases" }));
 
 vi.mock("next/navigation", () => ({
     usePathname: () => pathname.current,
@@ -18,7 +18,7 @@ describe("StudioNav", () => {
             "href",
             "/studio/problems",
         );
-        expect(nav.getByRole("link", { name: "Dataset của tôi" })).toHaveAttribute(
+        expect(nav.getByRole("link", { name: "Database của tôi" })).toHaveAttribute(
             "aria-current",
             "page",
         );

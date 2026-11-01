@@ -36,11 +36,15 @@ describe("DatasetStudio - soạn schema", () => {
         server.events.removeAllListeners();
     });
 
-    it("hiện tên, phiên bản nháp và các bảng của schema", async () => {
+    it("hiện tên, mô tả và các bảng của schema, không hiện phiên bản", async () => {
         renderStudio();
 
         expect(await screen.findByRole("heading", { name: "Công ty" })).toBeInTheDocument();
-        expect(screen.getByText("Phiên bản 2 · Nháp")).toBeInTheDocument();
+        expect(screen.getByRole("textbox", { name: "Tên database" })).toHaveValue("Công ty");
+        expect(screen.getByRole("textbox", { name: "Mô tả" })).toHaveValue(
+            "Phòng ban và nhân viên kèm lương",
+        );
+        expect(screen.queryByText(/Phiên bản/)).not.toBeInTheDocument();
         expect(screen.getByRole("textbox", { name: "Tên bảng 1" })).toHaveValue("departments");
         expect(screen.getByRole("textbox", { name: "Tên cột 2, bảng employees" })).toHaveValue(
             "full_name",
@@ -48,9 +52,9 @@ describe("DatasetStudio - soạn schema", () => {
         expect(screen.getByRole("combobox", { name: "Kiểu, cột 3, bảng employees" })).toHaveValue(
             "DECIMAL",
         );
-        expect(screen.getByRole("link", { name: "Quay lại Dataset của tôi" })).toHaveAttribute(
+        expect(screen.getByRole("link", { name: "Quay lại Database của tôi" })).toHaveAttribute(
             "href",
-            "/studio/datasets",
+            "/studio/databases",
         );
     });
 
@@ -65,7 +69,7 @@ describe("DatasetStudio - soạn schema", () => {
             },
         );
 
-        expect(await screen.findByText(/^Bản nháp · lưu \d{2}:\d{2}$/)).toBeInTheDocument();
+        expect(await screen.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
         expect(puts).toHaveLength(1);
         expect(puts[0].map((table) => table.name)).toEqual(["departments", "employees"]);
         expect(puts[0][0].columns[1]).toMatchObject({ name: "title", type: "TEXT" });
@@ -78,7 +82,7 @@ describe("DatasetStudio - soạn schema", () => {
         fireEvent.click(await screen.findByRole("button", { name: "Thêm bảng" }));
 
         expect(screen.getByRole("textbox", { name: "Tên bảng 3" })).toHaveValue("new_table");
-        await screen.findByText(/^Bản nháp · lưu/);
+        await screen.findByText(/^Đã lưu/);
         expect(puts[0][2]).toEqual({
             name: "new_table",
             columns: [
@@ -145,28 +149,55 @@ describe("DatasetStudio - soạn schema", () => {
 
         fireEvent.click(await screen.findByRole("button", { name: "Xoá bảng departments" }));
 
-        await screen.findByText(/^Bản nháp · lưu/);
+        await screen.findByText(/^Đã lưu/);
         expect(puts[0].map((table) => table.name)).toEqual(["employees"]);
         expect(puts[0][0].columns[3].references).toBeNull();
     });
 
-    it("phiên bản đã chốt thì khoá các ô, tạo bản nháp mới để sửa tiếp", async () => {
+    it("database đã chốt vẫn sửa được như bình thường", async () => {
+        const puts = recordSchemaPuts();
         renderStudio(SCHOOL_ID);
 
-        expect(
-            await screen.findByText("Phiên bản 1 đã chốt nên không sửa được."),
-        ).toBeInTheDocument();
-        expect(screen.getByRole("textbox", { name: "Tên bảng 1" })).toBeDisabled();
+        const tableName = await screen.findByRole("textbox", { name: "Tên bảng 1" });
+        expect(tableName).toBeEnabled();
+        expect(screen.queryByRole("button", { name: "Tạo bản nháp mới" })).not.toBeInTheDocument();
+        fireEvent.change(tableName, { target: { value: "school_classes" } });
 
-        fireEvent.click(screen.getByRole("button", { name: "Tạo bản nháp mới" }));
-
-        expect(await screen.findByText("Phiên bản 2 · Nháp")).toBeInTheDocument();
-        expect(screen.getByRole("textbox", { name: "Tên bảng 1" })).toBeEnabled();
+        expect(await screen.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
+        expect(puts[0][0].name).toBe("school_classes");
     });
 
-    it("báo không tìm thấy khi dataset không tồn tại hoặc không phải của mình", async () => {
+    it("tự lưu tên database và cập nhật tiêu đề", async () => {
+        const patches: unknown[] = [];
+        server.events.on("request:start", async ({ request }) => {
+            if (request.method === "PATCH") {
+                patches.push(await request.clone().json());
+            }
+        });
+        renderStudio();
+
+        fireEvent.change(await screen.findByRole("textbox", { name: "Tên database" }), {
+            target: { value: "Tập đoàn" },
+        });
+
+        expect(await screen.findByRole("heading", { name: "Tập đoàn" })).toBeInTheDocument();
+        expect(patches).toEqual([{ name: "Tập đoàn" }]);
+    });
+
+    it("tên database trống thì báo lỗi và không lưu", async () => {
+        renderStudio();
+
+        fireEvent.change(await screen.findByRole("textbox", { name: "Tên database" }), {
+            target: { value: "  " },
+        });
+
+        expect(await screen.findByText("Không được để trống")).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Công ty" })).toBeInTheDocument();
+    });
+
+    it("báo không tìm thấy khi database không tồn tại hoặc không phải của mình", async () => {
         renderStudio("0192f3e0-0000-7000-8000-ffffffffffff");
 
-        expect(await screen.findByText("Không tìm thấy dataset này.")).toBeInTheDocument();
+        expect(await screen.findByText("Không tìm thấy database này.")).toBeInTheDocument();
     });
 });
