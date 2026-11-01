@@ -42,7 +42,7 @@ Chế độ **Run** (chạy thử với dataset mẫu, không tính điểm) đi
   - Bài loại DML/DDL (ví dụ bài về UPDATE, CREATE INDEX): quyền giới hạn trong đúng schema tạm.
 - 🔴 Role không có quyền: tạo/xoá database, tạo role, đọc catalog hệ thống ngoài schema của mình, gọi hàm hệ thống nguy hiểm (`pg_read_file`, `COPY … PROGRAM`, `LOAD_FILE`, `INTO OUTFILE`, `pg_sleep` nếu đề không cho), cài extension.
 - PostgreSQL: `REVOKE ALL ON SCHEMA public FROM PUBLIC`, `search_path` cố định về schema tạm, `default_transaction_read_only=on` với bài SELECT.
-- MySQL: `secure_file_priv` rỗng/NULL, `local_infile=OFF`, user chỉ có quyền trên database tạm.
+- MySQL: `secure_file_priv=NULL` (không để rỗng - rỗng nghĩa là không giới hạn), `local_infile=OFF`, user chỉ có `SELECT` trên từng bảng của database tạm, session `READ ONLY` và `max_execution_time`, collation `utf8mb4_0900_as_cs` để so chuỗi giống PostgreSQL.
 - SQLite: mở file tạm bằng URI `mode=ro` với bài SELECT, tắt `load_extension`, không cho `ATTACH`.
 
 ## 4. Giới hạn tài nguyên - 🔴 bắt buộc

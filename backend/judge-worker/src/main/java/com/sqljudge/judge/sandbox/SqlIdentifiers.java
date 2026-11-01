@@ -13,8 +13,4 @@ final class SqlIdentifiers {
             throw new IllegalArgumentException("Invalid SQL identifier: " + name);
         }
     }
-
-    static String quoted(String name) {
-        return "\"" + name + "\"";
-    }
 }
