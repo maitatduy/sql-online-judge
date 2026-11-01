@@ -1,6 +1,6 @@
 import { Eye, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
-import { IconAction } from "./IconAction";
+import { IconAction } from "@/components/shared/IconAction";
 
 export interface UserRowHandlers {
     onView: (username: string) => void;

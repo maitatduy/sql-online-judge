@@ -32,6 +32,7 @@ const STATUSES: readonly ProblemStatus[] = [
 
 interface StoredProblem extends StudioProblemSummary {
     authorId: string;
+    deletedAt?: string;
     tagSlugs: string[];
     statementMarkdown: string;
 }
@@ -125,7 +126,9 @@ function findAccessible(problemId: string): StoredProblem | undefined {
     const user = readMockSession();
     return readStudioProblems().find(
         (problem) =>
-            problem.id === problemId && (problem.authorId === user?.id || user?.role === "ADMIN"),
+            problem.id === problemId &&
+            !problem.deletedAt &&
+            (problem.authorId === user?.id || user?.role === "ADMIN"),
     );
 }
 
@@ -137,9 +140,16 @@ function toDetail(problem: StoredProblem): StudioProblem {
     };
 }
 
+function sortedProblems(problems: StoredProblem[], sort: string): StoredProblem[] {
+    if (sort === "title,asc") {
+        return [...problems].sort((first, second) => first.title.localeCompare(second.title, "vi"));
+    }
+    return sort === "updatedAt,asc" ? [...problems].reverse() : problems;
+}
+
 function ownProblems(userId: string): StoredProblem[] {
     return readStudioProblems()
-        .filter((problem) => problem.authorId === userId)
+        .filter((problem) => problem.authorId === userId && !problem.deletedAt)
         .sort((first, second) => Date.parse(second.updatedAt) - Date.parse(first.updatedAt));
 }
 
@@ -211,6 +221,26 @@ export const studioProblemHandlers: RequestHandler[] = [
             : apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
     }),
 
+    http.delete("*/api/studio/problems/:problemId", async ({ params }) => {
+        await delay();
+        const problem = findAccessible(String(params.problemId));
+        if (!problem) {
+            return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
+        }
+        const isEditable = problem.status === "DRAFT" || problem.status === "CHANGES_REQUESTED";
+        if (!isEditable && readMockSession()?.role !== "ADMIN") {
+            return apiError(422, "PROBLEM_LOCKED", "Chỉ xoá được bài nháp hoặc bài cần sửa");
+        }
+        writeStudioProblems(
+            readStudioProblems().map((stored) =>
+                stored.id === problem.id
+                    ? { ...stored, deletedAt: new Date().toISOString() }
+                    : stored,
+            ),
+        );
+        return new HttpResponse(null, { status: 204 });
+    }),
+
     http.patch("*/api/studio/problems/:problemId", async ({ params, request }) => {
         await delay();
         const problem = findAccessible(String(params.problemId));
@@ -248,20 +278,26 @@ export const studioProblemHandlers: RequestHandler[] = [
         }
         const query = new URL(request.url).searchParams;
         const status = query.get("status");
+        const difficulty = query.get("difficulty");
+        const sort = query.get("sort") ?? "updatedAt,desc";
         const keyword = folded(query.get("q")?.trim() ?? "");
         const page = Number(query.get("page") ?? 1);
         const size = Number(query.get("size") ?? DEFAULT_PAGE_SIZE);
-        const matches = ownProblems(user.id).filter(
-            (problem) =>
-                (status === null || problem.status === status) &&
-                folded(problem.title).includes(keyword),
+        const matches = sortedProblems(
+            ownProblems(user.id).filter(
+                (problem) =>
+                    (status === null || problem.status === status) &&
+                    (difficulty === null || problem.difficulty === difficulty) &&
+                    folded(problem.title).includes(keyword),
+            ),
+            sort,
         );
         const response: Page<StudioProblemSummary> = {
             items: matches.slice((page - 1) * size, page * size).map(toSummary),
             page,
             size,
             totalItems: matches.length,
-            totalPages: Math.ceil(matches.length / size),
+            totalPages: Math.max(1, Math.ceil(matches.length / size)),
         };
         return HttpResponse.json(response);
     }),
