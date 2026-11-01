@@ -78,7 +78,7 @@ class StudioDatasetVersionApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
-    @DisplayName("Chốt bản nháp đủ điều kiện: ghi thời điểm chốt và checksum, không sửa được nữa")
+    @DisplayName("Chốt bản nháp đủ điều kiện: ghi thời điểm chốt và checksum")
     void freeze_readyDraft_freezesVersion() {
         ResponseEntity<String> response = send(HttpMethod.POST, url("/freeze"), SETTER, null);
 
@@ -90,8 +90,6 @@ class StudioDatasetVersionApiIntegrationTest extends ContainerSupport {
                         jdbcTemplate.queryForObject(
                                 "SELECT checksum FROM dataset_versions", String.class))
                 .hasSize(64);
-        assertThat(send(HttpMethod.PUT, url("/schema"), SETTER, SCHEMA).getStatusCode())
-                .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @Test
@@ -109,55 +107,49 @@ class StudioDatasetVersionApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
-    @DisplayName("Chốt lần hai trả 422 DATASET_VERSION_FROZEN")
-    void freeze_alreadyFrozen_returnsUnprocessable() {
+    @DisplayName("Chốt lần hai không tạo phiên bản mới, vẫn trả 200")
+    void freeze_alreadyFrozen_keepsSingleVersion() {
         send(HttpMethod.POST, url("/freeze"), SETTER, null);
 
         ResponseEntity<String> response = send(HttpMethod.POST, url("/freeze"), SETTER, null);
 
-        assertThat(JsonPath.parse(response.getBody()).read("$.code", String.class))
-                .isEqualTo("DATASET_VERSION_FROZEN");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(JsonPath.parse(response.getBody()).read("$.versions[*].number", List.class))
+                .containsExactly(1);
     }
 
     @Test
-    @DisplayName("Tạo bản nháp mới sao chép đủ schema, bộ dữ liệu và CSV của phiên bản đã chốt")
-    void createVersion_afterFreeze_copiesLatestVersion() {
+    @DisplayName(
+            "Sửa database đã chốt thì tự tạo bản nháp mới sao chép đủ dữ liệu, bản đã chốt giữ"
+                    + " nguyên")
+    void edit_afterFreeze_startsDraftFromLatestVersion() {
         send(HttpMethod.POST, url("/freeze"), SETTER, null);
+        String frozenChecksum =
+                jdbcTemplate.queryForObject("SELECT checksum FROM dataset_versions", String.class);
 
-        ResponseEntity<String> response = send(HttpMethod.POST, url("/versions"), SETTER, null);
+        ResponseEntity<String> response = send(HttpMethod.PUT, url("/schema"), SETTER, SCHEMA);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         DocumentContext dataset = JsonPath.parse(response.getBody());
         assertThat(dataset.read("$.versions[*].number", List.class)).containsExactly(1, 2);
         assertThat(dataset.read("$.schema.versionNumber", Integer.class)).isEqualTo(2);
         assertThat(dataset.read("$.schema.isDraft", Boolean.class)).isTrue();
-        assertThat(dataset.read("$.schema.tables[0].columns[*].name", List.class))
-                .containsExactly("id", "name");
         assertThat(dataset.read("$.variants[0].name", String.class)).isEqualTo("Mẫu");
         assertThat(dataset.read("$.variants[0].tables[0].rowCount", Integer.class)).isEqualTo(2);
         assertThat(count("dataset_variant_tables")).isEqualTo(2);
-        assertThat(send(HttpMethod.PUT, url("/schema"), SETTER, SCHEMA).getStatusCode())
-                .isEqualTo(HttpStatus.OK);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT checksum FROM dataset_versions WHERE number = 1",
+                                String.class))
+                .isEqualTo(frozenChecksum);
     }
 
     @Test
-    @DisplayName("Đã có bản nháp thì không tạo thêm được: 422 DATASET_DRAFT_EXISTS")
-    void createVersion_draftExists_returnsUnprocessable() {
-        ResponseEntity<String> response = send(HttpMethod.POST, url("/versions"), SETTER, null);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-        assertThat(JsonPath.parse(response.getBody()).read("$.code", String.class))
-                .isEqualTo("DATASET_DRAFT_EXISTS");
-    }
-
-    @Test
-    @DisplayName("Người ra đề khác nhận 404, MODERATOR không chốt hay tạo phiên bản được")
-    void versionEndpoints_enforcePermissions() {
+    @DisplayName("Người ra đề khác nhận 404, MODERATOR không chốt được")
+    void freeze_otherSetterOrModerator_isRejected() {
         assertThat(send(HttpMethod.POST, url("/freeze"), OTHER_SETTER, null).getStatusCode())
                 .isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(send(HttpMethod.POST, url("/freeze"), MODERATOR, null).getStatusCode())
-                .isEqualTo(HttpStatus.FORBIDDEN);
-        assertThat(send(HttpMethod.POST, url("/versions"), MODERATOR, null).getStatusCode())
                 .isEqualTo(HttpStatus.FORBIDDEN);
     }
 

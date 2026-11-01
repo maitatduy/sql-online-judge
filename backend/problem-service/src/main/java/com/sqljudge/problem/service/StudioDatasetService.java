@@ -5,7 +5,6 @@ import com.sqljudge.common.exception.ConflictException;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.request.CreateDatasetRequest;
-import com.sqljudge.problem.dto.request.DatasetVersionFilter;
 import com.sqljudge.problem.dto.request.StudioDatasetQuery;
 import com.sqljudge.problem.dto.request.UpdateDatasetRequest;
 import com.sqljudge.problem.dto.request.UpdateDatasetSchemaRequest;
@@ -55,10 +54,9 @@ public class StudioDatasetService {
     @Transactional(readOnly = true)
     public PageResponse<StudioDatasetSummaryResponse> listOwned(StudioDatasetQuery query) {
         return PageResponse.from(
-                datasetRepository.findOwnedSummaries(
+                datasetRepository.findOwned(
                         SecurityUtils.requireCurrentUser().id(),
                         LikePatterns.containingIgnoreCase(query.q()),
-                        hasDraftOf(query.status()),
                         PageRequest.of(
                                 query.page() - 1,
                                 query.size(),
@@ -90,7 +88,7 @@ public class StudioDatasetService {
         if (usingProblems > 0) {
             throw new ConflictException(
                     ErrorCode.DATASET_IN_USE,
-                    "Dataset đang được " + usingProblems + " bài dùng nên chưa xoá được");
+                    "Database đang được " + usingProblems + " bài dùng nên chưa xoá được");
         }
         dataset.setDeletedAt(clock.instant());
         datasetRepository.saveAndFlush(dataset);
@@ -121,10 +119,6 @@ public class StudioDatasetService {
                 column.setReferencesColumn(columnRequest.references().column());
             }
         }
-    }
-
-    private static Boolean hasDraftOf(DatasetVersionFilter status) {
-        return status == null ? null : status == DatasetVersionFilter.DRAFT;
     }
 
     private String uniqueSlug(String base) {

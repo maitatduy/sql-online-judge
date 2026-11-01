@@ -217,18 +217,17 @@ class StudioDatasetVariantApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
-    @DisplayName("Phiên bản đã chốt thì không thêm bộ dữ liệu hay nhập CSV được: 422")
-    void variantEndpoints_frozenVersion_returnUnprocessable() {
+    @DisplayName("Thêm bộ dữ liệu khi bản mới nhất đã chốt thì tự tạo bản nháp mới")
+    void addVariant_frozenVersion_startsNewDraft() {
         jdbcTemplate.update("UPDATE dataset_versions SET frozen_at = NOW(6)");
 
         ResponseEntity<String> addVariant =
                 send(HttpMethod.POST, url("/variants"), SETTER, "{\"name\":\"Mới\"}");
 
-        assertThat(addVariant.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-        assertThat(JsonPath.parse(addVariant.getBody()).read("$.code", String.class))
-                .isEqualTo("DATASET_VERSION_FROZEN");
-        assertThat(putCsv("departments", DEPARTMENTS_CSV).getStatusCode())
-                .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(addVariant.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        DocumentContext dataset = JsonPath.parse(addVariant.getBody());
+        assertThat(dataset.read("$.versions[*].number", List.class)).containsExactly(1, 2);
+        assertThat(dataset.read("$.variants[*].name", List.class)).containsExactly("Mẫu", "Mới");
     }
 
     private ResponseEntity<String> putCsv(String tableName, String csv) {

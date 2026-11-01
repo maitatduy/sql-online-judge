@@ -17,13 +17,6 @@ public interface DatasetRepository extends JpaRepository<Dataset, UUID> {
             FROM Dataset d
             WHERE d.ownerId = :ownerId AND d.deletedAt IS NULL
               AND (:namePattern IS NULL OR LOWER(d.name) LIKE :namePattern ESCAPE '!')
-              AND (:hasDraft IS NULL
-                OR (:hasDraft = TRUE AND EXISTS (
-                    SELECT 1 FROM DatasetVersion draft
-                    WHERE draft.dataset = d AND draft.frozenAt IS NULL))
-                OR (:hasDraft = FALSE AND NOT EXISTS (
-                    SELECT 1 FROM DatasetVersion draft
-                    WHERE draft.dataset = d AND draft.frozenAt IS NULL)))
             """;
 
     Optional<Dataset> findBySlug(String slug);
@@ -33,18 +26,9 @@ public interface DatasetRepository extends JpaRepository<Dataset, UUID> {
     @Query("SELECT d.slug FROM Dataset d WHERE d.slug = :base OR d.slug LIKE :prefix")
     List<String> findSlugsLike(@Param("base") String base, @Param("prefix") String prefix);
 
-    @Query(
-            value =
-                    "SELECT new com.sqljudge.problem.repository.DatasetSummaryRow(d.id, d.slug,"
-                            + " d.name, d.description,"
-                            + " (SELECT MAX(v.number) FROM DatasetVersion v WHERE v.dataset = d),"
-                            + " (SELECT COUNT(v) FROM DatasetVersion v"
-                            + " WHERE v.dataset = d AND v.frozenAt IS NULL), d.updatedAt) "
-                            + OWNED_DATASETS,
-            countQuery = "SELECT COUNT(d) " + OWNED_DATASETS)
-    Page<DatasetSummaryRow> findOwnedSummaries(
+    @Query("SELECT d " + OWNED_DATASETS)
+    Page<Dataset> findOwned(
             @Param("ownerId") UUID ownerId,
             @Param("namePattern") String namePattern,
-            @Param("hasDraft") Boolean hasDraft,
             Pageable pageable);
 }

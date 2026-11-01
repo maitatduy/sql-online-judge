@@ -1,7 +1,5 @@
 package com.sqljudge.problem.service;
 
-import com.sqljudge.common.error.ErrorCode;
-import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.problem.dto.response.StudioDatasetResponse;
 import com.sqljudge.problem.entity.Dataset;
 import com.sqljudge.problem.entity.DatasetVersion;
@@ -23,22 +21,13 @@ public class StudioDatasetVersionService {
     @Transactional
     public StudioDatasetResponse freeze(UUID datasetId) {
         Dataset dataset = datasetAccess.editable(datasetId);
-        DatasetVersion draft = datasetAccess.editableDraft(dataset);
-        DatasetReadiness.check(draft);
-        draft.setChecksum(DatasetChecksum.of(draft));
-        draft.setFrozenAt(clock.instant());
-        return StudioDatasetResponse.from(datasetRepository.saveAndFlush(dataset));
-    }
-
-    @Transactional
-    public StudioDatasetResponse createDraft(UUID datasetId) {
-        Dataset dataset = datasetAccess.editable(datasetId);
-        if (dataset.latestVersion().isDraft()) {
-            throw new BusinessRuleException(
-                    ErrorCode.DATASET_DRAFT_EXISTS,
-                    "Dataset đang có bản nháp, hãy sửa tiếp bản nháp đó");
+        DatasetVersion latest = dataset.latestVersion();
+        if (!latest.isDraft()) {
+            return StudioDatasetResponse.from(dataset);
         }
-        dataset.addDraftFromLatest();
+        DatasetReadiness.check(latest);
+        latest.setChecksum(DatasetChecksum.of(latest));
+        latest.setFrozenAt(clock.instant());
         return StudioDatasetResponse.from(datasetRepository.saveAndFlush(dataset));
     }
 }
