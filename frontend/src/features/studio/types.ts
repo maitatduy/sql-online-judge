@@ -79,6 +79,11 @@ export interface StudioDataset {
     updatedAt: string;
 }
 
+export interface DatasetVariantRequest {
+    name: string;
+    isPublic: boolean;
+}
+
 export interface UpdateDatasetRequest {
     name?: string;
     description?: string;

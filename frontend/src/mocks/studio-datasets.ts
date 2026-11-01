@@ -6,7 +6,7 @@ import type { Page } from "@/lib/pagination";
 import { validationFailed } from "./admin-user-errors";
 import { apiError } from "./api-error";
 import { readMockSession, SETTER_SESSION_USER } from "./session";
-import { SEED_SCHEMAS } from "./studio-dataset-fixtures";
+import { SEED_SCHEMAS, SEED_VARIANTS } from "./studio-dataset-fixtures";
 import { folded } from "./text";
 
 const STORAGE_KEY = "sqljudge:mock:studio-datasets";
@@ -59,7 +59,7 @@ function seedDatasets(): StoredDataset[] {
                     isDraft: hasDraft,
                     tables: SEED_SCHEMAS[index],
                 },
-                variants: [],
+                variants: SEED_VARIANTS[index],
                 updatedAt,
             };
         },
@@ -185,6 +185,9 @@ function invalidSchemaField(tables: DatasetTable[]): { field: string; message: s
     return null;
 }
 
+const variantNameTaken = () =>
+    apiError(409, "DATASET_VARIANT_NAME_TAKEN", "Tên bộ dữ liệu đã được dùng");
+
 const notFound = () => apiError(404, "DATASET_NOT_FOUND", "Không tìm thấy database");
 
 export const studioDatasetHandlers: RequestHandler[] = [
@@ -226,6 +229,83 @@ export const studioDatasetHandlers: RequestHandler[] = [
         const changed: StoredDataset = { ...draft, schema: { ...draft.schema, tables } };
         saveDataset(changed);
         return HttpResponse.json(toDetail(changed));
+    }),
+
+    http.post("*/api/studio/datasets/:datasetId/variants", async ({ params, request }) => {
+        await delay();
+        const dataset = findDataset(String(params.datasetId), false);
+        if (!dataset) {
+            return notFound();
+        }
+        const body = (await request.json()) as { name?: string; isPublic?: boolean };
+        const name = body.name?.trim() ?? "";
+        if (name === "") {
+            return validationFailed({ field: "name", message: "Không được để trống" });
+        }
+        const draft = editableDraft(dataset);
+        if (draft.variants.some((variant) => variant.name === name)) {
+            return variantNameTaken();
+        }
+        const changed: StoredDataset = {
+            ...draft,
+            variants: [
+                ...draft.variants,
+                { id: crypto.randomUUID(), name, isPublic: body.isPublic ?? false, tables: [] },
+            ],
+        };
+        saveDataset(changed);
+        return HttpResponse.json(toDetail(changed), { status: 201 });
+    }),
+
+    http.patch(
+        "*/api/studio/datasets/:datasetId/variants/:variantId",
+        async ({ params, request }) => {
+            await delay();
+            const dataset = findDataset(String(params.datasetId), false);
+            const variantId = String(params.variantId);
+            if (!dataset?.variants.some((variant) => variant.id === variantId)) {
+                return notFound();
+            }
+            const change = (await request.json()) as { name?: string; isPublic?: boolean };
+            const name = change.name?.trim();
+            if (
+                dataset.variants.some(
+                    (variant) => variant.name === name && variant.id !== variantId,
+                )
+            ) {
+                return variantNameTaken();
+            }
+            const draft = editableDraft(dataset);
+            const changed: StoredDataset = {
+                ...draft,
+                variants: draft.variants.map((variant) =>
+                    variant.id === variantId
+                        ? {
+                              ...variant,
+                              name: name ?? variant.name,
+                              isPublic: change.isPublic ?? variant.isPublic,
+                          }
+                        : variant,
+                ),
+            };
+            saveDataset(changed);
+            return HttpResponse.json(toDetail(changed));
+        },
+    ),
+
+    http.delete("*/api/studio/datasets/:datasetId/variants/:variantId", async ({ params }) => {
+        await delay();
+        const dataset = findDataset(String(params.datasetId), false);
+        const variantId = String(params.variantId);
+        if (!dataset?.variants.some((variant) => variant.id === variantId)) {
+            return notFound();
+        }
+        const draft = editableDraft(dataset);
+        saveDataset({
+            ...draft,
+            variants: draft.variants.filter((variant) => variant.id !== variantId),
+        });
+        return new HttpResponse(null, { status: 204 });
     }),
 
     http.patch("*/api/studio/datasets/:datasetId", async ({ params, request }) => {

@@ -6,6 +6,7 @@ import { type MyProblemFilters, myProblemsQueryOf } from "./my-problem-filters";
 import type { CreateDatasetValues, CreateProblemValues } from "./schemas";
 import type {
     DatasetTable,
+    DatasetVariantRequest,
     StudioDataset,
     StudioDatasetSummary,
     StudioProblem,
@@ -52,6 +53,17 @@ export const studioApi = {
     replaceDatasetSchema: (datasetId: string, tables: DatasetTable[]) =>
         apiClient.put<StudioDataset>(`${datasetPath(datasetId)}/schema`, { tables }),
     deleteDataset: (datasetId: string) => apiClient.delete<void>(datasetPath(datasetId)),
+    addDatasetVariant: (datasetId: string, variant: DatasetVariantRequest) =>
+        apiClient.post<StudioDataset>(`${datasetPath(datasetId)}/variants`, variant),
+    updateDatasetVariant: (datasetId: string, variantId: string, variant: DatasetVariantRequest) =>
+        apiClient.patch<StudioDataset>(
+            `${datasetPath(datasetId)}/variants/${encodeURIComponent(variantId)}`,
+            variant,
+        ),
+    deleteDatasetVariant: (datasetId: string, variantId: string) =>
+        apiClient.delete<void>(
+            `${datasetPath(datasetId)}/variants/${encodeURIComponent(variantId)}`,
+        ),
     updateDataset: (datasetId: string, change: UpdateDatasetRequest) =>
         apiClient.patch<StudioDataset>(datasetPath(datasetId), change),
 };

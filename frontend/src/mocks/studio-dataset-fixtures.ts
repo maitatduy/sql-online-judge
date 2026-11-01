@@ -1,4 +1,9 @@
-import type { DatasetColumn, DatasetTable, LogicalType } from "@/features/studio/types";
+import type {
+    DatasetColumn,
+    DatasetTable,
+    DatasetVariant,
+    LogicalType,
+} from "@/features/studio/types";
 
 function column(
     name: string,
@@ -53,4 +58,26 @@ export const SEED_SCHEMAS: DatasetTable[][] = [
             ],
         },
     ],
+];
+
+export const SEED_VARIANTS: DatasetVariant[][] = [
+    [
+        {
+            id: "0192f3e1-0000-7000-8000-000000000001",
+            name: "Mẫu",
+            isPublic: true,
+            tables: [
+                { tableName: "departments", rowCount: 3 },
+                { tableName: "employees", rowCount: 6 },
+            ],
+        },
+        {
+            id: "0192f3e1-0000-7000-8000-000000000002",
+            name: "Có NULL",
+            isPublic: false,
+            tables: [{ tableName: "departments", rowCount: 2 }],
+        },
+    ],
+    [],
+    [],
 ];
