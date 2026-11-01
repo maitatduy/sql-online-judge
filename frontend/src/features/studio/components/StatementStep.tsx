@@ -6,9 +6,12 @@ import { Markdown } from "@/components/shared/Markdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApiRequestError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
+import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 
+import type { ProblemSave } from "../hooks/useStudioProblem";
 import { MAX_STATEMENT_LENGTH } from "../schemas";
-import type { StudioProblem, UpdateProblemRequest } from "../types";
+import type { StudioProblem } from "../types";
+import { SaveBar } from "./SaveBar";
 
 const STATEMENT_FIELD = "statementMarkdown";
 const TOO_LONG_MESSAGE = "Đề bài tối đa 50 KB";
@@ -16,8 +19,7 @@ const TOO_LONG_MESSAGE = "Đề bài tối đa 50 KB";
 interface StatementStepProps {
     problem: StudioProblem;
     disabled: boolean;
-    saveError: Error | null;
-    onChange: (change: UpdateProblemRequest) => void;
+    save: ProblemSave;
 }
 
 function serverErrorOf(error: Error | null): string | undefined {
@@ -26,17 +28,12 @@ function serverErrorOf(error: Error | null): string | undefined {
         : undefined;
 }
 
-export function StatementStep({ problem, disabled, saveError, onChange }: StatementStepProps) {
+export function StatementStep({ problem, disabled, save }: StatementStepProps) {
     const [statement, setStatement] = useState(problem.statementMarkdown);
     const isTooLong = statement.length > MAX_STATEMENT_LENGTH;
-    const error = isTooLong ? TOO_LONG_MESSAGE : serverErrorOf(saveError);
-
-    function changeStatement(value: string) {
-        setStatement(value);
-        if (value.length <= MAX_STATEMENT_LENGTH) {
-            onChange({ statementMarkdown: value });
-        }
-    }
+    const error = isTooLong ? TOO_LONG_MESSAGE : serverErrorOf(save.error);
+    const hasChanges = statement !== problem.statementMarkdown;
+    useUnsavedChangesWarning(hasChanges);
 
     return (
         <section aria-labelledby="statement-step-title" className="rounded-lg border bg-card p-6">
@@ -59,7 +56,7 @@ export function StatementStep({ problem, disabled, saveError, onChange }: Statem
                         spellCheck={false}
                         aria-invalid={error ? true : undefined}
                         aria-describedby={error ? "statement-error" : "statement-length"}
-                        onChange={(event) => changeStatement(event.target.value)}
+                        onChange={(event) => setStatement(event.target.value)}
                         className="block min-h-[420px] w-full resize-y bg-transparent p-4 font-mono text-[13px] leading-relaxed outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     />
                 </TabsContent>
@@ -83,6 +80,17 @@ export function StatementStep({ problem, disabled, saveError, onChange }: Statem
                     {formatNumber(statement.length)} / {formatNumber(MAX_STATEMENT_LENGTH)} ký tự
                 </p>
             </div>
+            {disabled ? null : (
+                <div className="mt-5 border-t pt-4">
+                    <SaveBar
+                        hasChanges={hasChanges}
+                        canSave={hasChanges && !isTooLong}
+                        isSaving={save.isSaving}
+                        savedAt={save.savedAt}
+                        onSave={() => save.save({ statementMarkdown: statement })}
+                    />
+                </div>
+            )}
         </section>
     );
 }

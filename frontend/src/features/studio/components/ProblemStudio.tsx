@@ -8,10 +8,8 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/ToastProvider";
 import { ApiRequestError } from "@/lib/api-client";
-import { formatTime } from "@/lib/format";
 
-import { useProblemAutosave } from "../hooks/useProblemAutosave";
-import { useStudioProblem } from "../hooks/useStudioProblem";
+import { useSaveProblem, useStudioProblem } from "../hooks/useStudioProblem";
 import { LOCKED_MESSAGES, PROBLEM_STATUS_LABELS } from "../status-labels";
 import { EDITABLE_STATUSES, type StudioStep } from "../types";
 import { InfoStep } from "./InfoStep";
@@ -32,7 +30,7 @@ function isFieldError(error: Error): boolean {
 export function ProblemStudio({ problemId, step = "info" }: ProblemStudioProps) {
     const showToast = useToast();
     const { data: problem, error, isPending, refetch } = useStudioProblem(problemId);
-    const autosave = useProblemAutosave(problemId, (saveError) => {
+    const save = useSaveProblem(problemId, (saveError) => {
         if (!isFieldError(saveError)) {
             showToast(`Chưa lưu được thay đổi. ${saveError.message}`, "error");
         }
@@ -79,17 +77,9 @@ export function ProblemStudio({ problemId, step = "info" }: ProblemStudioProps) 
                                 {problem.title}
                             </h1>
                         </div>
-                        <div className="flex items-center gap-3 text-[13px] text-muted-foreground">
-                            <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-foreground">
-                                {PROBLEM_STATUS_LABELS[problem.status]}
-                            </span>
-                            <span role="status">
-                                {autosave.isSaving ? "Đang lưu…" : null}
-                                {!autosave.isSaving && autosave.savedAt
-                                    ? `Bản nháp · lưu ${formatTime(autosave.savedAt)}`
-                                    : null}
-                            </span>
-                        </div>
+                        <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold">
+                            {PROBLEM_STATUS_LABELS[problem.status]}
+                        </span>
                     </div>
                     {isEditable ? null : (
                         <p className="rounded-md bg-surface-2 px-3 py-2 text-[13px]">
@@ -103,16 +93,14 @@ export function ProblemStudio({ problemId, step = "info" }: ProblemStudioProps) 
                                 key={problem.id}
                                 problem={problem}
                                 disabled={!isEditable}
-                                saveError={autosave.error}
-                                onChange={autosave.queueSave}
+                                save={save}
                             />
                         ) : (
                             <StatementStep
                                 key={problem.id}
                                 problem={problem}
                                 disabled={!isEditable}
-                                saveError={autosave.error}
-                                onChange={autosave.queueSave}
+                                save={save}
                             />
                         )}
                     </div>

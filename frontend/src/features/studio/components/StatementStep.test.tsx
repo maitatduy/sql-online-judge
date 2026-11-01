@@ -49,15 +49,17 @@ describe("ProblemStudio - bước Đề bài", () => {
         expect(steps.getByRole("link", { name: /Thông tin/ })).not.toHaveAttribute("aria-current");
     });
 
-    it("tự lưu đề bài vừa soạn", async () => {
+    it("bấm Lưu thì gửi đề bài vừa soạn rồi báo đã lưu", async () => {
         const patches = recordPatches();
         renderStatement();
 
         fireEvent.change(await screen.findByRole("textbox", { name: "Đề bài" }), {
             target: { value: "## Yêu cầu\nTính tỉ lệ chuyển đổi." },
         });
+        expect(screen.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
 
-        expect(await screen.findByText(/^Bản nháp · lưu \d{2}:\d{2}$/)).toBeInTheDocument();
+        expect(await screen.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
         expect(patches).toEqual([{ statementMarkdown: "## Yêu cầu\nTính tỉ lệ chuyển đổi." }]);
     });
 

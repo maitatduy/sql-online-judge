@@ -16,7 +16,6 @@ interface SchemaColumnRowProps {
     label: string;
     path: string;
     tables: DatasetTable[];
-    disabled: boolean;
     canRemove: boolean;
     errorOf: (path: string) => string | undefined;
     onChange: (change: Partial<DatasetColumn>) => void;
@@ -40,7 +39,6 @@ export function SchemaColumnRow({
     label,
     path,
     tables,
-    disabled,
     canRemove,
     errorOf,
     onChange,
@@ -58,7 +56,6 @@ export function SchemaColumnRow({
                 <Input
                     aria-label={`Tên cột ${label}`}
                     value={column.name}
-                    disabled={disabled}
                     autoComplete="off"
                     className="font-mono"
                     aria-invalid={nameError ? true : undefined}
@@ -74,7 +71,6 @@ export function SchemaColumnRow({
             <NativeSelect
                 aria-label={`Kiểu, cột ${label}`}
                 value={column.type}
-                disabled={disabled}
                 onChange={(event) => onChange({ type: event.target.value as LogicalType })}
             >
                 {TYPES.map((type) => (
@@ -88,7 +84,6 @@ export function SchemaColumnRow({
                     type="checkbox"
                     aria-label={`Khoá chính, cột ${label}`}
                     checked={column.isPrimaryKey}
-                    disabled={disabled}
                     onChange={(event) =>
                         onChange({
                             isPrimaryKey: event.target.checked,
@@ -102,7 +97,7 @@ export function SchemaColumnRow({
                     type="checkbox"
                     aria-label={`Cho phép rỗng, cột ${label}`}
                     checked={column.isNullable}
-                    disabled={disabled || column.isPrimaryKey}
+                    disabled={column.isPrimaryKey}
                     onChange={(event) => onChange({ isNullable: event.target.checked })}
                 />
             </label>
@@ -110,7 +105,6 @@ export function SchemaColumnRow({
                 <NativeSelect
                     aria-label={`Khoá ngoại, cột ${label}`}
                     value={current}
-                    disabled={disabled}
                     className="font-mono"
                     aria-invalid={referenceError ? true : undefined}
                     onChange={(event) => onChange({ references: toReference(event.target.value) })}
@@ -131,7 +125,7 @@ export function SchemaColumnRow({
                 variant="ghost"
                 size="icon"
                 aria-label={`Xoá cột ${label}`}
-                disabled={disabled || !canRemove}
+                disabled={!canRemove}
                 onClick={onRemove}
             >
                 <Trash2 aria-hidden="true" />

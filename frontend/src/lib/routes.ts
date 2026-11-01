@@ -14,7 +14,7 @@ export const ROUTES = {
     settings: "/settings",
     admin: "/admin",
     studioProblems: "/studio/problems",
-    studioDatasets: "/studio/datasets",
+    studioDatasets: "/studio/databases",
     adminUsers: "/admin/users",
     adminMessages: "/admin/messages",
     adminReports: "/admin/reports",
@@ -25,6 +25,6 @@ export const ROUTES = {
     registerWithNext: (nextPath: string) => `/register?next=${encodeURIComponent(nextPath)}`,
     invitation: (token: string) => `/invitations/${encodeURIComponent(token)}`,
     profile: (username: string) => `/u/${encodeURIComponent(username)}`,
-    studioDataset: (datasetId: string) => `/studio/datasets/${encodeURIComponent(datasetId)}`,
+    studioDataset: (datasetId: string) => `/studio/databases/${encodeURIComponent(datasetId)}`,
     problem: (slug: string) => `/problems/${encodeURIComponent(slug)}`,
 } as const;

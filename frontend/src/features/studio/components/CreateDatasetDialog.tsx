@@ -60,12 +60,12 @@ export function CreateDatasetDialog({ open, onOpenChange }: CreateDatasetDialogP
         createDataset
             .mutateAsync(values)
             .then((created) => {
-                showToast(`Đã tạo dataset ${created.name}.`);
+                showToast(`Đã tạo database ${created.name}.`);
                 changeOpen(false);
             })
             .catch((error: Error) => {
                 if (!applyFieldErrors(error)) {
-                    showToast(`Chưa tạo được dataset. ${error.message}`, "error");
+                    showToast(`Chưa tạo được database. ${error.message}`, "error");
                 }
             });
 
@@ -86,9 +86,9 @@ export function CreateDatasetDialog({ open, onOpenChange }: CreateDatasetDialogP
     return (
         <Dialog open={open} onOpenChange={changeOpen}>
             <DialogContent>
-                <DialogTitle>Tạo dataset</DialogTitle>
+                <DialogTitle>Tạo database</DialogTitle>
                 <DialogDescription>
-                    Dataset gồm schema và các bộ dữ liệu, dùng chung cho nhiều bài.
+                    Database gồm schema và các bộ dữ liệu, dùng chung cho nhiều bài.
                 </DialogDescription>
                 <form
                     noValidate
@@ -96,7 +96,7 @@ export function CreateDatasetDialog({ open, onOpenChange }: CreateDatasetDialogP
                     className="flex flex-col gap-4"
                 >
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="dataset-name">Tên dataset</Label>
+                        <Label htmlFor="dataset-name">Tên database</Label>
                         <Input
                             id="dataset-name"
                             autoComplete="off"
@@ -123,7 +123,7 @@ export function CreateDatasetDialog({ open, onOpenChange }: CreateDatasetDialogP
                             Huỷ
                         </Button>
                         <Button type="submit" disabled={createDataset.isPending}>
-                            Tạo dataset
+                            Tạo database
                         </Button>
                     </div>
                 </form>

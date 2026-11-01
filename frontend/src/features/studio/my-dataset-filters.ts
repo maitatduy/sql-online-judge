@@ -1,34 +1,41 @@
 import { ROUTES } from "@/lib/routes";
 
-const FIRST_PAGE = 1;
-export const MY_DATASETS_PAGE_SIZE = 20;
+import { DATASET_SORTS, listParams, readPage, readPageSize, readSort } from "./list-options";
 
 export interface MyDatasetFilters {
     q: string;
+    sort: string;
+    size: number;
     page: number;
-}
-
-function readPage(value: string | null): number {
-    const page = Number(value);
-    return Number.isInteger(page) && page >= FIRST_PAGE ? page : FIRST_PAGE;
 }
 
 export function readMyDatasetFilters(searchParams: Pick<URLSearchParams, "get">): MyDatasetFilters {
     return {
         q: searchParams.get("q")?.trim() ?? "",
+        sort: readSort(searchParams.get("sort"), DATASET_SORTS),
+        size: readPageSize(searchParams.get("size")),
         page: readPage(searchParams.get("page")),
     };
 }
 
-export function myDatasetsQueryOf({ q, page }: MyDatasetFilters) {
-    return { ...(q ? { q } : {}), page, size: MY_DATASETS_PAGE_SIZE };
+function activeFilterParams({ q }: MyDatasetFilters): Record<string, string> {
+    return q ? { q } : {};
 }
 
-export function myDatasetsHref({ q, page }: MyDatasetFilters): string {
-    const query = new URLSearchParams(q ? { q } : {});
-    if (page > FIRST_PAGE) {
-        query.set("page", String(page));
-    }
+export function myDatasetsQueryOf(filters: MyDatasetFilters) {
+    return {
+        ...activeFilterParams(filters),
+        sort: filters.sort,
+        page: filters.page,
+        size: filters.size,
+    };
+}
+
+export function myDatasetsHref(filters: MyDatasetFilters): string {
+    const query = new URLSearchParams({
+        ...activeFilterParams(filters),
+        ...listParams(filters.page, filters.size, filters.sort),
+    });
     const queryString = query.toString();
     return queryString ? `${ROUTES.studioDatasets}?${queryString}` : ROUTES.studioDatasets;
 }

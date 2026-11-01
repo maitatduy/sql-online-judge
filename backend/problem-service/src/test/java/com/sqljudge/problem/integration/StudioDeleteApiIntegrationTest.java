@@ -129,7 +129,7 @@ class StudioDeleteApiIntegrationTest extends ContainerSupport {
         assertThat(JsonPath.parse(response.getBody()).read("$.code", String.class))
                 .isEqualTo("DATASET_IN_USE");
         assertThat(JsonPath.parse(response.getBody()).read("$.message", String.class))
-                .isEqualTo("Dataset đang được 1 bài dùng nên chưa xoá được");
+                .isEqualTo("Database đang được 1 bài dùng nên chưa xoá được");
     }
 
     @Test

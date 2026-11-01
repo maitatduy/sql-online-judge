@@ -6,7 +6,7 @@ import { Plus, Search } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { Pagination } from "@/components/shared/Pagination";
+import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
@@ -14,8 +14,10 @@ import { formatNumber } from "@/lib/format";
 import { useDebouncedSearch } from "@/lib/useDebouncedSearch";
 
 import { useMyDatasetFilters, useMyDatasets } from "../hooks/useMyDatasets";
+import { DATASET_SORTS } from "../list-options";
 import { myDatasetsHref } from "../my-dataset-filters";
 import { CreateDatasetDialog } from "./CreateDatasetDialog";
+import { ListFooter } from "./ListFooter";
 import { MyDatasetsTable } from "./MyDatasetsTable";
 
 const SKELETON_ROW_COUNT = 4;
@@ -36,35 +38,48 @@ export function MyDatasets() {
                         Khu vực người ra đề
                     </p>
                     <h1 className="mt-1.5 text-[28px] font-extrabold tracking-[-0.02em]">
-                        Dataset của tôi
+                        Database của tôi
                     </h1>
                     {data ? (
                         <p className="mt-1 text-muted-foreground">
-                            {formatNumber(data.totalItems)} dataset
+                            {formatNumber(data.totalItems)} database
                         </p>
                     ) : null}
                 </div>
                 <Button type="button" onClick={() => setIsCreateOpen(true)}>
                     <Plus aria-hidden="true" />
-                    Tạo dataset
+                    Tạo database
                 </Button>
             </div>
             <CreateDatasetDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
-            <label className="flex h-9 w-full items-center gap-2 rounded-md border px-3 text-muted-foreground focus-within:ring-2 focus-within:ring-ring sm:w-72">
-                <Search aria-hidden="true" className="size-4 shrink-0" />
-                <input
-                    type="search"
-                    aria-label="Tìm dataset"
-                    placeholder="Tìm dataset…"
-                    value={searchText}
-                    onChange={(event) => changeSearchText(event.target.value)}
-                    className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
-                />
-            </label>
+            <div className="flex flex-wrap items-center gap-3">
+                <label className="flex h-9 w-full items-center gap-2 rounded-md border px-3 text-muted-foreground focus-within:ring-2 focus-within:ring-ring sm:w-72">
+                    <Search aria-hidden="true" className="size-4 shrink-0" />
+                    <input
+                        type="search"
+                        aria-label="Tìm database"
+                        placeholder="Tìm database…"
+                        value={searchText}
+                        onChange={(event) => changeSearchText(event.target.value)}
+                        className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
+                    />
+                </label>
+                <NativeSelect
+                    aria-label="Sắp xếp"
+                    value={filters.sort}
+                    onChange={(event) => changeFilters({ sort: event.target.value })}
+                >
+                    {DATASET_SORTS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </NativeSelect>
+            </div>
             {isPending ? (
                 <div
                     role="status"
-                    aria-label="Đang tải danh sách dataset"
+                    aria-label="Đang tải danh sách database"
                     className="flex flex-col gap-3"
                 >
                     {Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
@@ -74,7 +89,7 @@ export function MyDatasets() {
             ) : null}
             {error && !data ? (
                 <ErrorState
-                    title="Không tải được danh sách dataset"
+                    title="Không tải được danh sách database"
                     message={error.message}
                     traceId={error instanceof ApiRequestError ? error.traceId : undefined}
                     onRetry={() => void refetch()}
@@ -84,21 +99,21 @@ export function MyDatasets() {
                 <EmptyState
                     title={
                         filters.q
-                            ? "Không có dataset nào khớp từ khoá."
-                            : "Bạn chưa có dataset nào."
+                            ? "Không có database nào khớp bộ lọc."
+                            : "Bạn chưa có database nào."
                     }
                 />
             ) : null}
             {data && data.items.length > 0 ? (
                 <>
                     <MyDatasetsTable datasets={data.items} />
-                    {data.totalPages > 1 ? (
-                        <Pagination
-                            result={data}
-                            hrefOf={(page) => myDatasetsHref({ ...filters, page })}
-                            unit="dataset"
-                        />
-                    ) : null}
+                    <ListFooter
+                        result={data}
+                        hrefOf={(page) => myDatasetsHref({ ...filters, page })}
+                        unit="database"
+                        size={filters.size}
+                        onSizeChange={(size) => changeFilters({ size })}
+                    />
                 </>
             ) : null}
         </div>

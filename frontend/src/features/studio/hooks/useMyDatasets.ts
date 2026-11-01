@@ -22,6 +22,14 @@ export function useMyDatasets(filters: MyDatasetFilters) {
     });
 }
 
+export function useDeleteDataset() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: studioApi.deleteDataset,
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["studio-datasets"] }),
+    });
+}
+
 export function useCreateDataset() {
     const queryClient = useQueryClient();
     return useMutation({

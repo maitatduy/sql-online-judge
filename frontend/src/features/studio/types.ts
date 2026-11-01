@@ -45,8 +45,6 @@ export interface StudioDatasetSummary {
     slug: string;
     name: string;
     description: string;
-    latestVersionNumber: number;
-    hasDraft: boolean;
     updatedAt: string;
 }
 
@@ -81,6 +79,11 @@ export interface StudioDataset {
     schema: { versionNumber: number; isDraft: boolean; tables: DatasetTable[] };
     variants: DatasetVariant[];
     updatedAt: string;
+}
+
+export interface UpdateDatasetRequest {
+    name?: string;
+    description?: string;
 }
 
 export type StudioStep = "info" | "statement";

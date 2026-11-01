@@ -49,14 +49,14 @@ describe("ProblemStudio - bước Thông tin", () => {
             "aria-current",
             "step",
         );
-        expect(steps.getByText("Dataset và schema")).toBeInTheDocument();
+        expect(steps.getByText("Database và schema")).toBeInTheDocument();
         expect(screen.getByRole("link", { name: "Quay lại Bài của tôi" })).toHaveAttribute(
             "href",
             "/studio/problems",
         );
     });
 
-    it("tự lưu ô vừa sửa, chỉ gửi đúng ô đó, rồi báo đã lưu", async () => {
+    it("chưa bấm Lưu thì chưa gửi gì, báo có thay đổi chưa lưu", async () => {
         const patches = recordPatches();
         renderStudio();
 
@@ -64,11 +64,26 @@ describe("ProblemStudio - bước Thông tin", () => {
             target: { value: "Phễu chuyển đổi 5 bước" },
         });
 
-        expect(await screen.findByText(/^Bản nháp · lưu \d{2}:\d{2}$/)).toBeInTheDocument();
+        expect(await screen.findByText("Có thay đổi chưa lưu")).toBeInTheDocument();
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        expect(patches).toEqual([]);
+    });
+
+    it("bấm Lưu thì chỉ gửi ô vừa sửa rồi báo đã lưu", async () => {
+        const patches = recordPatches();
+        renderStudio();
+
+        expect(await screen.findByRole("button", { name: "Lưu" })).toBeDisabled();
+        fireEvent.change(screen.getByRole("textbox", { name: "Tên bài" }), {
+            target: { value: "Phễu chuyển đổi 5 bước" },
+        });
+        fireEvent.click(await screen.findByRole("button", { name: "Lưu" }));
+
+        expect(await screen.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
         expect(patches).toEqual([{ title: "Phễu chuyển đổi 5 bước" }]);
     });
 
-    it("gộp các thay đổi liên tiếp vào một lần lưu", async () => {
+    it("gộp mọi thay đổi vào một lần lưu", async () => {
         const patches = recordPatches();
         renderStudio();
 
@@ -77,8 +92,9 @@ describe("ProblemStudio - bước Thông tin", () => {
         });
         fireEvent.click(await screen.findByRole("checkbox", { name: "JOIN" }));
         fireEvent.click(screen.getByRole("checkbox", { name: "CTE" }));
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
 
-        await screen.findByText(/^Bản nháp · lưu/);
+        await screen.findByText(/^Đã lưu/);
         expect(patches).toEqual([{ difficulty: "HARD", tagSlugs: ["join", "cte"] }]);
     });
 
@@ -103,6 +119,7 @@ describe("ProblemStudio - bước Thông tin", () => {
         fireEvent.change(await screen.findByRole("textbox", { name: "Slug" }), {
             target: { value: "classmate-pairs" },
         });
+        fireEvent.click(await screen.findByRole("button", { name: "Lưu" }));
 
         expect(await screen.findByText("Slug đã được bài khác dùng")).toBeInTheDocument();
         expect(screen.getByRole("textbox", { name: "Slug" })).toHaveAttribute(

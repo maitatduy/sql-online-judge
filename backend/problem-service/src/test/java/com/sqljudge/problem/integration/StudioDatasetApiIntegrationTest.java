@@ -123,43 +123,31 @@ class StudioDatasetApiIntegrationTest extends ContainerSupport {
         assertThat(page.read("$.totalItems", Integer.class)).isEqualTo(2);
         assertThat(page.read("$.items[*].name", List.class))
                 .containsExactlyInAnyOrder("Công ty", "Trường học");
-        assertThat(page.read("$.items[0].latestVersionNumber", Integer.class)).isEqualTo(1);
-        assertThat(page.read("$.items[0].hasDraft", Boolean.class)).isTrue();
         assertThat(filtered.read("$.items[*].name", List.class)).containsExactly("Trường học");
     }
 
     @Test
-    @DisplayName("Lọc dataset theo trạng thái phiên bản và sắp xếp theo tên")
-    void list_filtersByVersionStatusAndSortsByName() {
+    @DisplayName("Sắp xếp database theo tên hoặc cũ nhất trước")
+    void list_sortsByNameOrOldest() {
         send(HttpMethod.POST, PATH, SETTER, "{\"name\":\"Ăn uống\"}");
-        jdbcTemplate.update(
-                "UPDATE dataset_versions v JOIN datasets d ON d.id = v.dataset_id"
-                        + " SET v.frozen_at = NOW(6) WHERE d.name = ?",
-                "Công ty");
 
-        DocumentContext drafts = list("?status=DRAFT");
-        DocumentContext frozen = list("?status=FROZEN");
         DocumentContext byName = list("?sort=name,asc");
+        DocumentContext oldest = list("?sort=updatedAt,asc");
 
-        assertThat(drafts.read("$.items[*].name", List.class)).containsExactly("Ăn uống");
-        assertThat(drafts.read("$.totalItems", Integer.class)).isEqualTo(1);
-        assertThat(frozen.read("$.items[*].name", List.class)).containsExactly("Công ty");
-        assertThat(frozen.read("$.items[0].hasDraft", Boolean.class)).isFalse();
         assertThat(byName.read("$.items[*].name", List.class))
                 .containsExactly("Ăn uống", "Công ty");
+        assertThat(oldest.read("$.items[0].name", String.class)).isEqualTo("Công ty");
     }
 
     @Test
-    @DisplayName("Tham số sắp xếp hoặc trạng thái không hợp lệ trả 400")
-    void list_invalidSortOrStatus_returnsBadRequest() {
+    @DisplayName("Tham số sắp xếp không hợp lệ trả 400")
+    void list_invalidSort_returnsBadRequest() {
         ResponseEntity<String> badSort =
                 send(HttpMethod.GET, PATH + "?sort=ownerId,desc", SETTER, null);
 
         assertThat(badSort.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(JsonPath.parse(badSort.getBody()).read("$.errors[0].field", String.class))
                 .isEqualTo("sort");
-        assertThat(send(HttpMethod.GET, PATH + "?status=OLD", SETTER, null).getStatusCode())
-                .isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     private DocumentContext list(String query) {
@@ -238,15 +226,17 @@ class StudioDatasetApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
-    @DisplayName("Phiên bản mới nhất đã chốt thì không sửa schema được: 422 DATASET_VERSION_FROZEN")
-    void replaceSchema_frozenVersion_returnsUnprocessable() {
+    @DisplayName("Sửa schema khi bản mới nhất đã chốt thì tự tạo bản nháp mới để sửa")
+    void replaceSchema_frozenVersion_startsNewDraft() {
         jdbcTemplate.update("UPDATE dataset_versions SET frozen_at = NOW(6)");
 
         ResponseEntity<String> response = send(HttpMethod.PUT, schemaUrl(), SETTER, COMPANY_SCHEMA);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-        assertThat(JsonPath.parse(response.getBody()).read("$.code", String.class))
-                .isEqualTo("DATASET_VERSION_FROZEN");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        DocumentContext dataset = JsonPath.parse(response.getBody());
+        assertThat(dataset.read("$.versions[*].number", List.class)).containsExactly(1, 2);
+        assertThat(dataset.read("$.schema.tables[*].name", List.class))
+                .containsExactly("departments", "employees");
     }
 
     @Test

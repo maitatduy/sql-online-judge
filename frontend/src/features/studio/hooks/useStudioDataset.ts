@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { studioApi } from "../api";
-import type { DatasetTable, StudioDataset } from "../types";
+import type { DatasetTable, StudioDataset, UpdateDatasetRequest } from "../types";
 
-export const SCHEMA_AUTOSAVE_DELAY_MS = 800;
+export interface DatasetChanges {
+    info: UpdateDatasetRequest | null;
+    tables: DatasetTable[] | null;
+}
 
 export function studioDatasetQueryKey(datasetId: string) {
     return ["studio-dataset", datasetId] as const;
@@ -19,67 +22,37 @@ export function useStudioDataset(datasetId: string) {
     });
 }
 
-function useDatasetCache(datasetId: string) {
+async function saveChanges(datasetId: string, changes: DatasetChanges): Promise<StudioDataset> {
+    let saved: StudioDataset | null = null;
+    if (changes.info) {
+        saved = await studioApi.updateDataset(datasetId, changes.info);
+    }
+    if (changes.tables) {
+        saved = await studioApi.replaceDatasetSchema(datasetId, changes.tables);
+    }
+    if (!saved) {
+        throw new Error("Không có thay đổi nào để lưu");
+    }
+    return saved;
+}
+
+export function useSaveDataset(datasetId: string, onError: (error: Error) => void) {
     const queryClient = useQueryClient();
-    return (dataset: StudioDataset) => {
-        queryClient.setQueryData(studioDatasetQueryKey(datasetId), dataset);
-        void queryClient.invalidateQueries({ queryKey: ["studio-datasets"] });
-    };
-}
-
-export function useCreateDatasetDraft(datasetId: string) {
-    const storeDataset = useDatasetCache(datasetId);
-    return useMutation({
-        mutationFn: () => studioApi.createDatasetDraft(datasetId),
-        onSuccess: storeDataset,
-    });
-}
-
-export function useDatasetSchemaAutosave(datasetId: string, onError: (error: Error) => void) {
-    const storeDataset = useDatasetCache(datasetId);
     const [savedAt, setSavedAt] = useState<string | null>(null);
-    const pending = useRef<DatasetTable[] | null>(null);
-    const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-    const save = useMutation({
-        mutationFn: (tables: DatasetTable[]) => studioApi.replaceDatasetSchema(datasetId, tables),
+    const mutation = useMutation({
+        mutationFn: (changes: DatasetChanges) => saveChanges(datasetId, changes),
         onSuccess: (dataset: StudioDataset) => {
             setSavedAt(new Date().toISOString());
-            storeDataset(dataset);
+            queryClient.setQueryData(studioDatasetQueryKey(datasetId), dataset);
+            void queryClient.invalidateQueries({ queryKey: ["studio-datasets"] });
         },
         onError,
     });
-    const saveRef = useRef(save.mutate);
 
-    useEffect(() => {
-        saveRef.current = save.mutate;
-    }, [save.mutate]);
-
-    useEffect(
-        () => () => {
-            clearTimeout(timer.current);
-            if (pending.current) {
-                saveRef.current(pending.current);
-            }
-        },
-        [],
-    );
-
-    function queueSave(tables: DatasetTable[]) {
-        pending.current = tables;
-        clearTimeout(timer.current);
-        timer.current = setTimeout(() => {
-            const latest = pending.current;
-            pending.current = null;
-            if (latest) {
-                saveRef.current(latest);
-            }
-        }, SCHEMA_AUTOSAVE_DELAY_MS);
-    }
-
-    function cancelSave() {
-        clearTimeout(timer.current);
-        pending.current = null;
-    }
-
-    return { queueSave, cancelSave, isSaving: save.isPending, error: save.error, savedAt };
+    return {
+        save: mutation.mutate,
+        isSaving: mutation.isPending,
+        error: mutation.error,
+        savedAt,
+    };
 }

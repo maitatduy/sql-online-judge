@@ -38,19 +38,24 @@ describe("MyProblems", () => {
         writeMockSession(SETTER_SESSION_USER);
     });
 
-    it("hiện tổng số bài, số đã xuất bản và số bài trên từng tab trạng thái", async () => {
+    it("hiện tổng số bài, số đã xuất bản và số bài của từng trạng thái trong ô lọc", async () => {
         await renderMyProblems();
 
         expect(await screen.findByText("9 bài · 5 đã xuất bản")).toBeInTheDocument();
-        const tabs = within(screen.getByRole("tablist", { name: "Lọc theo trạng thái" }));
-        expect(tabs.getByRole("tab", { name: "Tất cả 9" })).toHaveAttribute(
-            "aria-selected",
-            "true",
-        );
-        expect(tabs.getByRole("tab", { name: "Nháp 2" })).toBeInTheDocument();
-        expect(tabs.getByRole("tab", { name: "Chờ duyệt 1" })).toBeInTheDocument();
-        expect(tabs.getByRole("tab", { name: "Cần sửa 1" })).toBeInTheDocument();
-        expect(tabs.getByRole("tab", { name: "Đã xuất bản 5" })).toBeInTheDocument();
+        const statusSelect = screen.getByRole("combobox", { name: "Trạng thái" });
+        expect(statusSelect).toHaveValue("");
+        expect(
+            within(statusSelect)
+                .getAllByRole("option")
+                .map((option) => option.textContent),
+        ).toEqual([
+            "Mọi trạng thái · 9",
+            "Nháp · 2",
+            "Chờ duyệt · 1",
+            "Cần sửa · 1",
+            "Đã xuất bản · 5",
+        ]);
+        expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
     });
 
     it("liệt kê bài mới sửa nhất trước với trạng thái, độ khó và lúc cập nhật", async () => {
@@ -67,10 +72,12 @@ describe("MyProblems", () => {
         ).toHaveAttribute("href", expect.stringMatching(/^\/studio\/problems\/0192f3d0-/));
     });
 
-    it("chọn tab Nháp thì chỉ còn bài nháp và ghi trạng thái lên URL", async () => {
+    it("chọn trạng thái Nháp thì chỉ còn bài nháp và ghi trạng thái lên URL", async () => {
         await renderMyProblems();
 
-        fireEvent.click(await screen.findByRole("tab", { name: "Nháp 2" }));
+        fireEvent.change(screen.getByRole("combobox", { name: "Trạng thái" }), {
+            target: { value: "DRAFT" },
+        });
 
         const table = within(await screen.findByRole("table", { name: TABLE_NAME }));
         await vi.waitFor(() =>
@@ -80,10 +87,7 @@ describe("MyProblems", () => {
             ]),
         );
         expect(window.location.search).toBe("?status=DRAFT");
-        expect(screen.getByRole("tab", { name: "Nháp 2" })).toHaveAttribute(
-            "aria-selected",
-            "true",
-        );
+        expect(screen.getByRole("combobox", { name: "Trạng thái" })).toHaveValue("DRAFT");
     });
 
     it("tìm theo tên không phân biệt dấu", async () => {

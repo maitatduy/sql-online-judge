@@ -22,7 +22,6 @@ const COLUMN_HEADERS = ["Tên cột", "Kiểu", "Khoá chính", "Cho phép rỗn
 interface SchemaTableCardProps {
     tables: DatasetTable[];
     tableIndex: number;
-    disabled: boolean;
     errorOf: (path: string) => string | undefined;
     onTablesChange: (tables: DatasetTable[]) => void;
 }
@@ -30,7 +29,6 @@ interface SchemaTableCardProps {
 export function SchemaTableCard({
     tables,
     tableIndex,
-    disabled,
     errorOf,
     onTablesChange,
 }: SchemaTableCardProps) {
@@ -46,7 +44,6 @@ export function SchemaTableCard({
                     <Input
                         aria-label={`Tên bảng ${tableIndex + 1}`}
                         value={table.name}
-                        disabled={disabled}
                         autoComplete="off"
                         className="font-mono font-semibold"
                         aria-invalid={nameError ? true : undefined}
@@ -65,7 +62,6 @@ export function SchemaTableCard({
                     type="button"
                     variant="outline"
                     size="sm"
-                    disabled={disabled}
                     onClick={() => onTablesChange(removeTable(tables, tableIndex))}
                 >
                     <Trash2 aria-hidden="true" />
@@ -91,7 +87,6 @@ export function SchemaTableCard({
                                 label={`${columnIndex + 1}, bảng ${tableLabel}`}
                                 path={columnPath(tableIndex, columnIndex)}
                                 tables={tables}
-                                disabled={disabled}
                                 canRemove={table.columns.length > 1}
                                 errorOf={errorOf}
                                 onChange={(change) =>
@@ -112,7 +107,6 @@ export function SchemaTableCard({
                 variant="ghost"
                 size="sm"
                 className="mt-3"
-                disabled={disabled}
                 onClick={() => onTablesChange(addColumn(tables, tableIndex))}
             >
                 <Plus aria-hidden="true" />

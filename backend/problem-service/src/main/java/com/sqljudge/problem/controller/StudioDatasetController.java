@@ -2,7 +2,6 @@ package com.sqljudge.problem.controller;
 
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.request.CreateDatasetRequest;
-import com.sqljudge.problem.dto.request.DatasetVersionFilter;
 import com.sqljudge.problem.dto.request.StudioDatasetQuery;
 import com.sqljudge.problem.dto.request.UpdateDatasetRequest;
 import com.sqljudge.problem.dto.request.UpdateDatasetSchemaRequest;
@@ -58,19 +57,18 @@ public class StudioDatasetController {
     }
 
     @GetMapping
-    @Operation(summary = "Dataset của tôi: lọc theo trạng thái phiên bản, tìm theo tên, sắp xếp")
+    @Operation(summary = "Database của tôi: tìm theo tên, sắp xếp")
     @ApiResponse(responseCode = "200", description = "Một trang dataset do chính người gọi tạo")
     @ApiResponse(responseCode = "400", description = "Tham số tìm kiếm hoặc phân trang sai")
     @ApiResponse(responseCode = "403", description = "Không phải SETTER hoặc ADMIN")
     public PageResponse<StudioDatasetSummaryResponse> listOwned(
-            @RequestParam(required = false) DatasetVersionFilter status,
             @RequestParam(defaultValue = StudioSorts.NEWEST_FIRST) String sort,
             @RequestParam(required = false)
                     @Size(max = MAX_KEYWORD_LENGTH, message = "Từ khoá quá dài") String q,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Phải từ 1 trở lên") int page,
             @RequestParam(defaultValue = "20")
                     @Min(value = 1, message = "Phải từ 1 đến 100") @Max(value = MAX_PAGE_SIZE, message = "Phải từ 1 đến 100") int size) {
-        return studioDatasetService.listOwned(new StudioDatasetQuery(status, q, sort, page, size));
+        return studioDatasetService.listOwned(new StudioDatasetQuery(q, sort, page, size));
     }
 
     @GetMapping("/{datasetId}")
@@ -109,30 +107,21 @@ public class StudioDatasetController {
     @Operation(summary = "Xoá mềm dataset chưa bài nào dùng")
     @ApiResponse(responseCode = "204", description = "Đã xoá")
     @ApiResponse(responseCode = "404", description = "Không có dataset hoặc không được sửa")
-    @ApiResponse(responseCode = "409", description = "Dataset đang được bài dùng")
+    @ApiResponse(responseCode = "409", description = "Database đang được bài dùng")
     public ResponseEntity<Void> delete(@PathVariable UUID datasetId) {
         studioDatasetService.delete(datasetId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{datasetId}/freeze")
-    @Operation(summary = "Chốt bản nháp: kiểm tra đủ dữ liệu và khoá ngoại, ghi checksum")
+    @Operation(
+            summary =
+                    "Chốt bản hiện tại: kiểm tra đủ dữ liệu và khoá ngoại, ghi checksum; đã chốt"
+                            + " thì giữ nguyên")
     @ApiResponse(responseCode = "200", description = "Dataset với phiên bản vừa chốt")
     @ApiResponse(responseCode = "404", description = "Không có dataset hoặc không được sửa")
-    @ApiResponse(
-            responseCode = "422",
-            description = "Bản nháp chưa đủ điều kiện, hoặc phiên bản mới nhất đã chốt")
+    @ApiResponse(responseCode = "422", description = "Bản nháp chưa đủ điều kiện để chốt")
     public StudioDatasetResponse freeze(@PathVariable UUID datasetId) {
         return studioDatasetVersionService.freeze(datasetId);
-    }
-
-    @PostMapping("/{datasetId}/versions")
-    @Operation(summary = "Tạo bản nháp mới, sao chép từ phiên bản đã chốt mới nhất")
-    @ApiResponse(responseCode = "201", description = "Dataset với bản nháp mới")
-    @ApiResponse(responseCode = "404", description = "Không có dataset hoặc không được sửa")
-    @ApiResponse(responseCode = "422", description = "Dataset đang có bản nháp")
-    public ResponseEntity<StudioDatasetResponse> createDraft(@PathVariable UUID datasetId) {
-        StudioDatasetResponse dataset = studioDatasetVersionService.createDraft(datasetId);
-        return ResponseEntity.created(URI.create(PATH + "/" + datasetId)).body(dataset);
     }
 }

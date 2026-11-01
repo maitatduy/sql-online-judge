@@ -1,7 +1,6 @@
 package com.sqljudge.problem.service;
 
 import com.sqljudge.common.error.ErrorCode;
-import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.security.CurrentUser;
 import com.sqljudge.common.security.Role;
@@ -30,13 +29,11 @@ public class DatasetAccess {
     }
 
     public DatasetVersion editableDraft(Dataset dataset) {
-        DatasetVersion latest = dataset.latestVersion();
-        if (!latest.isDraft()) {
-            throw new BusinessRuleException(
-                    ErrorCode.DATASET_VERSION_FROZEN,
-                    "Phiên bản mới nhất đã chốt, hãy tạo bản nháp mới để sửa");
+        if (!dataset.latestVersion().isDraft()) {
+            dataset.addDraftFromLatest();
+            datasetRepository.saveAndFlush(dataset);
         }
-        return latest;
+        return dataset.latestVersion();
     }
 
     public static DatasetVariant variantOf(DatasetVersion version, UUID variantId) {
@@ -56,7 +53,7 @@ public class DatasetAccess {
                 .orElseThrow(
                         () ->
                                 new NotFoundException(
-                                        ErrorCode.DATASET_NOT_FOUND, "Không tìm thấy dataset"));
+                                        ErrorCode.DATASET_NOT_FOUND, "Không tìm thấy database"));
     }
 
     private static boolean canEdit(Dataset dataset, CurrentUser user) {
