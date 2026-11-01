@@ -8,8 +8,10 @@ import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.security.CurrentUser;
 import com.sqljudge.common.security.Role;
 import com.sqljudge.common.security.SecurityUtils;
+import com.sqljudge.problem.dto.request.ChooseProblemDatasetRequest;
 import com.sqljudge.problem.dto.request.UpdateProblemRequest;
 import com.sqljudge.problem.dto.response.StudioProblemResponse;
+import com.sqljudge.problem.entity.Dataset;
 import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.entity.Tag;
 import com.sqljudge.problem.repository.ProblemRepository;
@@ -32,6 +34,8 @@ public class StudioProblemEditService {
     private final ProblemRepository problemRepository;
     private final TagRepository tagRepository;
     private final ProblemDetailCache problemDetailCache;
+    private final DatasetAccess datasetAccess;
+    private final DatasetFreezer datasetFreezer;
     private final Clock clock;
 
     @Transactional(readOnly = true)
@@ -41,11 +45,7 @@ public class StudioProblemEditService {
 
     @Transactional
     public StudioProblemResponse update(UUID problemId, UpdateProblemRequest request) {
-        Problem problem = findAccessible(problemId);
-        if (!problem.isEditableBySetter()) {
-            throw new BusinessRuleException(
-                    ErrorCode.PROBLEM_LOCKED, "Bài đang chờ duyệt hoặc đã xuất bản, chưa sửa được");
-        }
+        Problem problem = findEditable(problemId);
         if (request.title() != null) {
             problem.setTitle(request.title().trim());
         }
@@ -61,6 +61,15 @@ public class StudioProblemEditService {
         if (request.statementMarkdown() != null) {
             problem.setStatementMarkdown(request.statementMarkdown());
         }
+        return StudioProblemResponse.from(problemRepository.saveAndFlush(problem));
+    }
+
+    @Transactional
+    public StudioProblemResponse chooseDataset(
+            UUID problemId, ChooseProblemDatasetRequest request) {
+        Problem problem = findEditable(problemId);
+        Dataset dataset = datasetAccess.editable(request.datasetId());
+        problem.getDraftRevision().setDatasetVersion(datasetFreezer.freezeLatest(dataset));
         return StudioProblemResponse.from(problemRepository.saveAndFlush(problem));
     }
 
@@ -85,6 +94,15 @@ public class StudioProblemEditService {
                         problemDetailCache.evict(slug);
                     }
                 });
+    }
+
+    private Problem findEditable(UUID problemId) {
+        Problem problem = findAccessible(problemId);
+        if (!problem.isEditableBySetter()) {
+            throw new BusinessRuleException(
+                    ErrorCode.PROBLEM_LOCKED, "Bài đang chờ duyệt hoặc đã xuất bản, chưa sửa được");
+        }
+        return problem;
     }
 
     private Problem findAccessible(UUID problemId) {
