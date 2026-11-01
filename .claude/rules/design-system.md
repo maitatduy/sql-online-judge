@@ -51,9 +51,11 @@ Các token của shadcn (`background`, `foreground`, `card`, `primary`, `muted`,
 
 ## Chữ
 
-- Giao diện: Be Vietnam Pro (`font-sans`). Code và số liệu: JetBrains Mono (`font-mono`).
+- Toàn bộ giao diện dùng Be Vietnam Pro (`font-sans`), kể cả số liệu, slug, tên bảng và cột trong Studio.
+- JetBrains Mono (`font-mono`) chỉ dùng cho code trong workspace: trình soạn SQL, khối code trong đề, bảng kết quả truy vấn, thông báo lỗi SQL, khung schema của workspace.
 - Cỡ chữ nền 14px, dòng 1,5. Tiêu đề khối 16px đậm; tiêu đề trang 22px rất đậm; chữ phụ 12-13px.
-- Số liệu nổi bật (thẻ số, rating) dùng `font-mono` rất đậm.
+- Số liệu nổi bật (thẻ số, rating) dùng chữ rất đậm của Be Vietnam Pro.
+- Không dùng dấu `·` để ngăn cách trong chữ hiển thị. Dùng `:` cho nhãn kèm số ("Bài viết: 3"), dấu phẩy trong câu liền mạch, hoặc gạch nối `-`.
 
 ## Bo góc và khoảng cách
 

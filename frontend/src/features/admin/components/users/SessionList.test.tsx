@@ -16,16 +16,16 @@ const SESSION: UserSession = {
 
 describe("sessionLabel", () => {
     it("ghi trình duyệt, hệ điều hành và thành phố", () => {
-        expect(sessionLabel(SESSION)).toBe("Chrome · Windows · Hà Nội");
+        expect(sessionLabel(SESSION)).toBe("Chrome, Windows, Hà Nội");
     });
 
     it("bỏ thành phố khi chưa có dữ liệu vị trí", () => {
-        expect(sessionLabel({ ...SESSION, city: null })).toBe("Chrome · Windows");
+        expect(sessionLabel({ ...SESSION, city: null })).toBe("Chrome, Windows");
     });
 
     it("ghi rõ phần nào không nhận ra được", () => {
         expect(sessionLabel({ ...SESSION, browser: null, os: null, city: null })).toBe(
-            "Trình duyệt không rõ · Hệ điều hành không rõ",
+            "Trình duyệt không rõ, Hệ điều hành không rõ",
         );
     });
 });

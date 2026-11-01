@@ -10,21 +10,21 @@ export const SAMPLE_STATS: Stat[] = [
 export const SAMPLE_UPCOMING_CONTESTS: UpcomingContest[] = [
     {
         title: "SQL Weekly #38",
-        startLabel: "Thứ 7 · 19:30",
+        startLabel: "Thứ 7, 19:30",
         problemCount: 4,
         durationMinutes: 90,
         note: "Rated",
     },
     {
         title: "Window Function Cup",
-        startLabel: "CN · 09:00",
+        startLabel: "CN, 09:00",
         problemCount: 5,
         durationMinutes: 120,
         note: "Rated",
     },
     {
         title: "Tân binh #12",
-        startLabel: "T2 · 20:00",
+        startLabel: "T2, 20:00",
         problemCount: 3,
         durationMinutes: 60,
         note: "Cho người mới",

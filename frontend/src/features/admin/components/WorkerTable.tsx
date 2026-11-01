@@ -42,14 +42,14 @@ export function WorkerTable({ workers }: WorkerTableProps) {
                         <tr key={worker.name}>
                             <th
                                 scope="row"
-                                className={`${BODY_CELL_CLASS} text-left font-mono font-semibold`}
+                                className={`${BODY_CELL_CLASS} text-left font-semibold`}
                             >
                                 {worker.name}
                             </th>
                             <td className={BODY_CELL_CLASS}>
                                 <WorkerStatusLabel status={worker.status} />
                             </td>
-                            <td className={`${BODY_CELL_CLASS} text-right font-mono`}>
+                            <td className={`${BODY_CELL_CLASS} text-right`}>
                                 {formatNumber(worker.judgedPerHour)}
                             </td>
                             <td className={BODY_CELL_CLASS}>

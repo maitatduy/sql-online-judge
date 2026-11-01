@@ -128,7 +128,7 @@ describe("nộp bài trong Workspace", () => {
 
         const panel = await submitCode();
 
-        expect(await panel.findByText("3/3 testcase · 48 ms")).toBeInTheDocument();
+        expect(await panel.findByText("3/3 testcase, 48 ms")).toBeInTheDocument();
         expect(panel.getByText("AC")).toHaveAttribute("title", "Đúng");
         expect(screen.getByRole("button", { name: "Submit" })).toBeEnabled();
     });
@@ -163,11 +163,11 @@ describe("nộp bài trong Workspace", () => {
         const panel = await submitCode();
 
         expect(
-            await panel.findByText("Sai ở testcase 1/3 · thiếu 1 dòng · 41 ms"),
+            await panel.findByText("Sai ở testcase 1/3, thiếu 1 dòng, 41 ms"),
         ).toBeInTheDocument();
-        const actual = within(panel.getByRole("table", { name: "Kết quả của bạn · 2 dòng" }));
+        const actual = within(panel.getByRole("table", { name: "Kết quả của bạn: 2 dòng" }));
         expect(actual.getAllByRole("row")).toHaveLength(3);
-        const expected = within(panel.getByRole("table", { name: "Mong đợi · 3 dòng" }));
+        const expected = within(panel.getByRole("table", { name: "Mong đợi: 3 dòng" }));
         expect(
             expected.getByRole("row", { name: "Thiếu Kỹ thuật Nguyễn Văn An 48000000" }),
         ).toBeInTheDocument();
@@ -184,7 +184,7 @@ describe("nộp bài trong Workspace", () => {
 
         const panel = await submitCode();
 
-        expect(await panel.findByText("Sai ở testcase 2/3 · 48 ms")).toBeInTheDocument();
+        expect(await panel.findByText("Sai ở testcase 2/3, 48 ms")).toBeInTheDocument();
         expect(panel.getByText("Testcase ẩn nên không hiện dữ liệu so sánh.")).toBeInTheDocument();
         expect(panel.queryByRole("table")).not.toBeInTheDocument();
     });
@@ -240,7 +240,7 @@ describe("nộp bài trong Workspace", () => {
 
         const panel = await submitCode(CORRECT_QUERY);
 
-        expect(await panel.findByText("3/3 testcase · 48 ms")).toBeInTheDocument();
+        expect(await panel.findByText("3/3 testcase, 48 ms")).toBeInTheDocument();
         expect(pollCount).toBe(0);
         expect(screen.queryByText(CONNECTION_LOST_MESSAGE)).not.toBeInTheDocument();
         server.events.removeAllListeners();
@@ -255,6 +255,6 @@ describe("nộp bài trong Workspace", () => {
         const panel = await submitCode();
 
         expect(await screen.findByText(CONNECTION_LOST_MESSAGE)).toBeInTheDocument();
-        expect(await panel.findByText("3/3 testcase · 48 ms")).toBeInTheDocument();
+        expect(await panel.findByText("3/3 testcase, 48 ms")).toBeInTheDocument();
     });
 });

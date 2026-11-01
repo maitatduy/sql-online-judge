@@ -14,7 +14,7 @@ export function StatTile({ label, value, children }: StatTileProps) {
             <p id={labelId} className="text-[13px] text-muted-foreground">
                 {label}
             </p>
-            <div className="mt-1.5 font-mono text-[28px] leading-tight font-extrabold">{value}</div>
+            <div className="mt-1.5 text-[28px] leading-tight font-extrabold">{value}</div>
             {children}
         </div>
     );

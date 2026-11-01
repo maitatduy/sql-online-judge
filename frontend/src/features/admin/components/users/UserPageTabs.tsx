@@ -39,7 +39,7 @@ export function UserPageTabs({ username, activeTab, violationCount, onSelect }: 
             {tabButton("overview", "Tổng quan")}
             {tabLink(`${ROUTES.adminSubmissions}${userQuery}`, "Bài nộp")}
             {tabButton("contests", "Contest")}
-            {tabButton("violations", `Vi phạm · ${violationCount}`)}
+            {tabButton("violations", `Vi phạm: ${violationCount}`)}
             {tabButton("sessions", "Phiên đăng nhập")}
             {tabLink(`${ROUTES.adminAuditLog}${userQuery}`, "Nhật ký")}
         </nav>

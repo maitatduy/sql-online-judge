@@ -8,7 +8,7 @@ import { formatRelativeTime } from "@/lib/format";
 export function sessionLabel({ browser, os, city }: UserSession): string {
     return [browser ?? "Trình duyệt không rõ", os ?? "Hệ điều hành không rõ", city]
         .filter(Boolean)
-        .join(" · ");
+        .join(", ");
 }
 
 interface SessionListProps {

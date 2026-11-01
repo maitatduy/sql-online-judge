@@ -31,7 +31,7 @@ export function UpcomingContests({ contests }: UpcomingContestsProps) {
                         </span>
                         <h3 className="text-base font-bold">{contest.title}</h3>
                         <p className="text-[13px] text-muted-foreground">
-                            {contest.problemCount} bài · {contest.durationMinutes} phút ·{" "}
+                            {contest.problemCount} bài, {contest.durationMinutes} phút,{" "}
                             {contest.note}
                         </p>
                         <Button asChild size="sm" variant="outline">

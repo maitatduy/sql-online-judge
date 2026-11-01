@@ -32,7 +32,7 @@ export function ProfileStatTiles({ rating, stats }: ProfileStatTilesProps) {
                     <dt className="text-xs text-muted-foreground">{tile.label}</dt>
                     <dd
                         className={cn(
-                            "mt-1 font-mono text-[26px] leading-tight font-extrabold",
+                            "mt-1 text-[26px] leading-tight font-extrabold",
                             tile.valueClassName,
                         )}
                     >

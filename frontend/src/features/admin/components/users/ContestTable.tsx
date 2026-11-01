@@ -4,7 +4,7 @@ import { formatNumber } from "@/lib/format";
 import { RatingDelta } from "./RatingDelta";
 import { BODY_CELL_CLASS, HEADER_CELL_CLASS } from "./table-cells";
 
-const NUMBER_CELL_CLASS = `${BODY_CELL_CLASS} text-right font-mono`;
+const NUMBER_CELL_CLASS = `${BODY_CELL_CLASS} text-right`;
 const NUMBER_HEADER_CLASS = `${HEADER_CELL_CLASS} text-right`;
 
 interface ContestTableProps {

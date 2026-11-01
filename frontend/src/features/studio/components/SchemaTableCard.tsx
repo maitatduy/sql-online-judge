@@ -45,7 +45,7 @@ export function SchemaTableCard({
                         aria-label={`Tên bảng ${tableIndex + 1}`}
                         value={table.name}
                         autoComplete="off"
-                        className="font-mono font-semibold"
+                        className="font-semibold"
                         aria-invalid={nameError ? true : undefined}
                         aria-describedby={nameError ? `${path}-name-error` : undefined}
                         onChange={(event) =>

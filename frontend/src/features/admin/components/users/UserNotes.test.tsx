@@ -38,12 +38,12 @@ describe("ghi chú nội bộ trên trang chi tiết", () => {
         expect(
             await notes.findByText("Đã nhắc nhở qua tin nhắn, người dùng hứa không tái phạm."),
         ).toBeInTheDocument();
-        expect(notes.getByText("mod.thu · 12/09/2026")).toBeInTheDocument();
+        expect(notes.getByText("mod.thu - 12/09/2026")).toBeInTheDocument();
     });
 
     it("thêm ghi chú mới lên đầu danh sách rồi xoá trống ô nhập", async () => {
         const notes = await renderNotes("viet.luu");
-        await notes.findByText("mod.thu · 12/09/2026");
+        await notes.findByText("mod.thu - 12/09/2026");
 
         expect(notes.getByRole("button", { name: "Lưu ghi chú" })).toBeDisabled();
         expect(notes.getByText("Chỉ quản trị viên thấy ghi chú này.")).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe("ghi chú nội bộ trên trang chi tiết", () => {
 
     it("báo lỗi khi ghi chú quá dài", async () => {
         const notes = await renderNotes("viet.luu");
-        await notes.findByText("mod.thu · 12/09/2026");
+        await notes.findByText("mod.thu - 12/09/2026");
 
         fireEvent.change(noteField(notes), { target: { value: "a".repeat(1001) } });
         fireEvent.click(notes.getByRole("button", { name: "Lưu ghi chú" }));
@@ -79,7 +79,7 @@ describe("ghi chú nội bộ trên trang chi tiết", () => {
         await apiClient.delete("/api/admin/users/viet.luu", { reason: "Tạo nhầm" });
         const notes = await renderNotes("viet.luu");
 
-        await notes.findByText("mod.thu · 12/09/2026");
+        await notes.findByText("mod.thu - 12/09/2026");
 
         expect(notes.queryByRole("textbox", { name: "Thêm ghi chú" })).not.toBeInTheDocument();
     });

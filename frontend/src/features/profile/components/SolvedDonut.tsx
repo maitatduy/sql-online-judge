@@ -51,7 +51,7 @@ export function SolvedDonut({ stats }: SolvedDonutProps) {
                     x="70"
                     y="78"
                     textAnchor="middle"
-                    className="fill-foreground font-mono text-2xl font-extrabold"
+                    className="fill-foreground text-2xl font-extrabold"
                 >
                     {solvedCount}
                 </text>
@@ -60,7 +60,7 @@ export function SolvedDonut({ stats }: SolvedDonutProps) {
                 {DIFFICULTIES.map((difficulty) => (
                     <li key={difficulty} className="flex justify-between gap-3">
                         <DifficultyLabel difficulty={difficulty} />
-                        <span className="font-mono">
+                        <span>
                             {formatNumber(stats.solvedByDifficulty[difficulty].solved)}/
                             {formatNumber(stats.solvedByDifficulty[difficulty].total)}
                         </span>

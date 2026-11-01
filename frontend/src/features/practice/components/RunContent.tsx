@@ -22,7 +22,7 @@ function RunOutcome({ run, problem }: { run: CodeRun; problem: ProblemDetail }) 
         return (
             <div className="flex flex-col gap-2">
                 <p className="text-xs text-muted-foreground">
-                    {`${formatNumber(run.result.rows.length)} dòng · ${formatNumber(run.runtimeMs ?? 0)} ms`}
+                    {`${formatNumber(run.result.rows.length)} dòng, ${formatNumber(run.runtimeMs ?? 0)} ms`}
                 </p>
                 <ResultTable label="Kết quả chạy thử" result={run.result} />
             </div>

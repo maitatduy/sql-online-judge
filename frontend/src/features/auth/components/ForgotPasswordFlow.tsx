@@ -134,8 +134,7 @@ function ResetLinkSent({ email, onUseAnotherEmail }: ResetLinkSentProps) {
             >
                 {isWaiting ? (
                     <>
-                        Gửi lại email sau{" "}
-                        <span className="font-mono">{formatCountdown(secondsLeft)}</span>
+                        Gửi lại email sau <span>{formatCountdown(secondsLeft)}</span>
                     </>
                 ) : (
                     "Gửi lại email"

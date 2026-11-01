@@ -34,10 +34,10 @@ describe("DatasetStudio - bộ dữ liệu", () => {
 
         const sample = variantCard("Mẫu");
         expect(sample.getByText("Công khai")).toBeInTheDocument();
-        expect(sample.getByText("departments · 3 dòng")).toBeInTheDocument();
-        expect(sample.getByText("employees · 6 dòng")).toBeInTheDocument();
+        expect(sample.getByText("departments: 3 dòng")).toBeInTheDocument();
+        expect(sample.getByText("employees: 6 dòng")).toBeInTheDocument();
         expect(variantCard("Có NULL").getByText("Ẩn")).toBeInTheDocument();
-        expect(variantCard("Có NULL").getByText("employees · chưa có dữ liệu")).toBeInTheDocument();
+        expect(variantCard("Có NULL").getByText("employees: chưa có dữ liệu")).toBeInTheDocument();
     });
 
     it("báo khi database chưa có bộ dữ liệu nào", async () => {

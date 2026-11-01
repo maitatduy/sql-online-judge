@@ -44,10 +44,8 @@ export function VerdictLegend({
                         <span className="min-w-0 flex-1 truncate text-muted-foreground">
                             {VERDICT_LABELS[share.verdict]}
                         </span>
-                        <span className="font-mono text-muted-foreground">
-                            {formatNumber(share.count)}
-                        </span>
-                        <strong className="w-12 shrink-0 text-right font-mono">
+                        <span className="text-muted-foreground">{formatNumber(share.count)}</span>
+                        <strong className="w-12 shrink-0 text-right">
                             {formatPercent(share.percent)}
                         </strong>
                     </div>

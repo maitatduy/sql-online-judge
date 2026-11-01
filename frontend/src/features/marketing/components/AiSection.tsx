@@ -35,17 +35,15 @@ export function AiSection() {
                     className="flex min-w-0 flex-[1_1_480px] flex-col gap-3 rounded-xl border bg-background p-5"
                 >
                     <ChatBubble sender="user">Vì sao query của tôi bị WA ở testcase 3?</ChatBubble>
-                    <ChatBubble sender="assistant" hintLabel="Gợi ý 1 · Gợi hướng">
-                        Testcase 3 có nhân viên chưa thuộc phòng ban nào (
-                        <code className="font-mono">department_id</code> là NULL).{" "}
-                        <code className="font-mono">INNER JOIN</code> đang loại họ khỏi kết quả - đề
-                        bài có yêu cầu giữ lại không?
+                    <ChatBubble sender="assistant" hintLabel="Gợi ý 1: Gợi hướng">
+                        Testcase 3 có nhân viên chưa thuộc phòng ban nào (<code>department_id</code>{" "}
+                        là NULL). <code>INNER JOIN</code> đang loại họ khỏi kết quả - đề bài có yêu
+                        cầu giữ lại không?
                     </ChatBubble>
                     <ChatBubble sender="user">À, phải dùng LEFT JOIN!</ChatBubble>
                     <ChatBubble sender="assistant">
-                        Chính xác. Thử lại và nhớ đặt điều kiện lọc ở{" "}
-                        <code className="font-mono">ON</code> thay vì{" "}
-                        <code className="font-mono">WHERE</code> nhé.
+                        Chính xác. Thử lại và nhớ đặt điều kiện lọc ở <code>ON</code> thay vì{" "}
+                        <code>WHERE</code> nhé.
                     </ChatBubble>
                 </figure>
             </div>

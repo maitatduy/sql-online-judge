@@ -121,7 +121,7 @@ export function InfoStep({ problem, disabled, save }: InfoStepProps) {
                         <Input
                             id="problem-slug"
                             autoComplete="off"
-                            className="font-mono"
+
                             {...describedBy("slug")}
                             {...register("slug")}
                         />

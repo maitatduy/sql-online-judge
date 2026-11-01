@@ -63,7 +63,7 @@ export function VerificationCodeForm({ email, onVerified }: VerificationCodeForm
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 maxLength={6}
-                className="font-mono text-lg tracking-[0.4em] md:text-lg"
+                className="text-lg tracking-[0.4em] md:text-lg"
                 error={errors.code?.message}
                 {...register("code")}
             />

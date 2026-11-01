@@ -81,7 +81,7 @@ export function UsersHeader({ filters, filteredCount, selectedUsernames }: Users
                     <Mail aria-hidden="true" />
                     Lời mời{" "}
                     {pendingInvitationCount === null ? null : (
-                        <span className="rounded-full bg-surface-2 px-1.5 font-mono text-xs text-muted-foreground">
+                        <span className="rounded-full bg-surface-2 px-1.5 text-xs text-muted-foreground">
                             {pendingInvitationCount}
                         </span>
                     )}

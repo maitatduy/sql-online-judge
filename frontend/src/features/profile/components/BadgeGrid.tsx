@@ -25,7 +25,7 @@ function BadgeTile({ badge }: { badge: ProfileBadge }) {
                     )}
                 >
                     {milestone ? (
-                        <span className="font-mono text-sm font-extrabold">{milestone}</span>
+                        <span className="text-sm font-extrabold">{milestone}</span>
                     ) : (
                         <Icon aria-hidden="true" className="size-5.5" />
                     )}
@@ -45,7 +45,7 @@ export function BadgeGrid({ badges }: BadgeGridProps) {
     return (
         <section className="border-t pt-4">
             <h2 className="mb-2.5 text-[11px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
-                Huy hiệu · {formatNumber(badges.length)}
+                Huy hiệu: {formatNumber(badges.length)}
             </h2>
             {badges.length === 0 ? (
                 <p className="text-[13px] text-muted-foreground">Chưa có huy hiệu nào</p>

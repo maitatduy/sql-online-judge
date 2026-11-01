@@ -26,9 +26,7 @@ describe("RatingHistoryCard", () => {
         expect(
             await screen.findByRole("heading", { level: 2, name: "Rating contest" }),
         ).toBeInTheDocument();
-        expect(
-            screen.getByText("SQL Judge Weekly #19 · 20/09/2026 · Hạng #36"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("SQL Judge Weekly #19, 20/09/2026, hạng #36")).toBeInTheDocument();
     });
 
     it("có bảng số liệu thay cho biểu đồ với trình đọc màn hình", async () => {

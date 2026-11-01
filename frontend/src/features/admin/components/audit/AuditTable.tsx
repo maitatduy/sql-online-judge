@@ -54,7 +54,7 @@ export function AuditTable({ entries, onView, now }: AuditTableProps) {
                         <td className={CELL_CLASS}>
                             <AuditActionLabel action={entry.action} />
                         </td>
-                        <td className={cn(CELL_CLASS, "font-mono text-[12.5px]")}>
+                        <td className={cn(CELL_CLASS, "text-[12.5px]")}>
                             {targetSummaryOf(entry)}
                         </td>
                         <td className={cn(CELL_CLASS, "text-muted-foreground")}>

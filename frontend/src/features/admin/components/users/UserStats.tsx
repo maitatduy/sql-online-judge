@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const UNRATED_LABEL = "-";
 const STAT_CLASS = "flex flex-col-reverse rounded-md border bg-surface p-2";
 const LABEL_CLASS = "text-[11px] text-muted-foreground";
-const VALUE_CLASS = "font-mono text-base font-extrabold";
+const VALUE_CLASS = "text-base font-extrabold";
 
 interface UserStatsProps {
     user: AdminUserDetail;

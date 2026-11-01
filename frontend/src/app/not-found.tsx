@@ -23,7 +23,7 @@ export default function NotFound() {
             </header>
             <main className="mx-auto grid w-full max-w-7xl flex-1 content-center items-center gap-10 px-6 py-12 lg:grid-cols-2 lg:gap-14">
                 <div className="min-w-0">
-                    <p className="font-mono text-7xl leading-none font-extrabold text-brand md:text-[120px]">
+                    <p className="text-7xl leading-none font-extrabold text-brand md:text-[120px]">
                         404
                     </p>
                     <h1 className="mt-6 text-3xl font-extrabold tracking-[-0.02em] md:text-[40px] md:leading-tight">

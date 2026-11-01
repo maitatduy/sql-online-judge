@@ -19,7 +19,7 @@ export function ErrorState({ title, message, traceId, onRetry, className }: Erro
             {message ? <p className="mt-1 text-[13px] text-muted-foreground">{message}</p> : null}
             {traceId ? (
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                    Mã lỗi: <span className="font-mono">{traceId}</span>
+                    Mã lỗi: <span>{traceId}</span>
                 </p>
             ) : null}
             <Button type="button" size="sm" className="mt-3.5" onClick={onRetry}>

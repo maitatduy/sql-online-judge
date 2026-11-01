@@ -62,7 +62,7 @@ describe("chạy thử trong Workspace", () => {
 
         const result = within(await panel.findByRole("table", { name: "Kết quả chạy thử" }));
         expect(result.getAllByRole("row")).toHaveLength(5);
-        expect(panel.getByText("4 dòng · 41 ms")).toBeInTheDocument();
+        expect(panel.getByText("4 dòng, 41 ms")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Run" })).toBeEnabled();
     });
 

@@ -23,7 +23,7 @@ export function ProfileIdentityCard({ profile, actions }: ProfileIdentityCardPro
                     <p className="mt-0.5 break-all text-muted-foreground">@{profile.username}</p>
                 </div>
                 <span className="inline-flex h-6 items-center rounded-full bg-brand-soft px-2.5 text-xs font-semibold text-brand">
-                    {profile.rankTitle} · {formatNumber(profile.rating)}
+                    {profile.rankTitle} - {formatNumber(profile.rating)}
                 </span>
             </div>
             {profile.bio ? (

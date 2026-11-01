@@ -87,7 +87,7 @@ export function InviteSettersDialog({ onClose }: InviteSettersDialogProps) {
                     <div className="flex flex-col gap-1.5">
                         <p className="flex justify-between text-[13px] font-semibold">
                             Người sẽ được mời
-                            <span className="font-mono font-normal text-muted-foreground">
+                            <span className="font-normal text-muted-foreground">
                                 {invitees.length}/{MAX_INVITEES}
                             </span>
                         </p>

@@ -59,7 +59,7 @@ export function NotesCard({ username, isReadOnly }: NotesCardProps) {
                     {notes.map((note) => (
                         <li key={note.id} className="rounded-md bg-surface px-3 py-2.5 text-[13px]">
                             <p className="text-xs font-semibold">
-                                {`${note.authorUsername} · ${formatDate(note.createdAt)}`}
+                                {`${note.authorUsername} - ${formatDate(note.createdAt)}`}
                             </p>
                             <p className="mt-0.5 leading-relaxed">{note.body}</p>
                         </li>

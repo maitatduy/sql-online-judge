@@ -31,7 +31,7 @@ export function RoadmapSection({ stages }: RoadmapSectionProps) {
                                 LEVEL_CLASSES[stage.level],
                             )}
                         >
-                            <span className="font-mono text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                                 {String(index + 1).padStart(2, "0")}
                             </span>
                             <p className="mt-1.5 mb-0.5 font-bold">{stage.title}</p>

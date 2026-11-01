@@ -17,7 +17,7 @@ export function ForbiddenPage({ username, requiredRole, description }: Forbidden
         <main id={MAIN_CONTENT_ID} className="mx-auto max-w-xl px-6 py-24 text-center">
             <p
                 aria-hidden="true"
-                className="font-mono text-[56px] leading-none font-extrabold text-muted-foreground/40"
+                className="text-[56px] leading-none font-extrabold text-muted-foreground/40"
             >
                 403
             </p>
@@ -25,7 +25,7 @@ export function ForbiddenPage({ username, requiredRole, description }: Forbidden
                 Bạn không có quyền xem trang này
             </h1>
             <p className="mt-3 text-[15px] leading-[1.6] text-muted-foreground">{description}</p>
-            <p className="mt-4 font-mono text-[13px] break-words">
+            <p className="mt-4 text-[13px] break-words">
                 <SqlKeyword>SELECT</SqlKeyword> * <SqlKeyword>FROM</SqlKeyword> roles{" "}
                 <SqlKeyword>WHERE</SqlKeyword> username ={" "}
                 <span className="text-syntax-string">&apos;{username}&apos;</span>{" "}

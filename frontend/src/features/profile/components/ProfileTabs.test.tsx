@@ -34,9 +34,9 @@ describe("ProfileTabs", () => {
 
         expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
             "Bài nộp gần đây",
-            "Lời giải đã chia sẻ · 6",
-            "Bài viết · 3",
-            "Contest đã thi · 8",
+            "Lời giải đã chia sẻ: 6",
+            "Bài viết: 3",
+            "Contest đã thi: 8",
         ]);
     });
 
@@ -54,7 +54,7 @@ describe("ProfileTabs", () => {
         navigation.search = "tab=posts";
         renderTabs();
 
-        expect(screen.getByRole("tab", { name: "Bài viết · 3" })).toHaveAttribute(
+        expect(screen.getByRole("tab", { name: "Bài viết: 3" })).toHaveAttribute(
             "aria-selected",
             "true",
         );
@@ -74,7 +74,7 @@ describe("ProfileTabs", () => {
     it("chọn tab thì ghi vào đường dẫn, không cuộn trang", () => {
         renderTabs();
 
-        fireEvent.mouseDown(screen.getByRole("tab", { name: "Contest đã thi · 8" }), {
+        fireEvent.mouseDown(screen.getByRole("tab", { name: "Contest đã thi: 8" }), {
             button: 0,
         });
 

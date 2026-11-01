@@ -26,7 +26,7 @@ describe("NotFound", () => {
             name: "Truy vấn tìm trang không trả về dòng nào",
         });
 
-        expect(within(example).getByText("WA · 404")).toBeInTheDocument();
+        expect(within(example).getByText("WA - 404")).toBeInTheDocument();
         expect(within(example).getByText("0 dòng")).toBeInTheDocument();
     });
 });

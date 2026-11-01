@@ -13,7 +13,7 @@ describe("VerdictBadge", () => {
     it("hiện thêm chi tiết sau mã verdict", () => {
         render(<VerdictBadge verdict="AC" detail="48 ms" />);
 
-        expect(screen.getByText("AC · 48 ms")).toHaveAttribute("title", "Đúng");
+        expect(screen.getByText("AC - 48 ms")).toHaveAttribute("title", "Đúng");
     });
 
     it("hiện trạng thái đang chấm bằng chữ và màu verdict-pending", () => {
@@ -27,6 +27,6 @@ describe("VerdictBadge", () => {
     it("tô nền verdict-pending khi đang chấm ở dạng solid", () => {
         render(<VerdictBadge verdict="PENDING" variant="solid" detail="3/8" />);
 
-        expect(screen.getByText("Đang chấm · 3/8")).toHaveClass("bg-verdict-pending");
+        expect(screen.getByText("Đang chấm - 3/8")).toHaveClass("bg-verdict-pending");
     });
 });

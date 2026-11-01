@@ -256,7 +256,7 @@ describe("trang chi tiết người dùng - tab và vi phạm", () => {
             "page",
         );
         expect(tabs().getByRole("button", { name: "Contest" })).toBeInTheDocument();
-        expect(tabs().getByRole("button", { name: "Vi phạm · 2" })).toBeInTheDocument();
+        expect(tabs().getByRole("button", { name: "Vi phạm: 2" })).toBeInTheDocument();
         expect(tabs().getByRole("button", { name: "Phiên đăng nhập" })).toBeInTheDocument();
         expect(tabs().getByRole("link", { name: "Bài nộp" })).toHaveAttribute(
             "href",
@@ -291,16 +291,16 @@ describe("trang chi tiết người dùng - tab và vi phạm", () => {
         await renderPage("viet.luu");
         await findLoadedPage("viet.luu");
 
-        fireEvent.click(tabs().getByRole("button", { name: "Vi phạm · 2" }));
+        fireEvent.click(tabs().getByRole("button", { name: "Vi phạm: 2" }));
 
         const history = within(await screen.findByRole("region", { name: "Lịch sử vi phạm" }));
 
         expect(window.location.search).toBe("?tab=violations");
-        expect(tabs().getByRole("button", { name: "Vi phạm · 2" })).toHaveAttribute(
+        expect(tabs().getByRole("button", { name: "Vi phạm: 2" })).toHaveAttribute(
             "aria-current",
             "page",
         );
-        expect(history.getByText("Xử lý bởi mod.thu · 12/09/2026")).toBeInTheDocument();
+        expect(history.getByText("Xử lý bởi mod.thu ngày 12/09/2026")).toBeInTheDocument();
         expect(history.getAllByRole("listitem")).toHaveLength(2);
         expect(screen.queryByRole("region", { name: "Vi phạm gần đây" })).not.toBeInTheDocument();
     });

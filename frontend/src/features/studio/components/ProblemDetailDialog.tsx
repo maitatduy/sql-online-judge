@@ -35,7 +35,7 @@ function ProblemDetailBody({ problemId }: { problemId: string }) {
     }
     return (
         <div className="flex flex-col gap-3">
-            <p className="font-mono text-[13px] text-muted-foreground">{detail.slug}</p>
+            <p className="text-[13px] text-muted-foreground">{detail.slug}</p>
             {detail.tags.length > 0 ? (
                 <ul aria-label="Chủ đề" className="flex flex-wrap gap-1.5">
                     {detail.tags.map((tag) => (
