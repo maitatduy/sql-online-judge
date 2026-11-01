@@ -9,8 +9,11 @@ import { ApiRequestError } from "@/lib/api-client";
 import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 
 import { type CsvCell, rowsFromCsv, rowsToCsv } from "../csv";
+import { GridPager } from "./GridPager";
 import { PasteCsvDialog } from "./PasteCsvDialog";
 import { SaveBar } from "./SaveBar";
+
+const PAGE_SIZE = 20;
 
 interface CsvSave {
     save: (csv: string) => void;
@@ -38,6 +41,12 @@ export function VariantTableGrid({ columns, initialRows, save }: VariantTableGri
     const [rows, setRows] = useState(initialRows);
     const [isPasteOpen, setIsPasteOpen] = useState(false);
     const [fileError, setFileError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const currentPage = Math.min(page, Math.max(1, Math.ceil(rows.length / PAGE_SIZE)));
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const visibleRows = rows
+        .slice(start, start + PAGE_SIZE)
+        .map((row, offset) => ({ row, rowIndex: start + offset }));
     const hasChanges = JSON.stringify(rows) !== JSON.stringify(initialRows);
     const errorMessage = fileError ?? errorMessageOf(save.error);
     useUnsavedChangesWarning(hasChanges);
@@ -52,6 +61,12 @@ export function VariantTableGrid({ columns, initialRows, save }: VariantTableGri
         );
     }
 
+    function addRow() {
+        const next = [...rows, columns.map(() => null)];
+        setRows(next);
+        setPage(Math.ceil(next.length / PAGE_SIZE));
+    }
+
     async function loadFile(file: File | undefined) {
         if (!file) {
             return;
@@ -60,6 +75,7 @@ export function VariantTableGrid({ columns, initialRows, save }: VariantTableGri
         setFileError(parsed.error);
         if (!parsed.error) {
             setRows(parsed.rows);
+            setPage(1);
         }
     }
 
@@ -105,7 +121,7 @@ export function VariantTableGrid({ columns, initialRows, save }: VariantTableGri
                         </tr>
                     </thead>
                     <tbody>
-                        {rows.map((row, rowIndex) => (
+                        {visibleRows.map(({ row, rowIndex }) => (
                             <tr key={rowIndex}>
                                 {columns.map((column, columnIndex) => (
                                     <td key={column} className="border-b p-1">
@@ -147,13 +163,16 @@ export function VariantTableGrid({ columns, initialRows, save }: VariantTableGri
                     </p>
                 ) : null}
             </div>
+            {rows.length > 0 ? (
+                <GridPager
+                    page={currentPage}
+                    pageSize={PAGE_SIZE}
+                    totalRows={rows.length}
+                    onChange={setPage}
+                />
+            ) : null}
             <div>
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setRows([...rows, columns.map(() => null)])}
-                >
+                <Button type="button" variant="ghost" size="sm" onClick={addRow}>
                     <Plus aria-hidden="true" />
                     Thêm dòng
                 </Button>
@@ -177,6 +196,7 @@ export function VariantTableGrid({ columns, initialRows, save }: VariantTableGri
                 onApply={(pastedRows) => {
                     setFileError(null);
                     setRows(pastedRows);
+                    setPage(1);
                 }}
             />
         </div>
