@@ -197,6 +197,14 @@ const variantNameTaken = () =>
 const notFound = () => apiError(404, "DATASET_NOT_FOUND", "Không tìm thấy database");
 
 export const studioDatasetHandlers: RequestHandler[] = [
+    http.post("*/api/studio/datasets/parse-sql", async () => {
+        await delay();
+        return validationFailed({
+            field: "sql",
+            message: "Bản mô phỏng chưa đọc được file SQL, hãy chạy với backend thật",
+        });
+    }),
+
     http.get("*/api/studio/datasets/:datasetId", async ({ params }) => {
         await delay();
         const dataset = findDataset(String(params.datasetId), true);

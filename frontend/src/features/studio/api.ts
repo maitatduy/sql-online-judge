@@ -7,6 +7,7 @@ import type { CreateDatasetValues, CreateProblemValues } from "./schemas";
 import type {
     DatasetTable,
     DatasetVariantRequest,
+    SqlImportPreview,
     StudioDataset,
     StudioDatasetSummary,
     StudioProblem,
@@ -57,6 +58,8 @@ export const studioApi = {
         apiClient.get<StudioDataset>(datasetPath(datasetId), { signal }),
     replaceDatasetSchema: (datasetId: string, tables: DatasetTable[]) =>
         apiClient.put<StudioDataset>(`${datasetPath(datasetId)}/schema`, { tables }),
+    parseSql: (sql: string) =>
+        apiClient.post<SqlImportPreview>("/api/studio/datasets/parse-sql", { sql }),
     deleteDataset: (datasetId: string) => apiClient.delete<void>(datasetPath(datasetId)),
     addDatasetVariant: (datasetId: string, variant: DatasetVariantRequest) =>
         apiClient.post<StudioDataset>(`${datasetPath(datasetId)}/variants`, variant),

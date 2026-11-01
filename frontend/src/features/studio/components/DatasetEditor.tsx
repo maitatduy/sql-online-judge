@@ -2,18 +2,28 @@
 
 import { useState } from "react";
 
+import { FileUp } from "lucide-react";
+
 import { useToast } from "@/components/shared/ToastProvider";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApiRequestError } from "@/lib/api-client";
 import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 
 import { useSaveDataset } from "../hooks/useStudioDataset";
 import { schemaErrors } from "../schema-editing";
-import type { DatasetTable, StudioDataset, UpdateDatasetRequest } from "../types";
+import type {
+    DatasetTable,
+    PendingImport,
+    SqlImportPreview,
+    StudioDataset,
+    UpdateDatasetRequest,
+} from "../types";
 import { DatasetInfoForm, type DatasetInfoValues } from "./DatasetInfoForm";
 import { DatasetVariants } from "./DatasetVariants";
 import { SaveBar } from "./SaveBar";
 import { SchemaEditor } from "./SchemaEditor";
+import { SqlImportDialog } from "./SqlImportDialog";
 
 const MAX_NAME_LENGTH = 120;
 const MAX_DESCRIPTION_LENGTH = 500;
@@ -54,7 +64,9 @@ export function DatasetEditor({ dataset }: DatasetEditorProps) {
         description: dataset.description,
     });
     const [tables, setTables] = useState<DatasetTable[]>(dataset.schema.tables);
-    const save = useSaveDataset(dataset.id, (error) => {
+    const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
+    const [isImportOpen, setIsImportOpen] = useState(false);
+    const save = useSaveDataset(dataset, (error) => {
         if (!(error instanceof ApiRequestError && error.code === "VALIDATION_FAILED")) {
             showToast(`Chưa lưu được thay đổi. ${error.message}`, "error");
         }
@@ -62,7 +74,7 @@ export function DatasetEditor({ dataset }: DatasetEditorProps) {
     const changedInfo = infoChanges(info, dataset);
     const hasInfoChanges = Object.keys(changedInfo).length > 0;
     const hasSchemaChanges = JSON.stringify(tables) !== JSON.stringify(dataset.schema.tables);
-    const hasChanges = hasInfoChanges || hasSchemaChanges;
+    const hasChanges = hasInfoChanges || hasSchemaChanges || pendingImport !== null;
     const clientErrors = { ...infoErrors(info), ...schemaErrors(tables) };
     const serverErrors = serverErrorsOf(save.error);
     useUnsavedChangesWarning(hasChanges);
@@ -72,19 +84,58 @@ export function DatasetEditor({ dataset }: DatasetEditorProps) {
     }
 
     function saveChanges() {
-        save.save({
-            info: hasInfoChanges ? changedInfo : null,
-            tables: hasSchemaChanges ? tables : null,
-        });
+        save.save(
+            {
+                info: hasInfoChanges ? changedInfo : null,
+                tables: hasSchemaChanges ? tables : null,
+                pendingImport,
+            },
+            { onSuccess: () => setPendingImport(null) },
+        );
+    }
+
+    function applyImport(preview: SqlImportPreview, imported: PendingImport | null) {
+        if (preview.tables.length > 0) {
+            setTables(preview.tables);
+        }
+        setPendingImport(imported);
+    }
+
+    function cancelImport() {
+        setTables(dataset.schema.tables);
+        setPendingImport(null);
     }
 
     return (
         <Tabs defaultValue="schema" className="gap-4">
-            <TabsList className="rounded-lg border">
-                <TabsTrigger value="schema">Thông tin và schema</TabsTrigger>
-                <TabsTrigger value="variants">Bộ dữ liệu</TabsTrigger>
-            </TabsList>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <TabsList className="rounded-lg border">
+                    <TabsTrigger value="schema">Thông tin và schema</TabsTrigger>
+                    <TabsTrigger value="variants">Bộ dữ liệu</TabsTrigger>
+                </TabsList>
+                <Button type="button" variant="outline" onClick={() => setIsImportOpen(true)}>
+                    <FileUp aria-hidden="true" />
+                    Nhập từ file SQL
+                </Button>
+            </div>
+            <SqlImportDialog
+                open={isImportOpen}
+                dataset={dataset}
+                onOpenChange={setIsImportOpen}
+                onApply={applyImport}
+            />
             <TabsContent value="schema" className="flex flex-col gap-5">
+                {pendingImport ? (
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-brand-soft px-3 py-2 text-[13px]">
+                        <p>
+                            Dữ liệu của {pendingImport.data.length} bảng sẽ được lưu vào bộ{" "}
+                            {pendingImport.variantName} khi bấm Lưu.
+                        </p>
+                        <Button type="button" variant="outline" size="sm" onClick={cancelImport}>
+                            Huỷ nhập
+                        </Button>
+                    </div>
+                ) : null}
                 <DatasetInfoForm values={info} errorOf={errorOf} onChange={setInfo} />
                 <SchemaEditor tables={tables} errorOf={errorOf} onChange={setTables} />
                 <div className="sticky bottom-0 rounded-lg border bg-card px-4 py-3">
