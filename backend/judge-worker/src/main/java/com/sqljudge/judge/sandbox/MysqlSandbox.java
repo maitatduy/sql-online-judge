@@ -45,7 +45,7 @@ public final class MysqlSandbox extends JdbcSandbox {
                             + ddl.quotedNamespace(runName)
                             + " CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs");
         }
-        loadDataset(admin, runName, run.dataset(), ddl);
+        new SnapshotLoader(ddl).load(admin, runName, run.dataset());
         try (Statement statement = admin.createStatement()) {
             statement.execute(
                     "CREATE USER '"
@@ -114,13 +114,13 @@ public final class MysqlSandbox extends JdbcSandbox {
     }
 
     @Override
-    protected boolean isTimeout(SQLException exception) {
+    public boolean isTimeout(SQLException exception) {
         return exception instanceof SQLTimeoutException
                 || TIMEOUT_ERROR_CODES.contains(exception.getErrorCode());
     }
 
     @Override
-    protected String messageOf(SQLException exception) {
+    public String messageOf(SQLException exception) {
         return RUN_ACCOUNT.matcher(String.valueOf(exception.getMessage())).replaceAll("");
     }
 

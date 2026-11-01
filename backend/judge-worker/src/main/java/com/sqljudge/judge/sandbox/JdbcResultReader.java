@@ -53,7 +53,7 @@ final class JdbcResultReader {
 
     private static Object valueAt(ResultSet resultSet, ResultSetMetaData metadata, int column)
             throws SQLException {
-        boolean hasTimeZone = metadata.getColumnTypeName(column).endsWith("tz");
+        boolean hasTimeZone = String.valueOf(metadata.getColumnTypeName(column)).endsWith("tz");
         return switch (metadata.getColumnType(column)) {
             case Types.DATE -> resultSet.getObject(column, LocalDate.class);
             case Types.TIME, Types.TIME_WITH_TIMEZONE ->

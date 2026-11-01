@@ -1,24 +1,37 @@
 package com.sqljudge.judge.sandbox;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 final class SnapshotLoader {
 
-    private static final int DATE_LENGTH = 10;
-    private static final Set<String> TRUE_VALUES = Set.of("true", "1");
+    private final DatasetDdl ddl;
 
-    private SnapshotLoader() {}
+    SnapshotLoader(DatasetDdl ddl) {
+        this.ddl = ddl;
+    }
 
-    static void insertRows(Connection connection, String insertSql, SnapshotTable table)
+    void load(Connection connection, String namespace, DatasetSnapshot dataset)
+            throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            for (SnapshotTable table : dataset.tables()) {
+                statement.execute(
+                        ddl.createTable(namespace, table, DatasetDdl.keyColumnsOf(dataset, table)));
+                insertRows(connection, ddl.insert(namespace, table), table);
+            }
+            for (SnapshotTable table : dataset.tables()) {
+                for (String foreignKey : ddl.foreignKeyStatements(namespace, table)) {
+                    statement.execute(foreignKey);
+                }
+            }
+        }
+    }
+
+    private void insertRows(Connection connection, String insertSql, SnapshotTable table)
             throws SQLException {
         if (table.rows().isEmpty()) {
             return;
@@ -35,30 +48,13 @@ final class SnapshotLoader {
         }
     }
 
-    private static void bind(PreparedStatement insert, int position, LogicalType type, String value)
+    private void bind(PreparedStatement insert, int position, LogicalType type, String value)
             throws SQLException {
         if (value == null) {
             insert.setNull(position, sqlTypeOf(type));
             return;
         }
-        insert.setObject(position, valueOf(type, value));
-    }
-
-    private static Object valueOf(LogicalType type, String value) {
-        return switch (type) {
-            case INTEGER -> Long.valueOf(value);
-            case DECIMAL -> new BigDecimal(value);
-            case TEXT -> value;
-            case DATE -> LocalDate.parse(value);
-            case TIMESTAMP -> LocalDateTime.parse(isoTimestamp(value));
-            case BOOLEAN -> TRUE_VALUES.contains(value.toLowerCase(Locale.ROOT));
-        };
-    }
-
-    private static String isoTimestamp(String value) {
-        return value.length() > DATE_LENGTH && value.charAt(DATE_LENGTH) == ' '
-                ? value.substring(0, DATE_LENGTH) + "T" + value.substring(DATE_LENGTH + 1)
-                : value;
+        insert.setObject(position, ddl.bindValue(type, value));
     }
 
     private static int sqlTypeOf(LogicalType type) {

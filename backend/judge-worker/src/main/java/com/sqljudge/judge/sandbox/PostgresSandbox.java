@@ -34,7 +34,7 @@ public final class PostgresSandbox extends JdbcSandbox {
         try (Statement statement = admin.createStatement()) {
             statement.execute("CREATE SCHEMA " + ddl.quotedNamespace(runName));
         }
-        loadDataset(admin, runName, run.dataset(), ddl);
+        new SnapshotLoader(ddl).load(admin, runName, run.dataset());
         try (Statement statement = admin.createStatement()) {
             statement.execute(
                     "CREATE ROLE "
@@ -77,13 +77,13 @@ public final class PostgresSandbox extends JdbcSandbox {
     }
 
     @Override
-    protected boolean isTimeout(SQLException exception) {
+    public boolean isTimeout(SQLException exception) {
         return exception instanceof SQLTimeoutException
                 || QUERY_CANCELED.equals(exception.getSQLState());
     }
 
     @Override
-    protected String messageOf(SQLException exception) {
+    public String messageOf(SQLException exception) {
         return exception instanceof PSQLException postgres
                         && postgres.getServerErrorMessage() != null
                 ? postgres.getServerErrorMessage().getMessage()
@@ -97,7 +97,8 @@ public final class PostgresSandbox extends JdbcSandbox {
         properties.setProperty("connectTimeout", String.valueOf(CONNECT_TIMEOUT_SECONDS));
         properties.setProperty(
                 "socketTimeout",
-                String.valueOf(timeoutSeconds(timeout) + SOCKET_TIMEOUT_MARGIN_SECONDS));
+                String.valueOf(
+                        QueryExecution.timeoutSeconds(timeout) + SOCKET_TIMEOUT_MARGIN_SECONDS));
         properties.setProperty("ApplicationName", "sqljudge-sandbox");
         return DriverManager.getConnection(config.jdbcUrl(), properties);
     }
