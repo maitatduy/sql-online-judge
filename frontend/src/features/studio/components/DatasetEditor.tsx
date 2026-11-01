@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { useToast } from "@/components/shared/ToastProvider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApiRequestError } from "@/lib/api-client";
 import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 
@@ -10,6 +11,7 @@ import { useSaveDataset } from "../hooks/useStudioDataset";
 import { schemaErrors } from "../schema-editing";
 import type { DatasetTable, StudioDataset, UpdateDatasetRequest } from "../types";
 import { DatasetInfoForm, type DatasetInfoValues } from "./DatasetInfoForm";
+import { DatasetVariants } from "./DatasetVariants";
 import { SaveBar } from "./SaveBar";
 import { SchemaEditor } from "./SchemaEditor";
 
@@ -77,18 +79,27 @@ export function DatasetEditor({ dataset }: DatasetEditorProps) {
     }
 
     return (
-        <>
-            <DatasetInfoForm values={info} errorOf={errorOf} onChange={setInfo} />
-            <SchemaEditor tables={tables} errorOf={errorOf} onChange={setTables} />
-            <div className="sticky bottom-0 rounded-lg border bg-card px-4 py-3">
-                <SaveBar
-                    hasChanges={hasChanges}
-                    canSave={hasChanges && Object.keys(clientErrors).length === 0}
-                    isSaving={save.isSaving}
-                    savedAt={save.savedAt}
-                    onSave={saveChanges}
-                />
-            </div>
-        </>
+        <Tabs defaultValue="schema" className="gap-4">
+            <TabsList className="rounded-lg border">
+                <TabsTrigger value="schema">Thông tin và schema</TabsTrigger>
+                <TabsTrigger value="variants">Bộ dữ liệu</TabsTrigger>
+            </TabsList>
+            <TabsContent value="schema" className="flex flex-col gap-5">
+                <DatasetInfoForm values={info} errorOf={errorOf} onChange={setInfo} />
+                <SchemaEditor tables={tables} errorOf={errorOf} onChange={setTables} />
+                <div className="sticky bottom-0 rounded-lg border bg-card px-4 py-3">
+                    <SaveBar
+                        hasChanges={hasChanges}
+                        canSave={hasChanges && Object.keys(clientErrors).length === 0}
+                        isSaving={save.isSaving}
+                        savedAt={save.savedAt}
+                        onSave={saveChanges}
+                    />
+                </div>
+            </TabsContent>
+            <TabsContent value="variants">
+                <DatasetVariants dataset={dataset} />
+            </TabsContent>
+        </Tabs>
     );
 }

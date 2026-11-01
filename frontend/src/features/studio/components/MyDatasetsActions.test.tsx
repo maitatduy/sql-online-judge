@@ -86,7 +86,7 @@ describe("MyDatasets - bộ lọc, phân trang và hành động", () => {
         const dialog = within(await screen.findByRole("dialog", { name: "Công ty" }));
         expect(await dialog.findByRole("heading", { name: "employees" })).toBeInTheDocument();
         expect(dialog.getByText("department_id")).toBeInTheDocument();
-        expect(dialog.getByText("Chưa có bộ dữ liệu nào.")).toBeInTheDocument();
+        expect(dialog.getByText("Mẫu · Công khai · 9 dòng")).toBeInTheDocument();
         expect(dialog.getByRole("link", { name: "Sửa database" })).toHaveAttribute(
             "href",
             "/studio/databases/0192f3e0-0000-7000-8000-000000000001",

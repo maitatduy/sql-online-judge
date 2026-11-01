@@ -26,6 +26,19 @@ export const createDatasetSchema = z.object({
 
 export type CreateDatasetValues = z.infer<typeof createDatasetSchema>;
 
+const MAX_VARIANT_NAME_LENGTH = 100;
+
+export const datasetVariantSchema = z.object({
+    name: z
+        .string()
+        .trim()
+        .min(1, "Không được để trống")
+        .max(MAX_VARIANT_NAME_LENGTH, "Tối đa 100 ký tự"),
+    isPublic: z.boolean(),
+});
+
+export type DatasetVariantValues = z.infer<typeof datasetVariantSchema>;
+
 const MAX_SLUG_LENGTH = 160;
 export const MAX_TAGS = 5;
 export const MAX_STATEMENT_LENGTH = 51_200;
