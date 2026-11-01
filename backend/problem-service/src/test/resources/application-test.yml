@@ -6,8 +6,14 @@ spring:
       host: localhost
       port: 6379
       password: ""
+  kafka:
+    bootstrap-servers: localhost:1
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: http://localhost:1/internal/jwks
+
+sqljudge:
+  outbox:
+    relay-enabled: false
