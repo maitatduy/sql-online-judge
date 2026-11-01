@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 import { useStudioProblem } from "../hooks/useStudioProblem";
-import { PROBLEM_STATUS_LABELS } from "../status-labels";
 import { EDITABLE_STATUSES, type StudioProblemSummary } from "../types";
 
 interface ProblemDetailDialogProps {
@@ -67,9 +66,6 @@ export function ProblemDetailDialog({ problem, onClose }: ProblemDetailDialogPro
             <DialogContent className="sm:max-w-2xl">
                 <DialogTitle>{problem.title}</DialogTitle>
                 <DialogDescription className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-foreground">
-                        {PROBLEM_STATUS_LABELS[problem.status]}
-                    </span>
                     <DifficultyLabel difficulty={problem.difficulty} className="text-[13px]" />
                 </DialogDescription>
                 <ProblemDetailBody problemId={problem.id} />

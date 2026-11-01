@@ -27,6 +27,7 @@ export interface StudioProblem {
     difficulty: Difficulty;
     tags: StudioTag[];
     statementMarkdown: string;
+    dataset: { id: string; name: string } | null;
     updatedAt: string;
 }
 
@@ -106,6 +107,6 @@ export interface UpdateDatasetRequest {
     description?: string;
 }
 
-export type StudioStep = "info" | "statement";
+export type StudioStep = "info" | "statement" | "database";
 
 export const EDITABLE_STATUSES: readonly ProblemStatus[] = ["DRAFT", "CHANGES_REQUESTED"];

@@ -10,8 +10,9 @@ import { useToast } from "@/components/shared/ToastProvider";
 import { ApiRequestError } from "@/lib/api-client";
 
 import { useSaveProblem, useStudioProblem } from "../hooks/useStudioProblem";
-import { LOCKED_MESSAGES, PROBLEM_STATUS_LABELS } from "../status-labels";
+import { LOCKED_MESSAGES } from "../status-labels";
 import { EDITABLE_STATUSES, type StudioStep } from "../types";
+import { DatasetStep } from "./DatasetStep";
 import { InfoStep } from "./InfoStep";
 import { StatementStep } from "./StatementStep";
 import { StudioSteps } from "./StudioSteps";
@@ -68,18 +69,13 @@ export function ProblemStudio({ problemId, step = "info" }: ProblemStudioProps) 
             ) : null}
             {problem ? (
                 <>
-                    <div className="flex flex-wrap items-end justify-between gap-3">
-                        <div>
-                            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                                Problem Studio
-                            </p>
-                            <h1 className="mt-1.5 text-[22px] font-extrabold tracking-[-0.02em]">
-                                {problem.title}
-                            </h1>
-                        </div>
-                        <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold">
-                            {PROBLEM_STATUS_LABELS[problem.status]}
-                        </span>
+                    <div>
+                        <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                            Problem Studio
+                        </p>
+                        <h1 className="mt-1.5 text-[22px] font-extrabold tracking-[-0.02em]">
+                            {problem.title}
+                        </h1>
                     </div>
                     {isEditable ? null : (
                         <p className="rounded-md bg-surface-2 px-3 py-2 text-[13px]">
@@ -95,14 +91,22 @@ export function ProblemStudio({ problemId, step = "info" }: ProblemStudioProps) 
                                 disabled={!isEditable}
                                 save={save}
                             />
-                        ) : (
+                        ) : null}
+                        {step === "statement" ? (
                             <StatementStep
                                 key={problem.id}
                                 problem={problem}
                                 disabled={!isEditable}
                                 save={save}
                             />
-                        )}
+                        ) : null}
+                        {step === "database" ? (
+                            <DatasetStep
+                                key={problem.id}
+                                problem={problem}
+                                disabled={!isEditable}
+                            />
+                        ) : null}
                     </div>
                 </>
             ) : null}

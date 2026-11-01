@@ -95,7 +95,7 @@ describe("MyProblems - bộ lọc, phân trang và hành động", () => {
             await screen.findByRole("dialog", { name: "Phễu chuyển đổi 4 bước" }),
         );
         expect(await dialog.findByText("phieu-chuyen-doi-4-buoc")).toBeInTheDocument();
-        expect(dialog.getByText("Nháp")).toBeInTheDocument();
+        expect(dialog.queryByText("Nháp")).not.toBeInTheDocument();
         expect(dialog.getByText("Chưa có đề bài.")).toBeInTheDocument();
         expect(dialog.getByRole("link", { name: "Sửa bài" })).toHaveAttribute(
             "href",
