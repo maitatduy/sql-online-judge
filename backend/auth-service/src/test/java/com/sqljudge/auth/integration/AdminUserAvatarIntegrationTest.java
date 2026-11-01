@@ -70,7 +70,7 @@ class AdminUserAvatarIntegrationTest extends ContainerSupport {
         String adminToken = signInAsAdmin("admin.anh2", "admin.anh2@gmail.com");
         registerVerified("anh.sai", "anh.sai@gmail.com");
         byte[] html = "<html><script>alert(1)</script>".getBytes(StandardCharsets.UTF_8);
-        byte[] tooLarge = Arrays.copyOf(PNG, 4 * 1024 * 1024);
+        byte[] tooLarge = Arrays.copyOf(PNG, 8 * 1024 * 1024);
 
         ResponseEntity<Map> fake = upload("anh.sai", html, adminToken);
         ResponseEntity<Map> huge = upload("anh.sai", tooLarge, adminToken);
