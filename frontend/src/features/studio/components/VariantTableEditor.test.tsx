@@ -35,6 +35,22 @@ function recordCsvPuts(): string[] {
     return bodies;
 }
 
+function useManyEmployees(count: number) {
+    const lines = Array.from(
+        { length: count },
+        (_, index) => `${index + 1},Học sinh ${index + 1},1000,1`,
+    );
+    server.use(
+        http.get("*/api/studio/datasets/:datasetId/variants/:variantId/tables/employees", () =>
+            HttpResponse.json({
+                tableName: "employees",
+                csv: ["id,full_name,salary,department_id", ...lines, ""].join("\n"),
+                rowCount: count,
+            }),
+        ),
+    );
+}
+
 function cell(editor: ReturnType<typeof within>, column: string, row: number) {
     return editor.getByRole("textbox", { name: `${column}, dòng ${row}` });
 }
@@ -156,5 +172,30 @@ describe("DatasetStudio - nhập dữ liệu cho bảng", () => {
         fireEvent.click(editor.getByRole("button", { name: "Lưu" }));
 
         expect(await editor.findByText("Dòng 3 trùng khoá chính với dòng 2")).toBeInTheDocument();
+    });
+
+    it("chia trang 20 dòng mỗi trang khi bảng có nhiều dòng", async () => {
+        useManyEmployees(45);
+        const editor = await openTable("Mẫu", "employees");
+
+        expect(await editor.findByText("1-20 trong 45 dòng")).toBeInTheDocument();
+        expect(editor.getAllByRole("row")).toHaveLength(21);
+        fireEvent.click(editor.getByRole("button", { name: "Trang 3" }));
+
+        expect(editor.getByText("41-45 trong 45 dòng")).toBeInTheDocument();
+        expect(cell(editor, "full_name", 41)).toHaveValue("Học sinh 41");
+        expect(editor.getAllByRole("row")).toHaveLength(6);
+        fireEvent.click(editor.getByRole("button", { name: "Trước" }));
+        expect(cell(editor, "full_name", 21)).toHaveValue("Học sinh 21");
+    });
+
+    it("thêm dòng thì chuyển tới trang cuối để nhập tiếp", async () => {
+        useManyEmployees(45);
+        const editor = await openTable("Mẫu", "employees");
+
+        fireEvent.click(await editor.findByRole("button", { name: "Thêm dòng" }));
+
+        expect(editor.getByText("41-46 trong 46 dòng")).toBeInTheDocument();
+        expect(cell(editor, "id", 46)).toHaveValue("");
     });
 });

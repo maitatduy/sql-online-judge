@@ -105,7 +105,7 @@ export function DatasetVariants({ dataset }: DatasetVariantsProps) {
                                 />
                             </div>
                         </div>
-                        <ul className="mt-2 flex flex-col gap-0.5 text-[13px] text-muted-foreground">
+                        <ul className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
                             {dataset.schema.tables.map((table) => (
                                 <li key={table.name}>
                                     <button
