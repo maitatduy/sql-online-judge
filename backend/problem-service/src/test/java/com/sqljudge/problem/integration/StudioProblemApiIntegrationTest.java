@@ -119,6 +119,41 @@ class StudioProblemApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Lọc bài của tôi theo độ khó và sắp xếp theo tên hoặc cũ nhất trước")
+    void list_filtersByDifficultyAndSorts() {
+        create(SETTER, "Chuỗi ngày dài nhất");
+        create(SETTER, "Bài dễ");
+        create(SETTER, "Ăn khớp đơn hàng");
+        jdbcTemplate.update("UPDATE problems SET difficulty = 'HARD' WHERE title <> 'Bài dễ'");
+        jdbcTemplate.update(
+                "UPDATE problems SET updated_at = NOW(6) - INTERVAL 1 DAY WHERE title = ?",
+                "Chuỗi ngày dài nhất");
+
+        DocumentContext hard = JsonPath.parse(get(PATH + "?difficulty=HARD", SETTER).getBody());
+        DocumentContext byTitle = JsonPath.parse(get(PATH + "?sort=title,asc", SETTER).getBody());
+        DocumentContext oldest =
+                JsonPath.parse(get(PATH + "?sort=updatedAt,asc", SETTER).getBody());
+
+        assertThat(hard.read("$.items[*].title", List.class))
+                .containsExactlyInAnyOrder("Chuỗi ngày dài nhất", "Ăn khớp đơn hàng");
+        assertThat(byTitle.read("$.items[*].title", List.class))
+                .containsExactly("Ăn khớp đơn hàng", "Bài dễ", "Chuỗi ngày dài nhất");
+        assertThat(oldest.read("$.items[0].title", String.class)).isEqualTo("Chuỗi ngày dài nhất");
+    }
+
+    @Test
+    @DisplayName("Tham số sắp xếp hoặc độ khó không hợp lệ trả 400")
+    void list_invalidSortOrDifficulty_returnsBadRequest() {
+        ResponseEntity<String> badSort = get(PATH + "?sort=authorId,asc", SETTER);
+
+        assertThat(badSort.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(JsonPath.parse(badSort.getBody()).read("$.errors[0].field", String.class))
+                .isEqualTo("sort");
+        assertThat(get(PATH + "?difficulty=VERY_HARD", SETTER).getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     @DisplayName("Đếm bài của tôi theo trạng thái, trạng thái chưa có bài đếm là 0")
     void statusCounts_countsOwnProblemsByStatus() {
         create(SETTER, "Bài một");

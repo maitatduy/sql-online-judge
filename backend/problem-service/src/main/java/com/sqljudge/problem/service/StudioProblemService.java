@@ -3,6 +3,7 @@ package com.sqljudge.problem.service;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.request.CreateProblemRequest;
+import com.sqljudge.problem.dto.request.StudioProblemQuery;
 import com.sqljudge.problem.dto.response.StudioProblemSummaryResponse;
 import com.sqljudge.problem.entity.Difficulty;
 import com.sqljudge.problem.entity.Problem;
@@ -46,14 +47,17 @@ public class StudioProblemService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<StudioProblemSummaryResponse> listOwned(
-            ProblemStatus status, String keyword, int page, int size) {
+    public PageResponse<StudioProblemSummaryResponse> listOwned(StudioProblemQuery query) {
         return PageResponse.from(
                 problemRepository.findOwned(
                         SecurityUtils.requireCurrentUser().id(),
-                        status,
-                        LikePatterns.containingIgnoreCase(keyword),
-                        PageRequest.of(page - 1, size)),
+                        query.status(),
+                        query.difficulty(),
+                        LikePatterns.containingIgnoreCase(query.q()),
+                        PageRequest.of(
+                                query.page() - 1,
+                                query.size(),
+                                StudioSorts.forProblems(query.sort()))),
                 StudioProblemSummaryResponse::from);
     }
 

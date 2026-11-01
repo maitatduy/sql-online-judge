@@ -129,6 +129,44 @@ class StudioDatasetApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Lọc dataset theo trạng thái phiên bản và sắp xếp theo tên")
+    void list_filtersByVersionStatusAndSortsByName() {
+        send(HttpMethod.POST, PATH, SETTER, "{\"name\":\"Ăn uống\"}");
+        jdbcTemplate.update(
+                "UPDATE dataset_versions v JOIN datasets d ON d.id = v.dataset_id"
+                        + " SET v.frozen_at = NOW(6) WHERE d.name = ?",
+                "Công ty");
+
+        DocumentContext drafts = list("?status=DRAFT");
+        DocumentContext frozen = list("?status=FROZEN");
+        DocumentContext byName = list("?sort=name,asc");
+
+        assertThat(drafts.read("$.items[*].name", List.class)).containsExactly("Ăn uống");
+        assertThat(drafts.read("$.totalItems", Integer.class)).isEqualTo(1);
+        assertThat(frozen.read("$.items[*].name", List.class)).containsExactly("Công ty");
+        assertThat(frozen.read("$.items[0].hasDraft", Boolean.class)).isFalse();
+        assertThat(byName.read("$.items[*].name", List.class))
+                .containsExactly("Ăn uống", "Công ty");
+    }
+
+    @Test
+    @DisplayName("Tham số sắp xếp hoặc trạng thái không hợp lệ trả 400")
+    void list_invalidSortOrStatus_returnsBadRequest() {
+        ResponseEntity<String> badSort =
+                send(HttpMethod.GET, PATH + "?sort=ownerId,desc", SETTER, null);
+
+        assertThat(badSort.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(JsonPath.parse(badSort.getBody()).read("$.errors[0].field", String.class))
+                .isEqualTo("sort");
+        assertThat(send(HttpMethod.GET, PATH + "?status=OLD", SETTER, null).getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    private DocumentContext list(String query) {
+        return JsonPath.parse(send(HttpMethod.GET, PATH + query, SETTER, null).getBody());
+    }
+
+    @Test
     @DisplayName("Chủ dataset, ADMIN và MODERATOR đọc được chi tiết, người ra đề khác nhận 404")
     void get_ownerAdminOrModerator_returnsDataset() {
         assertThat(send(HttpMethod.GET, url(), SETTER, null).getStatusCode())

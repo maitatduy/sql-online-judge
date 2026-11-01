@@ -55,12 +55,13 @@ public interface ProblemRepository extends JpaRepository<Problem, UUID> {
             SELECT p FROM Problem p
             WHERE p.authorId = :authorId AND p.deletedAt IS NULL
               AND (:status IS NULL OR p.status = :status)
+              AND (:difficulty IS NULL OR p.difficulty = :difficulty)
               AND (:titlePattern IS NULL OR LOWER(p.title) LIKE :titlePattern ESCAPE '!')
-            ORDER BY p.updatedAt DESC
             """)
     Page<Problem> findOwned(
             @Param("authorId") UUID authorId,
             @Param("status") ProblemStatus status,
+            @Param("difficulty") Difficulty difficulty,
             @Param("titlePattern") String titlePattern,
             Pageable pageable);
 
