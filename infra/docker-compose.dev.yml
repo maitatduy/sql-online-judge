@@ -70,6 +70,32 @@ services:
       timeout: 3s
       retries: 5
 
+  sandbox-postgres:
+    image: postgres:16.9-alpine
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 1.0
+    environment:
+      POSTGRES_DB: sandbox
+      POSTGRES_PASSWORD: ${SANDBOX_PG_SUPERUSER_PASSWORD}
+      SANDBOX_PG_ADMIN_USER: ${SANDBOX_PG_ADMIN_USER}
+      SANDBOX_PG_ADMIN_PASSWORD: ${SANDBOX_PG_ADMIN_PASSWORD}
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${SANDBOX_PG_PORT}:5432"
+    volumes:
+      - ./sandbox/postgres/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - sandbox
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sandbox"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+networks:
+  sandbox:
+
 volumes:
   mysql-data:
   redis-data:
