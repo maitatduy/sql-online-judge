@@ -38,6 +38,7 @@ class MysqlSandboxIntegrationTest {
     private static final String ADMIN_PASSWORD = "admin-secret";
     private static final Path INIT_SCRIPT =
             Path.of("..", "..", "infra", "sandbox", "mysql", "init", "01-create-judge-admin.sh");
+    private static final int EXECUTABLE = 0755;
     private static final long MYSQL_MEMORY_LIMIT_BYTES = 768L * 1024 * 1024;
     private static final String NUMBERS_TO_1000 =
             "WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 1000) ";
@@ -53,7 +54,7 @@ class MysqlSandboxIntegrationTest {
                             "--performance-schema=OFF",
                             "--innodb-buffer-pool-size=128M")
                     .withCopyFileToContainer(
-                            MountableFile.forHostPath(INIT_SCRIPT),
+                            MountableFile.forHostPath(INIT_SCRIPT, EXECUTABLE),
                             "/docker-entrypoint-initdb.d/01-create-judge-admin.sh")
                     .withCreateContainerCmdModifier(
                             command ->

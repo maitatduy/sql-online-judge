@@ -37,13 +37,14 @@ class PostgresSandboxIntegrationTest {
     private static final String ADMIN_PASSWORD = "admin-secret";
     private static final Path INIT_SCRIPT =
             Path.of("..", "..", "infra", "sandbox", "postgres", "init", "01-create-judge-admin.sh");
+    private static final int EXECUTABLE = 0755;
     private static final PostgreSQLContainer<?> POSTGRES =
             new PostgreSQLContainer<>("postgres:16.9-alpine")
                     .withDatabaseName("sandbox")
                     .withEnv("SANDBOX_PG_ADMIN_USER", ADMIN_USER)
                     .withEnv("SANDBOX_PG_ADMIN_PASSWORD", ADMIN_PASSWORD)
                     .withCopyFileToContainer(
-                            MountableFile.forHostPath(INIT_SCRIPT),
+                            MountableFile.forHostPath(INIT_SCRIPT, EXECUTABLE),
                             "/docker-entrypoint-initdb.d/01-create-judge-admin.sh");
 
     private static PostgresSandbox sandbox;
