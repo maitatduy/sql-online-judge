@@ -90,7 +90,7 @@ Ghi lại: verdict, testcase sai đầu tiên, thời gian chạy lớn nhất, 
 
 ## 8. Dataset và đáp án chuẩn
 
-- Dataset lưu dưới dạng script SQL đã chuẩn hoá theo từng dialect + checksum. Snapshot là bất biến: sửa dataset tạo phiên bản mới, bài nộp cũ vẫn tham chiếu phiên bản cũ.
+- Dataset lưu dưới dạng schema kiểu logic (INTEGER, DECIMAL, TEXT, DATE, TIMESTAMP, BOOLEAN) và CSV từng bảng, kèm checksum. Worker tự sinh DDL theo dialect từ schema, kiểm tra lại tên bảng và cột là identifier hợp lệ, luôn đặt trong dấu nháy, và nạp dữ liệu bằng PreparedStatement - không chạy script SQL soạn sẵn. Snapshot là bất biến: sửa dataset tạo phiên bản mới, bài nộp cũ vẫn tham chiếu phiên bản cũ.
 - Đáp án chuẩn phải chạy ra cùng kết quả trên mọi dialect bài hỗ trợ; Problem Studio chặn xuất bản nếu lệch.
 - Kết quả mong đợi tính sẵn khi xuất bản bài (chạy đáp án chuẩn trong sandbox), lưu kèm checksum. Worker so với kết quả này, không chạy lại đáp án chuẩn mỗi lần chấm.
 

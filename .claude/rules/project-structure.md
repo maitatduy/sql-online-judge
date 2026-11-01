@@ -13,9 +13,9 @@ sql-online-judge/
 │                            # submission, judge-worker, contest, community, ai, notification
 ├── frontend/
 ├── infra/
-│   ├── docker-compose.dev.yml  .env.example   # MySQL, Redis, Mailpit
+│   ├── docker-compose.dev.yml  .env.example   # MySQL, Redis, Mailpit, sandbox PostgreSQL
 │   ├── mysql/init/          # tạo database + user riêng cho từng service
-│   ├── sandbox/             # sẽ thêm: Dockerfile + cấu hình các DB sandbox
+│   ├── sandbox/postgres/init/   # tạo admin sandbox quyền tối thiểu; MySQL, SQLite sẽ thêm
 │   └── monitoring/          # sẽ thêm: prometheus.yml, dashboard Grafana, rule cảnh báo
 └── .github/workflows/       # ci.yml; sẽ thêm: deploy
 ```
