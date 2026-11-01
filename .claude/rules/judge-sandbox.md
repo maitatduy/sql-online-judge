@@ -29,7 +29,7 @@ Chế độ **Run** (chạy thử với dataset mẫu, không tính điểm) đi
 
 ## 2. Cô lập - 🔴 bắt buộc
 
-- 🔴 Sandbox là các container DB **riêng** (PostgreSQL, MySQL, SQLite) chỉ `judge-worker` kết nối tới. Không dùng chung host/instance với MySQL ứng dụng.
+- 🔴 Sandbox là các container DB **riêng** (PostgreSQL, MySQL) chỉ `judge-worker` kết nối tới. Không dùng chung host/instance với MySQL ứng dụng. SQLite không có server nên chạy trong tiến trình `judge-worker`, trên file tạm trong thư mục riêng của sandbox.
 - 🔴 Container sandbox nằm trong network Docker riêng, không có route ra Internet, không thấy network của service ứng dụng.
 - 🔴 `judge-worker` không có thông tin đăng nhập vào bất kỳ DB ứng dụng nào. Nó chỉ đọc job từ Kafka và tải snapshot dataset qua đường đọc-only (object storage hoặc API nội bộ của `problem-service`).
 - 🔴 Mỗi lần chạy dùng một **schema/database tạm** có tên ngẫu nhiên (`sb_<uuid>`), tạo từ snapshot dataset và **xoá ngay** sau khi chấm, kể cả khi lỗi (`finally`).
@@ -43,7 +43,7 @@ Chế độ **Run** (chạy thử với dataset mẫu, không tính điểm) đi
 - 🔴 Role không có quyền: tạo/xoá database, tạo role, đọc catalog hệ thống ngoài schema của mình, gọi hàm hệ thống nguy hiểm (`pg_read_file`, `COPY … PROGRAM`, `LOAD_FILE`, `INTO OUTFILE`, `pg_sleep` nếu đề không cho), cài extension.
 - PostgreSQL: `REVOKE ALL ON SCHEMA public FROM PUBLIC`, `search_path` cố định về schema tạm, `default_transaction_read_only=on` với bài SELECT.
 - MySQL: `secure_file_priv=NULL` (không để rỗng - rỗng nghĩa là không giới hạn), `local_infile=OFF`, user chỉ có `SELECT` trên từng bảng của database tạm, session `READ ONLY` và `max_execution_time`, collation `utf8mb4_0900_as_cs` để so chuỗi giống PostgreSQL.
-- SQLite: mở file tạm bằng URI `mode=ro` với bài SELECT, tắt `load_extension`, không cho `ATTACH`.
+- SQLite: nạp dataset vào file tạm rồi đóng, chạy SQL người dùng trên kết nối read-only với `SQLITE_LIMIT_ATTACHED=0` (chặn cả `ATTACH` lẫn `VACUUM INTO` - `VACUUM INTO` ghi được file ngay cả khi read-only), `PRAGMA query_only`, tắt `load_extension`, giới hạn độ dài giá trị, `ProgressHandler` cắt theo thời gian. Xoá file tạm sau mỗi lần chạy.
 
 ## 4. Giới hạn tài nguyên - 🔴 bắt buộc
 

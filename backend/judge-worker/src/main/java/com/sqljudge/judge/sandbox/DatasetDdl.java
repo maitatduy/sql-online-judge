@@ -1,13 +1,20 @@
 package com.sqljudge.judge.sandbox;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 abstract class DatasetDdl {
+
+    private static final int DATE_LENGTH = 10;
+    private static final Set<String> TRUE_VALUES = Set.of("true", "1");
 
     String createTable(String namespace, SnapshotTable table, Set<String> keyColumns) {
         List<String> definitions = new ArrayList<>();
@@ -26,6 +33,7 @@ abstract class DatasetDdl {
         if (!primaryKey.isEmpty()) {
             definitions.add("PRIMARY KEY (" + String.join(", ", primaryKey) + ")");
         }
+        definitions.addAll(inlineConstraints(table));
         return "CREATE TABLE "
                 + qualified(namespace, table.name())
                 + " ("
@@ -48,20 +56,39 @@ abstract class DatasetDdl {
                 + ")";
     }
 
-    String addForeignKey(String namespace, String tableName, ForeignKey foreignKey) {
-        return "ALTER TABLE "
-                + qualified(namespace, tableName)
-                + " ADD FOREIGN KEY ("
-                + quote(foreignKey.column())
-                + ") REFERENCES "
-                + qualified(namespace, foreignKey.referencedTable())
-                + " ("
-                + quote(foreignKey.referencedColumn())
-                + ")";
+    List<String> foreignKeyStatements(String namespace, SnapshotTable table) {
+        return table.foreignKeys().stream()
+                .map(
+                        foreignKey ->
+                                "ALTER TABLE "
+                                        + qualified(namespace, table.name())
+                                        + " ADD FOREIGN KEY ("
+                                        + quote(foreignKey.column())
+                                        + ") REFERENCES "
+                                        + qualified(namespace, foreignKey.referencedTable())
+                                        + " ("
+                                        + quote(foreignKey.referencedColumn())
+                                        + ")")
+                .toList();
+    }
+
+    Object bindValue(LogicalType type, String value) {
+        return switch (type) {
+            case INTEGER -> Long.valueOf(value);
+            case DECIMAL -> new BigDecimal(value);
+            case TEXT -> value;
+            case DATE -> LocalDate.parse(value);
+            case TIMESTAMP -> LocalDateTime.parse(isoTimestamp(value));
+            case BOOLEAN -> TRUE_VALUES.contains(value.toLowerCase(Locale.ROOT));
+        };
     }
 
     String quotedNamespace(String namespace) {
         return quote(namespace);
+    }
+
+    String qualified(String namespace, String tableName) {
+        return quote(namespace) + "." + quote(tableName);
     }
 
     static Set<String> keyColumnsOf(DatasetSnapshot dataset, SnapshotTable table) {
@@ -78,11 +105,17 @@ abstract class DatasetDdl {
         return keyColumns;
     }
 
+    static String isoTimestamp(String value) {
+        return value.length() > DATE_LENGTH && value.charAt(DATE_LENGTH) == ' '
+                ? value.substring(0, DATE_LENGTH) + "T" + value.substring(DATE_LENGTH + 1)
+                : value;
+    }
+
+    protected List<String> inlineConstraints(SnapshotTable table) {
+        return List.of();
+    }
+
     protected abstract String quote(String identifier);
 
     protected abstract String typeOf(LogicalType type, boolean isKeyColumn);
-
-    String qualified(String namespace, String tableName) {
-        return quote(namespace) + "." + quote(tableName);
-    }
 }
