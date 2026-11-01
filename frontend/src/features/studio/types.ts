@@ -79,6 +79,12 @@ export interface StudioDataset {
     updatedAt: string;
 }
 
+export interface VariantCsv {
+    tableName: string;
+    csv: string;
+    rowCount: number;
+}
+
 export interface DatasetVariantRequest {
     name: string;
     isPublic: boolean;

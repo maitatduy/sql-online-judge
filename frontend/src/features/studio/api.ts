@@ -14,10 +14,15 @@ import type {
     StudioTag,
     UpdateDatasetRequest,
     UpdateProblemRequest,
+    VariantCsv,
 } from "./types";
 
 function datasetPath(datasetId: string): string {
     return `/api/studio/datasets/${encodeURIComponent(datasetId)}`;
+}
+
+function variantTablePath(datasetId: string, variantId: string, tableName: string): string {
+    return `${datasetPath(datasetId)}/variants/${encodeURIComponent(variantId)}/tables/${encodeURIComponent(tableName)}`;
 }
 
 export const studioApi = {
@@ -60,6 +65,14 @@ export const studioApi = {
             `${datasetPath(datasetId)}/variants/${encodeURIComponent(variantId)}`,
             variant,
         ),
+    getVariantCsv: (
+        datasetId: string,
+        variantId: string,
+        tableName: string,
+        signal?: AbortSignal,
+    ) => apiClient.get<VariantCsv>(variantTablePath(datasetId, variantId, tableName), { signal }),
+    saveVariantCsv: (datasetId: string, variantId: string, tableName: string, csv: string) =>
+        apiClient.put<StudioDataset>(variantTablePath(datasetId, variantId, tableName), { csv }),
     deleteDatasetVariant: (datasetId: string, variantId: string) =>
         apiClient.delete<void>(
             `${datasetPath(datasetId)}/variants/${encodeURIComponent(variantId)}`,

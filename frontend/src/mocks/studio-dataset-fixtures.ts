@@ -81,3 +81,11 @@ export const SEED_VARIANTS: DatasetVariant[][] = [
     [],
     [],
 ];
+
+export const SEED_VARIANT_CSVS: Record<string, string> = {
+    "0192f3e1-0000-7000-8000-000000000001/departments":
+        "id,name\n1,Kỹ thuật\n2,Kinh doanh\n3,Nhân sự\n",
+    "0192f3e1-0000-7000-8000-000000000001/employees":
+        "id,full_name,salary,department_id\n1,Hoàng Quốc Bảo,48000000,1\n2,Nguyễn Văn An,48000000,1\n3,Phạm Minh Tuấn,35000000,1\n4,Trần Thị Bình,32000000,2\n5,Đỗ Thu Hà,29000000,2\n6,Mai Lan,30000000,\n",
+    "0192f3e1-0000-7000-8000-000000000002/departments": "id,name\n1,Kế toán\n2,Pháp chế\n",
+};
