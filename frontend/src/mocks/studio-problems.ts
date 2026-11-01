@@ -2,7 +2,6 @@ import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import type {
     ProblemStatus,
-    StatusCounts,
     StudioProblem,
     StudioProblemSummary,
     UpdateProblemRequest,
@@ -22,14 +21,6 @@ const DEFAULT_PAGE_SIZE = 20;
 const MAX_TITLE_LENGTH = 200;
 const FIRST_SLUG_SUFFIX = 2;
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-const STATUSES: readonly ProblemStatus[] = [
-    "DRAFT",
-    "PENDING_REVIEW",
-    "CHANGES_REQUESTED",
-    "REJECTED",
-    "PUBLISHED",
-];
-
 interface StoredProblem extends StudioProblemSummary {
     authorId: string;
     deletedAt?: string;
@@ -200,19 +191,6 @@ export const studioProblemHandlers: RequestHandler[] = [
         });
     }),
 
-    http.get("*/api/studio/problems/status-counts", async () => {
-        await delay();
-        const user = readMockSession();
-        if (!user) {
-            return apiError(401, "UNAUTHENTICATED", "Bạn chưa đăng nhập");
-        }
-        const counts = Object.fromEntries(STATUSES.map((status) => [status, 0])) as StatusCounts;
-        ownProblems(user.id).forEach((problem) => {
-            counts[problem.status] += 1;
-        });
-        return HttpResponse.json(counts);
-    }),
-
     http.get("*/api/studio/problems/:problemId", async ({ params }) => {
         await delay();
         const problem = findAccessible(String(params.problemId));
@@ -277,7 +255,6 @@ export const studioProblemHandlers: RequestHandler[] = [
             return apiError(401, "UNAUTHENTICATED", "Bạn chưa đăng nhập");
         }
         const query = new URL(request.url).searchParams;
-        const status = query.get("status");
         const difficulty = query.get("difficulty");
         const sort = query.get("sort") ?? "updatedAt,desc";
         const keyword = folded(query.get("q")?.trim() ?? "");
@@ -286,7 +263,6 @@ export const studioProblemHandlers: RequestHandler[] = [
         const matches = sortedProblems(
             ownProblems(user.id).filter(
                 (problem) =>
-                    (status === null || problem.status === status) &&
                     (difficulty === null || problem.difficulty === difficulty) &&
                     folded(problem.title).includes(keyword),
             ),

@@ -11,11 +11,8 @@ import {
     readPageSize,
     readSort,
 } from "./list-options";
-import { PROBLEM_STATUS_LABELS } from "./status-labels";
-import type { ProblemStatus } from "./types";
 
 export interface MyProblemFilters {
-    status: ProblemStatus | null;
     difficulty: Difficulty | null;
     q: string;
     sort: string;
@@ -24,7 +21,6 @@ export interface MyProblemFilters {
 }
 
 export const NO_MY_PROBLEM_FILTERS: MyProblemFilters = {
-    status: null,
     difficulty: null,
     q: "",
     sort: DEFAULT_SORT,
@@ -32,17 +28,12 @@ export const NO_MY_PROBLEM_FILTERS: MyProblemFilters = {
     page: FIRST_PAGE,
 };
 
-function readStatus(value: string | null): ProblemStatus | null {
-    return value !== null && value in PROBLEM_STATUS_LABELS ? (value as ProblemStatus) : null;
-}
-
 function readDifficulty(value: string | null): Difficulty | null {
     return DIFFICULTIES.find((difficulty) => difficulty === value) ?? null;
 }
 
 export function readMyProblemFilters(searchParams: Pick<URLSearchParams, "get">): MyProblemFilters {
     return {
-        status: readStatus(searchParams.get("status")),
         difficulty: readDifficulty(searchParams.get("difficulty")),
         q: searchParams.get("q")?.trim() ?? "",
         sort: readSort(searchParams.get("sort"), PROBLEM_SORTS),
@@ -51,9 +42,8 @@ export function readMyProblemFilters(searchParams: Pick<URLSearchParams, "get">)
     };
 }
 
-function activeFilterParams({ status, difficulty, q }: MyProblemFilters) {
+function activeFilterParams({ difficulty, q }: MyProblemFilters) {
     return {
-        ...(status ? { status } : {}),
         ...(difficulty ? { difficulty } : {}),
         ...(q ? { q } : {}),
     };

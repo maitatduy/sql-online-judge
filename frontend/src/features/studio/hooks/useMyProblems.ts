@@ -10,10 +10,3 @@ export function useMyProblems(filters: MyProblemFilters) {
         placeholderData: keepPreviousData,
     });
 }
-
-export function useStatusCounts() {
-    return useQuery({
-        queryKey: ["studio-problems", "status-counts"],
-        queryFn: ({ signal }) => studioApi.getStatusCounts(signal),
-    });
-}

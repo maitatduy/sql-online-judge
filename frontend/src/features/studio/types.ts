@@ -13,8 +13,6 @@ export interface StudioProblemSummary {
     updatedAt: string;
 }
 
-export type StatusCounts = Record<ProblemStatus, number>;
-
 export interface StudioTag {
     slug: string;
     name: string;
