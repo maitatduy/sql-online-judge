@@ -8,7 +8,6 @@ import type {
     DatasetTable,
     StudioDataset,
     StudioDatasetSummary,
-    StatusCounts,
     StudioProblem,
     StudioProblemSummary,
     StudioTag,
@@ -26,8 +25,6 @@ export const studioApi = {
             params: myProblemsQueryOf(filters),
             signal,
         }),
-    getStatusCounts: (signal?: AbortSignal) =>
-        apiClient.get<StatusCounts>("/api/studio/problems/status-counts", { signal }),
     createProblem: (values: CreateProblemValues) =>
         apiClient.post<StudioProblemSummary>("/api/studio/problems", values),
     getProblem: (problemId: string, signal?: AbortSignal) =>

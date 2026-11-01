@@ -15,30 +15,22 @@ import { formatNumber } from "@/lib/format";
 import { useDebouncedSearch } from "@/lib/useDebouncedSearch";
 
 import { useMyProblemFilters } from "../hooks/useMyProblemFilters";
-import { useMyProblems, useStatusCounts } from "../hooks/useMyProblems";
+import { useMyProblems } from "../hooks/useMyProblems";
 import { PROBLEM_SORTS } from "../list-options";
 import { myProblemsHref } from "../my-problem-filters";
-import type { StatusCounts } from "../types";
 import { CreateProblemDialog } from "./CreateProblemDialog";
 import { ListFooter } from "./ListFooter";
 import { MyProblemsTable } from "./MyProblemsTable";
-import { StatusSelect } from "./StatusSelect";
 
 const SKELETON_ROW_COUNT = 5;
 
-function summaryOf(counts: StatusCounts): string {
-    const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
-    return `${formatNumber(total)} bài · ${formatNumber(counts.PUBLISHED)} đã xuất bản`;
-}
-
 export function MyProblems() {
     const { filters, changeFilters } = useMyProblemFilters();
-    const { data: counts } = useStatusCounts();
     const { data, error, isPending, refetch } = useMyProblems(filters);
     const { searchText, changeSearchText } = useDebouncedSearch(filters.q, (q) =>
         changeFilters({ q }),
     );
-    const hasFilter = filters.status !== null || filters.difficulty !== null || filters.q !== "";
+    const hasFilter = filters.difficulty !== null || filters.q !== "";
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     return (
@@ -51,8 +43,10 @@ export function MyProblems() {
                     <h1 className="mt-1.5 text-[28px] font-extrabold tracking-[-0.02em]">
                         Bài của tôi
                     </h1>
-                    {counts ? (
-                        <p className="mt-1 text-muted-foreground">{summaryOf(counts)}</p>
+                    {data ? (
+                        <p className="mt-1 text-muted-foreground">
+                            {formatNumber(data.totalItems)} bài
+                        </p>
                     ) : null}
                 </div>
                 <Button type="button" onClick={() => setIsCreateOpen(true)}>
@@ -73,11 +67,6 @@ export function MyProblems() {
                         className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
                     />
                 </label>
-                <StatusSelect
-                    value={filters.status}
-                    counts={counts}
-                    onChange={(status) => changeFilters({ status })}
-                />
                 <NativeSelect
                     aria-label="Độ khó"
                     value={filters.difficulty ?? ""}

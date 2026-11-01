@@ -45,7 +45,7 @@ describe("tạo bài mới trong Studio", () => {
         expect(screen.queryByRole("dialog", { name: "Tạo bài mới" })).not.toBeInTheDocument();
         const table = within(screen.getByRole("table", { name: "Bài của tôi" }));
         expect(await table.findByText("Khách hàng mua liên tiếp 3 tháng")).toBeInTheDocument();
-        expect(await screen.findByRole("option", { name: "Nháp · 3" })).toBeInTheDocument();
+        expect(await screen.findByText("10 bài")).toBeInTheDocument();
     });
 
     it("báo lỗi ngay khi tên bài trống, không gửi yêu cầu", async () => {

@@ -38,56 +38,30 @@ describe("MyProblems", () => {
         writeMockSession(SETTER_SESSION_USER);
     });
 
-    it("hiện tổng số bài, số đã xuất bản và số bài của từng trạng thái trong ô lọc", async () => {
-        await renderMyProblems();
+    it("hiện tổng số bài, không hiện trạng thái ở bộ lọc hay bảng", async () => {
+        const table = await renderMyProblems();
 
-        expect(await screen.findByText("9 bài · 5 đã xuất bản")).toBeInTheDocument();
-        const statusSelect = screen.getByRole("combobox", { name: "Trạng thái" });
-        expect(statusSelect).toHaveValue("");
-        expect(
-            within(statusSelect)
-                .getAllByRole("option")
-                .map((option) => option.textContent),
-        ).toEqual([
-            "Mọi trạng thái · 9",
-            "Nháp · 2",
-            "Chờ duyệt · 1",
-            "Cần sửa · 1",
-            "Đã xuất bản · 5",
+        expect(screen.getByText("9 bài")).toBeInTheDocument();
+        expect(screen.queryByRole("combobox", { name: "Trạng thái" })).not.toBeInTheDocument();
+        expect(table.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
+            "Tên bài",
+            "Độ khó",
+            "Cập nhật",
+            "Hành động",
         ]);
-        expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
     });
 
-    it("liệt kê bài mới sửa nhất trước với trạng thái, độ khó và lúc cập nhật", async () => {
+    it("liệt kê bài mới sửa nhất trước với độ khó và lúc cập nhật", async () => {
         const table = await renderMyProblems();
 
         expect(titlesIn(table)).toHaveLength(9);
         expect(titlesIn(table)[0]).toBe("Phễu chuyển đổi 4 bước");
         const needsFix = within(table.getByRole("row", { name: /Chuỗi ngày hoạt động dài nhất/ }));
-        expect(needsFix.getByText("Cần sửa")).toBeInTheDocument();
         expect(needsFix.getByText("Khó")).toHaveClass("text-difficulty-hard");
         expect(needsFix.getByText("1 ngày trước")).toBeInTheDocument();
         expect(
             needsFix.getByRole("link", { name: "Chuỗi ngày hoạt động dài nhất" }),
         ).toHaveAttribute("href", expect.stringMatching(/^\/studio\/problems\/0192f3d0-/));
-    });
-
-    it("chọn trạng thái Nháp thì chỉ còn bài nháp và ghi trạng thái lên URL", async () => {
-        await renderMyProblems();
-
-        fireEvent.change(screen.getByRole("combobox", { name: "Trạng thái" }), {
-            target: { value: "DRAFT" },
-        });
-
-        const table = within(await screen.findByRole("table", { name: TABLE_NAME }));
-        await vi.waitFor(() =>
-            expect(titlesIn(table)).toEqual([
-                "Phễu chuyển đổi 4 bước",
-                "Lương trung vị mỗi phòng ban",
-            ]),
-        );
-        expect(window.location.search).toBe("?status=DRAFT");
-        expect(screen.getByRole("combobox", { name: "Trạng thái" })).toHaveValue("DRAFT");
     });
 
     it("tìm theo tên không phân biệt dấu", async () => {

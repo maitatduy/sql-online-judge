@@ -8,7 +8,6 @@ import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
 import { formatRelativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-import { PROBLEM_STATUS_LABELS } from "../status-labels";
 import type { StudioProblemSummary } from "../types";
 import { MyProblemRowActions } from "./MyProblemRowActions";
 
@@ -33,9 +32,6 @@ export function MyProblemsTable({ problems }: MyProblemsTableProps) {
                         <th scope="col" className={HEADER_CLASS}>
                             Tên bài
                         </th>
-                        <th scope="col" className={cn(HEADER_CLASS, "w-36")}>
-                            Trạng thái
-                        </th>
                         <th scope="col" className={cn(HEADER_CLASS, "w-28")}>
                             Độ khó
                         </th>
@@ -57,11 +53,6 @@ export function MyProblemsTable({ problems }: MyProblemsTableProps) {
                                 >
                                     {problem.title}
                                 </Link>
-                            </td>
-                            <td className={CELL_CLASS}>
-                                <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold">
-                                    {PROBLEM_STATUS_LABELS[problem.status]}
-                                </span>
                             </td>
                             <td className={CELL_CLASS}>
                                 <DifficultyLabel
