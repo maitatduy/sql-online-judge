@@ -7,15 +7,9 @@ import com.sqljudge.judge.compare.ExecutionOutcome.Failed;
 import com.sqljudge.judge.compare.ExecutionOutcome.Succeeded;
 import com.sqljudge.judge.compare.ExecutionOutcome.TimedOut;
 import com.sqljudge.judge.compare.ResultTable;
-import com.sqljudge.judge.sandbox.DatasetSnapshot;
-import com.sqljudge.judge.sandbox.ForeignKey;
-import com.sqljudge.judge.sandbox.LogicalType;
 import com.sqljudge.judge.sandbox.PostgresSandbox;
 import com.sqljudge.judge.sandbox.PostgresSandboxConfig;
 import com.sqljudge.judge.sandbox.QueryRun;
-import com.sqljudge.judge.sandbox.RunLimits;
-import com.sqljudge.judge.sandbox.SnapshotColumn;
-import com.sqljudge.judge.sandbox.SnapshotTable;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -43,70 +37,15 @@ class PostgresSandboxIntegrationTest {
     private static final String ADMIN_PASSWORD = "admin-secret";
     private static final Path INIT_SCRIPT =
             Path.of("..", "..", "infra", "sandbox", "postgres", "init", "01-create-judge-admin.sh");
-    private static final RunLimits FAST_LIMITS = new RunLimits(Duration.ofSeconds(1), 100, 64_000);
-
+    private static final int EXECUTABLE = 0755;
     private static final PostgreSQLContainer<?> POSTGRES =
             new PostgreSQLContainer<>("postgres:16.9-alpine")
                     .withDatabaseName("sandbox")
                     .withEnv("SANDBOX_PG_ADMIN_USER", ADMIN_USER)
                     .withEnv("SANDBOX_PG_ADMIN_PASSWORD", ADMIN_PASSWORD)
                     .withCopyFileToContainer(
-                            MountableFile.forHostPath(INIT_SCRIPT),
+                            MountableFile.forHostPath(INIT_SCRIPT, EXECUTABLE),
                             "/docker-entrypoint-initdb.d/01-create-judge-admin.sh");
-
-    private static final DatasetSnapshot COMPANY =
-            new DatasetSnapshot(
-                    List.of(
-                            new SnapshotTable(
-                                    "departments",
-                                    List.of(
-                                            new SnapshotColumn(
-                                                    "id", LogicalType.INTEGER, true, false),
-                                            new SnapshotColumn(
-                                                    "name", LogicalType.TEXT, false, false)),
-                                    List.of(),
-                                    List.of(row("1", "Kỹ thuật"), row("2", "Kinh doanh"))),
-                            new SnapshotTable(
-                                    "employees",
-                                    List.of(
-                                            new SnapshotColumn(
-                                                    "id", LogicalType.INTEGER, true, false),
-                                            new SnapshotColumn(
-                                                    "full_name", LogicalType.TEXT, false, false),
-                                            new SnapshotColumn(
-                                                    "salary", LogicalType.DECIMAL, false, false),
-                                            new SnapshotColumn(
-                                                    "department_id",
-                                                    LogicalType.INTEGER,
-                                                    false,
-                                                    true),
-                                            new SnapshotColumn(
-                                                    "hired_at", LogicalType.DATE, false, false),
-                                            new SnapshotColumn(
-                                                    "is_active", LogicalType.BOOLEAN, false, false),
-                                            new SnapshotColumn(
-                                                    "updated_at",
-                                                    LogicalType.TIMESTAMP,
-                                                    false,
-                                                    true)),
-                                    List.of(new ForeignKey("department_id", "departments", "id")),
-                                    List.of(
-                                            row(
-                                                    "1",
-                                                    "Hoàng Quốc Bảo",
-                                                    "48000000.50",
-                                                    "1",
-                                                    "2024-03-01",
-                                                    "true",
-                                                    "2026-01-05 09:30:00"),
-                                            row(
-                                                    "2",
-                                                    "Mai Lan",
-                                                    "30000000",
-                                                    null,
-                                                    "2025-07-15",
-                                                    "0",
-                                                    null)))));
 
     private static PostgresSandbox sandbox;
 
@@ -175,7 +114,10 @@ class PostgresSandboxIntegrationTest {
     @Test
     @DisplayName("Kết quả nhiều hơn giới hạn dòng thì dừng đọc và báo lỗi")
     void run_tooManyRows_returnsFailure() {
-        ExecutionOutcome outcome = run("SELECT * FROM generate_series(1, 1000000)");
+        ExecutionOutcome outcome =
+                run(
+                        "SELECT a.i FROM generate_series(1, 1000) a(i),"
+                                + " generate_series(1, 1000) b(i)");
 
         assertThat(outcome).isInstanceOf(Failed.class);
         assertThat(((Failed) outcome).message().text()).isEqualTo("Kết quả có hơn 100 dòng");
@@ -275,11 +217,8 @@ class PostgresSandboxIntegrationTest {
     }
 
     private static ExecutionOutcome run(String sql) {
-        return sandbox.run(new QueryRun(COMPANY, sql, FAST_LIMITS));
-    }
-
-    private static List<String> row(String... values) {
-        return Arrays.asList(values);
+        return sandbox.run(
+                new QueryRun(SandboxFixtures.company(), sql, SandboxFixtures.FAST_LIMITS));
     }
 
     private static long countAsSuperuser(String sql) throws SQLException {

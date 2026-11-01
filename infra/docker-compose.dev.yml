@@ -93,6 +93,35 @@ services:
       timeout: 3s
       retries: 5
 
+  sandbox-mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    mem_limit: 768m
+    cpus: 1.0
+    command:
+      - --local-infile=0
+      - --secure-file-priv=NULL
+      - --skip-log-bin
+      - --performance-schema=OFF
+      - --innodb-buffer-pool-size=128M
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SANDBOX_MYSQL_ROOT_PASSWORD}
+      SANDBOX_MYSQL_ADMIN_USER: ${SANDBOX_MYSQL_ADMIN_USER}
+      SANDBOX_MYSQL_ADMIN_PASSWORD: ${SANDBOX_MYSQL_ADMIN_PASSWORD}
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${SANDBOX_MYSQL_PORT}:3306"
+    volumes:
+      - ./sandbox/mysql/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - sandbox
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
 networks:
   sandbox:
 
