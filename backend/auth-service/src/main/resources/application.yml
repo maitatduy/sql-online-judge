@@ -1,6 +1,8 @@
 server:
   port: 8081
   shutdown: graceful
+  tomcat:
+    max-swallow-size: 10MB
 
 spring:
   application:
