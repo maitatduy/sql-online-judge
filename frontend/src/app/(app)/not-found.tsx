@@ -15,14 +15,14 @@ export default function AppNotFound() {
         <main id={MAIN_CONTENT_ID} className="mx-auto max-w-xl px-6 py-24 text-center">
             <p
                 aria-hidden="true"
-                className="font-mono text-[56px] leading-none font-extrabold text-muted-foreground/40"
+                className="text-[56px] leading-none font-extrabold text-muted-foreground/40"
             >
                 404
             </p>
             <h1 className="mt-4 text-2xl font-extrabold tracking-[-0.02em]">
                 Không tìm thấy trang
             </h1>
-            <p className="mt-3 font-mono text-[13px]">
+            <p className="mt-3 text-[13px]">
                 <SqlKeyword>SELECT</SqlKeyword> * <SqlKeyword>FROM</SqlKeyword> pages{" "}
                 <SqlKeyword>WHERE</SqlKeyword> url ={" "}
                 <span className="text-syntax-string">&apos;/this-page&apos;</span>;

@@ -18,7 +18,7 @@ export function SchemaIllustration({ sampleLearnerName }: SchemaIllustrationProp
                 />
                 <circle cx="236" cy="92" r="4" className="fill-brand" />
                 <circle cx="318" cy="186" r="4" className="fill-brand" />
-                <text x="302" y="124" fontSize="11" className="fill-muted-foreground font-mono">
+                <text x="302" y="124" fontSize="11" className="fill-muted-foreground">
                     1 - n
                 </text>
             </svg>
@@ -49,7 +49,7 @@ export function SchemaIllustration({ sampleLearnerName }: SchemaIllustrationProp
                     },
                 ]}
             />
-            <div className="dark absolute top-[218px] left-6 w-[268px] rounded-lg border bg-surface px-3.5 py-3 font-mono text-xs leading-[1.7] text-foreground shadow-2xl">
+            <div className="dark absolute top-[218px] left-6 w-[268px] rounded-lg border bg-surface px-3.5 py-3 text-xs leading-[1.7] text-foreground shadow-2xl">
                 <p>
                     <span className="font-bold text-syntax-keyword">SELECT</span> ket_qua{" "}
                     <span className="font-bold text-syntax-keyword">FROM</span> bai_nop
@@ -59,7 +59,7 @@ export function SchemaIllustration({ sampleLearnerName }: SchemaIllustrationProp
                     <span className="text-syntax-string">:ban</span>;
                 </p>
                 <p className="mt-2 flex items-center gap-2 border-t border-dashed pt-2 text-muted-foreground">
-                    <VerdictBadge verdict="AC" variant="solid" />1 dòng · 48 ms
+                    <VerdictBadge verdict="AC" variant="solid" />1 dòng, 48 ms
                 </p>
             </div>
         </div>

@@ -30,7 +30,7 @@ export function CpuMeter({ cpuPercent }: CpuMeterProps) {
                     />
                 )}
             </span>
-            <span className="w-8.5 text-right font-mono text-xs">
+            <span className="w-8.5 text-right text-xs">
                 {cpuPercent === null ? (
                     <>
                         <span aria-hidden="true">-</span>

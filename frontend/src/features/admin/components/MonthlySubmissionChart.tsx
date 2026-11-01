@@ -30,7 +30,7 @@ function MonthColumn({ bar, year }: MonthColumnProps) {
                         <>
                             <span
                                 className={cn(
-                                    "absolute mb-1 hidden font-mono text-[11px] whitespace-nowrap text-muted-foreground md:block",
+                                    "absolute mb-1 hidden text-[11px] whitespace-nowrap text-muted-foreground md:block",
                                     bar.isPeak && "font-bold text-foreground",
                                 )}
                                 style={{ bottom: `${bar.heightPercent}%` }}
@@ -49,7 +49,7 @@ function MonthColumn({ bar, year }: MonthColumnProps) {
                     )}
                 </div>
             </div>
-            <span aria-hidden="true" className="mt-1.5 font-mono text-[11px] text-muted-foreground">
+            <span aria-hidden="true" className="mt-1.5 text-[11px] text-muted-foreground">
                 T{bar.month}
             </span>
         </li>

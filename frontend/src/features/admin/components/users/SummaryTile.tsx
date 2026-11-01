@@ -26,9 +26,7 @@ export function SummaryTile({
             )}
         >
             <span className="block text-xs text-muted-foreground">{label}</span>
-            <span
-                className={cn("mt-0.5 block font-mono text-[22px] font-extrabold", valueClassName)}
-            >
+            <span className={cn("mt-0.5 block text-[22px] font-extrabold", valueClassName)}>
                 {value}
             </span>
         </button>

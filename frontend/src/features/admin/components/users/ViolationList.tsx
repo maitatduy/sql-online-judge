@@ -22,7 +22,7 @@ function handledLabel({ handledBy, handledAt }: UserViolation): string | null {
     if (!handledBy || !handledAt) {
         return null;
     }
-    return `Xử lý bởi ${handledBy} · ${formatDate(handledAt)}`;
+    return `Xử lý bởi ${handledBy} ngày ${formatDate(handledAt)}`;
 }
 
 export function ViolationList({ violations }: ViolationListProps) {

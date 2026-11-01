@@ -9,7 +9,7 @@ export default function AdminNotFound() {
         <main id={MAIN_CONTENT_ID} className="mx-auto max-w-xl px-6 py-24 text-center">
             <p
                 aria-hidden="true"
-                className="font-mono text-[56px] leading-none font-extrabold text-muted-foreground/40"
+                className="text-[56px] leading-none font-extrabold text-muted-foreground/40"
             >
                 404
             </p>

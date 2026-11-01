@@ -24,7 +24,7 @@ export function AuditLogHeader({ filters }: AuditLogHeaderProps) {
             <div>
                 <h1 className="text-[26px] font-extrabold">Nhật ký thao tác</h1>
                 <p className="mt-0.5 text-[13px] text-muted-foreground">
-                    Mọi thay đổi của quản trị viên và kiểm duyệt viên · chỉ đọc
+                    Mọi thay đổi của quản trị viên và kiểm duyệt viên, chỉ đọc
                 </p>
             </div>
             <Button

@@ -33,7 +33,7 @@ export function AuditEntryDialog({ entry, onClose }: AuditEntryDialogProps) {
             <dl className="grid grid-cols-[auto_1fr] items-baseline gap-x-6 gap-y-2.5 text-[15px]">
                 <dt className={LABEL_CLASS}>Người thực hiện</dt>
                 <dd className="font-medium">
-                    {entry.actorUsername} · {ROLE_LABELS[entry.actorRole]}
+                    {entry.actorUsername} - {ROLE_LABELS[entry.actorRole]}
                 </dd>
                 <dt className={LABEL_CLASS}>Đối tượng</dt>
                 <dd className="font-medium">
@@ -58,7 +58,7 @@ export function AuditEntryDialog({ entry, onClose }: AuditEntryDialogProps) {
             {hasValueChange(entry) ? (
                 <div>
                     <p className={`mb-1.5 ${LABEL_CLASS}`}>Thay đổi</p>
-                    <div className="overflow-hidden rounded-lg border border-diff-border bg-diff-surface font-mono text-sm leading-relaxed">
+                    <div className="overflow-hidden rounded-lg border border-diff-border bg-diff-surface text-sm leading-relaxed">
                         <p className="bg-diff-removed/12 px-3.5 py-2 text-diff-removed">
                             {`- ${changedFieldOf(entry.action)}: ${JSON.stringify(entry.previousValue)}`}
                         </p>

@@ -37,7 +37,7 @@ describe("CtaBanner", () => {
             .map((header) => header.textContent);
 
         expect(headers).toEqual(["name", "salary"]);
-        expect(within(example).getByText("AC · 12 ms")).toBeInTheDocument();
+        expect(within(example).getByText("AC - 12 ms")).toBeInTheDocument();
     });
 
     it("có câu mô tả ngắn và ba lý do để bắt đầu", () => {

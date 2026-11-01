@@ -55,7 +55,7 @@ export function TopRating({ users }: TopRatingProps) {
                                         {user.username}
                                     </span>
                                 </td>
-                                <td className="px-3 py-2.5 text-right font-mono">
+                                <td className="px-3 py-2.5 text-right">
                                     {formatNumber(user.rating)}
                                 </td>
                             </tr>

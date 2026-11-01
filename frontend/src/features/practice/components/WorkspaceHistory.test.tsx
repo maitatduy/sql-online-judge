@@ -75,7 +75,7 @@ describe("lịch sử nộp trong Workspace", () => {
         await screen.findByRole("textbox", { name: "Mã SQL của bạn" });
         fireEvent.click(screen.getByRole("button", { name: "Submit" }));
         const result = within(screen.getByRole("tabpanel", { name: "Nộp bài" }));
-        await result.findByText("Sai ở testcase 2/3 · 48 ms");
+        await result.findByText("Sai ở testcase 2/3, 48 ms");
 
         fireEvent.mouseDown(screen.getByRole("tab", { name: "Lịch sử nộp" }));
 

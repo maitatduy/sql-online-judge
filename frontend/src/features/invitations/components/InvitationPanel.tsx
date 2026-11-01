@@ -108,7 +108,7 @@ function InvitationBody({ token, invitation }: { token: string; invitation: Role
                     {invitation.inviterUsername ?? "Quản trị viên"} mời bạn nhận vai trò {roleLabel}
                 </h1>
                 <p className="mt-1.5 text-sm text-muted-foreground">
-                    Lời mời gửi tới {invitation.maskedEmail} · hết hạn ngày{" "}
+                    Lời mời gửi tới {invitation.maskedEmail}, hết hạn ngày{" "}
                     {formatDate(invitation.expiresAt)}
                 </p>
             </div>

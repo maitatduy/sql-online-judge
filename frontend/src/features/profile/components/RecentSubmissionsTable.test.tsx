@@ -45,7 +45,7 @@ describe("RecentSubmissionsTable", () => {
         const row = within(table).getAllByRole("row")[1];
 
         expect(within(row).getByText("WA")).toBeInTheDocument();
-        expect(row).toHaveTextContent("#1.184 · Lương cao nhất mỗi phòng ban");
+        expect(row).toHaveTextContent("#1.184. Lương cao nhất mỗi phòng ban");
         expect(row).toHaveTextContent("PostgreSQL");
         expect(within(row).getByText("5 phút trước")).toHaveAttribute(
             "datetime",

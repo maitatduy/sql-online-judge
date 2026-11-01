@@ -13,7 +13,7 @@ describe("ProfileIdentityCard", () => {
             screen.getByRole("heading", { level: 1, name: "Nguyễn Minh Anh" }),
         ).toBeInTheDocument();
         expect(screen.getByText("@minh.anh")).toBeInTheDocument();
-        expect(screen.getByText("Chuyên viên · 1.487")).toBeInTheDocument();
+        expect(screen.getByText("Chuyên viên - 1.487")).toBeInTheDocument();
         expect(
             screen.getByText(
                 "Sinh viên năm 3 Khoa học dữ liệu. Đang luyện SQL để đi thực tập Data Analyst.",

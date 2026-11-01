@@ -37,7 +37,7 @@ describe("phiên đăng nhập trên trang chi tiết", () => {
 
         const sessions = await findSessions();
 
-        expect(await sessions.findByText("Chrome · Windows · TP.HCM")).toBeInTheDocument();
+        expect(await sessions.findByText("Chrome, Windows, TP.HCM")).toBeInTheDocument();
         expect(sessions.getByText("Đang hoạt động")).toBeInTheDocument();
         expect(sessions.getByText("IP lạ")).toBeInTheDocument();
         expect(sessions.queryByText(/\d+\.\d+\.\d+\.\d+/)).not.toBeInTheDocument();
@@ -49,15 +49,15 @@ describe("phiên đăng nhập trên trang chi tiết", () => {
 
         fireEvent.click(
             await sessions.findByRole("button", {
-                name: "Đăng xuất phiên Safari · iPhone · Hà Nội",
+                name: "Đăng xuất phiên Safari, iPhone, Hà Nội",
             }),
         );
 
         expect(
-            await screen.findByText("Đã đăng xuất phiên Safari · iPhone · Hà Nội."),
+            await screen.findByText("Đã đăng xuất phiên Safari, iPhone, Hà Nội."),
         ).toBeInTheDocument();
         await waitFor(() =>
-            expect(sessions.queryByText("Safari · iPhone · Hà Nội")).not.toBeInTheDocument(),
+            expect(sessions.queryByText("Safari, iPhone, Hà Nội")).not.toBeInTheDocument(),
         );
     });
 
@@ -103,7 +103,7 @@ describe("phiên đăng nhập trên trang chi tiết", () => {
         renderPage("viet.luu", "?tab=sessions");
         const sessions = await findSessions();
 
-        await sessions.findByText("Chrome · Windows · TP.HCM");
+        await sessions.findByText("Chrome, Windows, TP.HCM");
 
         expect(sessions.queryByRole("button", { name: /^Đăng xuất/ })).not.toBeInTheDocument();
     });

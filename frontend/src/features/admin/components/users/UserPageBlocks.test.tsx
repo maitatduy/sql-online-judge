@@ -54,13 +54,13 @@ describe("các khối trên trang chi tiết tải độc lập", () => {
         ).toBeInTheDocument();
         expect(
             await within(screen.getByRole("region", { name: "Ghi chú nội bộ" })).findByText(
-                "mod.thu · 12/09/2026",
+                "mod.thu - 12/09/2026",
             ),
         ).toBeInTheDocument();
 
         fireEvent.click(sessions.getByRole("button", { name: "Thử lại" }));
 
-        expect(await sessions.findByText("Chrome · Windows · TP.HCM")).toBeInTheDocument();
+        expect(await sessions.findByText("Chrome, Windows, TP.HCM")).toBeInTheDocument();
     });
 
     it("báo đang tải riêng cho từng khối", async () => {

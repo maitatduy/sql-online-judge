@@ -25,7 +25,7 @@ function summaryOf(problem: ProblemDetail, submission: Submission): string | nul
     const { firstFailedTestcase: failed, totalTestcases, runtimeMs } = submission;
     const runtime = runtimeMs === null ? [] : [`${formatNumber(runtimeMs)} ms`];
     if (submission.verdict === "AC") {
-        return [`${totalTestcases}/${totalTestcases} testcase`, ...runtime].join(" · ");
+        return [`${totalTestcases}/${totalTestcases} testcase`, ...runtime].join(", ");
     }
     if (!failed) {
         return null;
@@ -43,19 +43,19 @@ function summaryOf(problem: ProblemDetail, submission: Submission): string | nul
               failed.diff.extraRows.length > 0 ? `thừa ${failed.diff.extraRows.length} dòng` : null,
           ].filter((part) => part !== null)
         : [];
-    return [lead, ...rowCounts, ...runtime].join(" · ");
+    return [lead, ...rowCounts, ...runtime].join(", ");
 }
 
 function DiffTables({ diff }: { diff: SubmissionDiff }) {
     return (
         <div className="grid gap-3 xl:grid-cols-2">
             <ResultTable
-                label={`Kết quả của bạn · ${formatNumber(diff.actual.rows.length)} dòng`}
+                label={`Kết quả của bạn: ${formatNumber(diff.actual.rows.length)} dòng`}
                 result={diff.actual}
                 rowMarks={marksOf(diff.extraRows, "extra")}
             />
             <ResultTable
-                label={`Mong đợi · ${formatNumber(diff.expected.rows.length)} dòng`}
+                label={`Mong đợi: ${formatNumber(diff.expected.rows.length)} dòng`}
                 result={diff.expected}
                 rowMarks={marksOf(diff.missingRows, "missing")}
             />

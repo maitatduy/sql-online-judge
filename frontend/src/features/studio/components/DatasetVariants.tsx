@@ -25,8 +25,8 @@ interface DatasetVariantsProps {
 function rowCountLabel(variant: DatasetVariant, tableName: string): string {
     const table = variant.tables.find((candidate) => candidate.tableName === tableName);
     return table
-        ? `${tableName} · ${formatNumber(table.rowCount)} dòng`
-        : `${tableName} · chưa có dữ liệu`;
+        ? `${tableName}: ${formatNumber(table.rowCount)} dòng`
+        : `${tableName}: chưa có dữ liệu`;
 }
 
 export function DatasetVariants({ dataset }: DatasetVariantsProps) {
@@ -97,7 +97,7 @@ export function DatasetVariants({ dataset }: DatasetVariantsProps) {
                                 />
                             </div>
                         </div>
-                        <ul className="mt-2 flex flex-col gap-0.5 font-mono text-[13px] text-muted-foreground">
+                        <ul className="mt-2 flex flex-col gap-0.5 text-[13px] text-muted-foreground">
                             {dataset.schema.tables.map((table) => (
                                 <li key={table.name}>{rowCountLabel(variant, table.name)}</li>
                             ))}

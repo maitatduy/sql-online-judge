@@ -22,7 +22,7 @@ function Fact({ label, value }: FactProps) {
             <p id={labelId} className="text-xs whitespace-nowrap text-muted-foreground">
                 {label}
             </p>
-            <p className="mt-0.5 font-mono text-lg font-extrabold">{value}</p>
+            <p className="mt-0.5 text-lg font-extrabold">{value}</p>
         </div>
     );
 }

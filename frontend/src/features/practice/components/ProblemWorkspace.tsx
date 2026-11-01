@@ -57,7 +57,7 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
 
     return (
         <>
-            <WorkspaceHeader title={`#${problem.number} · ${problem.title}`}>
+            <WorkspaceHeader title={`#${problem.number}. ${problem.title}`}>
                 <WorkspaceActions
                     isRunning={codeRun.isRunning}
                     isJudging={judging.isJudging}

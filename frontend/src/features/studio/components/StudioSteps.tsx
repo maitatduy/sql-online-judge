@@ -11,7 +11,7 @@ const EDITABLE_STEPS: { step: StudioStep; label: string; path: string }[] = [
 const LATER_STEPS = ["Database và schema", "Đáp án và testcase", "Xem trước và xuất bản"];
 const STEP_CLASS = "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm";
 const NUMBER_CLASS =
-    "flex size-6 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold";
+    "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold";
 
 interface StudioStepsProps {
     problemId: string;

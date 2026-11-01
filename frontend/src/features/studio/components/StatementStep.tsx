@@ -57,7 +57,7 @@ export function StatementStep({ problem, disabled, save }: StatementStepProps) {
                         aria-invalid={error ? true : undefined}
                         aria-describedby={error ? "statement-error" : "statement-length"}
                         onChange={(event) => setStatement(event.target.value)}
-                        className="block min-h-[420px] w-full resize-y bg-transparent p-4 font-mono text-[13px] leading-relaxed outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                        className="block min-h-[420px] w-full resize-y bg-transparent p-4 text-[13px] leading-relaxed outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     />
                 </TabsContent>
                 <TabsContent value="preview" className="min-h-[420px] p-4">

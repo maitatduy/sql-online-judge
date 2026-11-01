@@ -55,7 +55,7 @@ export function VerdictBadge({
                 className,
             )}
         >
-            {detail ? `${appearance.code} · ${detail}` : appearance.code}
+            {detail ? `${appearance.code} - ${detail}` : appearance.code}
         </span>
     );
 }

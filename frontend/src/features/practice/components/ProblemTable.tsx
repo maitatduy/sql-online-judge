@@ -69,10 +69,10 @@ const COLUMNS_WITH_PROGRESS = column.columns([PROGRESS_COLUMN, ...PROBLEM_COLUMN
 
 const COLUMN_CLASSES: Record<string, string> = {
     progress: "w-16",
-    number: "w-14 font-mono text-muted-foreground",
+    number: "w-14 text-muted-foreground",
     tags: "max-md:hidden",
-    acceptanceRate: "text-right font-mono",
-    solvedCount: "text-right font-mono text-muted-foreground max-md:hidden",
+    acceptanceRate: "text-right",
+    solvedCount: "text-right text-muted-foreground max-md:hidden",
 };
 
 interface ProblemTableProps {

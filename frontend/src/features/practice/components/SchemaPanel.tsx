@@ -29,7 +29,7 @@ function constraintsOf(column: SchemaColumn): Constraint[] {
 function ColumnConstraints({ column }: { column: SchemaColumn }) {
     return constraintsOf(column).map((constraint, index) => (
         <Fragment key={constraint.label}>
-            {index > 0 ? " · " : null}
+            {index > 0 ? ", " : null}
             <span className={constraint.className}>{constraint.label}</span>
         </Fragment>
     ));

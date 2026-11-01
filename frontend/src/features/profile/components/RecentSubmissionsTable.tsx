@@ -104,7 +104,7 @@ export function RecentSubmissionsTable({ username, now }: RecentSubmissionsTable
                                     <VerdictBadge verdict={submission.verdict} />
                                 </td>
                                 <td className={`${CELL_CLASS_NAME} font-semibold`}>
-                                    #{formatNumber(submission.problemNumber)} ·{" "}
+                                    #{formatNumber(submission.problemNumber)}.{" "}
                                     {submission.problemTitle}
                                 </td>
                                 <td className={`${CELL_CLASS_NAME} text-muted-foreground`}>

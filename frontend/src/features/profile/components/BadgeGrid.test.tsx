@@ -9,7 +9,7 @@ describe("BadgeGrid", () => {
     it("ghi số huy hiệu ở tiêu đề", () => {
         render(<BadgeGrid badges={MINH_ANH_PROFILE.badges} />);
 
-        expect(screen.getByRole("heading", { level: 2, name: "Huy hiệu · 7" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: "Huy hiệu: 7" })).toBeInTheDocument();
     });
 
     it("mỗi huy hiệu là một ô có tên, tới được bằng bàn phím", () => {
@@ -66,7 +66,7 @@ describe("BadgeGrid", () => {
     it("báo chưa có huy hiệu khi danh sách rỗng", () => {
         render(<BadgeGrid badges={[]} />);
 
-        expect(screen.getByRole("heading", { level: 2, name: "Huy hiệu · 0" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: "Huy hiệu: 0" })).toBeInTheDocument();
         expect(screen.getByText("Chưa có huy hiệu nào")).toBeInTheDocument();
         expect(screen.queryByRole("list")).not.toBeInTheDocument();
     });

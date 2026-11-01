@@ -83,7 +83,7 @@ export function InviteeSearch({
                                     <RoleBadge role={candidate.role} />
                                     {reason ? (
                                         <span className="text-xs text-muted-foreground">
-                                            · {reason}
+                                            - {reason}
                                         </span>
                                     ) : null}
                                 </button>

@@ -50,7 +50,7 @@ describe("Workspace", () => {
         const statement = within(screen.getByRole("tabpanel", { name: "Đề bài" }));
         expect(statement.getByText("Trung bình")).toHaveClass("text-difficulty-medium");
         expect(statement.getByText("Subquery")).toBeInTheDocument();
-        expect(statement.getByText("AC 41,2% · 12.380 người giải")).toBeInTheDocument();
+        expect(statement.getByText("AC 41,2%, 12.380 người giải")).toBeInTheDocument();
         expect(
             statement.getByText("lương cao nhất trong mỗi phòng ban", { selector: "strong" }),
         ).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe("Workspace", () => {
         expect(statement.getByText(/Bắt buộc đúng thứ tự dòng/)).toBeInTheDocument();
         expect(statement.getByText("Chỉ cho phép SELECT, WITH.")).toBeInTheDocument();
         expect(
-            statement.getByText("Giới hạn thời gian 2 giây · 2 testcase ẩn."),
+            statement.getByText("Giới hạn thời gian 2 giây, 2 testcase ẩn."),
         ).toBeInTheDocument();
     });
 
@@ -79,7 +79,7 @@ describe("Workspace", () => {
         expect(employees.getByRole("row", { name: /id INTEGER Khoá chính/ })).toBeInTheDocument();
         expect(
             employees.getByRole("row", {
-                name: /department_id INTEGER Khoá ngoại → departments\.id · Có thể NULL/,
+                name: /department_id INTEGER Khoá ngoại → departments\.id, Có thể NULL/,
             }),
         ).toBeInTheDocument();
     });
@@ -99,7 +99,7 @@ describe("Workspace", () => {
             target: { value: "SELECT name FROM employees;" },
         });
 
-        expect(await screen.findByText(/^Đã lưu nháp · \d{2}:\d{2}$/)).toBeInTheDocument();
+        expect(await screen.findByText(/^Đã lưu nháp lúc \d{2}:\d{2}$/)).toBeInTheDocument();
         expect(localStorage.getItem("draft:0192f3b0-0000-7000-8000-0000000000b8:POSTGRESQL")).toBe(
             "SELECT name FROM employees;",
         );

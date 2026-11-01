@@ -27,7 +27,7 @@ export function SchemaTableCard({ name, columns, className }: SchemaTableCardPro
     return (
         <div
             className={cn(
-                "dark absolute w-[236px] overflow-hidden rounded-lg border bg-surface font-mono text-foreground shadow-2xl",
+                "dark absolute w-[236px] overflow-hidden rounded-lg border bg-surface text-foreground shadow-2xl",
                 className,
             )}
         >

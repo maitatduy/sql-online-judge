@@ -26,9 +26,7 @@ describe("RatingSummary", () => {
             "Rating contest1.487",
         );
         expect(screen.getByText("Tăng 46")).toBeInTheDocument();
-        expect(
-            screen.getByText("SQL Judge Weekly #19 · 20/09/2026 · Hạng #36"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("SQL Judge Weekly #19, 20/09/2026, hạng #36")).toBeInTheDocument();
     });
 
     it("ghi rõ mức giảm bằng chữ, không chỉ bằng màu", () => {
@@ -36,9 +34,7 @@ describe("RatingSummary", () => {
 
         expect(screen.getByText("1.338")).toBeInTheDocument();
         expect(screen.getByText("Giảm 14")).toBeInTheDocument();
-        expect(
-            screen.getByText("SQL Judge Weekly #14 · 14/06/2026 · Hạng #77"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("SQL Judge Weekly #14, 14/06/2026, hạng #77")).toBeInTheDocument();
     });
 
     it("contest đầu tiên không có mức thay đổi", () => {

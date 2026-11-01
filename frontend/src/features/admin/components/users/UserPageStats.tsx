@@ -23,12 +23,7 @@ function StatCard({ label, value, isAlert = false }: StatCardProps) {
             )}
         >
             <dt className="text-xs text-muted-foreground">{label}</dt>
-            <dd
-                className={cn(
-                    "font-mono text-xl font-extrabold",
-                    isAlert ? "text-violation-severe" : null,
-                )}
-            >
+            <dd className={cn("text-xl font-extrabold", isAlert ? "text-violation-severe" : null)}>
                 {value}
             </dd>
         </div>

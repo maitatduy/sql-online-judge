@@ -36,7 +36,7 @@ export function EditorPanel({ engineLabel, code, savedAt, onChange, onReset }: E
                 </Button>
                 {savedAt ? (
                     <span className="ml-auto text-xs text-muted-foreground">
-                        {`Đã lưu nháp · ${formatTime(savedAt)}`}
+                        {`Đã lưu nháp lúc ${formatTime(savedAt)}`}
                     </span>
                 ) : null}
             </div>

@@ -44,8 +44,7 @@ export function ResendCodeButton({ email, cooldownSeconds }: ResendCodeButtonPro
             >
                 {isWaiting ? (
                     <>
-                        Gửi lại mã sau{" "}
-                        <span className="font-mono">{formatCountdown(secondsLeft)}</span>
+                        Gửi lại mã sau <span>{formatCountdown(secondsLeft)}</span>
                     </>
                 ) : (
                     "Gửi lại mã"

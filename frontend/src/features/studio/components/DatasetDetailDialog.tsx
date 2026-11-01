@@ -25,16 +25,16 @@ function SchemaSummary({ dataset }: { dataset: StudioDataset }) {
             ) : null}
             {dataset.schema.tables.map((table) => (
                 <section key={table.name} className="rounded-md border p-3">
-                    <h3 className="font-mono text-sm font-bold">{table.name}</h3>
+                    <h3 className="text-sm font-bold">{table.name}</h3>
                     <ul className="mt-1.5 flex flex-col gap-1 text-[13px]">
                         {table.columns.map((column) => (
                             <li key={column.name} className="flex flex-wrap gap-x-2">
-                                <span className="font-mono">{column.name}</span>
+                                <span>{column.name}</span>
                                 <span className="text-muted-foreground">
                                     {LOGICAL_TYPE_LABELS[column.type]}
-                                    {column.isPrimaryKey ? " · Khoá chính" : ""}
+                                    {column.isPrimaryKey ? ", khoá chính" : ""}
                                     {column.references
-                                        ? ` · Khoá ngoại tới ${column.references.table}.${column.references.column}`
+                                        ? `, khoá ngoại tới ${column.references.table}.${column.references.column}`
                                         : ""}
                                 </span>
                             </li>
@@ -52,7 +52,7 @@ function SchemaSummary({ dataset }: { dataset: StudioDataset }) {
                     <ul className="mt-1.5 flex flex-col gap-1 text-[13px]">
                         {dataset.variants.map((variant) => (
                             <li key={variant.id}>
-                                {variant.name} · {variant.isPublic ? "Công khai" : "Ẩn"} ·{" "}
+                                {variant.name}: {variant.isPublic ? "công khai" : "ẩn"},{" "}
                                 {formatNumber(
                                     variant.tables.reduce((sum, table) => sum + table.rowCount, 0),
                                 )}{" "}

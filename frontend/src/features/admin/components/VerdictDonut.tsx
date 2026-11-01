@@ -39,7 +39,7 @@ function DonutCenter({ caption, count }: DonutCenterProps) {
                 x={CENTER}
                 y={CENTER + 6}
                 textAnchor="middle"
-                className="fill-foreground font-mono text-[17px] font-extrabold"
+                className="fill-foreground text-[17px] font-extrabold"
             >
                 {formatNumber(count)}
             </text>

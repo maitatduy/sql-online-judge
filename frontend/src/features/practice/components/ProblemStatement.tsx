@@ -29,7 +29,7 @@ export function ProblemStatement({ problem }: ProblemStatementProps) {
                         </span>
                     ))}
                     <span className="ml-1 text-xs text-muted-foreground">
-                        {`AC ${formatPercent(problem.acceptanceRate)} · ${formatNumber(problem.solvedCount)} người giải`}
+                        {`AC ${formatPercent(problem.acceptanceRate)}, ${formatNumber(problem.solvedCount)} người giải`}
                     </span>
                 </div>
             </div>
@@ -49,7 +49,7 @@ export function ProblemStatement({ problem }: ProblemStatementProps) {
                 ) : null}
                 <li>{`Chỉ cho phép ${problem.allowedStatements.join(", ")}.`}</li>
                 <li>
-                    {`Giới hạn thời gian ${formatNumber(problem.timeLimitMs / MS_PER_SECOND)} giây · ${formatNumber(problem.hiddenTestcaseCount)} testcase ẩn.`}
+                    {`Giới hạn thời gian ${formatNumber(problem.timeLimitMs / MS_PER_SECOND)} giây, ${formatNumber(problem.hiddenTestcaseCount)} testcase ẩn.`}
                 </li>
             </ul>
         </div>

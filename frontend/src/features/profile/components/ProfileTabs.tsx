@@ -27,17 +27,17 @@ export function ProfileTabs({ username, tabCounts }: ProfileTabsProps) {
     const upcomingTabs = [
         {
             value: "solutions",
-            label: `Lời giải đã chia sẻ · ${formatNumber(tabCounts.sharedSolutions)}`,
+            label: `Lời giải đã chia sẻ: ${formatNumber(tabCounts.sharedSolutions)}`,
             description: "Lời giải đã chia sẻ sẽ hiện ở đây.",
         },
         {
             value: "posts",
-            label: `Bài viết · ${formatNumber(tabCounts.posts)}`,
+            label: `Bài viết: ${formatNumber(tabCounts.posts)}`,
             description: "Bài viết trong cộng đồng sẽ hiện ở đây.",
         },
         {
             value: "contests",
-            label: `Contest đã thi · ${formatNumber(tabCounts.contests)}`,
+            label: `Contest đã thi: ${formatNumber(tabCounts.contests)}`,
             description: "Kết quả các contest đã thi sẽ hiện ở đây.",
         },
     ];

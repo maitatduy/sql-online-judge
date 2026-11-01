@@ -57,7 +57,7 @@ export function SchemaColumnRow({
                     aria-label={`Tên cột ${label}`}
                     value={column.name}
                     autoComplete="off"
-                    className="font-mono"
+
                     aria-invalid={nameError ? true : undefined}
                     aria-describedby={nameError ? `${path}-name-error` : undefined}
                     onChange={(event) => onChange({ name: event.target.value })}
@@ -105,7 +105,7 @@ export function SchemaColumnRow({
                 <NativeSelect
                     aria-label={`Khoá ngoại, cột ${label}`}
                     value={current}
-                    className="font-mono"
+
                     aria-invalid={referenceError ? true : undefined}
                     onChange={(event) => onChange({ references: toReference(event.target.value) })}
                 >

@@ -21,7 +21,7 @@ export function PillarsSection() {
                     description="Lộ trình có thứ tự, mỗi bài giảng có ô SQL chạy được ngay giữa đoạn văn."
                 >
                     <div className="flex justify-between">
-                        <span>JOIN · bài 14/24</span>
+                        <span>JOIN: bài 14/24</span>
                         <span className="text-muted-foreground">58%</span>
                     </div>
                     <div
@@ -53,11 +53,11 @@ export function PillarsSection() {
                     <ol className="flex flex-col gap-1.5">
                         <li className="flex justify-between">
                             <span>1. quang.le</span>
-                            <span className="font-mono">400 · 38′</span>
+                            <span>400 - 38′</span>
                         </li>
                         <li className="flex justify-between">
                             <span>2. trang.hoang</span>
-                            <span className="font-mono">400 · 51′</span>
+                            <span>400 - 51′</span>
                         </li>
                     </ol>
                 </PillarCard>
@@ -71,7 +71,7 @@ export function PillarsSection() {
                     <p className="mt-0.5 flex items-center gap-1 text-muted-foreground">
                         <ArrowBigUp aria-hidden="true" className="size-3.5" />
                         <span className="sr-only">Lượt bình chọn:</span>
-                        128 · 24 bình luận
+                        128 lượt thích, 24 bình luận
                     </p>
                 </PillarCard>
             </div>

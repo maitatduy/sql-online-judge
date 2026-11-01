@@ -104,7 +104,7 @@ export function SubmissionHistory({ problem, now }: SubmissionHistoryProps) {
                             <td className={cn(CELL_CLASS, "text-muted-foreground")}>
                                 {DIALECT_LABELS[submission.dialect]}
                             </td>
-                            <td className={cn(CELL_CLASS, "font-mono")}>
+                            <td className={cn(CELL_CLASS)}>
                                 {submission.runtimeMs === null
                                     ? "-"
                                     : `${formatNumber(submission.runtimeMs)} ms`}

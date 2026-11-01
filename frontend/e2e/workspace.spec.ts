@@ -27,10 +27,10 @@ test.describe("làm bài trong Workspace", () => {
         await expect(page.locator(".monaco-editor").first()).toBeVisible({ timeout: 30_000 });
 
         await page.getByRole("button", { name: "Run" }).click();
-        await expect(page.getByText("4 dòng · 41 ms")).toBeVisible();
+        await expect(page.getByText("4 dòng, 41 ms")).toBeVisible();
 
         await page.getByRole("button", { name: "Submit" }).click();
-        await expect(page.getByText("Sai ở testcase 2/3 · 48 ms")).toBeVisible();
+        await expect(page.getByText("Sai ở testcase 2/3, 48 ms")).toBeVisible();
         if (isNarrow) {
             await expect(page.getByRole("tab", { name: "Kết quả WA" })).toHaveAttribute(
                 "aria-selected",

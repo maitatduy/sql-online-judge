@@ -13,7 +13,7 @@ export function StatsStrip({ stats }: StatsStripProps) {
                 {stats.map((stat) => (
                     <div key={stat.label} className="flex flex-col-reverse">
                         <dt className="mt-0.5 text-muted-foreground">{stat.label}</dt>
-                        <dd className="font-mono text-[32px] leading-tight font-extrabold">
+                        <dd className="text-[32px] leading-tight font-extrabold">
                             {typeof stat.value === "number" ? formatNumber(stat.value) : stat.value}
                         </dd>
                     </div>

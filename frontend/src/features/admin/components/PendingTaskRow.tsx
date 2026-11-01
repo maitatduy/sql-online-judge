@@ -54,7 +54,7 @@ export function PendingTaskRow({ task }: PendingTaskRowProps) {
             </span>
             <span
                 className={cn(
-                    "inline-flex h-6 min-w-7 items-center justify-center rounded-full px-2 font-mono text-xs font-bold text-white",
+                    "inline-flex h-6 min-w-7 items-center justify-center rounded-full px-2 text-xs font-bold text-white",
                     countClassName,
                 )}
             >

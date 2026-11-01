@@ -19,7 +19,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
     return (
         <AuthStandaloneShell
             headerAside={
-                <span className="text-[13px] text-muted-foreground">Bước 2/3 · Xác thực email</span>
+                <span className="text-[13px] text-muted-foreground">Bước 2/3: Xác thực email</span>
             }
         >
             <VerifyEmailFlow token={linkToken} />

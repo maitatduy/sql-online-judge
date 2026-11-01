@@ -22,7 +22,7 @@ function DisconnectedAlert({ worker, onRestart }: WorkerAlertProps) {
         <div role="alert" className={`${ALERT_CLASS} border-status-down/30 bg-status-down/8`}>
             <TriangleAlert aria-hidden="true" className="size-4.5 shrink-0 text-status-down" />
             <span className="flex-1">
-                <strong className="font-mono">{worker.name}</strong> mất kết nối
+                <strong>{worker.name}</strong> mất kết nối
                 {worker.disconnectedAt ? ` từ ${formatTime(worker.disconnectedAt)}` : ""}
             </span>
             <Button
@@ -44,7 +44,7 @@ function RestartingNotice({ worker }: { worker: JudgeWorker }) {
             <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-status-busy" />
             <span className="flex-1">
                 <span>
-                    Đang khởi động lại <strong className="font-mono">{worker.name}</strong>
+                    Đang khởi động lại <strong>{worker.name}</strong>
                 </span>
                 <span className="mt-0.5 block text-xs text-muted-foreground">
                     Thường mất khoảng 30 giây
