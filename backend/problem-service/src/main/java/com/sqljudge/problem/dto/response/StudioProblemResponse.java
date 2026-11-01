@@ -2,6 +2,7 @@ package com.sqljudge.problem.dto.response;
 
 import com.sqljudge.problem.entity.Difficulty;
 import com.sqljudge.problem.entity.Problem;
+import com.sqljudge.problem.entity.ProblemRevision;
 import com.sqljudge.problem.entity.ProblemStatus;
 import java.time.Instant;
 import java.util.Comparator;
@@ -17,6 +18,7 @@ public record StudioProblemResponse(
         Difficulty difficulty,
         List<TagResponse> tags,
         String statementMarkdown,
+        ProblemDatasetResponse dataset,
         Instant updatedAt) {
 
     public StudioProblemResponse {
@@ -36,6 +38,14 @@ public record StudioProblemResponse(
                         .sorted(Comparator.comparing(TagResponse::slug))
                         .toList(),
                 problem.getStatementMarkdown(),
+                datasetOf(problem.getDraftRevision()),
                 problem.getUpdatedAt());
+    }
+
+    private static ProblemDatasetResponse datasetOf(ProblemRevision draft) {
+        if (draft == null || draft.getDatasetVersion() == null) {
+            return null;
+        }
+        return ProblemDatasetResponse.from(draft.getDatasetVersion().getDataset());
     }
 }

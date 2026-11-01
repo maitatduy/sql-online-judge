@@ -1,6 +1,7 @@
 package com.sqljudge.problem.controller;
 
 import com.sqljudge.common.web.PageResponse;
+import com.sqljudge.problem.dto.request.ChooseProblemDatasetRequest;
 import com.sqljudge.problem.dto.request.CreateProblemRequest;
 import com.sqljudge.problem.dto.request.StudioProblemQuery;
 import com.sqljudge.problem.dto.request.UpdateProblemRequest;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -110,6 +112,21 @@ public class StudioProblemController {
     public StudioProblemResponse updateProblem(
             @PathVariable UUID problemId, @Valid @RequestBody UpdateProblemRequest request) {
         return studioProblemEditService.update(problemId, request);
+    }
+
+    @PutMapping("/{problemId}/dataset")
+    @Operation(summary = "Chọn database cho bài; bản hiện tại của database được chốt lại")
+    @ApiResponse(responseCode = "200", description = "Bài sau khi gắn database")
+    @ApiResponse(responseCode = "400", description = "Chưa chọn database")
+    @ApiResponse(
+            responseCode = "404",
+            description = "Không có bài hoặc database, hoặc không phải của người gọi")
+    @ApiResponse(
+            responseCode = "422",
+            description = "Bài đã khoá, hoặc database chưa đủ schema và dữ liệu")
+    public StudioProblemResponse chooseDataset(
+            @PathVariable UUID problemId, @Valid @RequestBody ChooseProblemDatasetRequest request) {
+        return studioProblemEditService.chooseDataset(problemId, request);
     }
 
     @DeleteMapping("/{problemId}")
