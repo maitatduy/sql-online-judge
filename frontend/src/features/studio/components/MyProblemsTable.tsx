@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 import { PROBLEM_STATUS_LABELS } from "../status-labels";
 import type { StudioProblemSummary } from "../types";
+import { MyProblemRowActions } from "./MyProblemRowActions";
 
 const CELL_CLASS = "border-b px-4 py-3 align-middle";
 const HEADER_CLASS = "border-b px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground";
@@ -25,7 +26,7 @@ export function MyProblemsTable({ problems }: MyProblemsTableProps) {
         <div className="overflow-x-auto rounded-lg border bg-card">
             <table
                 aria-label="Bài của tôi"
-                className="w-full min-w-[640px] border-collapse text-sm"
+                className="w-full min-w-[760px] border-collapse text-sm"
             >
                 <thead>
                     <tr>
@@ -40,6 +41,9 @@ export function MyProblemsTable({ problems }: MyProblemsTableProps) {
                         </th>
                         <th scope="col" className={cn(HEADER_CLASS, "w-36")}>
                             Cập nhật
+                        </th>
+                        <th scope="col" className={cn(HEADER_CLASS, "w-32")}>
+                            Hành động
                         </th>
                     </tr>
                 </thead>
@@ -69,6 +73,9 @@ export function MyProblemsTable({ problems }: MyProblemsTableProps) {
                                 <time dateTime={problem.updatedAt}>
                                     {formatRelativeTime(problem.updatedAt, now)}
                                 </time>
+                            </td>
+                            <td className={cn(CELL_CLASS, "py-1.5")}>
+                                <MyProblemRowActions problem={problem} />
                             </td>
                         </tr>
                     ))}

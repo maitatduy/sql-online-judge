@@ -1,49 +1,78 @@
+import { DIFFICULTIES, type Difficulty } from "@/lib/difficulty";
 import { ROUTES } from "@/lib/routes";
 
+import {
+    DEFAULT_PAGE_SIZE,
+    DEFAULT_SORT,
+    FIRST_PAGE,
+    listParams,
+    PROBLEM_SORTS,
+    readPage,
+    readPageSize,
+    readSort,
+} from "./list-options";
 import { PROBLEM_STATUS_LABELS } from "./status-labels";
 import type { ProblemStatus } from "./types";
 
-const FIRST_PAGE = 1;
-export const MY_PROBLEMS_PAGE_SIZE = 20;
-
 export interface MyProblemFilters {
     status: ProblemStatus | null;
+    difficulty: Difficulty | null;
     q: string;
+    sort: string;
+    size: number;
     page: number;
 }
 
-export const NO_MY_PROBLEM_FILTERS: MyProblemFilters = { status: null, q: "", page: FIRST_PAGE };
+export const NO_MY_PROBLEM_FILTERS: MyProblemFilters = {
+    status: null,
+    difficulty: null,
+    q: "",
+    sort: DEFAULT_SORT,
+    size: DEFAULT_PAGE_SIZE,
+    page: FIRST_PAGE,
+};
 
 function readStatus(value: string | null): ProblemStatus | null {
     return value !== null && value in PROBLEM_STATUS_LABELS ? (value as ProblemStatus) : null;
 }
 
-function readPage(value: string | null): number {
-    const page = Number(value);
-    return Number.isInteger(page) && page >= FIRST_PAGE ? page : FIRST_PAGE;
+function readDifficulty(value: string | null): Difficulty | null {
+    return DIFFICULTIES.find((difficulty) => difficulty === value) ?? null;
 }
 
 export function readMyProblemFilters(searchParams: Pick<URLSearchParams, "get">): MyProblemFilters {
     return {
         status: readStatus(searchParams.get("status")),
+        difficulty: readDifficulty(searchParams.get("difficulty")),
         q: searchParams.get("q")?.trim() ?? "",
+        sort: readSort(searchParams.get("sort"), PROBLEM_SORTS),
+        size: readPageSize(searchParams.get("size")),
         page: readPage(searchParams.get("page")),
     };
 }
 
-function activeFilterParams({ status, q }: MyProblemFilters) {
-    return { ...(status ? { status } : {}), ...(q ? { q } : {}) };
+function activeFilterParams({ status, difficulty, q }: MyProblemFilters) {
+    return {
+        ...(status ? { status } : {}),
+        ...(difficulty ? { difficulty } : {}),
+        ...(q ? { q } : {}),
+    };
 }
 
 export function myProblemsQueryOf(filters: MyProblemFilters) {
-    return { ...activeFilterParams(filters), page: filters.page, size: MY_PROBLEMS_PAGE_SIZE };
+    return {
+        ...activeFilterParams(filters),
+        sort: filters.sort,
+        page: filters.page,
+        size: filters.size,
+    };
 }
 
 export function myProblemsHref(filters: MyProblemFilters): string {
-    const query = new URLSearchParams(activeFilterParams(filters));
-    if (filters.page > FIRST_PAGE) {
-        query.set("page", String(filters.page));
-    }
+    const query = new URLSearchParams({
+        ...activeFilterParams(filters),
+        ...listParams(filters.page, filters.size, filters.sort),
+    });
     const queryString = query.toString();
     return queryString ? `${ROUTES.studioProblems}?${queryString}` : ROUTES.studioProblems;
 }

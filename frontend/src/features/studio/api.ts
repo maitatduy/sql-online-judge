@@ -38,6 +38,8 @@ export const studioApi = {
             `/api/studio/problems/${encodeURIComponent(problemId)}`,
             request,
         ),
+    deleteProblem: (problemId: string) =>
+        apiClient.delete<void>(`/api/studio/problems/${encodeURIComponent(problemId)}`),
     listTags: (signal?: AbortSignal) =>
         apiClient.get<{ items: StudioTag[] }>("/api/tags", { signal }),
     listMyDatasets: (filters: MyDatasetFilters, signal?: AbortSignal) =>

@@ -6,18 +6,21 @@ import { Plus, Search } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { Pagination } from "@/components/shared/Pagination";
+import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
+import { DIFFICULTIES, DIFFICULTY_LABELS, type Difficulty } from "@/lib/difficulty";
 import { formatNumber } from "@/lib/format";
 import { useDebouncedSearch } from "@/lib/useDebouncedSearch";
 
 import { useMyProblemFilters } from "../hooks/useMyProblemFilters";
 import { useMyProblems, useStatusCounts } from "../hooks/useMyProblems";
+import { PROBLEM_SORTS } from "../list-options";
 import { myProblemsHref } from "../my-problem-filters";
 import type { StatusCounts } from "../types";
 import { CreateProblemDialog } from "./CreateProblemDialog";
+import { ListFooter } from "./ListFooter";
 import { MyProblemsTable } from "./MyProblemsTable";
 import { StatusTabs } from "./StatusTabs";
 
@@ -35,7 +38,7 @@ export function MyProblems() {
     const { searchText, changeSearchText } = useDebouncedSearch(filters.q, (q) =>
         changeFilters({ q }),
     );
-    const hasFilter = filters.status !== null || filters.q !== "";
+    const hasFilter = filters.status !== null || filters.difficulty !== null || filters.q !== "";
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     return (
@@ -76,6 +79,35 @@ export function MyProblems() {
                     />
                 </label>
             </div>
+            <div className="flex flex-wrap items-center gap-3">
+                <NativeSelect
+                    aria-label="Độ khó"
+                    value={filters.difficulty ?? ""}
+                    onChange={(event) =>
+                        changeFilters({
+                            difficulty: (event.target.value || null) as Difficulty | null,
+                        })
+                    }
+                >
+                    <option value="">Mọi độ khó</option>
+                    {DIFFICULTIES.map((difficulty) => (
+                        <option key={difficulty} value={difficulty}>
+                            {DIFFICULTY_LABELS[difficulty]}
+                        </option>
+                    ))}
+                </NativeSelect>
+                <NativeSelect
+                    aria-label="Sắp xếp"
+                    value={filters.sort}
+                    onChange={(event) => changeFilters({ sort: event.target.value })}
+                >
+                    {PROBLEM_SORTS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </NativeSelect>
+            </div>
             {isPending ? (
                 <div
                     role="status"
@@ -103,13 +135,13 @@ export function MyProblems() {
             {data && data.items.length > 0 ? (
                 <>
                     <MyProblemsTable problems={data.items} />
-                    {data.totalPages > 1 ? (
-                        <Pagination
-                            result={data}
-                            hrefOf={(page) => myProblemsHref({ ...filters, page })}
-                            unit="bài"
-                        />
-                    ) : null}
+                    <ListFooter
+                        result={data}
+                        hrefOf={(page) => myProblemsHref({ ...filters, page })}
+                        unit="bài"
+                        size={filters.size}
+                        onSizeChange={(size) => changeFilters({ size })}
+                    />
                 </>
             ) : null}
         </div>
