@@ -9,6 +9,7 @@ import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 import type { StudioDatasetSummary } from "../types";
+import { MyDatasetRowActions } from "./MyDatasetRowActions";
 
 const CELL_CLASS = "border-b px-4 py-3 align-middle";
 const HEADER_CLASS = "border-b px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground";
@@ -28,7 +29,7 @@ export function MyDatasetsTable({ datasets }: MyDatasetsTableProps) {
         <div className="overflow-x-auto rounded-lg border bg-card">
             <table
                 aria-label="Dataset của tôi"
-                className="w-full min-w-[640px] border-collapse text-sm"
+                className="w-full min-w-[760px] border-collapse text-sm"
             >
                 <thead>
                     <tr>
@@ -43,6 +44,9 @@ export function MyDatasetsTable({ datasets }: MyDatasetsTableProps) {
                         </th>
                         <th scope="col" className={cn(HEADER_CLASS, "w-36")}>
                             Cập nhật
+                        </th>
+                        <th scope="col" className={cn(HEADER_CLASS, "w-32")}>
+                            Hành động
                         </th>
                     </tr>
                 </thead>
@@ -69,6 +73,9 @@ export function MyDatasetsTable({ datasets }: MyDatasetsTableProps) {
                                 <time dateTime={dataset.updatedAt}>
                                     {formatRelativeTime(dataset.updatedAt, now)}
                                 </time>
+                            </td>
+                            <td className={cn(CELL_CLASS, "py-1.5")}>
+                                <MyDatasetRowActions dataset={dataset} />
                             </td>
                         </tr>
                     ))}

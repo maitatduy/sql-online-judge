@@ -53,6 +53,7 @@ export const studioApi = {
         apiClient.get<StudioDataset>(datasetPath(datasetId), { signal }),
     replaceDatasetSchema: (datasetId: string, tables: DatasetTable[]) =>
         apiClient.put<StudioDataset>(`${datasetPath(datasetId)}/schema`, { tables }),
+    deleteDataset: (datasetId: string) => apiClient.delete<void>(datasetPath(datasetId)),
     createDatasetDraft: (datasetId: string) =>
         apiClient.post<StudioDataset>(`${datasetPath(datasetId)}/versions`),
 };

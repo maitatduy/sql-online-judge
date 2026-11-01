@@ -19,6 +19,8 @@ const RESERVED_WORDS = new Set(["group", "order", "select", "table", "user", "wh
 
 interface StoredDataset extends StudioDataset {
     ownerId: string;
+    usedByProblems: number;
+    deletedAt?: string;
 }
 
 type DatasetSeed = [
@@ -27,37 +29,41 @@ type DatasetSeed = [
     latestVersion: number,
     hasDraft: boolean,
     hoursAgo: number,
+    usedByProblems: number,
 ];
 
 const SEEDS: DatasetSeed[] = [
-    ["Công ty", "Phòng ban và nhân viên kèm lương", 2, true, 0.1],
-    ["Trường học", "Lớp, sinh viên và điểm thi", 1, false, 50],
-    ["Cửa hàng trực tuyến", "Khách hàng, đơn hàng và sản phẩm", 1, false, 300],
+    ["Công ty", "Phòng ban và nhân viên kèm lương", 2, true, 0.1, 0],
+    ["Trường học", "Lớp, sinh viên và điểm thi", 1, false, 50, 2],
+    ["Cửa hàng trực tuyến", "Khách hàng, đơn hàng và sản phẩm", 1, false, 300, 0],
 ];
 
 function seedDatasets(): StoredDataset[] {
-    return SEEDS.map(([name, description, latestVersion, hasDraft, hoursAgo], index) => {
-        const updatedAt = new Date(Date.now() - hoursAgo * HOUR_MS).toISOString();
-        const versions = Array.from({ length: latestVersion }, (_, versionIndex) => ({
-            number: versionIndex + 1,
-            frozenAt: hasDraft && versionIndex + 1 === latestVersion ? null : updatedAt,
-        }));
-        return {
-            id: `0192f3e0-0000-7000-8000-${String(index + 1).padStart(12, "0")}`,
-            ownerId: SETTER_SESSION_USER.id,
-            slug: slugOf(name),
-            name,
-            description,
-            versions,
-            schema: {
-                versionNumber: latestVersion,
-                isDraft: hasDraft,
-                tables: SEED_SCHEMAS[index],
-            },
-            variants: [],
-            updatedAt,
-        };
-    });
+    return SEEDS.map(
+        ([name, description, latestVersion, hasDraft, hoursAgo, usedByProblems], index) => {
+            const updatedAt = new Date(Date.now() - hoursAgo * HOUR_MS).toISOString();
+            const versions = Array.from({ length: latestVersion }, (_, versionIndex) => ({
+                number: versionIndex + 1,
+                frozenAt: hasDraft && versionIndex + 1 === latestVersion ? null : updatedAt,
+            }));
+            return {
+                id: `0192f3e0-0000-7000-8000-${String(index + 1).padStart(12, "0")}`,
+                ownerId: SETTER_SESSION_USER.id,
+                usedByProblems,
+                slug: slugOf(name),
+                name,
+                description,
+                versions,
+                schema: {
+                    versionNumber: latestVersion,
+                    isDraft: hasDraft,
+                    tables: SEED_SCHEMAS[index],
+                },
+                variants: [],
+                updatedAt,
+            };
+        },
+    );
 }
 
 function slugOf(name: string): string {
@@ -113,11 +119,22 @@ function toDetail(dataset: StoredDataset): StudioDataset {
     };
 }
 
+function sortedDatasets(datasets: StoredDataset[], sort: string): StoredDataset[] {
+    if (sort === "name,asc") {
+        return [...datasets].sort((first, second) => first.name.localeCompare(second.name, "vi"));
+    }
+    const newestFirst = [...datasets].sort(
+        (first, second) => Date.parse(second.updatedAt) - Date.parse(first.updatedAt),
+    );
+    return sort === "updatedAt,asc" ? newestFirst.reverse() : newestFirst;
+}
+
 function findDataset(datasetId: string, canModerate: boolean): StoredDataset | undefined {
     const user = readMockSession();
     return readStudioDatasets().find(
         (dataset) =>
             dataset.id === datasetId &&
+            !dataset.deletedAt &&
             (dataset.ownerId === user?.id ||
                 user?.role === "ADMIN" ||
                 (canModerate && user?.role === "MODERATOR")),
@@ -168,6 +185,23 @@ export const studioDatasetHandlers: RequestHandler[] = [
         return dataset ? HttpResponse.json(toDetail(dataset)) : notFound();
     }),
 
+    http.delete("*/api/studio/datasets/:datasetId", async ({ params }) => {
+        await delay();
+        const dataset = findDataset(String(params.datasetId), false);
+        if (!dataset) {
+            return notFound();
+        }
+        if (dataset.usedByProblems > 0) {
+            return apiError(
+                409,
+                "DATASET_IN_USE",
+                `Dataset đang được ${dataset.usedByProblems} bài dùng nên chưa xoá được`,
+            );
+        }
+        saveDataset({ ...dataset, deletedAt: new Date().toISOString() });
+        return new HttpResponse(null, { status: 204 });
+    }),
+
     http.put("*/api/studio/datasets/:datasetId/schema", async ({ params, request }) => {
         await delay();
         const dataset = findDataset(String(params.datasetId), false);
@@ -214,12 +248,20 @@ export const studioDatasetHandlers: RequestHandler[] = [
         }
         const query = new URL(request.url).searchParams;
         const keyword = folded(query.get("q")?.trim() ?? "");
+        const status = query.get("status");
+        const sort = query.get("sort") ?? "updatedAt,desc";
         const page = Number(query.get("page") ?? 1);
         const size = Number(query.get("size") ?? DEFAULT_PAGE_SIZE);
-        const matches = readStudioDatasets()
-            .filter((dataset) => dataset.ownerId === user.id)
-            .filter((dataset) => folded(dataset.name).includes(keyword))
-            .sort((first, second) => Date.parse(second.updatedAt) - Date.parse(first.updatedAt));
+        const matches = sortedDatasets(
+            readStudioDatasets().filter(
+                (dataset) =>
+                    dataset.ownerId === user.id &&
+                    !dataset.deletedAt &&
+                    folded(dataset.name).includes(keyword) &&
+                    (status === null || (status === "DRAFT") === dataset.schema.isDraft),
+            ),
+            sort,
+        );
         const body: Page<StudioDatasetSummary> = {
             items: matches.slice((page - 1) * size, page * size).map(toSummary),
             page,
@@ -248,6 +290,7 @@ export const studioDatasetHandlers: RequestHandler[] = [
         const created: StoredDataset = {
             id: crypto.randomUUID(),
             ownerId: user.id,
+            usedByProblems: 0,
             slug: uniqueSlug(name, datasets),
             name,
             description: body.description?.trim() ?? "",

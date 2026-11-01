@@ -6,7 +6,7 @@ import { Plus, Search } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { Pagination } from "@/components/shared/Pagination";
+import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
@@ -14,11 +14,18 @@ import { formatNumber } from "@/lib/format";
 import { useDebouncedSearch } from "@/lib/useDebouncedSearch";
 
 import { useMyDatasetFilters, useMyDatasets } from "../hooks/useMyDatasets";
-import { myDatasetsHref } from "../my-dataset-filters";
+import { DATASET_SORTS } from "../list-options";
+import {
+    DATASET_VERSION_FILTER_LABELS,
+    type DatasetVersionFilter,
+    myDatasetsHref,
+} from "../my-dataset-filters";
 import { CreateDatasetDialog } from "./CreateDatasetDialog";
+import { ListFooter } from "./ListFooter";
 import { MyDatasetsTable } from "./MyDatasetsTable";
 
 const SKELETON_ROW_COUNT = 4;
+const DATASET_VERSION_FILTERS: readonly DatasetVersionFilter[] = ["DRAFT", "FROZEN"];
 
 export function MyDatasets() {
     const { filters, changeFilters } = useMyDatasetFilters();
@@ -50,17 +57,46 @@ export function MyDatasets() {
                 </Button>
             </div>
             <CreateDatasetDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
-            <label className="flex h-9 w-full items-center gap-2 rounded-md border px-3 text-muted-foreground focus-within:ring-2 focus-within:ring-ring sm:w-72">
-                <Search aria-hidden="true" className="size-4 shrink-0" />
-                <input
-                    type="search"
-                    aria-label="Tìm dataset"
-                    placeholder="Tìm dataset…"
-                    value={searchText}
-                    onChange={(event) => changeSearchText(event.target.value)}
-                    className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
-                />
-            </label>
+            <div className="flex flex-wrap items-center gap-3">
+                <label className="flex h-9 w-full items-center gap-2 rounded-md border px-3 text-muted-foreground focus-within:ring-2 focus-within:ring-ring sm:w-72">
+                    <Search aria-hidden="true" className="size-4 shrink-0" />
+                    <input
+                        type="search"
+                        aria-label="Tìm dataset"
+                        placeholder="Tìm dataset…"
+                        value={searchText}
+                        onChange={(event) => changeSearchText(event.target.value)}
+                        className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
+                    />
+                </label>
+                <NativeSelect
+                    aria-label="Trạng thái phiên bản"
+                    value={filters.status ?? ""}
+                    onChange={(event) =>
+                        changeFilters({
+                            status: (event.target.value || null) as DatasetVersionFilter | null,
+                        })
+                    }
+                >
+                    <option value="">Mọi trạng thái</option>
+                    {DATASET_VERSION_FILTERS.map((status) => (
+                        <option key={status} value={status}>
+                            {DATASET_VERSION_FILTER_LABELS[status]}
+                        </option>
+                    ))}
+                </NativeSelect>
+                <NativeSelect
+                    aria-label="Sắp xếp"
+                    value={filters.sort}
+                    onChange={(event) => changeFilters({ sort: event.target.value })}
+                >
+                    {DATASET_SORTS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </NativeSelect>
+            </div>
             {isPending ? (
                 <div
                     role="status"
@@ -83,8 +119,8 @@ export function MyDatasets() {
             {data && data.items.length === 0 ? (
                 <EmptyState
                     title={
-                        filters.q
-                            ? "Không có dataset nào khớp từ khoá."
+                        filters.q || filters.status
+                            ? "Không có dataset nào khớp bộ lọc."
                             : "Bạn chưa có dataset nào."
                     }
                 />
@@ -92,13 +128,13 @@ export function MyDatasets() {
             {data && data.items.length > 0 ? (
                 <>
                     <MyDatasetsTable datasets={data.items} />
-                    {data.totalPages > 1 ? (
-                        <Pagination
-                            result={data}
-                            hrefOf={(page) => myDatasetsHref({ ...filters, page })}
-                            unit="dataset"
-                        />
-                    ) : null}
+                    <ListFooter
+                        result={data}
+                        hrefOf={(page) => myDatasetsHref({ ...filters, page })}
+                        unit="dataset"
+                        size={filters.size}
+                        onSizeChange={(size) => changeFilters({ size })}
+                    />
                 </>
             ) : null}
         </div>
