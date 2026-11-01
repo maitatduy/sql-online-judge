@@ -2,11 +2,14 @@ package com.sqljudge.problem.controller;
 
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.request.CreateDatasetRequest;
+import com.sqljudge.problem.dto.request.ParseSqlRequest;
 import com.sqljudge.problem.dto.request.StudioDatasetQuery;
 import com.sqljudge.problem.dto.request.UpdateDatasetRequest;
 import com.sqljudge.problem.dto.request.UpdateDatasetSchemaRequest;
+import com.sqljudge.problem.dto.response.SqlImportResponse;
 import com.sqljudge.problem.dto.response.StudioDatasetResponse;
 import com.sqljudge.problem.dto.response.StudioDatasetSummaryResponse;
+import com.sqljudge.problem.service.SqlImportParser;
 import com.sqljudge.problem.service.StudioDatasetService;
 import com.sqljudge.problem.service.StudioDatasetVersionService;
 import com.sqljudge.problem.service.StudioSorts;
@@ -54,6 +57,20 @@ public class StudioDatasetController {
             @Valid @RequestBody CreateDatasetRequest request) {
         StudioDatasetResponse created = studioDatasetService.create(request);
         return ResponseEntity.created(URI.create(PATH + "/" + created.id())).body(created);
+    }
+
+    @PostMapping("/parse-sql")
+    @Operation(
+            summary =
+                    "Đọc file SQL (CREATE TABLE, INSERT) thành schema và CSV để xem trước, không"
+                            + " lưu")
+    @ApiResponse(responseCode = "200", description = "Schema và dữ liệu đọc được")
+    @ApiResponse(
+            responseCode = "400",
+            description = "File có câu lệnh khác, giá trị không cố định hoặc sai cú pháp")
+    @ApiResponse(responseCode = "403", description = "Không phải SETTER hoặc ADMIN")
+    public SqlImportResponse parseSql(@Valid @RequestBody ParseSqlRequest request) {
+        return SqlImportParser.parse(request.sql());
     }
 
     @GetMapping
