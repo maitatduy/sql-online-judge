@@ -5,6 +5,7 @@ import { type MyDatasetFilters, myDatasetsQueryOf } from "./my-dataset-filters";
 import { type MyProblemFilters, myProblemsQueryOf } from "./my-problem-filters";
 import type { CreateDatasetValues, CreateProblemValues } from "./schemas";
 import type {
+    CreateStudioRunRequest,
     DatasetTable,
     DatasetVariantRequest,
     SqlImportPreview,
@@ -12,6 +13,7 @@ import type {
     StudioDatasetSummary,
     StudioProblem,
     StudioProblemSummary,
+    StudioRun,
     StudioTag,
     UpdateDatasetRequest,
     UpdateProblemRequest,
@@ -47,6 +49,16 @@ export const studioApi = {
         apiClient.put<StudioProblem>(
             `/api/studio/problems/${encodeURIComponent(problemId)}/dataset`,
             { datasetId },
+        ),
+    createStudioRun: (problemId: string, request: CreateStudioRunRequest) =>
+        apiClient.post<StudioRun>(
+            `/api/studio/problems/${encodeURIComponent(problemId)}/runs`,
+            request,
+        ),
+    getStudioRun: (problemId: string, runId: string, signal?: AbortSignal) =>
+        apiClient.get<StudioRun>(
+            `/api/studio/problems/${encodeURIComponent(problemId)}/runs/${encodeURIComponent(runId)}`,
+            { signal },
         ),
     deleteProblem: (problemId: string) =>
         apiClient.delete<void>(`/api/studio/problems/${encodeURIComponent(problemId)}`),

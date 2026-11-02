@@ -1,3 +1,4 @@
+import type { Dialect } from "@/lib/dialect";
 import type { Difficulty } from "@/lib/difficulty";
 
 export type ProblemStatus =
@@ -108,5 +109,41 @@ export interface UpdateDatasetRequest {
 }
 
 export type StudioStep = "info" | "statement" | "database";
+
+export type StudioRunStatus = "PENDING" | "COMPLETED";
+
+export type VariantRunStatus = "SUCCEEDED" | "FAILED" | "TIMED_OUT" | "SANDBOX_FAILED";
+
+export type RunCell = string | number | boolean | null;
+
+export interface VariantRunResult {
+    variantId: string;
+    variantName: string;
+    isPublic: boolean;
+    status: VariantRunStatus;
+    columns: string[];
+    rows: RunCell[][];
+    rowCount: number;
+    truncated: boolean;
+    runtimeMs: number;
+    message: string | null;
+}
+
+export interface StudioRun {
+    id: string;
+    dialect: Dialect;
+    status: StudioRunStatus;
+    sql: string;
+    createdAt: string;
+    completedAt: string | null;
+    rejection: { verdict: string; message: string } | null;
+    systemError: string | null;
+    variants: VariantRunResult[];
+}
+
+export interface CreateStudioRunRequest {
+    dialect: Dialect;
+    sql: string;
+}
 
 export const EDITABLE_STATUSES: readonly ProblemStatus[] = ["DRAFT", "CHANGES_REQUESTED"];
