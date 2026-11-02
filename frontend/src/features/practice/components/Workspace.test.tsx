@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { CompletionSchema } from "@/lib/sql-completion";
 import { server } from "@/mocks/server";
 import { renderWithProviders } from "@/test/render";
 
@@ -11,22 +12,29 @@ const notFound = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", () => ({ notFound }));
 
+const editorSchemas = vi.hoisted(() => ({ latest: undefined as CompletionSchema | undefined }));
+
 vi.mock("@/components/shared/LazySqlEditor", () => ({
     LazySqlEditor: ({
         value,
         onChange,
         ariaLabel,
+        schema,
     }: {
         value: string;
         onChange: (value: string) => void;
         ariaLabel: string;
-    }) => (
-        <textarea
-            aria-label={ariaLabel}
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-        />
-    ),
+        schema?: CompletionSchema;
+    }) => {
+        editorSchemas.latest = schema;
+        return (
+            <textarea
+                aria-label={ariaLabel}
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+            />
+        );
+    },
 }));
 
 const SLUG = "highest-salary-per-department";
@@ -82,6 +90,14 @@ describe("Workspace", () => {
                 name: /department_id INTEGER Khoá ngoại → departments\.id, Có thể NULL/,
             }),
         ).toBeInTheDocument();
+    });
+
+    it("trình soạn nhận schema của bài để gợi ý bảng và cột khi gõ", async () => {
+        await renderWorkspace();
+
+        const employees = editorSchemas.latest?.tables.find((table) => table.name === "employees");
+        expect(employees?.columns).toEqual(expect.arrayContaining(["id", "department_id"]));
+        expect(editorSchemas.latest?.tables.map((table) => table.name)).toContain("departments");
     });
 
     it("mở mã khởi đầu trong editor và ghi nhãn dialect", async () => {
