@@ -121,7 +121,7 @@ function toSummary(problem: StoredProblem): StudioProblemSummary {
     };
 }
 
-function findAccessible(problemId: string): StoredProblem | undefined {
+export function findAccessibleStudioProblem(problemId: string): StoredProblem | undefined {
     const user = readMockSession();
     return readStudioProblems().find(
         (problem) =>
@@ -217,7 +217,7 @@ export const studioProblemHandlers: RequestHandler[] = [
 
     http.get("*/api/studio/problems/:problemId", async ({ params }) => {
         await delay();
-        const problem = findAccessible(String(params.problemId));
+        const problem = findAccessibleStudioProblem(String(params.problemId));
         return problem
             ? HttpResponse.json(toDetail(problem))
             : apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
@@ -225,7 +225,7 @@ export const studioProblemHandlers: RequestHandler[] = [
 
     http.delete("*/api/studio/problems/:problemId", async ({ params }) => {
         await delay();
-        const problem = findAccessible(String(params.problemId));
+        const problem = findAccessibleStudioProblem(String(params.problemId));
         if (!problem) {
             return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
         }
@@ -244,7 +244,7 @@ export const studioProblemHandlers: RequestHandler[] = [
 
     http.put("*/api/studio/problems/:problemId/dataset", async ({ params, request }) => {
         await delay();
-        const problem = findAccessible(String(params.problemId));
+        const problem = findAccessibleStudioProblem(String(params.problemId));
         if (!problem) {
             return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
         }
@@ -276,7 +276,7 @@ export const studioProblemHandlers: RequestHandler[] = [
 
     http.patch("*/api/studio/problems/:problemId", async ({ params, request }) => {
         await delay();
-        const problem = findAccessible(String(params.problemId));
+        const problem = findAccessibleStudioProblem(String(params.problemId));
         if (!problem) {
             return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
         }

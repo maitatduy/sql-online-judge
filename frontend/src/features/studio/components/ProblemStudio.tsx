@@ -14,6 +14,7 @@ import { LOCKED_MESSAGES } from "../status-labels";
 import { EDITABLE_STATUSES, type StudioStep } from "../types";
 import { DatasetStep } from "./DatasetStep";
 import { InfoStep } from "./InfoStep";
+import { QueryRunPanel } from "./QueryRunPanel";
 import { StatementStep } from "./StatementStep";
 import { StudioSteps } from "./StudioSteps";
 
@@ -101,11 +102,14 @@ export function ProblemStudio({ problemId, step = "info" }: ProblemStudioProps) 
                             />
                         ) : null}
                         {step === "database" ? (
-                            <DatasetStep
-                                key={problem.id}
-                                problem={problem}
-                                disabled={!isEditable}
-                            />
+                            <div className="flex min-w-0 flex-col gap-6">
+                                <DatasetStep
+                                    key={problem.id}
+                                    problem={problem}
+                                    disabled={!isEditable}
+                                />
+                                <QueryRunPanel key={problem.id} problem={problem} />
+                            </div>
                         ) : null}
                     </div>
                 </>
