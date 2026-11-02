@@ -19,6 +19,7 @@ import com.sqljudge.judge.sandbox.RunLimits;
 import com.sqljudge.judge.sandbox.Sandbox;
 import com.sqljudge.judge.sandbox.SandboxRegistry;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class StudioRunProcessor {
 
+    public static final int PREVIEW_BUDGET_CHARS = 512_000;
     private static final int MAX_TIME_LIMIT_MS = 6_000;
     private static final String TIMED_OUT_MESSAGE = "Câu lệnh chạy quá thời gian cho phép";
 
@@ -57,36 +59,35 @@ public class StudioRunProcessor {
             return StudioRunResult.systemError(request, "dialect_unavailable");
         }
         RunLimits limits = limitsOf(request.timeLimitMs());
-        List<VariantRunResult> results =
-                snapshot.variants().stream()
-                        .map(variant -> runOn(sandbox.get(), snapshot, variant, request, limits))
-                        .toList();
+        ResultPreview preview = new ResultPreview(PREVIEW_BUDGET_CHARS);
+        List<VariantRunResult> results = new ArrayList<>();
+        for (SnapshotVariant variant : snapshot.variants()) {
+            ExecutionOutcome outcome =
+                    sandbox.get()
+                            .run(
+                                    new QueryRun(
+                                            SnapshotMapper.toDataset(snapshot, variant),
+                                            request.sql(),
+                                            limits));
+            results.add(resultOf(variant, outcome, preview));
+        }
         return StudioRunResult.completed(request, results);
     }
 
-    private static VariantRunResult runOn(
-            Sandbox sandbox,
-            DatasetSnapshotResponse snapshot,
-            SnapshotVariant variant,
-            StudioRunRequest request,
-            RunLimits limits) {
-        ExecutionOutcome outcome =
-                sandbox.run(
-                        new QueryRun(
-                                SnapshotMapper.toDataset(snapshot, variant),
-                                request.sql(),
-                                limits));
+    private static VariantRunResult resultOf(
+            SnapshotVariant variant, ExecutionOutcome outcome, ResultPreview preview) {
         if (outcome instanceof Succeeded succeeded) {
             ResultTable table = succeeded.table();
+            List<List<Object>> rows = preview.take(table.rows());
             return new VariantRunResult(
                     variant.id(),
                     variant.name(),
                     variant.isPublic(),
                     RunStatus.SUCCEEDED,
                     table.columnNames(),
-                    ResultPreview.rowsOf(table.rows()),
+                    rows,
                     table.rows().size(),
-                    table.rows().size() > ResultPreview.MAX_ROWS,
+                    rows.size() < table.rows().size(),
                     succeeded.runtimeMs(),
                     null);
         }

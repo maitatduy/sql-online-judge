@@ -45,6 +45,8 @@ Xem bảng đặt tên trong `database.md`. Tên database: `sqljudge_<service>` 
 | `sqljudge.judge.completed` | judge-worker → submission |
 | `sqljudge.submission.judged` | submission → contest, auth (thống kê), notification |
 | `sqljudge.problem.published` | problem → learning, notification |
+| `sqljudge.studio.run-requested` | problem → judge-worker (chạy thử SQL trong Problem Studio) |
+| `sqljudge.studio.run-completed` | judge-worker → problem |
 | `sqljudge.contest.started` / `.finished` | contest → ai (khoá/mở AI), notification |
 | `sqljudge.contest.rating-updated` | contest → auth (cập nhật rating hồ sơ) |
 | `sqljudge.user.registered` | auth → notification |

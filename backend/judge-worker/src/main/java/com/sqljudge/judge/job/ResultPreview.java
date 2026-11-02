@@ -7,22 +7,40 @@ import java.util.List;
 
 final class ResultPreview {
 
-    static final int MAX_ROWS = 100;
+    private static final int MAX_ROWS = 100;
     private static final int MAX_CELL_CHARS = 500;
+    private static final int NULL_CHARS = 4;
     private static final String ELLIPSIS = "…";
 
-    private ResultPreview() {}
+    private int remainingChars;
 
-    static List<List<Object>> rowsOf(List<List<Object>> rows) {
-        return rows.stream().limit(MAX_ROWS).map(ResultPreview::rowOf).toList();
+    ResultPreview(int budgetChars) {
+        this.remainingChars = budgetChars;
+    }
+
+    List<List<Object>> take(List<List<Object>> rows) {
+        List<List<Object>> preview = new ArrayList<>();
+        for (List<Object> row : rows) {
+            if (preview.size() == MAX_ROWS) {
+                break;
+            }
+            List<Object> cells = rowOf(row);
+            int rowChars = charsOf(cells);
+            if (rowChars > remainingChars) {
+                break;
+            }
+            remainingChars -= rowChars;
+            preview.add(cells);
+        }
+        return preview;
     }
 
     private static List<Object> rowOf(List<Object> row) {
-        List<Object> preview = new ArrayList<>(row.size());
+        List<Object> cells = new ArrayList<>(row.size());
         for (Object value : row) {
-            preview.add(cellOf(value));
+            cells.add(cellOf(value));
         }
-        return Collections.unmodifiableList(preview);
+        return Collections.unmodifiableList(cells);
     }
 
     private static Object cellOf(Object value) {
@@ -37,5 +55,13 @@ final class ResultPreview {
 
     private static String shortened(String text) {
         return text.length() > MAX_CELL_CHARS ? text.substring(0, MAX_CELL_CHARS) + ELLIPSIS : text;
+    }
+
+    private static int charsOf(List<Object> cells) {
+        int chars = 0;
+        for (Object cell : cells) {
+            chars += cell == null ? NULL_CHARS : String.valueOf(cell).length();
+        }
+        return chars;
     }
 }

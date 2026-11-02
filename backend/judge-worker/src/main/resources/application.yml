@@ -14,6 +14,18 @@ spring:
           problem-service:
             connect-timeout: 1000
             read-timeout: 10000
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: judge-worker
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.block.ms: 5000
+        request.timeout.ms: 5000
+        delivery.timeout.ms: 10000
 
 resilience4j:
   circuitbreaker:
@@ -40,6 +52,9 @@ management:
       show-details: never
 
 sqljudge:
+  judge:
+    consumer-concurrency: 2
+    publish-timeout: 10s
   problem-service-url: ${PROBLEM_SERVICE_URL}
   internal:
     api-token: ${INTERNAL_API_TOKEN}

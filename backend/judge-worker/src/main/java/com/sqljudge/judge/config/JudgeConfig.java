@@ -11,6 +11,7 @@ import com.sqljudge.judge.sandbox.SqliteSandbox;
 import com.sqljudge.judge.sandbox.SqliteSandboxConfig;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Clock;
 import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,11 @@ public class JudgeConfig {
     @Bean
     StatementGuard statementGuard() {
         return new StatementGuard();
+    }
+
+    @Bean
+    Clock clock() {
+        return Clock.systemUTC();
     }
 
     @Bean
