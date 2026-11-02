@@ -104,11 +104,11 @@ export function ProblemStudio({ problemId, step = "info" }: ProblemStudioProps) 
                         {step === "database" ? (
                             <div className="flex min-w-0 flex-col gap-6">
                                 <DatasetStep
-                                    key={problem.id}
+                                    key={`dataset-${problem.id}`}
                                     problem={problem}
                                     disabled={!isEditable}
                                 />
-                                <QueryRunPanel key={problem.id} problem={problem} />
+                                <QueryRunPanel key={`run-${problem.id}`} problem={problem} />
                             </div>
                         ) : null}
                     </div>

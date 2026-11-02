@@ -15,6 +15,8 @@ interface CapturedEditorProps {
 interface FakeEditor {
     addCommand: (keybinding: number, handler: () => void) => void;
     updateOptions: (options: { fontFamily?: string }) => void;
+    getModel?: () => unknown;
+    onDidDispose?: (listener: () => void) => void;
 }
 
 interface FakeMonaco {
@@ -22,6 +24,21 @@ interface FakeMonaco {
         defineTheme: (name: string, theme: unknown) => void;
         setTheme: (name: string) => void;
     };
+    languages?: {
+        CompletionItemKind: Record<string, number>;
+        registerCompletionItemProvider: (
+            language: string,
+            provider: CompletionProvider,
+        ) => { dispose: () => void } | void;
+    };
+}
+
+interface CompletionProvider {
+    triggerCharacters: string[];
+    provideCompletionItems: (
+        model: unknown,
+        position: { lineNumber: number; column: number },
+    ) => { suggestions: { label: string; kind: number; detail: string }[] };
 }
 
 const captured = vi.hoisted(() => ({ props: {} as CapturedEditorProps }));
@@ -123,6 +140,67 @@ describe("SqlEditor", () => {
             fontFamily: "JetBrains Mono, monospace",
         });
         document.documentElement.style.removeProperty("--font-mono");
+    });
+
+    it("có schema thì gợi ý cột khi gõ sau dấu chấm, gỡ gợi ý khi editor đóng", () => {
+        render(
+            <SqlEditor
+                value=""
+                onChange={vi.fn()}
+                ariaLabel="Mã SQL"
+                schema={{ tables: [{ name: "departments", columns: ["id", "name"] }] }}
+            />,
+        );
+        const fake = fakeMonaco();
+        const provider: { current?: CompletionProvider } = {};
+        const dispose = vi.fn();
+        const disposers: (() => void)[] = [];
+        const model = {
+            getWordUntilPosition: () => ({ startColumn: 20, endColumn: 20 }),
+            getValueInRange: () => "SELECT departments.",
+            getValue: () => "SELECT departments.",
+        };
+        const editor = {
+            ...fake.editor,
+            getModel: () => model,
+            onDidDispose: (listener: () => void) => disposers.push(listener),
+        };
+        const monaco = {
+            ...fake.monaco,
+            languages: {
+                CompletionItemKind: { Keyword: 17, Struct: 6, Field: 3 },
+                registerCompletionItemProvider: (language: string, next: CompletionProvider) => {
+                    expect(language).toBe("pgsql");
+                    provider.current = next;
+                    return { dispose };
+                },
+            },
+        };
+
+        captured.props.onMount?.(editor, monaco);
+        const position = { lineNumber: 1, column: 20 };
+        const result = provider.current?.provideCompletionItems(model, position);
+        const otherModel = provider.current?.provideCompletionItems({ ...model }, position);
+        disposers.forEach((listener) => listener());
+
+        expect(provider.current?.triggerCharacters).toEqual(["."]);
+        expect(result?.suggestions.map((suggestion) => suggestion.label)).toEqual(["id", "name"]);
+        expect(result?.suggestions[0]).toMatchObject({ kind: 3, detail: "departments" });
+        expect(otherModel?.suggestions).toEqual([]);
+        expect(dispose).toHaveBeenCalled();
+    });
+
+    it("không có schema thì không đăng ký gợi ý", () => {
+        render(<SqlEditor value="" onChange={vi.fn()} ariaLabel="Mã SQL" />);
+        const registerCompletionItemProvider = vi.fn();
+        const fake = fakeMonaco();
+
+        captured.props.onMount?.(fake.editor, {
+            ...fake.monaco,
+            languages: { CompletionItemKind: {}, registerCompletionItemProvider },
+        });
+
+        expect(registerCompletionItemProvider).not.toHaveBeenCalled();
     });
 
     it("chuyển sang chế độ chỉ đọc khi được yêu cầu", () => {
