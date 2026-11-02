@@ -1,0 +1,15 @@
+sqljudge:
+  problem-service-url: http://localhost:1
+  internal:
+    api-token: test-internal-token
+  sandbox:
+    postgres:
+      jdbc-url: jdbc:postgresql://localhost:1/sandbox
+      admin-user: judge_admin
+      admin-password: admin-secret
+    mysql:
+      server-url: jdbc:mysql://localhost:1/
+      admin-user: judge_admin
+      admin-password: admin-secret
+    sqlite:
+      work-directory: ${java.io.tmpdir}/sqljudge-test-sqlite

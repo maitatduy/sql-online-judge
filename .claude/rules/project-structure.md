@@ -69,8 +69,11 @@ Controller → Service → Repository → MySQL
 
 ```
 judge-worker/src/main/java/com/sqljudge/judge/
+├── config/        # cấu hình sandbox, bean dùng chung
+├── client/        # Feign client gọi API nội bộ của problem-service, cache snapshot dataset
+├── job/           # xử lý một job: guard → snapshot → sandbox → kết quả
 ├── consumer/      # nhận job từ Kafka
-├── sandbox/       # SandboxPool, PostgresSandbox, MysqlSandbox, SqliteSandbox
+├── sandbox/       # PostgresSandbox, MysqlSandbox, SqliteSandbox, SandboxRegistry theo dialect
 ├── guard/         # StatementGuard (JSqlParser), giới hạn tài nguyên
 ├── compare/       # ResultNormalizer, ResultComparator → Verdict
 └── publisher/     # gửi kết quả về Kafka
