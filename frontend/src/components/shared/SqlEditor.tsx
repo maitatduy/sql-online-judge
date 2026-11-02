@@ -23,6 +23,7 @@ const EDITOR_LANGUAGE = "pgsql";
 const EDITOR_FONT_SIZE = 14;
 const EDITOR_LINE_HEIGHT = 22;
 const COMPLETION_TRIGGERS = ["."];
+const NO_TABLES: CompletionSchema = { tables: [] };
 
 type CodeEditor = Parameters<OnMount>[0];
 
@@ -51,8 +52,7 @@ function registerCompletions(
     const provider = monaco.languages.registerCompletionItemProvider(EDITOR_LANGUAGE, {
         triggerCharacters: COMPLETION_TRIGGERS,
         provideCompletionItems: (model: MonacoEditor.ITextModel, position: Position) => {
-            const schema = schemaRef.current;
-            if (model !== editor.getModel() || !schema) {
+            if (model !== editor.getModel()) {
                 return { suggestions: [] };
             }
             const word = model.getWordUntilPosition(position);
@@ -68,7 +68,7 @@ function registerCompletions(
                 endLineNumber: position.lineNumber,
                 endColumn: word.startColumn,
             });
-            const suggestions = sqlSuggestions(schema, {
+            const suggestions = sqlSuggestions(schemaRef.current ?? NO_TABLES, {
                 textBeforeCursor,
                 fullText: model.getValue(),
             });
@@ -114,9 +114,7 @@ export function SqlEditor({
         if (fontFamily) {
             editor.updateOptions({ fontFamily });
         }
-        if (schemaRef.current) {
-            registerCompletions(editor, monaco, schemaRef);
-        }
+        registerCompletions(editor, monaco, schemaRef);
     };
 
     return (

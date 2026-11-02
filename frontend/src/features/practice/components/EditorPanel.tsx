@@ -7,18 +7,27 @@ import { RotateCcw } from "lucide-react";
 import { LazySqlEditor } from "@/components/shared/LazySqlEditor";
 import { Button } from "@/components/ui/button";
 import { formatTime } from "@/lib/format";
+import type { CompletionSchema } from "@/lib/sql-completion";
 
 import { ResetCodeDialog } from "./ResetCodeDialog";
 
 interface EditorPanelProps {
     engineLabel: string;
     code: string;
+    schema: CompletionSchema;
     savedAt: Date | null;
     onChange: (code: string) => void;
     onReset: () => void;
 }
 
-export function EditorPanel({ engineLabel, code, savedAt, onChange, onReset }: EditorPanelProps) {
+export function EditorPanel({
+    engineLabel,
+    code,
+    schema,
+    savedAt,
+    onChange,
+    onReset,
+}: EditorPanelProps) {
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
 
     return (
@@ -44,6 +53,7 @@ export function EditorPanel({ engineLabel, code, savedAt, onChange, onReset }: E
                 value={code}
                 onChange={onChange}
                 ariaLabel="Mã SQL của bạn"
+                schema={schema}
                 className="flex-1 bg-background"
             />
             <ResetCodeDialog
