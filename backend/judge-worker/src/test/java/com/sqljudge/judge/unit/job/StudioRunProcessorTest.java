@@ -137,6 +137,41 @@ class StudioRunProcessorTest {
     }
 
     @Test
+    @DisplayName(
+            "Nhiều bộ dữ liệu dùng chung một ngân sách xem trước, bộ đến sau có thể không kèm dòng")
+    void process_manyVariants_shareOnePreviewBudget() {
+        List<SnapshotVariant> variants =
+                IntStream.rangeClosed(1, 12)
+                        .mapToObj(
+                                index ->
+                                        new SnapshotVariant(
+                                                UUID.randomUUID(), "Bộ " + index, false, List.of()))
+                        .toList();
+        DatasetSnapshotResponse snapshot =
+                new DatasetSnapshotResponse(VERSION_ID, CHECKSUM, SNAPSHOT.tables(), variants);
+        List<List<Object>> wideRows =
+                IntStream.rangeClosed(1, 100)
+                        .<List<Object>>mapToObj(index -> List.of("y".repeat(600)))
+                        .toList();
+        StudioRunProcessor processor = processor(snapshot, run -> succeeded(wideRows));
+
+        List<VariantRunResult> results =
+                processor.process(request("SELECT name FROM departments")).variants();
+
+        int previewChars =
+                results.stream()
+                        .flatMap(result -> result.rows().stream())
+                        .mapToInt(row -> ((String) row.get(0)).length())
+                        .sum();
+        assertThat(previewChars).isLessThanOrEqualTo(StudioRunProcessor.PREVIEW_BUDGET_CHARS);
+        VariantRunResult last = results.get(11);
+        assertThat(last.rows()).isEmpty();
+        assertThat(last.truncated()).isTrue();
+        assertThat(last.rowCount()).isEqualTo(100);
+        assertThat(results.get(0).rows()).hasSize(100);
+    }
+
+    @Test
     @DisplayName("Lỗi SQL, quá giờ và lỗi sandbox được ghi theo từng bộ dữ liệu")
     void process_failures_areReportedPerVariant() {
         List<ExecutionOutcome> outcomes =
@@ -173,13 +208,18 @@ class StudioRunProcessorTest {
     }
 
     private StudioRunProcessor processor(Function<QueryRun, ExecutionOutcome> sandbox) {
+        return processor(SNAPSHOT, sandbox);
+    }
+
+    private StudioRunProcessor processor(
+            DatasetSnapshotResponse snapshot, Function<QueryRun, ExecutionOutcome> sandbox) {
         return new StudioRunProcessor(
                 new StatementGuard(),
                 (versionId, checksum) -> {
                     snapshotFetches++;
                     assertThat(versionId).isEqualTo(VERSION_ID);
                     assertThat(checksum).isEqualTo(CHECKSUM);
-                    return SNAPSHOT;
+                    return snapshot;
                 },
                 new SandboxRegistry(
                         Map.of(

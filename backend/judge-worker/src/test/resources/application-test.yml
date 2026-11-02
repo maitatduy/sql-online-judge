@@ -1,3 +1,11 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:1
+    listener:
+      auto-startup: false
+    admin:
+      auto-create: false
+
 sqljudge:
   problem-service-url: http://localhost:1
   internal:
