@@ -17,3 +17,5 @@ spring:
 sqljudge:
   outbox:
     relay-enabled: false
+  internal:
+    api-token: test-internal-token
