@@ -58,6 +58,8 @@ sqljudge:
     batch-size: 100
     send-timeout: 10s
     claim-timeout: 60s
+  internal:
+    api-token: ${INTERNAL_API_TOKEN}
   judge:
     engine-versions:
       POSTGRESQL: PostgreSQL 16
