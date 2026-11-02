@@ -4,8 +4,6 @@ import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.common.exception.ConflictException;
 import com.sqljudge.common.exception.InvalidFieldException;
-import com.sqljudge.common.exception.NotFoundException;
-import com.sqljudge.common.security.CurrentUser;
 import com.sqljudge.common.security.Role;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.problem.dto.request.ChooseProblemDatasetRequest;
@@ -34,18 +32,19 @@ public class StudioProblemEditService {
     private final ProblemRepository problemRepository;
     private final TagRepository tagRepository;
     private final ProblemDetailCache problemDetailCache;
+    private final ProblemAccess problemAccess;
     private final DatasetAccess datasetAccess;
     private final DatasetFreezer datasetFreezer;
     private final Clock clock;
 
     @Transactional(readOnly = true)
     public StudioProblemResponse get(UUID problemId) {
-        return StudioProblemResponse.from(findAccessible(problemId));
+        return StudioProblemResponse.from(problemAccess.accessible(problemId));
     }
 
     @Transactional
     public StudioProblemResponse update(UUID problemId, UpdateProblemRequest request) {
-        Problem problem = findEditable(problemId);
+        Problem problem = problemAccess.editable(problemId);
         if (request.title() != null) {
             problem.setTitle(request.title().trim());
         }
@@ -67,7 +66,7 @@ public class StudioProblemEditService {
     @Transactional
     public StudioProblemResponse chooseDataset(
             UUID problemId, ChooseProblemDatasetRequest request) {
-        Problem problem = findEditable(problemId);
+        Problem problem = problemAccess.editable(problemId);
         Dataset dataset = datasetAccess.editable(request.datasetId());
         problem.getDraftRevision().setDatasetVersion(datasetFreezer.freezeLatest(dataset));
         return StudioProblemResponse.from(problemRepository.saveAndFlush(problem));
@@ -75,7 +74,7 @@ public class StudioProblemEditService {
 
     @Transactional
     public void delete(UUID problemId) {
-        Problem problem = findAccessible(problemId);
+        Problem problem = problemAccess.accessible(problemId);
         boolean isAdmin = SecurityUtils.requireCurrentUser().hasRole(Role.ADMIN);
         if (!problem.isEditableBySetter() && !isAdmin) {
             throw new BusinessRuleException(
@@ -94,28 +93,6 @@ public class StudioProblemEditService {
                         problemDetailCache.evict(slug);
                     }
                 });
-    }
-
-    private Problem findEditable(UUID problemId) {
-        Problem problem = findAccessible(problemId);
-        if (!problem.isEditableBySetter()) {
-            throw new BusinessRuleException(
-                    ErrorCode.PROBLEM_LOCKED, "Bài đang chờ duyệt hoặc đã xuất bản, chưa sửa được");
-        }
-        return problem;
-    }
-
-    private Problem findAccessible(UUID problemId) {
-        CurrentUser user = SecurityUtils.requireCurrentUser();
-        return problemRepository
-                .findByIdAndDeletedAtIsNull(problemId)
-                .filter(
-                        problem ->
-                                problem.getAuthorId().equals(user.id()) || user.hasRole(Role.ADMIN))
-                .orElseThrow(
-                        () ->
-                                new NotFoundException(
-                                        ErrorCode.PROBLEM_NOT_FOUND, "Không tìm thấy bài tập"));
     }
 
     private void changeSlug(Problem problem, String slug) {
