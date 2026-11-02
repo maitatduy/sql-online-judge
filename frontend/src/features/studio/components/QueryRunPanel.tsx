@@ -2,17 +2,20 @@
 
 import { useState } from "react";
 
+import { LazySqlEditor } from "@/components/shared/LazySqlEditor";
 import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { type Dialect, DIALECT_LABELS } from "@/lib/dialect";
+import type { CompletionSchema } from "@/lib/sql-completion";
 
-import { useCreateStudioRun, useStudioRun } from "../hooks/useStudioRun";
+import { useCompletionSchema, useCreateStudioRun, useStudioRun } from "../hooks/useStudioRun";
 import type { StudioProblem, StudioRun } from "../types";
 import { VariantRunCard } from "./VariantRunCard";
 
 const DIALECTS = Object.keys(DIALECT_LABELS) as Dialect[];
 const SYSTEM_ERROR_MESSAGE = "Máy chấm chưa chạy được câu lệnh này. Thử lại sau.";
+const EMPTY_SCHEMA: CompletionSchema = { tables: [] };
 
 interface QueryRunPanelProps {
     problem: StudioProblem;
@@ -48,6 +51,7 @@ export function QueryRunPanel({ problem }: QueryRunPanelProps) {
     const [runId, setRunId] = useState<string | null>(null);
     const createRun = useCreateStudioRun(problem.id);
     const { data: run, error: runError } = useStudioRun(problem.id, runId);
+    const { data: completionSchema } = useCompletionSchema(problem.dataset?.id ?? null);
     const hasDataset = problem.dataset !== null;
     const isWaiting = runId !== null && run?.status !== "COMPLETED" && !runError;
     const isRunning = createRun.isPending || isWaiting;
@@ -87,16 +91,17 @@ export function QueryRunPanel({ problem }: QueryRunPanelProps) {
                 </NativeSelect>
             </div>
             <div className="mt-4 flex flex-col gap-1.5">
-                <Label htmlFor="query-run-sql">Câu lệnh SQL</Label>
-                <textarea
-                    id="query-run-sql"
-                    value={sql}
-                    rows={6}
-                    spellCheck={false}
-                    placeholder="SELECT * FROM ..."
-                    onChange={(event) => setSql(event.target.value)}
-                    className="w-full resize-y rounded-md border bg-transparent p-3 text-[13px] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                />
+                <p aria-hidden="true" className="text-sm font-medium">
+                    Câu lệnh SQL
+                </p>
+                <div className="h-56 overflow-hidden rounded-md border">
+                    <LazySqlEditor
+                        value={sql}
+                        onChange={setSql}
+                        ariaLabel="Câu lệnh SQL"
+                        schema={completionSchema ?? EMPTY_SCHEMA}
+                    />
+                </div>
             </div>
             <div className="mt-4 flex items-center gap-3">
                 <Button

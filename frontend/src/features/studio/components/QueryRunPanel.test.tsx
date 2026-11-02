@@ -1,13 +1,39 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ToastProvider } from "@/components/shared/ToastProvider";
+import type { CompletionSchema } from "@/lib/sql-completion";
 import { server } from "@/mocks/server";
 import { SETTER_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
 
 import { ProblemStudio } from "./ProblemStudio";
+
+const editorSchemas = vi.hoisted(() => ({ latest: undefined as CompletionSchema | undefined }));
+
+vi.mock("@/components/shared/LazySqlEditor", () => ({
+    LazySqlEditor: ({
+        value,
+        onChange,
+        ariaLabel,
+        schema,
+    }: {
+        value: string;
+        onChange: (value: string) => void;
+        ariaLabel: string;
+        schema?: CompletionSchema;
+    }) => {
+        editorSchemas.latest = schema;
+        return (
+            <textarea
+                aria-label={ariaLabel}
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+            />
+        );
+    },
+}));
 
 const WITHOUT_DATASET_ID = "0192f3d0-0000-7000-8000-000000000001";
 const WITH_DATASET_ID = "0192f3d0-0000-7000-8000-000000000003";
@@ -125,6 +151,34 @@ describe("ProblemStudio - chạy thử SQL", () => {
         );
         expect(big.getByText("Hiển thị 2 trong 15.000 dòng")).toBeInTheDocument();
         expect(big.getByRole("cell", { name: "NULL" })).toBeInTheDocument();
+    });
+
+    it("trình soạn SQL nhận schema của database bài để gợi ý bảng và cột", async () => {
+        renderDatabaseStep();
+
+        await screen.findByRole("textbox", { name: "Câu lệnh SQL" });
+
+        await waitFor(() =>
+            expect(editorSchemas.latest?.tables.map((table) => table.name)).toEqual([
+                "departments",
+                "employees",
+            ]),
+        );
+        expect(editorSchemas.latest?.tables[0].columns).toEqual(["id", "name"]);
+    });
+
+    it("bước Database không còn cảnh báo trùng key giữa các khối", async () => {
+        const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+        renderDatabaseStep();
+
+        await screen.findByRole("region", { name: "Chạy thử SQL" });
+
+        expect(
+            consoleError.mock.calls.some((call) =>
+                call.some((part) => String(part).includes("same key")),
+            ),
+        ).toBe(false);
+        consoleError.mockRestore();
     });
 
     it("bài chưa lưu database thì chưa chạy thử được", async () => {
