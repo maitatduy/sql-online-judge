@@ -68,7 +68,7 @@ public class StudioProblemEditService {
             UUID problemId, ChooseProblemDatasetRequest request) {
         Problem problem = problemAccess.editable(problemId);
         Dataset dataset = datasetAccess.editable(request.datasetId());
-        problem.getDraftRevision().setDatasetVersion(datasetFreezer.freezeLatest(dataset));
+        problem.getDraftRevision().useDatasetVersion(datasetFreezer.freezeLatest(dataset));
         return StudioProblemResponse.from(problemRepository.saveAndFlush(problem));
     }
 

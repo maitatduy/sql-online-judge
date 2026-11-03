@@ -1,6 +1,7 @@
 package com.sqljudge.problem.integration;
 
 import com.jayway.jsonpath.JsonPath;
+import java.util.List;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -36,19 +37,34 @@ final class StudioFixtures {
     String createReadyDataset(String name) {
         String id = idOf(send(HttpMethod.POST, DATASETS, "{\"name\":\"" + name + "\"}"));
         send(HttpMethod.PUT, DATASETS + "/" + id + "/schema", SCHEMA);
-        String variantId =
+        addVariant(id, "Mẫu", true);
+        return id;
+    }
+
+    String addVariant(String datasetId, String name, boolean isPublic) {
+        List<String> variantIds =
                 JsonPath.parse(
                                 send(
                                                 HttpMethod.POST,
-                                                DATASETS + "/" + id + "/variants",
-                                                "{\"name\":\"Mẫu\",\"isPublic\":true}")
+                                                DATASETS + "/" + datasetId + "/variants",
+                                                "{\"name\":\""
+                                                        + name
+                                                        + "\",\"isPublic\":"
+                                                        + isPublic
+                                                        + "}")
                                         .getBody())
-                        .read("$.variants[0].id", String.class);
+                        .read("$.variants[*].id");
+        String variantId = variantIds.get(variantIds.size() - 1);
         send(
                 HttpMethod.PUT,
-                DATASETS + "/" + id + "/variants/" + variantId + "/tables/departments",
+                DATASETS + "/" + datasetId + "/variants/" + variantId + "/tables/departments",
                 "{\"csv\":\"id,name\\n1,Kỹ thuật\\n\"}");
-        return id;
+        return variantId;
+    }
+
+    List<String> variantIdsOf(String datasetId) {
+        return JsonPath.parse(send(HttpMethod.GET, DATASETS + "/" + datasetId, null).getBody())
+                .read("$.variants[*].id");
     }
 
     void chooseDataset(String problemId, String datasetId) {
