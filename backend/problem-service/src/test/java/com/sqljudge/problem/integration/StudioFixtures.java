@@ -74,6 +74,18 @@ final class StudioFixtures {
                 "{\"datasetId\":\"" + datasetId + "\"}");
     }
 
+    void saveAnswer(String problemId, String... variantIds) {
+        send(
+                HttpMethod.PUT,
+                PROBLEMS + "/" + problemId + "/answer",
+                "{\"solutions\":[{\"dialect\":\"POSTGRESQL\",\"sql\":\"SELECT name FROM"
+                        + " departments\"},{\"dialect\":\"SQLITE\",\"sql\":\"SELECT name FROM"
+                        + " departments;\"}],\"testcaseVariantIds\":[\""
+                        + String.join("\",\"", variantIds)
+                        + "\"],\"requiresOrder\":true,\"compareColumnNames\":false,"
+                        + "\"floatTolerance\":0.01}");
+    }
+
     ResponseEntity<String> send(HttpMethod method, String path, String body) {
         return send(method, path, body, token);
     }

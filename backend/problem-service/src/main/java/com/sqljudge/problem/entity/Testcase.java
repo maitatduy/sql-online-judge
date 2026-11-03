@@ -53,6 +53,10 @@ public class Testcase extends BaseEntity {
     }
 
     public void setExpectedResult(ExpectedResult result) {
+        if (expectedResult != null) {
+            expectedResult.replaceWith(result);
+            return;
+        }
         result.setTestcase(this);
         this.expectedResult = result;
     }
