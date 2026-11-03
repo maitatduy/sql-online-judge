@@ -57,9 +57,15 @@ function fakeMonaco() {
     const editor: FakeEditor = {
         addCommand: (keybinding, handler) => commands.set(keybinding, handler),
         updateOptions: vi.fn(),
+        getModel: () => null,
+        onDidDispose: vi.fn(),
     };
     const monaco: FakeMonaco = {
         editor: { defineTheme: vi.fn(), setTheme: vi.fn() },
+        languages: {
+            CompletionItemKind: { Keyword: 17, Struct: 6, Field: 3 },
+            registerCompletionItemProvider: () => ({ dispose: vi.fn() }),
+        },
     };
     return { editor, monaco, commands };
 }
@@ -190,17 +196,36 @@ describe("SqlEditor", () => {
         expect(dispose).toHaveBeenCalled();
     });
 
-    it("không có schema thì không đăng ký gợi ý", () => {
+    it("không có schema thì vẫn gợi ý từ khoá SQL", () => {
         render(<SqlEditor value="" onChange={vi.fn()} ariaLabel="Mã SQL" />);
-        const registerCompletionItemProvider = vi.fn();
         const fake = fakeMonaco();
+        const provider: { current?: CompletionProvider } = {};
+        const model = {
+            getWordUntilPosition: () => ({ startColumn: 1, endColumn: 4 }),
+            getValueInRange: () => "",
+            getValue: () => "SEL",
+        };
 
-        captured.props.onMount?.(fake.editor, {
-            ...fake.monaco,
-            languages: { CompletionItemKind: {}, registerCompletionItemProvider },
+        captured.props.onMount?.(
+            { ...fake.editor, getModel: () => model, onDidDispose: vi.fn() },
+            {
+                ...fake.monaco,
+                languages: {
+                    CompletionItemKind: { Keyword: 17, Struct: 6, Field: 3 },
+                    registerCompletionItemProvider: (_language, next) => {
+                        provider.current = next;
+                        return { dispose: vi.fn() };
+                    },
+                },
+            },
+        );
+        const result = provider.current?.provideCompletionItems(model, {
+            lineNumber: 1,
+            column: 4,
         });
 
-        expect(registerCompletionItemProvider).not.toHaveBeenCalled();
+        expect(result?.suggestions.map((suggestion) => suggestion.label)).toContain("SELECT");
+        expect(result?.suggestions.every((suggestion) => suggestion.kind === 17)).toBe(true);
     });
 
     it("chuyển sang chế độ chỉ đọc khi được yêu cầu", () => {

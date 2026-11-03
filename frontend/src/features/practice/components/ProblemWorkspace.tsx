@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { DIALECT_LABELS } from "@/lib/dialect";
+import type { CompletionSchema } from "@/lib/sql-completion";
 import { cn } from "@/lib/utils";
 
 import { useCodeRun } from "../hooks/useCodeRun";
@@ -32,6 +33,15 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
     const judging = useSubmission(problem.id);
     const [resultTab, setResultTab] = useState<ResultTab>("run");
     const [activeArea, setActiveArea] = useState<WorkspaceArea>("problem");
+    const completionSchema = useMemo<CompletionSchema>(
+        () => ({
+            tables: problem.schema.map((table) => ({
+                name: table.name,
+                columns: table.columns.map((column) => column.name),
+            })),
+        }),
+        [problem.schema],
+    );
     const latestVerdict =
         judging.submission?.status === "COMPLETED" ? judging.submission.verdict : null;
 
@@ -89,6 +99,7 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
                         <EditorPanel
                             engineLabel={problem.engineVersions[dialect] ?? DIALECT_LABELS[dialect]}
                             code={code}
+                            schema={completionSchema}
                             savedAt={savedAt}
                             onChange={changeCode}
                             onReset={resetToStarter}
