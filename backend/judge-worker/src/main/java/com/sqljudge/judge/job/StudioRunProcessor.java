@@ -18,7 +18,6 @@ import com.sqljudge.judge.sandbox.QueryRun;
 import com.sqljudge.judge.sandbox.RunLimits;
 import com.sqljudge.judge.sandbox.Sandbox;
 import com.sqljudge.judge.sandbox.SandboxRegistry;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +27,6 @@ import org.springframework.stereotype.Component;
 public class StudioRunProcessor {
 
     public static final int PREVIEW_BUDGET_CHARS = 512_000;
-    private static final int MAX_TIME_LIMIT_MS = 6_000;
     private static final String TIMED_OUT_MESSAGE = "Câu lệnh chạy quá thời gian cho phép";
 
     private final StatementGuard guard;
@@ -58,7 +56,7 @@ public class StudioRunProcessor {
         if (sandbox.isEmpty()) {
             return StudioRunResult.systemError(request, "dialect_unavailable");
         }
-        RunLimits limits = limitsOf(request.timeLimitMs());
+        RunLimits limits = RunLimits.forTimeLimit(request.timeLimitMs());
         ResultPreview preview = new ResultPreview(PREVIEW_BUDGET_CHARS);
         List<VariantRunResult> results = new ArrayList<>();
         for (SnapshotVariant variant : snapshot.variants()) {
@@ -115,15 +113,5 @@ public class StudioRunProcessor {
                 false,
                 outcome.runtimeMs(),
                 message);
-    }
-
-    private static RunLimits limitsOf(int timeLimitMs) {
-        RunLimits defaults = RunLimits.defaults();
-        long timeoutMs =
-                timeLimitMs > 0
-                        ? Math.min(timeLimitMs, MAX_TIME_LIMIT_MS)
-                        : defaults.timeout().toMillis();
-        return new RunLimits(
-                Duration.ofMillis(timeoutMs), defaults.maxRows(), defaults.maxResultBytes());
     }
 }

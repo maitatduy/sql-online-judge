@@ -15,12 +15,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import org.apache.kafka.clients.admin.Admin;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.config.ConfigResource;
+import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.AfterAll;
@@ -40,13 +46,16 @@ import org.testcontainers.kafka.KafkaContainer;
             "spring.kafka.admin.auto-create=true"
         })
 @ActiveProfiles("test")
-class StudioRunKafkaIntegrationTest {
+class JudgeJobKafkaIntegrationTest {
 
     private static final String REQUESTED = "sqljudge.studio.run-requested";
     private static final String COMPLETED = "sqljudge.studio.run-completed";
     private static final String DEAD_LETTER = REQUESTED + ".dlt";
+    private static final String ANSWER_CHECK_REQUESTED = "sqljudge.studio.answer-check-requested";
+    private static final String ANSWER_TESTCASE_CHECKED = "sqljudge.studio.answer-testcase-checked";
     private static final Duration DELIVERY_TIMEOUT = Duration.ofSeconds(60);
     private static final UUID VERSION_ID = UUID.randomUUID();
+    private static final UUID VARIANT_ID = UUID.randomUUID();
     private static final String SNAPSHOT_JSON =
             """
             {"versionId": "%s", "checksum": "abc123",
@@ -57,7 +66,7 @@ class StudioRunKafkaIntegrationTest {
                "tables": [{"tableName": "departments",
                            "rows": [["2", "Kinh doanh"], ["1", "Kỹ thuật"]]}]}]}
             """
-                    .formatted(VERSION_ID, UUID.randomUUID());
+                    .formatted(VERSION_ID, VARIANT_ID);
 
     @ServiceConnection
     static final KafkaContainer KAFKA =
@@ -110,6 +119,49 @@ class StudioRunKafkaIntegrationTest {
     }
 
     @Test
+    @DisplayName("Kiểm tra đáp án gửi mỗi testcase một message về topic riêng, giới hạn 10 MB")
+    void answerCheckRequested_validJob_publishesOneMessagePerTestcase()
+            throws ExecutionException, InterruptedException {
+        String checkId = UUID.randomUUID().toString();
+        String request =
+                """
+                {"eventId": "%s", "occurredAt": "2026-11-03T08:00:00Z", "version": 1,
+                 "checkId": "%s", "datasetVersionId": "%s", "datasetChecksum": "abc123",
+                 "solutions": {"SQLITE": "SELECT id, name FROM departments ORDER BY id"},
+                 "testcases": [{"testcaseId": "%s", "variantId": "%s"},
+                               {"testcaseId": "%s", "variantId": "%s"}],
+                 "requiresOrder": true, "compareColumnNames": false, "floatTolerance": null,
+                 "timeLimitMs": 2000, "allowedStatements": ["SELECT", "WITH"]}
+                """
+                        .formatted(
+                                UUID.randomUUID(),
+                                checkId,
+                                VERSION_ID,
+                                UUID.randomUUID(),
+                                VARIANT_ID,
+                                UUID.randomUUID(),
+                                UUID.randomUUID());
+
+        send(ANSWER_CHECK_REQUESTED, checkId, request);
+
+        List<DocumentContext> checked =
+                recordsOf(ANSWER_TESTCASE_CHECKED, checkId, 2).stream()
+                        .map(record -> JsonPath.parse(record.value()))
+                        .toList();
+        DocumentContext first = checked.get(0);
+        assertThat(first.read("$.version", Integer.class)).isEqualTo(1);
+        assertThat(first.read("$.position", Integer.class)).isEqualTo(1);
+        assertThat(first.read("$.testcaseCount", Integer.class)).isEqualTo(2);
+        assertThat(first.read("$.expected.columns", List.class)).containsExactly("id", "name");
+        assertThat(first.read("$.expected.rows[0][1].kind", String.class)).isEqualTo("TEXT");
+        assertThat(first.read("$.expected.rows[0][1].value", String.class)).isEqualTo("Kỹ thuật");
+        assertThat(first.read("$.dialects[0].dialect", String.class)).isEqualTo("SQLITE");
+        assertThat(first.read("$.dialects[0].verdict", String.class)).isEqualTo("AC");
+        assertThat(checked.get(1).read("$.systemError", String.class)).isEqualTo("variant_missing");
+        assertThat(maxMessageBytesOf(ANSWER_TESTCASE_CHECKED)).isEqualTo("10485760");
+    }
+
+    @Test
     @DisplayName("Message hỏng được đẩy sang dead letter topic, không làm kẹt partition")
     void runRequested_malformedJob_goesToDeadLetterTopic() {
         String key = UUID.randomUUID().toString();
@@ -130,12 +182,30 @@ class StudioRunKafkaIntegrationTest {
     }
 
     private static ConsumerRecord<String, String> firstRecordOf(String topic, String key) {
+        return recordsOf(topic, key, 1).get(0);
+    }
+
+    private static String maxMessageBytesOf(String topic)
+            throws ExecutionException, InterruptedException {
+        ConfigResource resource = new ConfigResource(ConfigResource.Type.TOPIC, topic);
+        try (Admin admin =
+                Admin.create(
+                        Map.of(
+                                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
+                                KAFKA.getBootstrapServers()))) {
+            Config config = admin.describeConfigs(List.of(resource)).all().get().get(resource);
+            return config.get(TopicConfig.MAX_MESSAGE_BYTES_CONFIG).value();
+        }
+    }
+
+    private static List<ConsumerRecord<String, String>> recordsOf(
+            String topic, String key, int count) {
         Map<String, Object> config =
                 Map.of(
                         ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                         KAFKA.getBootstrapServers(),
                         ConsumerConfig.GROUP_ID_CONFIG,
-                        "studio-run-test-" + UUID.randomUUID(),
+                        "judge-job-test-" + UUID.randomUUID(),
                         ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
                         "earliest");
         try (KafkaConsumer<String, String> consumer =
@@ -143,7 +213,7 @@ class StudioRunKafkaIntegrationTest {
             consumer.subscribe(List.of(topic));
             long deadline = System.nanoTime() + DELIVERY_TIMEOUT.toNanos();
             List<ConsumerRecord<String, String>> matches = new ArrayList<>();
-            while (matches.isEmpty() && System.nanoTime() < deadline) {
+            while (matches.size() < count && System.nanoTime() < deadline) {
                 consumer.poll(Duration.ofMillis(500))
                         .forEach(
                                 record -> {
@@ -152,8 +222,8 @@ class StudioRunKafkaIntegrationTest {
                                     }
                                 });
             }
-            assertThat(matches).as("record with key %s on %s", key, topic).isNotEmpty();
-            return matches.get(0);
+            assertThat(matches).as("records with key %s on %s", key, topic).hasSize(count);
+            return matches;
         }
     }
 
@@ -161,7 +231,7 @@ class StudioRunKafkaIntegrationTest {
         try {
             HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
             server.createContext(
-                    "/internal/dataset-versions/", StudioRunKafkaIntegrationTest::respond);
+                    "/internal/dataset-versions/", JudgeJobKafkaIntegrationTest::respond);
             server.start();
             return server;
         } catch (IOException exception) {
