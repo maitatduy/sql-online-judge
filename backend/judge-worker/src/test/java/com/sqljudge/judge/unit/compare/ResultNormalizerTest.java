@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.sqljudge.judge.compare.Cell;
-import com.sqljudge.judge.compare.Cell.BooleanCell;
 import com.sqljudge.judge.compare.Cell.BytesCell;
 import com.sqljudge.judge.compare.Cell.NonFiniteNumberCell;
 import com.sqljudge.judge.compare.Cell.NullCell;
@@ -104,11 +103,39 @@ class ResultNormalizerTest {
     }
 
     @Test
-    @DisplayName("Boolean và byte[]")
-    void normalize_booleanAndBytes() {
-        assertThat(normalizeOne(true)).isEqualTo(new BooleanCell(true));
+    @DisplayName("Boolean coi như số 1 hoặc 0 để khớp với SQLite và MySQL")
+    void normalize_boolean_becomesNumber() {
+        assertThat(normalizeOne(true)).isEqualTo(new NumberCell(BigDecimal.ONE));
+        assertThat(normalizeOne(false)).isEqualTo(new NumberCell(BigDecimal.ZERO));
+        assertThat(normalizeOne(true)).isEqualTo(normalizeOne(1));
+    }
+
+    @Test
+    @DisplayName("byte[] thành chuỗi hex")
+    void normalize_bytes_becomeHex() {
         assertThat(normalizeOne(new byte[] {(byte) 0xde, (byte) 0xad, 0x01}))
                 .isEqualTo(new BytesCell("dead01"));
+    }
+
+    @Test
+    @DisplayName("Chuỗi ngày và thời điểm ISO coi như ngày giờ, khớp với cột DATE và TIMESTAMP")
+    void normalize_isoTemporalText_becomesTemporal() {
+        assertThat(normalizeOne("2024-03-01")).isEqualTo(normalizeOne(LocalDate.of(2024, 3, 1)));
+        assertThat(normalizeOne("2026-01-05 09:30:00"))
+                .isEqualTo(normalizeOne(LocalDateTime.of(2026, 1, 5, 9, 30)));
+        assertThat(normalizeOne("2026-01-05T09:30"))
+                .isEqualTo(normalizeOne(LocalDateTime.of(2026, 1, 5, 9, 30)));
+        assertThat(normalizeOne("2026-01-05 09:30:00.125"))
+                .isEqualTo(new TemporalCell(TemporalKind.TIMESTAMP, "2026-01-05T09:30:00.125"));
+    }
+
+    @Test
+    @DisplayName("Chuỗi chỉ giống ngày giờ nhưng không hợp lệ thì vẫn là chuỗi")
+    void normalize_invalidTemporalText_staysText() {
+        assertThat(normalizeOne("2026-13-40")).isEqualTo(new TextCell("2026-13-40"));
+        assertThat(normalizeOne(" 2024-03-01")).isEqualTo(new TextCell(" 2024-03-01"));
+        assertThat(normalizeOne("2024-03-01 sáng")).isEqualTo(new TextCell("2024-03-01 sáng"));
+        assertThat(normalizeOne("20240301")).isEqualTo(new TextCell("20240301"));
     }
 
     @Test

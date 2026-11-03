@@ -1,6 +1,5 @@
 package com.sqljudge.judge.compare;
 
-import com.sqljudge.judge.compare.Cell.BooleanCell;
 import com.sqljudge.judge.compare.Cell.BytesCell;
 import com.sqljudge.judge.compare.Cell.NonFiniteNumberCell;
 import com.sqljudge.judge.compare.Cell.NumberCell;
@@ -39,9 +38,6 @@ final class RowOrdering implements Comparator<Row> {
         }
         if (left instanceof TextCell text) {
             return text.value().compareTo(((TextCell) right).value());
-        }
-        if (left instanceof BooleanCell flag) {
-            return Boolean.compare(flag.value(), ((BooleanCell) right).value());
         }
         if (left instanceof TemporalCell temporal) {
             return compareTemporal(temporal, (TemporalCell) right);

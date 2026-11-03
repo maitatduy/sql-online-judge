@@ -72,7 +72,7 @@ Hết thời gian → `TLE`. Worker treo quá timeout cứng → huỷ connectio
 1. Lỗi khi chạy → `RE` (lưu thông báo lỗi đã lọc, xem mục 7).
 2. Số cột khác → `WA`.
 3. Tên cột: chỉ so khi đề bật `compare_column_names`.
-4. Chuẩn hoá giá trị: `NULL` ≠ chuỗi `"NULL"`; số thực so với sai số `1e-6` (cấu hình được); ngày giờ chuẩn hoá về ISO-8601 UTC; chuỗi giữ nguyên (không trim, không đổi hoa thường) trừ khi đề cấu hình.
+4. Chuẩn hoá giá trị: `NULL` ≠ chuỗi `"NULL"`; số thực so với sai số `1e-6` (cấu hình được); ngày giờ chuẩn hoá về ISO-8601 UTC; chuỗi giữ nguyên (không trim, không đổi hoa thường) trừ khi đề cấu hình. Để mọi dialect so được với nhau: boolean coi như số `1`/`0`, chuỗi đúng dạng ngày `yyyy-MM-dd` hoặc thời điểm `yyyy-MM-dd HH:mm[:ss[.n]]` (dấu cách hoặc `T`) coi như ngày giờ; chuỗi sai dạng vẫn là chuỗi.
 5. Đề yêu cầu thứ tự: so tuần tự. Multiset khớp mà thứ tự sai → `OM`, không khớp → `WA`.
 6. Đề không yêu cầu thứ tự: so multiset (đếm số lần xuất hiện, không dùng set - dòng trùng lặp vẫn tính).
 7. Mọi testcase đúng → `AC`. Dừng ở testcase sai đầu tiên, trừ khi contest dùng điểm từng phần.
