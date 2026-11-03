@@ -8,8 +8,9 @@ const EDITABLE_STEPS: { step: StudioStep; label: string; path: string }[] = [
     { step: "info", label: "Thông tin", path: "" },
     { step: "statement", label: "Đề bài", path: "/statement" },
     { step: "database", label: "Database", path: "/database" },
+    { step: "answer", label: "Đáp án và testcase", path: "/answer" },
 ];
-const LATER_STEPS = ["Đáp án và testcase", "Xem trước và xuất bản"];
+const LATER_STEPS = ["Xem trước và xuất bản"];
 const STEP_CLASS = "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm";
 const NUMBER_CLASS =
     "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold";

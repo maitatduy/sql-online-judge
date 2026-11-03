@@ -8,6 +8,8 @@ import type {
     CreateStudioRunRequest,
     DatasetTable,
     DatasetVariantRequest,
+    ProblemAnswer,
+    SaveProblemAnswerRequest,
     SqlImportPreview,
     StudioDataset,
     StudioDatasetSummary,
@@ -49,6 +51,16 @@ export const studioApi = {
         apiClient.put<StudioProblem>(
             `/api/studio/problems/${encodeURIComponent(problemId)}/dataset`,
             { datasetId },
+        ),
+    getProblemAnswer: (problemId: string, signal?: AbortSignal) =>
+        apiClient.get<ProblemAnswer>(
+            `/api/studio/problems/${encodeURIComponent(problemId)}/answer`,
+            { signal },
+        ),
+    saveProblemAnswer: (problemId: string, request: SaveProblemAnswerRequest) =>
+        apiClient.put<ProblemAnswer>(
+            `/api/studio/problems/${encodeURIComponent(problemId)}/answer`,
+            request,
         ),
     createStudioRun: (problemId: string, request: CreateStudioRunRequest) =>
         apiClient.post<StudioRun>(
