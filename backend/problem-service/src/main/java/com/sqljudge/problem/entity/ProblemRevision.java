@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -69,5 +70,32 @@ public class ProblemRevision extends BaseEntity {
         Testcase testcase = new Testcase(this, testcases.size(), variant);
         testcases.add(testcase);
         return testcase;
+    }
+
+    public void replaceReferenceSolutions(Map<Dialect, String> codeByDialect) {
+        referenceSolutions.removeIf(solution -> !codeByDialect.containsKey(solution.getDialect()));
+        codeByDialect.forEach(
+                (dialect, code) ->
+                        referenceSolutions.stream()
+                                .filter(solution -> solution.getDialect() == dialect)
+                                .findFirst()
+                                .ifPresentOrElse(
+                                        solution -> solution.setCode(code),
+                                        () ->
+                                                addReferenceSolution(
+                                                        new ReferenceSolution(dialect, code))));
+    }
+
+    public void replaceTestcases(List<DatasetVariant> variants) {
+        testcases.clear();
+        variants.forEach(this::addTestcase);
+    }
+
+    public void useDatasetVersion(DatasetVersion version) {
+        if (datasetVersion != null && datasetVersion.getId().equals(version.getId())) {
+            return;
+        }
+        datasetVersion = version;
+        testcases.clear();
     }
 }
