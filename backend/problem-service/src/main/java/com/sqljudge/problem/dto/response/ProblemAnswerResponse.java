@@ -1,5 +1,6 @@
 package com.sqljudge.problem.dto.response;
 
+import com.sqljudge.problem.entity.DatasetVariant;
 import com.sqljudge.problem.entity.Dialect;
 import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.entity.ProblemRevision;
@@ -12,6 +13,7 @@ import java.util.UUID;
 public record ProblemAnswerResponse(
         List<SolutionResponse> solutions,
         List<TestcaseResponse> testcases,
+        List<VariantOptionResponse> variants,
         boolean requiresOrder,
         boolean compareColumnNames,
         double floatTolerance) {
@@ -33,6 +35,14 @@ public record ProblemAnswerResponse(
         }
     }
 
+    public record VariantOptionResponse(UUID id, String name, boolean isPublic) {
+
+        static VariantOptionResponse from(DatasetVariant variant) {
+            return new VariantOptionResponse(
+                    variant.getId(), variant.getName(), variant.isPublic());
+        }
+    }
+
     public static ProblemAnswerResponse from(Problem problem) {
         ProblemRevision draft = problem.getDraftRevision();
         List<SolutionResponse> solutions =
@@ -42,9 +52,16 @@ public record ProblemAnswerResponse(
                         .toList();
         List<TestcaseResponse> testcases =
                 draft.getTestcases().stream().map(TestcaseResponse::from).toList();
+        List<VariantOptionResponse> variants =
+                draft.getDatasetVersion() == null
+                        ? List.of()
+                        : draft.getDatasetVersion().getVariants().stream()
+                                .map(VariantOptionResponse::from)
+                                .toList();
         return new ProblemAnswerResponse(
                 solutions,
                 testcases,
+                variants,
                 problem.isRequiresOrder(),
                 problem.isCompareColumnNames(),
                 problem.getFloatTolerance());

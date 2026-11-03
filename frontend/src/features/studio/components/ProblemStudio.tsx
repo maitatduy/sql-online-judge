@@ -12,6 +12,7 @@ import { ApiRequestError } from "@/lib/api-client";
 import { useSaveProblem, useStudioProblem } from "../hooks/useStudioProblem";
 import { LOCKED_MESSAGES } from "../status-labels";
 import { EDITABLE_STATUSES, type StudioStep } from "../types";
+import { AnswerStep } from "./AnswerStep";
 import { DatasetStep } from "./DatasetStep";
 import { InfoStep } from "./InfoStep";
 import { QueryRunPanel } from "./QueryRunPanel";
@@ -110,6 +111,13 @@ export function ProblemStudio({ problemId, step = "info" }: ProblemStudioProps) 
                                 />
                                 <QueryRunPanel key={`run-${problem.id}`} problem={problem} />
                             </div>
+                        ) : null}
+                        {step === "answer" ? (
+                            <AnswerStep
+                                key={`answer-${problem.id}`}
+                                problem={problem}
+                                disabled={!isEditable}
+                            />
                         ) : null}
                     </div>
                 </>

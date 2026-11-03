@@ -108,7 +108,35 @@ export interface UpdateDatasetRequest {
     description?: string;
 }
 
-export type StudioStep = "info" | "statement" | "database";
+export type StudioStep = "info" | "statement" | "database" | "answer";
+
+export interface ReferenceSolution {
+    dialect: Dialect;
+    sql: string;
+}
+
+export interface AnswerVariant {
+    id: string;
+    name: string;
+    isPublic: boolean;
+}
+
+export interface ProblemAnswer {
+    solutions: ReferenceSolution[];
+    testcases: { variantId: string; variantName: string; isPublic: boolean }[];
+    variants: AnswerVariant[];
+    requiresOrder: boolean;
+    compareColumnNames: boolean;
+    floatTolerance: number;
+}
+
+export interface SaveProblemAnswerRequest {
+    solutions: ReferenceSolution[];
+    testcaseVariantIds: string[];
+    requiresOrder: boolean;
+    compareColumnNames: boolean;
+    floatTolerance: number;
+}
 
 export type StudioRunStatus = "PENDING" | "COMPLETED";
 

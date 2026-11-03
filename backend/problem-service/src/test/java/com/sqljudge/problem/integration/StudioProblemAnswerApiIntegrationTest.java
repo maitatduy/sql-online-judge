@@ -66,6 +66,26 @@ class StudioProblemAnswerApiIntegrationTest extends ContainerSupport {
         assertThat(answer.read("$.requiresOrder", Boolean.class)).isFalse();
         assertThat(answer.read("$.compareColumnNames", Boolean.class)).isFalse();
         assertThat(answer.read("$.floatTolerance", Double.class)).isEqualTo(1e-6);
+        assertThat(answer.read("$.variants[*].id", List.class))
+                .containsExactly(sampleVariantId, hiddenVariantId);
+        assertThat(answer.read("$.variants[*].name", List.class)).containsExactly("Mẫu", "Ẩn");
+        assertThat(answer.read("$.variants[*].isPublic", List.class)).containsExactly(true, false);
+    }
+
+    @Test
+    @DisplayName("Bài chưa chọn database thì danh sách bộ dữ liệu để chọn testcase trống")
+    void getAnswer_problemWithoutDataset_hasNoVariants() {
+        String bare = studio.createProblem("Chưa có database");
+
+        DocumentContext answer =
+                JsonPath.parse(
+                        studio.send(
+                                        HttpMethod.GET,
+                                        "/api/studio/problems/" + bare + "/answer",
+                                        null)
+                                .getBody());
+
+        assertThat(answer.read("$.variants", List.class)).isEmpty();
     }
 
     @Test

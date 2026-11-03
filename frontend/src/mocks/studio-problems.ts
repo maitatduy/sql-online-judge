@@ -1,7 +1,9 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import type {
+    ProblemAnswer,
     ProblemStatus,
+    SaveProblemAnswerRequest,
     StudioProblem,
     StudioProblemSummary,
     UpdateProblemRequest,
@@ -28,12 +30,43 @@ interface StoredProblem extends StudioProblemSummary {
     tagSlugs: string[];
     statementMarkdown: string;
     datasetId?: string;
+    answer?: SaveProblemAnswerRequest;
 }
 
 const COMPANY_DATASET_ID = "0192f3e0-0000-7000-8000-000000000001";
 const SEEDED_DATASETS: Record<string, string> = {
     "median-salary-per-department": COMPANY_DATASET_ID,
+    "monthly-cohort-retention": COMPANY_DATASET_ID,
 };
+const DEFAULT_FLOAT_TOLERANCE = 0.000001;
+
+function answerOf(problem: StoredProblem): ProblemAnswer {
+    const variants =
+        readStudioDatasets()
+            .find((dataset) => dataset.id === problem.datasetId)
+            ?.variants.map((variant) => ({
+                id: variant.id,
+                name: variant.name,
+                isPublic: variant.isPublic,
+            })) ?? [];
+    const answer = problem.answer;
+    return {
+        solutions: answer?.solutions ?? [],
+        testcases: (answer?.testcaseVariantIds ?? []).flatMap((variantId) =>
+            variants
+                .filter((variant) => variant.id === variantId)
+                .map((variant) => ({
+                    variantId: variant.id,
+                    variantName: variant.name,
+                    isPublic: variant.isPublic,
+                })),
+        ),
+        variants,
+        requiresOrder: answer?.requiresOrder ?? false,
+        compareColumnNames: answer?.compareColumnNames ?? false,
+        floatTolerance: answer?.floatTolerance ?? DEFAULT_FLOAT_TOLERANCE,
+    };
+}
 
 type ProblemSeed = [
     title: string,
@@ -269,9 +302,42 @@ export const studioProblemHandlers: RequestHandler[] = [
         if (notReadyReason) {
             return apiError(422, "DATASET_NOT_READY", notReadyReason);
         }
-        const updated = { ...problem, datasetId, updatedAt: new Date().toISOString() };
+        const answer =
+            problem.answer && problem.datasetId !== datasetId
+                ? { ...problem.answer, testcaseVariantIds: [] }
+                : problem.answer;
+        const updated = { ...problem, datasetId, answer, updatedAt: new Date().toISOString() };
         saveProblem(updated);
         return HttpResponse.json(toDetail(updated));
+    }),
+
+    http.get("*/api/studio/problems/:problemId/answer", async ({ params }) => {
+        await delay();
+        const problem = findAccessibleStudioProblem(String(params.problemId));
+        return problem
+            ? HttpResponse.json(answerOf(problem))
+            : apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
+    }),
+
+    http.put("*/api/studio/problems/:problemId/answer", async ({ params, request }) => {
+        await delay();
+        const problem = findAccessibleStudioProblem(String(params.problemId));
+        if (!problem) {
+            return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
+        }
+        if (!isEditable(problem)) {
+            return apiError(422, "PROBLEM_LOCKED", "Bài đang chờ duyệt hoặc đã xuất bản");
+        }
+        if (!problem.datasetId) {
+            return apiError(422, "PROBLEM_DATASET_MISSING", "Bài chưa chọn database");
+        }
+        const answer = (await request.json()) as SaveProblemAnswerRequest;
+        if (!answer.solutions.some((solution) => solution.dialect === "POSTGRESQL")) {
+            return validationFailed({ field: "solutions", message: "Cần có đáp án PostgreSQL" });
+        }
+        const updated = { ...problem, answer, updatedAt: new Date().toISOString() };
+        saveProblem(updated);
+        return HttpResponse.json(answerOf(updated));
     }),
 
     http.patch("*/api/studio/problems/:problemId", async ({ params, request }) => {
