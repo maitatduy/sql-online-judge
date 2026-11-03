@@ -34,13 +34,6 @@ public sealed interface Cell {
         }
     }
 
-    record BooleanCell(boolean value) implements Cell {
-        @Override
-        public int rank() {
-            return 4;
-        }
-    }
-
     record TemporalCell(TemporalKind kind, String iso) implements Cell {
         @Override
         public int rank() {

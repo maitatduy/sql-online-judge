@@ -38,6 +38,24 @@ class ResultComparatorTest {
     }
 
     @Test
+    @DisplayName("Kết quả SQLite (ngày dạng chuỗi, boolean dạng 0/1) khớp kết quả PostgreSQL -> AC")
+    void compare_sqliteStyleValues_matchPostgresValues() {
+        NormalizedTable postgres =
+                table(
+                        columns("hired_at", "is_active", "updated_at"),
+                        row(LocalDate.of(2024, 3, 1), true, LocalDateTime.of(2026, 1, 5, 9, 30)),
+                        row(LocalDate.of(2025, 7, 15), false, null));
+        NormalizedTable sqlite =
+                table(
+                        columns("hired_at", "is_active", "updated_at"),
+                        row("2025-07-15", 0, null),
+                        row("2024-03-01", 1, "2026-01-05 09:30:00"));
+
+        assertThat(verdictOf(postgres, sqlite, UNORDERED)).isEqualTo(Verdict.AC);
+        assertThat(verdictOf(postgres, sqlite, ORDERED)).isEqualTo(Verdict.OM);
+    }
+
+    @Test
     @DisplayName("Hai bảng giống hệt nhau -> AC, không có diff")
     void compare_identicalTables_returnsAccepted() {
         NormalizedTable expected = table(columns("id", "name"), row(1, "An"), row(2, "Bình"));

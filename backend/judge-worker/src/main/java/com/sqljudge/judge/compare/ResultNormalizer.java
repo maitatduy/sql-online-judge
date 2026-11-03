@@ -1,6 +1,5 @@
 package com.sqljudge.judge.compare;
 
-import com.sqljudge.judge.compare.Cell.BooleanCell;
 import com.sqljudge.judge.compare.Cell.BytesCell;
 import com.sqljudge.judge.compare.Cell.NonFiniteNumberCell;
 import com.sqljudge.judge.compare.Cell.NullCell;
@@ -17,13 +16,18 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public final class ResultNormalizer {
 
     private static final NullCell NULL_CELL = new NullCell();
+    private static final Pattern ISO_DATE = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
+    private static final Pattern ISO_DATE_TIME =
+            Pattern.compile("\\d{4}-\\d{2}-\\d{2}[ T]\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,9})?)?");
 
     public NormalizedTable normalize(ResultTable raw) {
         List<Row> rows = raw.rows().stream().map(this::normalizeRow).toList();
@@ -44,16 +48,33 @@ public final class ResultNormalizer {
         if (value instanceof Number number) {
             return new NumberCell(exactDecimal(number));
         }
-        if (value instanceof String || value instanceof Character || value instanceof UUID) {
+        if (value instanceof String text) {
+            return normalizeText(text);
+        }
+        if (value instanceof Character || value instanceof UUID) {
             return new TextCell(value.toString());
         }
         if (value instanceof Boolean flag) {
-            return new BooleanCell(flag);
+            return new NumberCell(flag ? BigDecimal.ONE : BigDecimal.ZERO);
         }
         if (value instanceof byte[] bytes) {
             return new BytesCell(HexFormat.of().formatHex(bytes));
         }
         return normalizeTemporal(value);
+    }
+
+    private Cell normalizeText(String text) {
+        try {
+            if (ISO_DATE.matcher(text).matches()) {
+                return normalizeTemporal(LocalDate.parse(text));
+            }
+            if (ISO_DATE_TIME.matcher(text).matches()) {
+                return normalizeTemporal(LocalDateTime.parse(text.replace(' ', 'T')));
+            }
+        } catch (DateTimeParseException exception) {
+            return new TextCell(text);
+        }
+        return new TextCell(text);
     }
 
     private BigDecimal exactDecimal(Number number) {
