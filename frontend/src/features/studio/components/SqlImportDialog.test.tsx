@@ -200,6 +200,40 @@ describe("DatasetStudio - nhập từ file SQL", () => {
         expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
     });
 
+    it("nhập ngay ở tab Bộ dữ liệu thì bấm Lưu ở tab đó lưu luôn, không cần quay lại", async () => {
+        useParseResult(PROJECTS_PREVIEW);
+        const writes = recordWrites();
+        renderWithProviders(
+            <ToastProvider>
+                <DatasetStudio datasetId={SCHOOL_ID} />
+            </ToastProvider>,
+        );
+        fireEvent.mouseDown(await screen.findByRole("tab", { name: "Bộ dữ liệu" }));
+        fireEvent.click(screen.getByRole("button", { name: "Nhập từ file SQL" }));
+        const dialog = within(await screen.findByRole("dialog", { name: "Nhập từ file SQL" }));
+        fireEvent.change(dialog.getByRole("textbox", { name: "Nội dung SQL" }), {
+            target: { value: PROJECTS_SQL },
+        });
+        fireEvent.click(dialog.getByRole("button", { name: "Đọc file" }));
+        await dialog.findByText("projects: 2 cột, 2 dòng");
+        fireEvent.click(dialog.getByRole("button", { name: "Áp dụng" }));
+
+        expect(
+            screen.getByText("Dữ liệu của 1 bảng sẽ được lưu vào bộ Mẫu khi bấm Lưu."),
+        ).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
+
+        expect(await screen.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
+        expect(writes).toEqual([
+            `PUT ${SCHOOL_ID}/schema`,
+            `POST ${SCHOOL_ID}/variants`,
+            expect.stringMatching(new RegExp(`^PUT ${SCHOOL_ID}/variants/.+/tables/projects$`)),
+        ]);
+        expect(
+            within(screen.getByRole("listitem", { name: "Mẫu" })).getByText("projects: 2 dòng"),
+        ).toBeInTheDocument();
+    });
+
     it("mở lại để nhập lần nữa thì gợi ý tên bộ mới chưa có và chặn tên trùng", async () => {
         useParseResult(PROJECTS_PREVIEW);
         const firstDialog = await openImport();
