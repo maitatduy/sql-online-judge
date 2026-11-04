@@ -28,6 +28,7 @@ import {
 } from "./session";
 import { studioDatasetHandlers } from "./studio-datasets";
 import { studioProblemHandlers } from "./studio-problems";
+import { studioAnswerCheckHandlers } from "./studio-answer-checks";
 import { studioRunHandlers } from "./studio-runs";
 
 const DEMO_PASSWORD = "mock-password";
@@ -174,6 +175,7 @@ export const handlers: RequestHandler[] = [
     ...practiceSubmissionHistoryHandlers,
     ...studioProblemHandlers,
     ...studioRunHandlers,
+    ...studioAnswerCheckHandlers,
     ...studioDatasetHandlers,
     ...adminHandlers,
     ...invitationHandlers,
