@@ -30,7 +30,9 @@ spring:
       auto-offset-reset: earliest
     producer:
       acks: all
+      compression-type: zstd
       properties:
+        max.request.size: 16777216
         enable.idempotence: true
         max.block.ms: 5000
         request.timeout.ms: 5000

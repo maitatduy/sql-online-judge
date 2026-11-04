@@ -48,4 +48,11 @@ public class ExpectedResult extends BaseEntity {
         this.rowCount = rowCount;
         this.checksum = checksum;
     }
+
+    void replaceWith(ExpectedResult other) {
+        this.columnsJson = other.columnsJson;
+        this.rowsJson = other.rowsJson;
+        this.rowCount = other.rowCount;
+        this.checksum = other.checksum;
+    }
 }
