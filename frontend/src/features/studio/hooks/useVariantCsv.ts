@@ -2,14 +2,31 @@ import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { ApiRequestError } from "@/lib/api-client";
+
 import { studioApi } from "../api";
-import type { StudioDataset } from "../types";
+import { rowsToCsv } from "../csv";
+import type { VariantCsv } from "../types";
+import type { VariantTableDraft } from "../variant-drafts";
 import { studioDatasetQueryKey } from "./useStudioDataset";
 
 interface VariantTableRef {
     datasetId: string;
     variantId: string;
     tableName: string;
+}
+
+export class VariantTableSaveError extends Error {
+    readonly draft: VariantTableDraft;
+
+    constructor(draft: VariantTableDraft, error: Error) {
+        super(
+            error instanceof ApiRequestError && error.errors.length > 0
+                ? error.errors[0].message
+                : error.message,
+        );
+        this.draft = draft;
+    }
 }
 
 function variantCsvQueryKey({ datasetId, variantId, tableName }: VariantTableRef) {
@@ -26,17 +43,37 @@ export function useVariantCsv(ref: VariantTableRef, hasData: boolean) {
     });
 }
 
-export function useSaveVariantCsv(ref: VariantTableRef) {
+export function useSaveVariantDrafts(
+    datasetId: string,
+    onDraftSaved: (draft: VariantTableDraft) => void,
+) {
     const queryClient = useQueryClient();
     const [savedAt, setSavedAt] = useState<string | null>(null);
+
+    async function saveDraft(draft: VariantTableDraft) {
+        const csv = rowsToCsv(draft.columns, draft.rows);
+        const saved = await studioApi
+            .saveVariantCsv(datasetId, draft.variantId, draft.tableName, csv)
+            .catch((error: Error) => {
+                throw new VariantTableSaveError(draft, error);
+            });
+        const ref = { datasetId, variantId: draft.variantId, tableName: draft.tableName };
+        queryClient.setQueryData<VariantCsv>(variantCsvQueryKey(ref), {
+            tableName: draft.tableName,
+            csv,
+            rowCount: draft.rows.length,
+        });
+        queryClient.setQueryData(studioDatasetQueryKey(datasetId), saved);
+        onDraftSaved(draft);
+    }
+
     const mutation = useMutation({
-        mutationFn: (csv: string) =>
-            studioApi.saveVariantCsv(ref.datasetId, ref.variantId, ref.tableName, csv),
-        onSuccess: (dataset: StudioDataset) => {
-            setSavedAt(new Date().toISOString());
-            queryClient.setQueryData(studioDatasetQueryKey(ref.datasetId), dataset);
-            void queryClient.invalidateQueries({ queryKey: variantCsvQueryKey(ref) });
+        mutationFn: async (drafts: VariantTableDraft[]) => {
+            for (const draft of drafts) {
+                await saveDraft(draft);
+            }
         },
+        onSuccess: () => setSavedAt(new Date().toISOString()),
     });
 
     return {

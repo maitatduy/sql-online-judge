@@ -88,10 +88,10 @@ describe("DatasetStudio - nhập dữ liệu cho bảng", () => {
         fireEvent.click(editor.getByRole("button", { name: "Thêm dòng" }));
         fireEvent.change(cell(editor, "id", 4), { target: { value: "4" } });
         fireEvent.change(cell(editor, "name", 4), { target: { value: "Pháp chế" } });
-        expect(editor.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
-        fireEvent.click(editor.getByRole("button", { name: "Lưu" }));
+        expect(screen.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
 
-        expect(await editor.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
+        expect(await screen.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
         expect(puts).toEqual([
             'id,name\n1,Kỹ thuật\n2,Kinh doanh\n3,"Nhân sự, hành chính"\n4,Pháp chế\n',
         ]);
@@ -105,9 +105,9 @@ describe("DatasetStudio - nhập dữ liệu cho bảng", () => {
         const editor = await openTable("Mẫu", "departments");
 
         fireEvent.click(await editor.findByRole("button", { name: "Xoá dòng 1" }));
-        fireEvent.click(editor.getByRole("button", { name: "Lưu" }));
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
 
-        await editor.findByText(/^Đã lưu/);
+        await screen.findByText(/^Đã lưu/);
         expect(puts).toEqual(["id,name\n2,Kinh doanh\n3,Nhân sự\n"]);
     });
 
@@ -169,9 +169,62 @@ describe("DatasetStudio - nhập dữ liệu cho bảng", () => {
         fireEvent.change(await editor.findByRole("textbox", { name: "id, dòng 2" }), {
             target: { value: "1" },
         });
-        fireEvent.click(editor.getByRole("button", { name: "Lưu" }));
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
 
-        expect(await editor.findByText("Dòng 3 trùng khoá chính với dòng 2")).toBeInTheDocument();
+        expect(
+            await screen.findByText(
+                "Chưa lưu được bảng departments, bộ Mẫu. Dòng 3 trùng khoá chính với dòng 2",
+            ),
+        ).toBeInTheDocument();
+        expect(cell(editor, "id", 2)).toHaveValue("1");
+    });
+
+    it("sửa nhiều bảng ở nhiều bộ rồi bấm Lưu một lần thì lưu tất cả", async () => {
+        const puts = recordCsvPuts();
+        let editor = await openTable("Mẫu", "departments");
+        fireEvent.click(await editor.findByRole("button", { name: "Xoá dòng 1" }));
+
+        const nullCard = within(screen.getByRole("listitem", { name: "Có NULL" }));
+        fireEvent.click(nullCard.getByRole("button", { name: "Nhập dữ liệu bảng departments" }));
+        editor = within(
+            await screen.findByRole("region", { name: "Bảng departments, bộ Có NULL" }),
+        );
+        fireEvent.click(await editor.findByRole("button", { name: "Xoá dòng 2" }));
+
+        expect(
+            within(screen.getByRole("listitem", { name: "Mẫu" })).getByText(
+                "departments: 2 dòng, chưa lưu",
+            ),
+        ).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
+
+        expect(await screen.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
+        expect(puts).toEqual(["id,name\n2,Kinh doanh\n3,Nhân sự\n", "id,name\n1,Kế toán\n"]);
+        expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
+    });
+
+    it("chuyển sang bảng khác hay tab schema rồi quay lại vẫn giữ phần đã sửa", async () => {
+        let editor = await openTable("Mẫu", "departments");
+        fireEvent.change(await editor.findByRole("textbox", { name: "name, dòng 1" }), {
+            target: { value: "Nghiên cứu" },
+        });
+        const card = within(screen.getByRole("listitem", { name: "Mẫu" }));
+        fireEvent.click(card.getByRole("button", { name: "Nhập dữ liệu bảng employees" }));
+        await screen.findByRole("region", { name: "Bảng employees, bộ Mẫu" });
+        fireEvent.mouseDown(screen.getByRole("tab", { name: "Thông tin và schema" }));
+        fireEvent.mouseDown(screen.getByRole("tab", { name: "Bộ dữ liệu" }));
+
+        fireEvent.click(
+            within(await screen.findByRole("listitem", { name: "Mẫu" })).getByRole("button", {
+                name: "Nhập dữ liệu bảng departments",
+            }),
+        );
+        editor = within(await screen.findByRole("region", { name: "Bảng departments, bộ Mẫu" }));
+
+        expect(await editor.findByRole("textbox", { name: "name, dòng 1" })).toHaveValue(
+            "Nghiên cứu",
+        );
+        expect(screen.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
     });
 
     it("chia trang 20 dòng mỗi trang khi bảng có nhiều dòng", async () => {

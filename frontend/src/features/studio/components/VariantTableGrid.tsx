@@ -5,40 +5,20 @@ import { useState } from "react";
 import { ClipboardPaste, Plus, Trash2, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ApiRequestError } from "@/lib/api-client";
-import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 
-import { type CsvCell, rowsFromCsv, rowsToCsv } from "../csv";
+import { type CsvCell, rowsFromCsv } from "../csv";
 import { GridPager } from "./GridPager";
 import { PasteCsvDialog } from "./PasteCsvDialog";
-import { SaveBar } from "./SaveBar";
 
 const PAGE_SIZE = 20;
 
-interface CsvSave {
-    save: (csv: string) => void;
-    isSaving: boolean;
-    error: Error | null;
-    savedAt: string | null;
-}
-
 interface VariantTableGridProps {
     columns: string[];
-    initialRows: CsvCell[][];
-    save: CsvSave;
+    rows: CsvCell[][];
+    onRowsChange: (rows: CsvCell[][]) => void;
 }
 
-function errorMessageOf(error: Error | null): string | null {
-    if (!error) {
-        return null;
-    }
-    return error instanceof ApiRequestError && error.errors.length > 0
-        ? error.errors[0].message
-        : error.message;
-}
-
-export function VariantTableGrid({ columns, initialRows, save }: VariantTableGridProps) {
-    const [rows, setRows] = useState(initialRows);
+export function VariantTableGrid({ columns, rows, onRowsChange: setRows }: VariantTableGridProps) {
     const [isPasteOpen, setIsPasteOpen] = useState(false);
     const [fileError, setFileError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
@@ -47,9 +27,6 @@ export function VariantTableGrid({ columns, initialRows, save }: VariantTableGri
     const visibleRows = rows
         .slice(start, start + PAGE_SIZE)
         .map((row, offset) => ({ row, rowIndex: start + offset }));
-    const hasChanges = JSON.stringify(rows) !== JSON.stringify(initialRows);
-    const errorMessage = fileError ?? errorMessageOf(save.error);
-    useUnsavedChangesWarning(hasChanges);
 
     function changeCell(rowIndex: number, columnIndex: number, value: string) {
         setRows(
@@ -177,18 +154,11 @@ export function VariantTableGrid({ columns, initialRows, save }: VariantTableGri
                     Thêm dòng
                 </Button>
             </div>
-            {errorMessage ? (
+            {fileError ? (
                 <p role="alert" className="text-[13px] text-destructive">
-                    {errorMessage}
+                    {fileError}
                 </p>
             ) : null}
-            <SaveBar
-                hasChanges={hasChanges}
-                canSave={hasChanges}
-                isSaving={save.isSaving}
-                savedAt={save.savedAt}
-                onSave={() => save.save(rowsToCsv(columns, rows))}
-            />
             <PasteCsvDialog
                 open={isPasteOpen}
                 columns={columns}
