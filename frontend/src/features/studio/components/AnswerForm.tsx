@@ -17,6 +17,7 @@ import {
 } from "../answer-draft";
 import { useSaveProblemAnswer } from "../hooks/useProblemAnswer";
 import type { ProblemAnswer } from "../types";
+import { AnswerCheckPanel } from "./AnswerCheckPanel";
 import { CompareSettings } from "./CompareSettings";
 import { SaveBar } from "./SaveBar";
 import { SolutionEditors } from "./SolutionEditors";
@@ -100,6 +101,13 @@ export function AnswerForm({ problemId, answer, schema, disabled }: AnswerFormPr
                         onSave={() => save.save(requestFrom(draft))}
                     />
                 </div>
+            )}
+            {disabled ? null : (
+                <AnswerCheckPanel
+                    key={save.savedAt ?? "saved"}
+                    problemId={problemId}
+                    canCheck={!hasChanges && answer.testcases.length > 0}
+                />
             )}
         </div>
     );

@@ -1,5 +1,6 @@
 import type { Dialect } from "@/lib/dialect";
 import type { Difficulty } from "@/lib/difficulty";
+import type { Verdict } from "@/lib/verdict";
 
 export type ProblemStatus =
     "DRAFT" | "PENDING_REVIEW" | "CHANGES_REQUESTED" | "REJECTED" | "PUBLISHED";
@@ -167,6 +168,38 @@ export interface StudioRun {
     rejection: { verdict: string; message: string } | null;
     systemError: string | null;
     variants: VariantRunResult[];
+}
+
+export type AnswerCheckStatus = "PENDING" | "PASSED" | "FAILED";
+
+export type MismatchReason = "NONE" | "COLUMN_COUNT" | "COLUMN_NAMES" | "ROWS" | "ORDER";
+
+export interface DialectCheckResult {
+    dialect: Dialect;
+    verdict: Verdict | null;
+    mismatch: MismatchReason;
+    message: string | null;
+    runtimeMs: number;
+    rowCount: number;
+}
+
+export interface AnswerCheckTestcase {
+    testcaseId: string;
+    position: number;
+    isPublic: boolean;
+    isPassed: boolean;
+    systemError: string | null;
+    dialects: DialectCheckResult[];
+}
+
+export interface AnswerCheck {
+    id: string;
+    status: AnswerCheckStatus;
+    testcaseCount: number;
+    checkedCount: number;
+    createdAt: string;
+    completedAt: string | null;
+    testcases: AnswerCheckTestcase[];
 }
 
 export interface CreateStudioRunRequest {

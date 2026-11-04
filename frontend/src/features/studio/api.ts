@@ -5,6 +5,7 @@ import { type MyDatasetFilters, myDatasetsQueryOf } from "./my-dataset-filters";
 import { type MyProblemFilters, myProblemsQueryOf } from "./my-problem-filters";
 import type { CreateDatasetValues, CreateProblemValues } from "./schemas";
 import type {
+    AnswerCheck,
     CreateStudioRunRequest,
     DatasetTable,
     DatasetVariantRequest,
@@ -61,6 +62,15 @@ export const studioApi = {
         apiClient.put<ProblemAnswer>(
             `/api/studio/problems/${encodeURIComponent(problemId)}/answer`,
             request,
+        ),
+    startAnswerCheck: (problemId: string) =>
+        apiClient.post<AnswerCheck>(
+            `/api/studio/problems/${encodeURIComponent(problemId)}/answer-checks`,
+        ),
+    getAnswerCheck: (problemId: string, checkId: string, signal?: AbortSignal) =>
+        apiClient.get<AnswerCheck>(
+            `/api/studio/problems/${encodeURIComponent(problemId)}/answer-checks/${encodeURIComponent(checkId)}`,
+            { signal },
         ),
     createStudioRun: (problemId: string, request: CreateStudioRunRequest) =>
         apiClient.post<StudioRun>(
