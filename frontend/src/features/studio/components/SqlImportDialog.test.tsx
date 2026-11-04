@@ -199,4 +199,34 @@ describe("DatasetStudio - nhập từ file SQL", () => {
         expect(screen.getByRole("textbox", { name: "Tên bảng 1" })).toHaveValue("classes");
         expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
     });
+
+    it("mở lại để nhập lần nữa thì gợi ý tên bộ mới chưa có và chặn tên trùng", async () => {
+        useParseResult(PROJECTS_PREVIEW);
+        const firstDialog = await openImport();
+        fireEvent.change(firstDialog.getByRole("textbox", { name: "Nội dung SQL" }), {
+            target: { value: PROJECTS_SQL },
+        });
+        fireEvent.click(firstDialog.getByRole("button", { name: "Đọc file" }));
+        await firstDialog.findByText("projects: 2 cột, 2 dòng");
+        fireEvent.click(firstDialog.getByRole("button", { name: "Áp dụng" }));
+        fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
+        await screen.findByText(/^Đã lưu/);
+
+        fireEvent.click(screen.getByRole("button", { name: "Nhập từ file SQL" }));
+        const dialog = within(await screen.findByRole("dialog", { name: "Nhập từ file SQL" }));
+        fireEvent.change(dialog.getByRole("textbox", { name: "Nội dung SQL" }), {
+            target: { value: PROJECTS_SQL },
+        });
+        fireEvent.click(dialog.getByRole("button", { name: "Đọc file" }));
+        await dialog.findByText("projects: 2 cột, 2 dòng");
+        fireEvent.change(dialog.getByRole("combobox", { name: "Đưa dữ liệu vào bộ" }), {
+            target: { value: "__new__" },
+        });
+
+        const nameInput = dialog.getByRole("textbox", { name: "Tên bộ dữ liệu mới" });
+        expect(nameInput).toHaveValue("Từ file SQL");
+        fireEvent.change(nameInput, { target: { value: "Mẫu" } });
+        expect(dialog.getByText("Đã có bộ dữ liệu tên này")).toBeInTheDocument();
+        expect(dialog.getByRole("button", { name: "Áp dụng" })).toBeDisabled();
+    });
 });
