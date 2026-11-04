@@ -19,6 +19,7 @@ import type {
     StudioDataset,
     UpdateDatasetRequest,
 } from "../types";
+import { liveDrafts, type VariantDrafts } from "../variant-drafts";
 import { DatasetInfoForm, type DatasetInfoValues } from "./DatasetInfoForm";
 import { DatasetVariants } from "./DatasetVariants";
 import { SaveBar } from "./SaveBar";
@@ -66,6 +67,7 @@ export function DatasetEditor({ dataset }: DatasetEditorProps) {
     const [tables, setTables] = useState<DatasetTable[]>(dataset.schema.tables);
     const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
     const [isImportOpen, setIsImportOpen] = useState(false);
+    const [variantDrafts, setVariantDrafts] = useState<VariantDrafts>({});
     const save = useSaveDataset(dataset, (error) => {
         if (!(error instanceof ApiRequestError && error.code === "VALIDATION_FAILED")) {
             showToast(`Chưa lưu được thay đổi. ${error.message}`, "error");
@@ -77,7 +79,7 @@ export function DatasetEditor({ dataset }: DatasetEditorProps) {
     const hasChanges = hasInfoChanges || hasSchemaChanges || pendingImport !== null;
     const clientErrors = { ...infoErrors(info), ...schemaErrors(tables) };
     const serverErrors = serverErrorsOf(save.error);
-    useUnsavedChangesWarning(hasChanges);
+    useUnsavedChangesWarning(hasChanges || liveDrafts(variantDrafts, dataset).length > 0);
 
     function errorOf(path: string): string | undefined {
         return clientErrors[path] ?? serverErrors[path];
@@ -149,7 +151,11 @@ export function DatasetEditor({ dataset }: DatasetEditorProps) {
                 </div>
             </TabsContent>
             <TabsContent value="variants">
-                <DatasetVariants dataset={dataset} />
+                <DatasetVariants
+                    dataset={dataset}
+                    drafts={variantDrafts}
+                    onDraftsChange={setVariantDrafts}
+                />
             </TabsContent>
         </Tabs>
     );

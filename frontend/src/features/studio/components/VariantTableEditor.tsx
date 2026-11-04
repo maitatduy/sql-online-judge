@@ -5,15 +5,18 @@ import { X } from "lucide-react";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { Button } from "@/components/ui/button";
 
-import { rowsFromCsv } from "../csv";
-import { useSaveVariantCsv, useVariantCsv } from "../hooks/useVariantCsv";
+import { type CsvCell, rowsFromCsv } from "../csv";
+import { useVariantCsv } from "../hooks/useVariantCsv";
 import type { DatasetVariant, StudioDataset } from "../types";
+import { columnsOf } from "../variant-drafts";
 import { VariantTableGrid } from "./VariantTableGrid";
 
 interface VariantTableEditorProps {
     dataset: StudioDataset;
     variant: DatasetVariant;
     tableName: string;
+    draftRows: CsvCell[][] | undefined;
+    onDraftChange: (rows: CsvCell[][] | null) => void;
     onClose: () => void;
 }
 
@@ -21,17 +24,21 @@ export function VariantTableEditor({
     dataset,
     variant,
     tableName,
+    draftRows,
+    onDraftChange,
     onClose,
 }: VariantTableEditorProps) {
     const ref = { datasetId: dataset.id, variantId: variant.id, tableName };
-    const columns =
-        dataset.schema.tables
-            .find((table) => table.name === tableName)
-            ?.columns.map((column) => column.name) ?? [];
+    const columns = columnsOf(dataset, tableName);
     const hasData = variant.tables.some((table) => table.tableName === tableName);
     const { data, error, isPending } = useVariantCsv(ref, hasData);
-    const save = useSaveVariantCsv(ref);
     const savedCsv = hasData ? data?.csv : "";
+    const savedRows =
+        savedCsv === undefined ? undefined : savedCsv ? rowsFromCsv(savedCsv, columns).rows : [];
+
+    function changeRows(savedRows: CsvCell[][], rows: CsvCell[][]) {
+        onDraftChange(JSON.stringify(rows) === JSON.stringify(savedRows) ? null : rows);
+    }
 
     return (
         <section
@@ -63,12 +70,11 @@ export function VariantTableEditor({
                     Không tải được dữ liệu. {error.message}
                 </p>
             ) : null}
-            {savedCsv !== undefined ? (
+            {savedRows ? (
                 <VariantTableGrid
-                    key={savedCsv}
                     columns={columns}
-                    initialRows={savedCsv ? rowsFromCsv(savedCsv, columns).rows : []}
-                    save={save}
+                    rows={draftRows ?? savedRows}
+                    onRowsChange={(rows) => changeRows(savedRows, rows)}
                 />
             ) : null}
         </section>
