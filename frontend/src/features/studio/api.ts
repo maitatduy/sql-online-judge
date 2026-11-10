@@ -72,6 +72,15 @@ export const studioApi = {
             `/api/studio/problems/${encodeURIComponent(problemId)}/answer-checks/${encodeURIComponent(checkId)}`,
             { signal },
         ),
+    getLatestAnswerCheck: (problemId: string, signal?: AbortSignal) =>
+        apiClient.get<AnswerCheck>(
+            `/api/studio/problems/${encodeURIComponent(problemId)}/answer-checks/latest`,
+            { signal },
+        ),
+    submitForReview: (problemId: string) =>
+        apiClient.post<StudioProblem>(
+            `/api/studio/problems/${encodeURIComponent(problemId)}/submit-for-review`,
+        ),
     createStudioRun: (problemId: string, request: CreateStudioRunRequest) =>
         apiClient.post<StudioRun>(
             `/api/studio/problems/${encodeURIComponent(problemId)}/runs`,
