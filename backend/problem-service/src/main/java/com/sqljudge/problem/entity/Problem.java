@@ -14,6 +14,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
@@ -118,13 +120,51 @@ public class Problem extends BaseEntity {
     @OneToMany(mappedBy = "problem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProblemRevision> revisions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "problem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt DESC")
+    private List<ProblemReview> reviews = new ArrayList<>();
+
     public boolean isEditableBySetter() {
         return status == ProblemStatus.DRAFT || status == ProblemStatus.CHANGES_REQUESTED;
+    }
+
+    public boolean isPendingReview() {
+        return status == ProblemStatus.PENDING_REVIEW;
     }
 
     public ProblemRevision addRevision(int revisionNumber) {
         ProblemRevision revision = new ProblemRevision(this, revisionNumber);
         revisions.add(revision);
         return revision;
+    }
+
+    public Optional<ProblemReview> latestReview() {
+        return reviews.stream().findFirst();
+    }
+
+    public void requestChanges(UUID reviewerId, String reason) {
+        recordReview(reviewerId, ReviewDecision.CHANGES_REQUESTED, reason);
+        status = ProblemStatus.CHANGES_REQUESTED;
+    }
+
+    public void reject(UUID reviewerId, String reason) {
+        recordReview(reviewerId, ReviewDecision.REJECTED, reason);
+        status = ProblemStatus.REJECTED;
+    }
+
+    public void publish(UUID reviewerId, int nextNumber, String checksum, Instant now) {
+        recordReview(reviewerId, ReviewDecision.APPROVED, null);
+        draftRevision.freeze(checksum, now);
+        if (number == null) {
+            number = nextNumber;
+        }
+        status = ProblemStatus.PUBLISHED;
+        visibility = ProblemVisibility.PUBLIC;
+        publishedRevision = draftRevision;
+        publishedAt = now;
+    }
+
+    private void recordReview(UUID reviewerId, ReviewDecision decision, String reason) {
+        reviews.add(0, new ProblemReview(this, reviewerId, decision, reason));
     }
 }
