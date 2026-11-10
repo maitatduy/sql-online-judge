@@ -1,5 +1,6 @@
 package com.sqljudge.problem.event;
 
+import com.sqljudge.common.outbox.DomainEvent;
 import com.sqljudge.problem.entity.Difficulty;
 import java.time.Instant;
 import java.util.UUID;

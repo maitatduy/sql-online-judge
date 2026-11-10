@@ -1,17 +1,13 @@
-package com.sqljudge.problem.event;
+package com.sqljudge.common.outbox;
 
-import com.sqljudge.problem.entity.OutboxEvent;
-import com.sqljudge.problem.repository.OutboxEventRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Component
 @RequiredArgsConstructor
 public class OutboxClaimer {
 

@@ -1,4 +1,4 @@
-package com.sqljudge.problem.event;
+package com.sqljudge.common.outbox;
 
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;

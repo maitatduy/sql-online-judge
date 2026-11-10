@@ -1,4 +1,4 @@
-package com.sqljudge.problem.entity;
+package com.sqljudge.common.outbox;
 
 import com.sqljudge.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
