@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import com.sqljudge.problem.event.DomainEvent;
-import com.sqljudge.problem.event.OutboxWriter;
+import com.sqljudge.common.outbox.DomainEvent;
+import com.sqljudge.common.outbox.OutboxWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;

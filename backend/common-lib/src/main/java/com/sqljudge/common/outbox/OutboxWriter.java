@@ -1,15 +1,11 @@
-package com.sqljudge.problem.event;
+package com.sqljudge.common.outbox;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sqljudge.problem.entity.OutboxEvent;
-import com.sqljudge.problem.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-@Component
 @RequiredArgsConstructor
 public class OutboxWriter {
 

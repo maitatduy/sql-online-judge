@@ -1,6 +1,5 @@
-package com.sqljudge.problem.event;
+package com.sqljudge.common.outbox;
 
-import com.sqljudge.problem.entity.OutboxEvent;
 import java.util.UUID;
 
 public record OutboxMessage(UUID id, String topic, String key, String payload) {

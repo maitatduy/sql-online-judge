@@ -1,4 +1,4 @@
-package com.sqljudge.problem.event;
+package com.sqljudge.common.outbox;
 
 import java.util.List;
 import java.util.UUID;
@@ -7,15 +7,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "sqljudge.outbox", name = "relay-enabled", havingValue = "true")
 public class OutboxRelay {
 
     private final OutboxClaimer claimer;

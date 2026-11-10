@@ -1,4 +1,4 @@
-package com.sqljudge.problem.event;
+package com.sqljudge.common.outbox;
 
 import java.time.Instant;
 import java.util.UUID;

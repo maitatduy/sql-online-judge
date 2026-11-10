@@ -1,4 +1,4 @@
-package com.sqljudge.problem.unit;
+package com.sqljudge.common.unit;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -6,10 +6,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.sqljudge.problem.event.OutboxClaimer;
-import com.sqljudge.problem.event.OutboxMessage;
-import com.sqljudge.problem.event.OutboxProperties;
-import com.sqljudge.problem.event.OutboxRelay;
+import com.sqljudge.common.outbox.OutboxClaimer;
+import com.sqljudge.common.outbox.OutboxMessage;
+import com.sqljudge.common.outbox.OutboxProperties;
+import com.sqljudge.common.outbox.OutboxRelay;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
