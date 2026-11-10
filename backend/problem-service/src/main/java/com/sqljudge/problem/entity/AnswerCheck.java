@@ -53,6 +53,9 @@ public class AnswerCheck extends BaseEntity {
     @Column(name = "completed_at")
     private Instant completedAt;
 
+    @Column(name = "answer_fingerprint", columnDefinition = "CHAR(64)")
+    private String answerFingerprint;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -61,14 +64,24 @@ public class AnswerCheck extends BaseEntity {
     @OrderBy("position")
     private List<AnswerCheckTestcase> testcases = new ArrayList<>();
 
-    public static AnswerCheck pending(Problem problem, ProblemRevision revision) {
+    public static AnswerCheck pending(
+            Problem problem, ProblemRevision revision, String answerFingerprint) {
         AnswerCheck check = new AnswerCheck();
         check.problemId = problem.getId();
         check.revision = revision;
         check.datasetVersionId = revision.getDatasetVersion().getId();
         check.status = AnswerCheckStatus.PENDING;
         check.testcaseCount = revision.getTestcases().size();
+        check.answerFingerprint = answerFingerprint;
         return check;
+    }
+
+    public boolean checks(String currentAnswerFingerprint) {
+        return currentAnswerFingerprint.equals(answerFingerprint);
+    }
+
+    public boolean verifies(String currentAnswerFingerprint) {
+        return status == AnswerCheckStatus.PASSED && checks(currentAnswerFingerprint);
     }
 
     public boolean hasChecked(UUID testcaseId) {

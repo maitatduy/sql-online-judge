@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface AnswerCheckRepository extends JpaRepository<AnswerCheck, UUID> {
 
     Optional<AnswerCheck> findByIdAndProblemId(UUID id, UUID problemId);
+
+    Optional<AnswerCheck> findFirstByProblemIdOrderByCreatedAtDescIdDesc(UUID problemId);
 }

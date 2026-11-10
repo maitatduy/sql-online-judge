@@ -57,7 +57,9 @@ public class AnswerCheckService {
     public AnswerCheckResponse start(UUID problemId) {
         Problem problem = problemAccess.editable(problemId);
         ProblemRevision draft = completeDraftOf(problem);
-        AnswerCheck check = answerCheckRepository.saveAndFlush(AnswerCheck.pending(problem, draft));
+        AnswerCheck check =
+                answerCheckRepository.saveAndFlush(
+                        AnswerCheck.pending(problem, draft, AnswerFingerprint.of(problem, draft)));
         outboxWriter.append(
                 StudioTopics.ANSWER_CHECK_REQUESTED,
                 check.getId().toString(),
@@ -81,22 +83,36 @@ public class AnswerCheckService {
                         problem.getFloatTolerance(),
                         problem.getTimeLimitMs(),
                         problem.getAllowedStatements()));
-        return AnswerCheckResponse.of(check, List.of());
+        return AnswerCheckResponse.of(check, true, List.of());
     }
 
     @Transactional(readOnly = true)
     public AnswerCheckResponse get(UUID problemId, UUID checkId) {
         Problem problem = problemAccess.accessible(problemId);
-        AnswerCheck check =
+        return responseOf(
+                problem,
                 answerCheckRepository
                         .findByIdAndProblemId(checkId, problem.getId())
-                        .orElseThrow(
-                                () ->
-                                        new NotFoundException(
-                                                ErrorCode.ANSWER_CHECK_NOT_FOUND,
-                                                "Không tìm thấy lần kiểm tra đáp án"));
-        return AnswerCheckResponse.of(
-                check, check.getTestcases().stream().map(this::resultOf).toList());
+                        .orElseThrow(AnswerCheckService::checkNotFound));
+    }
+
+    @Transactional(readOnly = true)
+    public AnswerCheckResponse latest(UUID problemId) {
+        Problem problem = problemAccess.accessible(problemId);
+        return responseOf(
+                problem,
+                answerCheckRepository
+                        .findFirstByProblemIdOrderByCreatedAtDescIdDesc(problem.getId())
+                        .orElseThrow(AnswerCheckService::checkNotFound));
+    }
+
+    public boolean isAnswerVerified(Problem problem) {
+        Optional<String> fingerprint = currentFingerprintOf(problem);
+        return fingerprint.isPresent()
+                && answerCheckRepository
+                        .findFirstByProblemIdOrderByCreatedAtDescIdDesc(problem.getId())
+                        .filter(check -> check.verifies(fingerprint.get()))
+                        .isPresent();
     }
 
     @Transactional
@@ -118,6 +134,27 @@ public class AnswerCheckService {
             testcase.get().setExpectedResult(expectedResultOf(event.expected()));
         }
         pending.get().record(testcase.get(), testcaseCheckOf(event), clock.instant());
+    }
+
+    private AnswerCheckResponse responseOf(Problem problem, AnswerCheck check) {
+        boolean isCurrent = currentFingerprintOf(problem).filter(check::checks).isPresent();
+        return AnswerCheckResponse.of(
+                check, isCurrent, check.getTestcases().stream().map(this::resultOf).toList());
+    }
+
+    private static Optional<String> currentFingerprintOf(Problem problem) {
+        ProblemRevision draft = problem.getDraftRevision();
+        if (draft.getDatasetVersion() == null
+                || draft.getReferenceSolutions().isEmpty()
+                || draft.getTestcases().isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(AnswerFingerprint.of(problem, draft));
+    }
+
+    private static NotFoundException checkNotFound() {
+        return new NotFoundException(
+                ErrorCode.ANSWER_CHECK_NOT_FOUND, "Không tìm thấy lần kiểm tra đáp án");
     }
 
     private static ProblemRevision completeDraftOf(Problem problem) {

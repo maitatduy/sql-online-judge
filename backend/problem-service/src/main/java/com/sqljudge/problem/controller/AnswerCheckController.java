@@ -39,6 +39,14 @@ public class AnswerCheckController {
         return ResponseEntity.accepted().location(location).body(check);
     }
 
+    @GetMapping("/latest")
+    @Operation(summary = "Lần kiểm tra đáp án gần nhất, kèm còn khớp với đáp án hiện tại hay không")
+    @ApiResponse(responseCode = "200", description = "Lần kiểm tra gần nhất")
+    @ApiResponse(responseCode = "404", description = "Không có bài hoặc bài chưa kiểm tra lần nào")
+    public AnswerCheckResponse getLatestCheck(@PathVariable UUID problemId) {
+        return answerCheckService.latest(problemId);
+    }
+
     @GetMapping("/{checkId}")
     @Operation(summary = "Trạng thái và kết quả từng testcase của một lần kiểm tra đáp án")
     @ApiResponse(responseCode = "200", description = "Đang chờ hoặc đã có kết quả")
