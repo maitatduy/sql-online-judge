@@ -11,6 +11,7 @@ public record AnswerCheckResponse(
         AnswerCheckStatus status,
         int testcaseCount,
         int checkedCount,
+        boolean isCurrent,
         Instant createdAt,
         Instant completedAt,
         List<TestcaseResult> testcases) {
@@ -23,12 +24,14 @@ public record AnswerCheckResponse(
             String systemError,
             List<DialectCheckResult> dialects) {}
 
-    public static AnswerCheckResponse of(AnswerCheck check, List<TestcaseResult> testcases) {
+    public static AnswerCheckResponse of(
+            AnswerCheck check, boolean isCurrent, List<TestcaseResult> testcases) {
         return new AnswerCheckResponse(
                 check.getId(),
                 check.getStatus(),
                 check.getTestcaseCount(),
                 testcases.size(),
+                isCurrent,
                 check.getCreatedAt(),
                 check.getCompletedAt(),
                 testcases);

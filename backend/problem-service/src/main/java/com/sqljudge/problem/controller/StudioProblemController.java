@@ -11,6 +11,7 @@ import com.sqljudge.problem.entity.Difficulty;
 import com.sqljudge.problem.entity.ProblemStatus;
 import com.sqljudge.problem.service.StudioProblemEditService;
 import com.sqljudge.problem.service.StudioProblemService;
+import com.sqljudge.problem.service.StudioReviewService;
 import com.sqljudge.problem.service.StudioSorts;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -47,6 +48,7 @@ public class StudioProblemController {
 
     private final StudioProblemService studioProblemService;
     private final StudioProblemEditService studioProblemEditService;
+    private final StudioReviewService studioReviewService;
 
     @PostMapping
     @Operation(summary = "Tạo bài nháp mới, slug sinh từ tiêu đề")
@@ -127,6 +129,20 @@ public class StudioProblemController {
     public StudioProblemResponse chooseDataset(
             @PathVariable UUID problemId, @Valid @RequestBody ChooseProblemDatasetRequest request) {
         return studioProblemEditService.chooseDataset(problemId, request);
+    }
+
+    @PostMapping("/{problemId}/submit-for-review")
+    @Operation(summary = "Gửi bài cho admin duyệt; cần đề bài và lần kiểm tra đáp án gần nhất đạt")
+    @ApiResponse(responseCode = "200", description = "Bài đã chuyển sang chờ duyệt")
+    @ApiResponse(
+            responseCode = "404",
+            description = "Không có bài hoặc không phải bài của người gọi")
+    @ApiResponse(
+            responseCode = "422",
+            description =
+                    "Bài đã khoá, chưa có đề bài, hoặc đáp án chưa đạt kiểm tra với bản hiện tại")
+    public StudioProblemResponse submitForReview(@PathVariable UUID problemId) {
+        return studioReviewService.submitForReview(problemId);
     }
 
     @DeleteMapping("/{problemId}")
