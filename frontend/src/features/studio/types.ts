@@ -30,6 +30,7 @@ export interface StudioProblem {
     tags: StudioTag[];
     statementMarkdown: string;
     dataset: { id: string; name: string } | null;
+    latestReview: ProblemReview | null;
     updatedAt: string;
 }
 
@@ -109,7 +110,7 @@ export interface UpdateDatasetRequest {
     description?: string;
 }
 
-export type StudioStep = "info" | "statement" | "database" | "answer";
+export type StudioStep = "info" | "statement" | "database" | "answer" | "publish";
 
 export interface ReferenceSolution {
     dialect: Dialect;
@@ -197,6 +198,7 @@ export interface AnswerCheck {
     status: AnswerCheckStatus;
     testcaseCount: number;
     checkedCount: number;
+    isCurrent: boolean;
     createdAt: string;
     completedAt: string | null;
     testcases: AnswerCheckTestcase[];
@@ -208,3 +210,11 @@ export interface CreateStudioRunRequest {
 }
 
 export const EDITABLE_STATUSES: readonly ProblemStatus[] = ["DRAFT", "CHANGES_REQUESTED"];
+
+export type ReviewDecision = "APPROVED" | "CHANGES_REQUESTED" | "REJECTED";
+
+export interface ProblemReview {
+    decision: ReviewDecision;
+    reason: string | null;
+    reviewedAt: string;
+}

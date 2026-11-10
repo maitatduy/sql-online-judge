@@ -2,6 +2,7 @@ import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import type {
     ProblemAnswer,
+    ProblemReview,
     ProblemStatus,
     SaveProblemAnswerRequest,
     StudioProblem,
@@ -24,13 +25,14 @@ const DEFAULT_PAGE_SIZE = 20;
 const MAX_TITLE_LENGTH = 200;
 const FIRST_SLUG_SUFFIX = 2;
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-interface StoredProblem extends StudioProblemSummary {
+export interface StoredProblem extends StudioProblemSummary {
     authorId: string;
     deletedAt?: string;
     tagSlugs: string[];
     statementMarkdown: string;
     datasetId?: string;
     answer?: SaveProblemAnswerRequest;
+    latestReview?: ProblemReview;
 }
 
 const COMPANY_DATASET_ID = "0192f3e0-0000-7000-8000-000000000001";
@@ -164,12 +166,13 @@ export function findAccessibleStudioProblem(problemId: string): StoredProblem | 
     );
 }
 
-function toDetail(problem: StoredProblem): StudioProblem {
+export function toStudioProblemDetail(problem: StoredProblem): StudioProblem {
     return {
         ...toSummary(problem),
         tags: PRACTICE_TAGS.filter((tag) => problem.tagSlugs.includes(tag.slug)),
         statementMarkdown: problem.statementMarkdown,
         dataset: datasetOf(problem.datasetId),
+        latestReview: problem.latestReview ?? null,
     };
 }
 
@@ -178,7 +181,7 @@ function datasetOf(datasetId: string | undefined): StudioProblem["dataset"] {
     return dataset ? { id: dataset.id, name: dataset.name } : null;
 }
 
-function isEditable(problem: StoredProblem): boolean {
+export function isEditable(problem: StoredProblem): boolean {
     return problem.status === "DRAFT" || problem.status === "CHANGES_REQUESTED";
 }
 
@@ -252,7 +255,7 @@ export const studioProblemHandlers: RequestHandler[] = [
         await delay();
         const problem = findAccessibleStudioProblem(String(params.problemId));
         return problem
-            ? HttpResponse.json(toDetail(problem))
+            ? HttpResponse.json(toStudioProblemDetail(problem))
             : apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
     }),
 
@@ -308,7 +311,7 @@ export const studioProblemHandlers: RequestHandler[] = [
                 : problem.answer;
         const updated = { ...problem, datasetId, answer, updatedAt: new Date().toISOString() };
         saveProblem(updated);
-        return HttpResponse.json(toDetail(updated));
+        return HttpResponse.json(toStudioProblemDetail(updated));
     }),
 
     http.get("*/api/studio/problems/:problemId/answer", async ({ params }) => {
@@ -366,7 +369,7 @@ export const studioProblemHandlers: RequestHandler[] = [
             updatedAt: new Date().toISOString(),
         };
         writeStudioProblems(problems.map((other) => (other.id === problem.id ? updated : other)));
-        return HttpResponse.json(toDetail(updated));
+        return HttpResponse.json(toStudioProblemDetail(updated));
     }),
 
     http.get("*/api/studio/problems", async ({ request }) => {

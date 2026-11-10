@@ -15,6 +15,7 @@ import { EDITABLE_STATUSES, type StudioStep } from "../types";
 import { AnswerStep } from "./AnswerStep";
 import { DatasetStep } from "./DatasetStep";
 import { InfoStep } from "./InfoStep";
+import { PublishStep } from "./PublishStep";
 import { QueryRunPanel } from "./QueryRunPanel";
 import { StatementStep } from "./StatementStep";
 import { StudioSteps } from "./StudioSteps";
@@ -118,6 +119,9 @@ export function ProblemStudio({ problemId, step = "info" }: ProblemStudioProps) 
                                 problem={problem}
                                 disabled={!isEditable}
                             />
+                        ) : null}
+                        {step === "publish" ? (
+                            <PublishStep key={`publish-${problem.id}`} problem={problem} />
                         ) : null}
                     </div>
                 </>
