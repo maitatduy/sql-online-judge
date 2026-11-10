@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 
 import type { CsvCell } from "../csv";
 import { useDatasetVariants } from "../hooks/useDatasetVariants";
-import { useSaveVariantDrafts, VariantTableSaveError } from "../hooks/useVariantCsv";
 import type { DatasetVariant, StudioDataset } from "../types";
 import {
     columnsOf,
@@ -20,7 +19,6 @@ import {
     withoutDraft,
 } from "../variant-drafts";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
-import { SaveBar } from "./SaveBar";
 import { VariantCard } from "./VariantCard";
 import { VariantDialog } from "./VariantDialog";
 import { VariantTableEditor } from "./VariantTableEditor";
@@ -38,18 +36,6 @@ interface DatasetVariantsProps {
     onDraftsChange: Dispatch<SetStateAction<VariantDrafts>>;
 }
 
-function saveErrorMessageOf(error: Error | null, dataset: StudioDataset): string | null {
-    if (!error) {
-        return null;
-    }
-    if (!(error instanceof VariantTableSaveError)) {
-        return `Chưa lưu được dữ liệu. ${error.message}`;
-    }
-    const variantName =
-        dataset.variants.find((variant) => variant.id === error.draft.variantId)?.name ?? "";
-    return `Chưa lưu được bảng ${error.draft.tableName}, bộ ${variantName}. ${error.message}`;
-}
-
 export function DatasetVariants({ dataset, drafts, onDraftsChange }: DatasetVariantsProps) {
     const showToast = useToast();
     const { addVariant, updateVariant, deleteVariant } = useDatasetVariants(dataset.id);
@@ -59,12 +45,6 @@ export function DatasetVariants({ dataset, drafts, onDraftsChange }: DatasetVari
     const [selected, setSelected] = useState<SelectedTable | null>(null);
     const selectedVariant = dataset.variants.find((variant) => variant.id === selected?.variantId);
     const pendingDrafts = liveDrafts(drafts, dataset);
-    const save = useSaveVariantDrafts(dataset.id, (draft) =>
-        onDraftsChange((current) =>
-            withoutDraft(current, draftKey(draft.variantId, draft.tableName)),
-        ),
-    );
-    const saveErrorMessage = saveErrorMessageOf(save.error, dataset);
 
     function draftRowsOf(variantId: string, tableName: string): CsvCell[][] | undefined {
         return pendingDrafts.find(
@@ -144,22 +124,6 @@ export function DatasetVariants({ dataset, drafts, onDraftsChange }: DatasetVari
                     onDraftChange={(rows) => changeDraft(selected, rows)}
                     onClose={() => setSelected(null)}
                 />
-            ) : null}
-            {dataset.variants.length > 0 ? (
-                <div className="sticky bottom-0 flex flex-col gap-2 rounded-lg border bg-card px-4 py-3">
-                    {saveErrorMessage ? (
-                        <p role="alert" className="text-[13px] text-destructive">
-                            {saveErrorMessage}
-                        </p>
-                    ) : null}
-                    <SaveBar
-                        hasChanges={pendingDrafts.length > 0}
-                        canSave={pendingDrafts.length > 0}
-                        isSaving={save.isSaving}
-                        savedAt={save.savedAt}
-                        onSave={() => save.save(pendingDrafts)}
-                    />
-                </div>
             ) : null}
             <VariantDialog
                 open={isAddOpen}

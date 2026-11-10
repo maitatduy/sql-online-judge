@@ -11,6 +11,7 @@ import { ApiRequestError } from "@/lib/api-client";
 import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 
 import { useSaveDataset } from "../hooks/useStudioDataset";
+import { useSaveVariantDrafts, variantSaveErrorMessageOf } from "../hooks/useVariantCsv";
 import { schemaErrors } from "../schema-editing";
 import type {
     DatasetTable,
@@ -19,9 +20,10 @@ import type {
     StudioDataset,
     UpdateDatasetRequest,
 } from "../types";
-import { liveDrafts, type VariantDrafts } from "../variant-drafts";
+import { draftKey, liveDrafts, type VariantDrafts, withoutDraft } from "../variant-drafts";
 import { DatasetInfoForm, type DatasetInfoValues } from "./DatasetInfoForm";
 import { DatasetVariants } from "./DatasetVariants";
+import { PendingImportNotice } from "./PendingImportNotice";
 import { SaveBar } from "./SaveBar";
 import { SchemaEditor } from "./SchemaEditor";
 import { SqlImportDialog } from "./SqlImportDialog";
@@ -58,6 +60,15 @@ function serverErrorsOf(error: Error | null): Record<string, string> {
         : {};
 }
 
+function latestOf(first: string | null, second: string | null): string | null {
+    return (
+        [first, second]
+            .filter((value) => value !== null)
+            .sort()
+            .at(-1) ?? null
+    );
+}
+
 export function DatasetEditor({ dataset }: DatasetEditorProps) {
     const showToast = useToast();
     const [info, setInfo] = useState<DatasetInfoValues>({
@@ -73,26 +84,52 @@ export function DatasetEditor({ dataset }: DatasetEditorProps) {
             showToast(`Chưa lưu được thay đổi. ${error.message}`, "error");
         }
     });
+    const saveDrafts = useSaveVariantDrafts(dataset.id, (draft) =>
+        setVariantDrafts((current) =>
+            withoutDraft(current, draftKey(draft.variantId, draft.tableName)),
+        ),
+    );
     const changedInfo = infoChanges(info, dataset);
     const hasInfoChanges = Object.keys(changedInfo).length > 0;
     const hasSchemaChanges = JSON.stringify(tables) !== JSON.stringify(dataset.schema.tables);
-    const hasChanges = hasInfoChanges || hasSchemaChanges || pendingImport !== null;
+    const hasDatasetChanges = hasInfoChanges || hasSchemaChanges || pendingImport !== null;
+    const pendingDrafts = liveDrafts(variantDrafts, {
+        ...dataset,
+        schema: { ...dataset.schema, tables },
+    });
+    const hasChanges = hasDatasetChanges || pendingDrafts.length > 0;
     const clientErrors = { ...infoErrors(info), ...schemaErrors(tables) };
     const serverErrors = serverErrorsOf(save.error);
-    useUnsavedChangesWarning(hasChanges || liveDrafts(variantDrafts, dataset).length > 0);
+    const draftErrorMessage = variantSaveErrorMessageOf(saveDrafts.error, dataset);
+    useUnsavedChangesWarning(hasChanges);
 
     function errorOf(path: string): string | undefined {
         return clientErrors[path] ?? serverErrors[path];
     }
 
+    function saveVariantDrafts() {
+        if (pendingDrafts.length > 0) {
+            saveDrafts.save(pendingDrafts);
+        }
+    }
+
     function saveChanges() {
+        if (!hasDatasetChanges) {
+            saveVariantDrafts();
+            return;
+        }
         save.save(
             {
                 info: hasInfoChanges ? changedInfo : null,
                 tables: hasSchemaChanges ? tables : null,
                 pendingImport,
             },
-            { onSuccess: () => setPendingImport(null) },
+            {
+                onSuccess: () => {
+                    setPendingImport(null);
+                    saveVariantDrafts();
+                },
+            },
         );
     }
 
@@ -107,6 +144,26 @@ export function DatasetEditor({ dataset }: DatasetEditorProps) {
         setTables(dataset.schema.tables);
         setPendingImport(null);
     }
+
+    const importNotice = pendingImport ? (
+        <PendingImportNotice pendingImport={pendingImport} onCancel={cancelImport} />
+    ) : null;
+    const saveBar = (
+        <div className="sticky bottom-0 flex flex-col gap-2 rounded-lg border bg-card px-4 py-3">
+            {draftErrorMessage ? (
+                <p role="alert" className="text-[13px] text-destructive">
+                    {draftErrorMessage}
+                </p>
+            ) : null}
+            <SaveBar
+                hasChanges={hasChanges}
+                canSave={hasChanges && Object.keys(clientErrors).length === 0}
+                isSaving={save.isSaving || saveDrafts.isSaving}
+                savedAt={latestOf(save.savedAt, saveDrafts.savedAt)}
+                onSave={saveChanges}
+            />
+        </div>
+    );
 
     return (
         <Tabs defaultValue="schema" className="gap-4">
@@ -127,35 +184,19 @@ export function DatasetEditor({ dataset }: DatasetEditorProps) {
                 onApply={applyImport}
             />
             <TabsContent value="schema" className="flex flex-col gap-5">
-                {pendingImport ? (
-                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-brand-soft px-3 py-2 text-[13px]">
-                        <p>
-                            Dữ liệu của {pendingImport.data.length} bảng sẽ được lưu vào bộ{" "}
-                            {pendingImport.variantName} khi bấm Lưu.
-                        </p>
-                        <Button type="button" variant="outline" size="sm" onClick={cancelImport}>
-                            Huỷ nhập
-                        </Button>
-                    </div>
-                ) : null}
+                {importNotice}
                 <DatasetInfoForm values={info} errorOf={errorOf} onChange={setInfo} />
                 <SchemaEditor tables={tables} errorOf={errorOf} onChange={setTables} />
-                <div className="sticky bottom-0 rounded-lg border bg-card px-4 py-3">
-                    <SaveBar
-                        hasChanges={hasChanges}
-                        canSave={hasChanges && Object.keys(clientErrors).length === 0}
-                        isSaving={save.isSaving}
-                        savedAt={save.savedAt}
-                        onSave={saveChanges}
-                    />
-                </div>
+                {saveBar}
             </TabsContent>
-            <TabsContent value="variants">
+            <TabsContent value="variants" className="flex flex-col gap-4">
+                {importNotice}
                 <DatasetVariants
                     dataset={dataset}
                     drafts={variantDrafts}
                     onDraftsChange={setVariantDrafts}
                 />
+                {saveBar}
             </TabsContent>
         </Tabs>
     );

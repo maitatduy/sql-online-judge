@@ -6,7 +6,7 @@ import { ApiRequestError } from "@/lib/api-client";
 
 import { studioApi } from "../api";
 import { rowsToCsv } from "../csv";
-import type { VariantCsv } from "../types";
+import type { StudioDataset, VariantCsv } from "../types";
 import type { VariantTableDraft } from "../variant-drafts";
 import { studioDatasetQueryKey } from "./useStudioDataset";
 
@@ -27,6 +27,21 @@ export class VariantTableSaveError extends Error {
         );
         this.draft = draft;
     }
+}
+
+export function variantSaveErrorMessageOf(
+    error: Error | null,
+    dataset: StudioDataset,
+): string | null {
+    if (!error) {
+        return null;
+    }
+    if (!(error instanceof VariantTableSaveError)) {
+        return `Chưa lưu được dữ liệu. ${error.message}`;
+    }
+    const variantName =
+        dataset.variants.find((variant) => variant.id === error.draft.variantId)?.name ?? "";
+    return `Chưa lưu được bảng ${error.draft.tableName}, bộ ${variantName}. ${error.message}`;
 }
 
 function variantCsvQueryKey({ datasetId, variantId, tableName }: VariantTableRef) {
