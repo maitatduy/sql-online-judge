@@ -38,7 +38,10 @@ import lombok.Setter;
             @Index(
                     name = "idx_problems_status_visibility_number",
                     columnList = "status, visibility, number"),
-            @Index(name = "idx_problems_author_id_updated_at", columnList = "author_id, updated_at")
+            @Index(
+                    name = "idx_problems_author_id_updated_at",
+                    columnList = "author_id, updated_at"),
+            @Index(name = "idx_problems_status_updated_at", columnList = "status, updated_at")
         })
 @Getter
 @Setter

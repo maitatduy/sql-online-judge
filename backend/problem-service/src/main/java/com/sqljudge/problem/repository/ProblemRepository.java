@@ -45,6 +45,8 @@ public interface ProblemRepository extends JpaRepository<Problem, UUID> {
 
     Optional<Problem> findByIdAndDeletedAtIsNull(UUID id);
 
+    Page<Problem> findByStatusAndDeletedAtIsNull(ProblemStatus status, Pageable pageable);
+
     boolean existsBySlugAndIdNot(String slug, UUID id);
 
     Optional<Problem> findBySlugAndStatusAndVisibilityAndDeletedAtIsNull(
