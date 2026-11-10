@@ -1,6 +1,7 @@
 package com.sqljudge.problem.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sqljudge.problem.event.ProblemTopics;
 import com.sqljudge.problem.event.StudioTopics;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.TopicPartition;
@@ -38,6 +39,11 @@ public class KafkaConfig {
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
         errorHandler.addNotRetryableExceptions(JsonProcessingException.class);
         return errorHandler;
+    }
+
+    @Bean
+    NewTopic problemPublishedTopic() {
+        return topic(ProblemTopics.PROBLEM_PUBLISHED);
     }
 
     @Bean

@@ -19,6 +19,7 @@ public record StudioProblemResponse(
         List<TagResponse> tags,
         String statementMarkdown,
         ProblemDatasetResponse dataset,
+        ProblemReviewResponse latestReview,
         Instant updatedAt) {
 
     public StudioProblemResponse {
@@ -39,6 +40,7 @@ public record StudioProblemResponse(
                         .toList(),
                 problem.getStatementMarkdown(),
                 datasetOf(problem.getDraftRevision()),
+                problem.latestReview().map(ProblemReviewResponse::from).orElse(null),
                 problem.getUpdatedAt());
     }
 

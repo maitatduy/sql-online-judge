@@ -61,6 +61,15 @@ public class ProblemRevision extends BaseEntity {
         this.number = number;
     }
 
+    public boolean hasExpectedResults() {
+        return testcases.stream().allMatch(testcase -> testcase.getExpectedResult() != null);
+    }
+
+    public void freeze(String checksum, Instant now) {
+        this.checksum = checksum;
+        this.frozenAt = now;
+    }
+
     public void addReferenceSolution(ReferenceSolution solution) {
         solution.setRevision(this);
         referenceSolutions.add(solution);

@@ -2,6 +2,7 @@ package com.sqljudge.problem.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.NotFoundException;
@@ -37,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProblemDetailService {
 
     private static final TypeReference<List<String>> COLUMNS = new TypeReference<>() {};
-    private static final TypeReference<List<List<String>>> ROWS = new TypeReference<>() {};
+    private static final TypeReference<List<List<JsonNode>>> ROWS = new TypeReference<>() {};
 
     private final ProblemRepository problemRepository;
     private final ProblemStatsRepository problemStatsRepository;
@@ -108,11 +109,18 @@ public class ProblemDetailService {
         try {
             return new ResultSetResponse(
                     objectMapper.readValue(result.getColumnsJson(), COLUMNS),
-                    objectMapper.readValue(result.getRowsJson(), ROWS),
+                    objectMapper.readValue(result.getRowsJson(), ROWS).stream()
+                            .map(row -> row.stream().map(ProblemDetailService::displayOf).toList())
+                            .toList(),
                     false);
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException("Stored expected result is not valid JSON", exception);
         }
+    }
+
+    private static String displayOf(JsonNode cell) {
+        JsonNode value = cell.isObject() ? cell.path("value") : cell;
+        return value.isNull() || value.isMissingNode() ? null : value.asText();
     }
 
     private static List<SchemaTableResponse> schemaOf(ProblemRevision revision) {

@@ -35,6 +35,9 @@ public interface ProblemRepository extends JpaRepository<Problem, UUID> {
 
     Optional<Problem> findBySlug(String slug);
 
+    @Query("SELECT COALESCE(MAX(p.number), 0) FROM Problem p")
+    int findMaxNumber();
+
     @Query(
             "SELECT COUNT(DISTINCT p) FROM Problem p JOIN p.revisions r"
                     + " WHERE r.datasetVersion.dataset.id = :datasetId AND p.deletedAt IS NULL")
