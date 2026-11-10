@@ -153,6 +153,29 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName("Danh sách và quyết định duyệt bài của admin được chuyển tới problem-service")
+    void adminProblemPaths_areRoutedToProblemService() {
+        webTestClient
+                .get()
+                .uri("/api/admin/problems?status=PENDING_REVIEW&page=1")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+        webTestClient
+                .post()
+                .uri("/api/admin/problems/0192f3d0-0000-7000-8000-000000000004/approve")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        assertThat(PROBLEM_SERVICE.forwardedRequestLines())
+                .containsExactly(
+                        "GET /api/admin/problems?status=PENDING_REVIEW&page=1",
+                        "POST /api/admin/problems/0192f3d0-0000-7000-8000-000000000004/approve");
+        assertThat(AUTH_SERVICE.forwardedRequestLines()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Ghi chú và hạn chế của một tài khoản được chuyển tới auth-service")
     void adminUserNotesAndRestrictions_areRoutedToAuthService() {
         webTestClient
