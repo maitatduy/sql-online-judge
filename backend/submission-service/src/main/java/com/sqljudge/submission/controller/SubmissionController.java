@@ -2,6 +2,7 @@ package com.sqljudge.submission.controller;
 
 import com.sqljudge.submission.dto.request.SubmitSolutionRequest;
 import com.sqljudge.submission.dto.response.SubmissionAcceptedResponse;
+import com.sqljudge.submission.dto.response.SubmissionPageResponse;
 import com.sqljudge.submission.dto.response.SubmissionResponse;
 import com.sqljudge.submission.service.SubmissionQueryService;
 import com.sqljudge.submission.service.SubmissionService;
@@ -9,6 +10,8 @@ import com.sqljudge.submission.service.SubmissionStreamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -26,6 +30,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 public class SubmissionController {
+
+    private static final int MAX_PAGE_SIZE = 100;
 
     private final SubmissionService submissionService;
     private final SubmissionQueryService submissionQueryService;
@@ -46,6 +52,19 @@ public class SubmissionController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
         return ResponseEntity.accepted()
                 .body(submissionService.submit(problemId, request, idempotencyKey));
+    }
+
+    @GetMapping("/api/problems/{problemId}/submissions")
+    @Operation(summary = "Lịch sử bài nộp của chính mình cho một bài, mới nhất trước")
+    @ApiResponse(responseCode = "200", description = "Một trang lịch sử kèm cursor trang sau")
+    @ApiResponse(responseCode = "400", description = "Cursor hỏng hoặc kích thước trang sai")
+    @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
+    public SubmissionPageResponse history(
+            @PathVariable UUID problemId,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "20")
+                    @Min(value = 1, message = "Phải từ 1 đến 100") @Max(value = MAX_PAGE_SIZE, message = "Phải từ 1 đến 100") int size) {
+        return submissionQueryService.history(problemId, cursor, size);
     }
 
     @GetMapping("/api/submissions/{submissionId}")
