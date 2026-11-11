@@ -1,0 +1,90 @@
+package com.sqljudge.submission.entity;
+
+import com.sqljudge.common.persistence.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
+import java.time.Instant;
+import java.util.UUID;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(
+        name = "submissions",
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_submissions_user_id_idempotency_key",
+                        columnNames = {"user_id", "idempotency_key"}),
+        indexes =
+                @Index(
+                        name = "idx_submissions_user_id_problem_id_created_at",
+                        columnList = "user_id, problem_id, created_at"))
+@Getter
+@NoArgsConstructor
+public class Submission extends BaseEntity {
+
+    private static final int FIRST_ATTEMPT = 1;
+
+    @Column(name = "user_id", nullable = false, columnDefinition = "BINARY(16)")
+    private UUID userId;
+
+    @Column(name = "problem_id", nullable = false, columnDefinition = "BINARY(16)")
+    private UUID problemId;
+
+    @Column(name = "problem_revision_id", nullable = false, columnDefinition = "BINARY(16)")
+    private UUID problemRevisionId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "dialect", nullable = false, length = 16)
+    private Dialect dialect;
+
+    @Column(name = "code", nullable = false, columnDefinition = "MEDIUMTEXT")
+    private String code;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 16)
+    private SubmissionStatus status;
+
+    @Column(name = "judged_testcases", nullable = false)
+    private int judgedTestcases;
+
+    @Column(name = "total_testcases", nullable = false)
+    private int totalTestcases;
+
+    @Column(name = "attempts", nullable = false)
+    private int attempts;
+
+    @Column(name = "idempotency_key", length = 100)
+    private String idempotencyKey;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private long version;
+
+    public static Submission pending(
+            UUID userId, SubmittedSolution solution, String idempotencyKey) {
+        Submission submission = new Submission();
+        submission.userId = userId;
+        submission.problemId = solution.problemId();
+        submission.problemRevisionId = solution.revisionId();
+        submission.dialect = solution.dialect();
+        submission.code = solution.code();
+        submission.totalTestcases = solution.testcaseCount();
+        submission.status = SubmissionStatus.PENDING;
+        submission.attempts = FIRST_ATTEMPT;
+        submission.idempotencyKey = idempotencyKey;
+        return submission;
+    }
+
+    public record SubmittedSolution(
+            UUID problemId, UUID revisionId, Dialect dialect, String code, int testcaseCount) {}
+}
