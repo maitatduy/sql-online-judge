@@ -15,5 +15,6 @@ SQL
 
 create_service_database auth "${MYSQL_AUTH_PASSWORD}"
 create_service_database problem "${MYSQL_PROBLEM_PASSWORD}"
+create_service_database submission "${MYSQL_SUBMISSION_PASSWORD}"
 
 mysql --protocol=socket -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "FLUSH PRIVILEGES;"

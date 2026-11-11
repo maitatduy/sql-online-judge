@@ -25,6 +25,10 @@ spring:
               uri: ${AUTH_SERVICE_URL}
               predicates:
                 - Path=/api/auth/**,/api/users/**,/api/admin/users/**,/api/admin/user-summary,/api/admin/user-exports,/api/admin/audit-log,/api/admin/audit-log/**,/api/admin/role-invitations,/api/admin/role-invitations/**,/api/role-invitations/**
+            - id: submission-service
+              uri: ${SUBMISSION_SERVICE_URL}
+              predicates:
+                - Path=/api/problems/*/submissions,/api/problems/*/runs,/api/submissions/**,/api/runs/**
             - id: problem-service
               uri: ${PROBLEM_SERVICE_URL}
               predicates:

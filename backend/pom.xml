@@ -21,6 +21,7 @@
         <module>problem-service</module>
         <module>api-gateway</module>
         <module>judge-worker</module>
+        <module>submission-service</module>
     </modules>
 
     <properties>
