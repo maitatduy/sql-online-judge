@@ -1,7 +1,9 @@
 package com.sqljudge.gateway.ratelimit;
 
 import com.sqljudge.gateway.error.ApiErrorWriter;
+import com.sqljudge.gateway.ratelimit.RateLimitProperties.ClientKey;
 import com.sqljudge.gateway.ratelimit.RateLimitProperties.Policy;
+import com.sqljudge.gateway.security.UserHeadersFilter;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.List;
@@ -77,18 +79,17 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
     }
 
     private Optional<Policy> matchingPolicy(ServerWebExchange exchange) {
-        if (exchange.getRequest().getMethod() != HttpMethod.POST) {
-            return Optional.empty();
-        }
+        HttpMethod method = exchange.getRequest().getMethod();
         PathContainer path = exchange.getRequest().getPath().pathWithinApplication();
         return policies.stream()
+                .filter(compiled -> compiled.policy().method().equals(method.name()))
                 .filter(compiled -> compiled.pattern().matches(path))
                 .map(CompiledPolicy::policy)
                 .findFirst();
     }
 
     private Mono<Void> limit(ServerWebExchange exchange, GatewayFilterChain chain, Policy policy) {
-        String key = KEY_PREFIX + policy.name() + ":" + clientAddress(exchange);
+        String key = KEY_PREFIX + policy.name() + ":" + clientKey(exchange, policy);
         return countRequest(key, policy.window())
                 .flatMap(
                         count ->
@@ -135,6 +136,17 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
                                     RATE_LIMITED_CODE,
                                     RATE_LIMITED_MESSAGE);
                         });
+    }
+
+    private String clientKey(ServerWebExchange exchange, Policy policy) {
+        if (policy.key() == ClientKey.USER) {
+            String userId =
+                    exchange.getRequest().getHeaders().getFirst(UserHeadersFilter.USER_ID_HEADER);
+            if (userId != null) {
+                return userId;
+            }
+        }
+        return clientAddress(exchange);
     }
 
     private String clientAddress(ServerWebExchange exchange) {

@@ -33,17 +33,21 @@ final class TestJwts {
     }
 
     static String validToken(RSAKey key, String role) {
-        return sign(key, role, Instant.now().plus(ACCESS_TOKEN_TTL));
+        return sign(key, USER_ID, role, Instant.now().plus(ACCESS_TOKEN_TTL));
+    }
+
+    static String learnerToken(RSAKey key, String userId) {
+        return sign(key, userId, "LEARNER", Instant.now().plus(ACCESS_TOKEN_TTL));
     }
 
     static String expiredToken(RSAKey key) {
-        return sign(key, "LEARNER", Instant.now().minus(Duration.ofMinutes(5)));
+        return sign(key, USER_ID, "LEARNER", Instant.now().minus(Duration.ofMinutes(5)));
     }
 
-    private static String sign(RSAKey key, String role, Instant expiresAt) {
+    private static String sign(RSAKey key, String userId, String role, Instant expiresAt) {
         JWTClaimsSet claims =
                 new JWTClaimsSet.Builder()
-                        .subject(USER_ID)
+                        .subject(userId)
                         .claim("username", "minh.anh")
                         .claim("role", role)
                         .issueTime(Date.from(expiresAt.minus(ACCESS_TOKEN_TTL)))
