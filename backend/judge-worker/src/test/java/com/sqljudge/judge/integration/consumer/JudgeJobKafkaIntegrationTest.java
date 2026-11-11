@@ -70,6 +70,8 @@ class JudgeJobKafkaIntegrationTest {
     private static final String SUBMISSION_CREATED = "sqljudge.submission.created";
     private static final String JUDGE_PROGRESS = "sqljudge.judge.progress";
     private static final String JUDGE_COMPLETED = "sqljudge.judge.completed";
+    private static final String RUN_REQUESTED = "sqljudge.run.requested";
+    private static final String RUN_COMPLETED = "sqljudge.run.completed";
     private static final UUID ACCEPTING_REVISION = UUID.randomUUID();
     private static final UUID HIDDEN_MISMATCH_REVISION = UUID.randomUUID();
     private static final String JUDGE_PACKAGE_JSON =
@@ -231,6 +233,44 @@ class JudgeJobKafkaIntegrationTest {
                 JsonPath.parse(firstRecordOf(JUDGE_COMPLETED, submissionId).value());
         assertThat(completed.read("$.verdict", String.class)).isEqualTo("SE");
         assertThat(completed.read("$.judgedTestcases", Integer.class)).isZero();
+    }
+
+    @Test
+    @DisplayName("Chạy thử trên dataset mẫu rồi gửi bảng kết quả về topic hoàn tất")
+    void runRequested_publishesSampleResult() {
+        String runId = requestRun(ACCEPTING_REVISION, "SELECT name FROM departments ORDER BY id");
+
+        DocumentContext completed = JsonPath.parse(firstRecordOf(RUN_COMPLETED, runId).value());
+        assertThat(completed.read("$.runId", String.class)).isEqualTo(runId);
+        assertThat(completed.read("$.version", Integer.class)).isEqualTo(1);
+        assertThat(completed.read("$.outcome", String.class)).isEqualTo("OK");
+        assertThat(completed.read("$.columns", List.class)).containsExactly("name");
+        assertThat(completed.read("$.rows", List.class))
+                .containsExactly(List.of("Kỹ thuật"), List.of("Kinh doanh"));
+        assertThat(completed.read("$.isTruncated", Boolean.class)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Chạy thử với bài không tải được gói chấm thì gửi SE")
+    void runRequested_unknownRevision_publishesSystemError() {
+        String runId = requestRun(UUID.randomUUID(), "SELECT name FROM departments");
+
+        DocumentContext completed = JsonPath.parse(firstRecordOf(RUN_COMPLETED, runId).value());
+        assertThat(completed.read("$.outcome", String.class)).isEqualTo("SE");
+        assertThat(completed.read("$.rows", List.class)).isEmpty();
+    }
+
+    private static String requestRun(UUID revisionId, String code) {
+        String runId = UUID.randomUUID().toString();
+        send(
+                RUN_REQUESTED,
+                runId,
+                """
+                {"eventId": "%s", "occurredAt": "2026-11-11T08:00:00Z", "version": 1,
+                 "runId": "%s", "revisionId": "%s", "dialect": "SQLITE", "code": "%s"}
+                """
+                        .formatted(UUID.randomUUID(), runId, revisionId, code));
+        return runId;
     }
 
     private static String submit(UUID revisionId, String code) {
