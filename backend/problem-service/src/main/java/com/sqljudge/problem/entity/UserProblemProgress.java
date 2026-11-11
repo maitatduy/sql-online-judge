@@ -46,4 +46,23 @@ public class UserProblemProgress extends BaseEntity {
         this.problemId = problemId;
         this.status = status;
     }
+
+    public static UserProblemProgress start(UUID userId, UUID problemId) {
+        return new UserProblemProgress(userId, problemId, ProblemProgressStatus.ATTEMPTED);
+    }
+
+    public boolean recordJudgement(boolean accepted, Instant judgedAt) {
+        if (!accepted) {
+            return false;
+        }
+        if (status == ProblemProgressStatus.SOLVED) {
+            if (firstSolvedAt == null || judgedAt.isBefore(firstSolvedAt)) {
+                firstSolvedAt = judgedAt;
+            }
+            return false;
+        }
+        status = ProblemProgressStatus.SOLVED;
+        firstSolvedAt = judgedAt;
+        return true;
+    }
 }
