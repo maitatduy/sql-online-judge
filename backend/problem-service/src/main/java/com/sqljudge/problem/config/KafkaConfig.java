@@ -47,6 +47,11 @@ public class KafkaConfig {
     }
 
     @Bean
+    NewTopic submissionJudgedDeadLetterTopic() {
+        return topic(ProblemTopics.SUBMISSION_JUDGED + StudioTopics.DEAD_LETTER_SUFFIX);
+    }
+
+    @Bean
     NewTopic studioRunRequestedTopic() {
         return topic(StudioTopics.RUN_REQUESTED);
     }
