@@ -63,6 +63,16 @@ sqljudge:
         path: /api/auth/password-reset/**
         limit: 5
         window: 1m
+      - name: submit
+        path: /api/problems/*/submissions
+        key: USER
+        limit: 6
+        window: 1m
+      - name: run
+        path: /api/problems/*/runs
+        key: USER
+        limit: 20
+        window: 1m
 
 management:
   server:

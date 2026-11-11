@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 public class UserHeadersFilter implements GlobalFilter, Ordered {
 
     static final String USER_HEADER_PREFIX = "X-User-";
-    static final String USER_ID_HEADER = "X-User-Id";
+    public static final String USER_ID_HEADER = "X-User-Id";
     static final String USER_ROLE_HEADER = "X-User-Role";
     private static final String ROLE_CLAIM = "role";
 
