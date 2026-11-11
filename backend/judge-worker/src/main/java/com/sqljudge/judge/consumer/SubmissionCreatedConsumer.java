@@ -64,7 +64,16 @@ public class SubmissionCreatedConsumer {
                     event.revisionId(),
                     exception);
             return new SubmissionJudgement(
-                    event.submissionId(), event.attempt(), Verdict.SE, 0, null, null, null, 0, 0);
+                    event.submissionId(),
+                    event.attempt(),
+                    Verdict.SE,
+                    0,
+                    null,
+                    null,
+                    null,
+                    null,
+                    0,
+                    0);
         }
         return processor.judge(
                 new SubmissionJudgeRequest(

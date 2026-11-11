@@ -11,5 +11,6 @@ public record SubmissionJudgement(
         Integer failedIndex,
         Boolean failedIsHidden,
         String message,
+        ResultDiff diff,
         int judgedTestcases,
         int totalTestcases) {}

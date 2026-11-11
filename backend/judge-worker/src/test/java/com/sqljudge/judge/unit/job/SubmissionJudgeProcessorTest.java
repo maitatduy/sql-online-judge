@@ -11,6 +11,7 @@ import com.sqljudge.judge.compare.Cell.NumberCell;
 import com.sqljudge.judge.compare.Cell.TextCell;
 import com.sqljudge.judge.compare.CompareOptions;
 import com.sqljudge.judge.compare.ExecutionOutcome;
+import com.sqljudge.judge.compare.MismatchReason;
 import com.sqljudge.judge.compare.NormalizedTable;
 import com.sqljudge.judge.compare.ResultTable;
 import com.sqljudge.judge.compare.Row;
@@ -18,9 +19,12 @@ import com.sqljudge.judge.compare.SanitizedMessage;
 import com.sqljudge.judge.compare.Verdict;
 import com.sqljudge.judge.guard.StatementGuard;
 import com.sqljudge.judge.guard.StatementType;
+import com.sqljudge.judge.job.ExpectedTable.CellKind;
+import com.sqljudge.judge.job.ExpectedTable.WireCell;
 import com.sqljudge.judge.job.JudgePackage;
 import com.sqljudge.judge.job.JudgePackage.JudgeCase;
 import com.sqljudge.judge.job.JudgeProgress;
+import com.sqljudge.judge.job.ResultDiff;
 import com.sqljudge.judge.job.SubmissionJudgeProcessor;
 import com.sqljudge.judge.job.SubmissionJudgeRequest;
 import com.sqljudge.judge.job.SubmissionJudgement;
@@ -118,6 +122,7 @@ class SubmissionJudgeProcessorTest {
         assertThat(judgement.verdict()).isEqualTo(Verdict.WA);
         assertThat(judgement.failedIndex()).isEqualTo(2);
         assertThat(judgement.failedIsHidden()).isTrue();
+        assertThat(judgement.diff()).isNull();
         assertThat(judgement.judgedTestcases()).isEqualTo(2);
         assertThat(runs).hasSize(2);
         assertThat(progress).extracting(JudgeProgress::judgedTestcases).containsExactly(1, 2);
@@ -132,6 +137,53 @@ class SubmissionJudgeProcessorTest {
         assertThat(judgement.verdict()).isEqualTo(Verdict.OM);
         assertThat(judgement.failedIndex()).isEqualTo(1);
         assertThat(judgement.failedIsHidden()).isFalse();
+        ResultDiff diff = judgement.diff();
+        assertThat(diff.reason()).isEqualTo(MismatchReason.ORDER);
+        assertThat(diff.orderMismatch().rowNumber()).isEqualTo(1);
+        assertThat(diff.orderMismatch().expected()).containsExactly(number("1"), text("A"));
+        assertThat(diff.orderMismatch().actual()).containsExactly(number("2"), text("B"));
+    }
+
+    @Test
+    @DisplayName("Sai dữ liệu ở testcase công khai thì kèm diff: dòng thiếu, dòng thừa, số dòng")
+    void judge_publicTestcaseDiffers_revealsDiff() {
+        SubmissionJudgement judgement =
+                judge(returning(outcome(4, row(1, "A"), row(3, "C"), row(4, "D"))), CODE, false);
+
+        assertThat(judgement.verdict()).isEqualTo(Verdict.WA);
+        ResultDiff diff = judgement.diff();
+        assertThat(diff.reason()).isEqualTo(MismatchReason.ROWS);
+        assertThat(diff.expectedColumns()).containsExactly("id", "name");
+        assertThat(diff.actualColumns()).containsExactly("id", "name");
+        assertThat(diff.expectedRowCount()).isEqualTo(2);
+        assertThat(diff.actualRowCount()).isEqualTo(3);
+        assertThat(diff.missingRows()).containsExactly(List.of(number("2"), text("B")));
+        assertThat(diff.extraRows())
+                .containsExactly(List.of(number("3"), text("C")), List.of(number("4"), text("D")));
+        assertThat(diff.orderMismatch()).isNull();
+    }
+
+    @Test
+    @DisplayName("Lỗi SQL hay quá giờ ở testcase công khai thì không có diff")
+    void judge_errorOnPublicTestcase_hasNoDiff() {
+        assertThat(judge(run -> new ExecutionOutcome.TimedOut(2000), CODE, false).diff()).isNull();
+        assertThat(
+                        judge(
+                                        run ->
+                                                new ExecutionOutcome.Failed(
+                                                        new SanitizedMessage("lỗi"), 3),
+                                        CODE,
+                                        false)
+                                .diff())
+                .isNull();
+    }
+
+    private static WireCell number(String value) {
+        return new WireCell(CellKind.NUMBER, value);
+    }
+
+    private static WireCell text(String value) {
+        return new WireCell(CellKind.TEXT, value);
     }
 
     @Test

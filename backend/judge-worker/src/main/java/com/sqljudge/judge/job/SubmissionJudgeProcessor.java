@@ -109,9 +109,12 @@ public class SubmissionJudgeProcessor {
         }
         ComparisonResult comparison =
                 comparator.compare(testcase.expected(), actual, judgePackage.compareOptions());
-        return comparison.verdict() == Verdict.AC
-                ? Optional.empty()
-                : Optional.of(tally.failed(testcase, comparison.verdict(), null));
+        if (comparison.isAccepted()) {
+            return Optional.empty();
+        }
+        ResultDiff diff =
+                testcase.isPublic() ? ResultDiff.of(testcase.expected(), actual, comparison) : null;
+        return Optional.of(tally.mismatched(testcase, comparison.verdict(), diff));
     }
 
     private static GuardPolicy policyOf(JudgePackage judgePackage) {
@@ -142,19 +145,27 @@ public class SubmissionJudgeProcessor {
         }
 
         SubmissionJudgement accepted() {
-            return judgement(Verdict.AC, null, null, null);
+            return judgement(Verdict.AC, null, null, null, null);
         }
 
         SubmissionJudgement rejected(Verdict verdict, String message) {
-            return judgement(verdict, null, null, message);
+            return judgement(verdict, null, null, message, null);
         }
 
         SubmissionJudgement failed(JudgeCase testcase, Verdict verdict, String message) {
-            return judgement(verdict, testcase.index(), !testcase.isPublic(), message);
+            return judgement(verdict, testcase.index(), !testcase.isPublic(), message, null);
+        }
+
+        SubmissionJudgement mismatched(JudgeCase testcase, Verdict verdict, ResultDiff diff) {
+            return judgement(verdict, testcase.index(), !testcase.isPublic(), null, diff);
         }
 
         private SubmissionJudgement judgement(
-                Verdict verdict, Integer failedIndex, Boolean failedIsHidden, String message) {
+                Verdict verdict,
+                Integer failedIndex,
+                Boolean failedIsHidden,
+                String message,
+                ResultDiff diff) {
             return new SubmissionJudgement(
                     request.submissionId(),
                     request.attempt(),
@@ -163,6 +174,7 @@ public class SubmissionJudgeProcessor {
                     failedIndex,
                     failedIsHidden,
                     message,
+                    diff,
                     judged,
                     total());
         }

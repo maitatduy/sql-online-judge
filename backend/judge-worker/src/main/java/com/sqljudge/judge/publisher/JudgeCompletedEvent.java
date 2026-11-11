@@ -1,6 +1,7 @@
 package com.sqljudge.judge.publisher;
 
 import com.sqljudge.judge.compare.Verdict;
+import com.sqljudge.judge.job.ResultDiff;
 import com.sqljudge.judge.job.SubmissionJudgement;
 import java.time.Instant;
 import java.util.UUID;
@@ -16,6 +17,7 @@ public record JudgeCompletedEvent(
         Integer failedIndex,
         Boolean failedIsHidden,
         String message,
+        ResultDiff diff,
         int judgedTestcases,
         int totalTestcases) {
 
@@ -33,6 +35,7 @@ public record JudgeCompletedEvent(
                 judgement.failedIndex(),
                 judgement.failedIsHidden(),
                 judgement.message(),
+                judgement.diff(),
                 judgement.judgedTestcases(),
                 judgement.totalTestcases());
     }
