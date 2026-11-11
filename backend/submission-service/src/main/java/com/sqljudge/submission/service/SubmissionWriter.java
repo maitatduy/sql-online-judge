@@ -24,6 +24,11 @@ class SubmissionWriter {
     @Transactional
     Submission create(Submission pending) {
         Submission submission = submissionRepository.saveAndFlush(pending);
+        queueJudging(submission);
+        return submission;
+    }
+
+    void queueJudging(Submission submission) {
         outboxWriter.append(
                 SubmissionTopics.SUBMISSION_CREATED,
                 submission.getId().toString(),
@@ -36,6 +41,5 @@ class SubmissionWriter {
                         submission.getDialect(),
                         submission.getCode(),
                         submission.getAttempts()));
-        return submission;
     }
 }

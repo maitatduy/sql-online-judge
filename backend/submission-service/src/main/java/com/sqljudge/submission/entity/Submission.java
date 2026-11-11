@@ -30,6 +30,7 @@ import lombok.NoArgsConstructor;
 public class Submission extends BaseEntity {
 
     private static final int FIRST_ATTEMPT = 1;
+    private static final int MAX_ATTEMPTS = 3;
 
     @Column(name = "user_id", nullable = false, columnDefinition = "BINARY(16)")
     private UUID userId;
@@ -79,6 +80,9 @@ public class Submission extends BaseEntity {
     @Column(name = "idempotency_key", length = 100)
     private String idempotencyKey;
 
+    @Column(name = "judged_at")
+    private Instant judgedAt;
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
@@ -99,6 +103,40 @@ public class Submission extends BaseEntity {
         submission.attempts = FIRST_ATTEMPT;
         submission.idempotencyKey = idempotencyKey;
         return submission;
+    }
+
+    public boolean recordProgress(int attempt, int judged) {
+        if (!isCurrent(attempt)) {
+            return false;
+        }
+        status = SubmissionStatus.JUDGING;
+        judgedTestcases = Math.max(judgedTestcases, judged);
+        return true;
+    }
+
+    public JudgeOutcome complete(JudgeResult result, Instant now) {
+        if (!isCurrent(result.attempt())) {
+            return JudgeOutcome.IGNORED;
+        }
+        if (result.verdict() == Verdict.SE && attempts < MAX_ATTEMPTS) {
+            attempts++;
+            status = SubmissionStatus.PENDING;
+            judgedTestcases = 0;
+            return JudgeOutcome.RETRY;
+        }
+        status = SubmissionStatus.COMPLETED;
+        verdict = result.verdict();
+        runtimeMs = (int) Math.min(Integer.MAX_VALUE, result.runtimeMs());
+        errorMessage = result.message();
+        firstFailedIndex = result.failedIndex();
+        firstFailedIsHidden = result.failedIsHidden();
+        judgedTestcases = result.judgedTestcases();
+        judgedAt = now;
+        return JudgeOutcome.COMPLETED;
+    }
+
+    private boolean isCurrent(int attempt) {
+        return status != SubmissionStatus.COMPLETED && attempt == attempts;
     }
 
     public record SubmittedSolution(
