@@ -52,6 +52,9 @@ public interface ProblemRepository extends JpaRepository<Problem, UUID> {
     Optional<Problem> findBySlugAndStatusAndVisibilityAndDeletedAtIsNull(
             String slug, ProblemStatus status, ProblemVisibility visibility);
 
+    Optional<Problem> findByIdAndStatusAndVisibilityAndDeletedAtIsNull(
+            UUID id, ProblemStatus status, ProblemVisibility visibility);
+
     @Query("SELECT p.slug FROM Problem p WHERE p.slug = :base OR p.slug LIKE :prefix")
     List<String> findSlugsLike(@Param("base") String base, @Param("prefix") String prefix);
 
