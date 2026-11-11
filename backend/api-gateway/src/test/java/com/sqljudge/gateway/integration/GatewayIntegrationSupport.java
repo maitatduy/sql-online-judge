@@ -28,6 +28,7 @@ abstract class GatewayIntegrationSupport {
                                     command.getHostConfig().withMemory(REDIS_MEMORY_LIMIT_BYTES));
 
     static final AuthServiceStub PROBLEM_SERVICE = AuthServiceStub.start("{\"keys\":[]}", 404);
+    static final AuthServiceStub SUBMISSION_SERVICE = AuthServiceStub.start("{\"keys\":[]}", 404);
 
     static {
         REDIS.start();
@@ -41,11 +42,13 @@ abstract class GatewayIntegrationSupport {
         registry.add("REDIS_PORT", () -> REDIS.getMappedPort(REDIS_PORT));
         registry.add("REDIS_PASSWORD", () -> "");
         registry.add("PROBLEM_SERVICE_URL", PROBLEM_SERVICE::baseUrl);
+        registry.add("SUBMISSION_SERVICE_URL", SUBMISSION_SERVICE::baseUrl);
     }
 
     @BeforeEach
-    void clearProblemServiceRequests() {
+    void clearServiceRequests() {
         PROBLEM_SERVICE.clear();
+        SUBMISSION_SERVICE.clear();
     }
 
     @Autowired

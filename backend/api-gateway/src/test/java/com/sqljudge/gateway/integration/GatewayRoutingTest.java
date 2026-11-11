@@ -153,6 +153,34 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName(
+            "Nộp bài, chạy thử và xem bài nộp đi tới submission-service; đề bài vẫn ở"
+                    + " problem-service")
+    void submissionPaths_areRoutedToSubmissionService() {
+        String problemPath = "/api/problems/0192f3d0-0000-7000-8000-000000000004";
+        webTestClient.post().uri(problemPath + "/submissions").exchange();
+        webTestClient.get().uri(problemPath + "/submissions?cursor=abc").exchange();
+        webTestClient.post().uri(problemPath + "/runs").exchange();
+        webTestClient.get().uri("/api/submissions/0192f3f0-0000-7000-8000-000000000001").exchange();
+        webTestClient
+                .get()
+                .uri("/api/submissions/0192f3f0-0000-7000-8000-000000000001/events")
+                .exchange();
+        webTestClient.get().uri("/api/runs/0192f3f0-0000-7000-8000-000000000002").exchange();
+        webTestClient.get().uri(problemPath).exchange();
+
+        assertThat(SUBMISSION_SERVICE.forwardedRequestLines())
+                .containsExactly(
+                        "POST " + problemPath + "/submissions",
+                        "GET " + problemPath + "/submissions?cursor=abc",
+                        "POST " + problemPath + "/runs",
+                        "GET /api/submissions/0192f3f0-0000-7000-8000-000000000001",
+                        "GET /api/submissions/0192f3f0-0000-7000-8000-000000000001/events",
+                        "GET /api/runs/0192f3f0-0000-7000-8000-000000000002");
+        assertThat(PROBLEM_SERVICE.forwardedRequestLines()).containsExactly("GET " + problemPath);
+    }
+
+    @Test
     @DisplayName("Danh sách và quyết định duyệt bài của admin được chuyển tới problem-service")
     void adminProblemPaths_areRoutedToProblemService() {
         webTestClient
