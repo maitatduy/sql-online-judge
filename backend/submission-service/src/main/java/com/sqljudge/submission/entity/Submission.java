@@ -13,6 +13,8 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(
@@ -67,6 +69,10 @@ public class Submission extends BaseEntity {
 
     @Column(name = "first_failed_is_hidden")
     private Boolean firstFailedIsHidden;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "diff_json", columnDefinition = "JSON")
+    private ResultDiff diff;
 
     @Column(name = "judged_testcases", nullable = false)
     private int judgedTestcases;
@@ -130,6 +136,7 @@ public class Submission extends BaseEntity {
         errorMessage = result.message();
         firstFailedIndex = result.failedIndex();
         firstFailedIsHidden = result.failedIsHidden();
+        diff = Boolean.FALSE.equals(result.failedIsHidden()) ? result.diff() : null;
         judgedTestcases = result.judgedTestcases();
         judgedAt = now;
         return JudgeOutcome.COMPLETED;

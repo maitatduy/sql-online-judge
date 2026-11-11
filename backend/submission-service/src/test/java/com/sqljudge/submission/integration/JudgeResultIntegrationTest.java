@@ -110,6 +110,30 @@ class JudgeResultIntegrationTest extends ContainerSupport {
                 .isEqualTo(1);
     }
 
+    @Test
+    @DisplayName("Kết quả sai ở testcase công khai lưu kèm diff")
+    void completedOnPublicTestcase_storesDiff() throws InterruptedException {
+        String id = storeSubmission();
+        String diff =
+                """
+                "diff": {"reason": "ROWS", "expectedColumns": ["name"],
+                 "actualColumns": ["name"], "expectedRowCount": 1, "actualRowCount": 1,
+                 "missingRows": [[{"kind": "TEXT", "value": "Kỹ thuật"}]],
+                 "extraRows": [[{"kind": "NULL", "value": null}]], "orderMismatch": null}
+                """;
+
+        send(
+                COMPLETED,
+                id,
+                completed(id, 1, "WA", "\"failedIndex\": 1, \"failedIsHidden\": false, " + diff));
+        awaitColumn(id, "status", "COMPLETED");
+
+        DocumentContext stored = JsonPath.parse(String.valueOf(column(id, "diff_json")));
+        assertThat(stored.read("$.reason", String.class)).isEqualTo("ROWS");
+        assertThat(stored.read("$.missingRows[0][0].value", String.class)).isEqualTo("Kỹ thuật");
+        assertThat(stored.read("$.extraRows[0][0].kind", String.class)).isEqualTo("NULL");
+    }
+
     private String storeSubmission() {
         String id = UUID.randomUUID().toString();
         jdbcTemplate.update(

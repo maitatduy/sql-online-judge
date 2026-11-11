@@ -1,6 +1,7 @@
 package com.sqljudge.submission.dto.response;
 
 import com.sqljudge.submission.entity.Dialect;
+import com.sqljudge.submission.entity.ResultDiff;
 import com.sqljudge.submission.entity.Submission;
 import com.sqljudge.submission.entity.SubmissionStatus;
 import com.sqljudge.submission.entity.Verdict;
@@ -20,7 +21,7 @@ public record SubmissionResponse(
         FailedTestcase firstFailedTestcase,
         Instant submittedAt) {
 
-    public record FailedTestcase(int index, boolean isHidden) {}
+    public record FailedTestcase(int index, boolean isHidden, ResultDiff diff) {}
 
     public static SubmissionResponse from(Submission submission) {
         return new SubmissionResponse(
@@ -41,8 +42,8 @@ public record SubmissionResponse(
         if (submission.getFirstFailedIndex() == null) {
             return null;
         }
+        boolean isHidden = !Boolean.FALSE.equals(submission.getFirstFailedIsHidden());
         return new FailedTestcase(
-                submission.getFirstFailedIndex(),
-                Boolean.TRUE.equals(submission.getFirstFailedIsHidden()));
+                submission.getFirstFailedIndex(), isHidden, isHidden ? null : submission.getDiff());
     }
 }

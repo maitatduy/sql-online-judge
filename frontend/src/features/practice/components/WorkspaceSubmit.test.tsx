@@ -6,7 +6,7 @@ import { server } from "@/mocks/server";
 import { DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
 
-import type { Submission } from "../types";
+import type { DiffCell, Submission } from "../types";
 import { Workspace } from "./Workspace";
 
 vi.mock("next/navigation", () => ({ notFound: vi.fn() }));
@@ -36,6 +36,12 @@ const EXPECTED_ROWS = [
     ["Kỹ thuật", "Nguyễn Văn An", "48000000"],
     ["Kinh doanh", "Trần Thị Bình", "32000000"],
 ];
+
+const NULL_CELL: DiffCell = { kind: "NULL", value: null };
+
+function textCells(row: string[]): DiffCell[] {
+    return row.map((value) => ({ kind: "TEXT", value }));
+}
 
 function submissionOf(overrides: Partial<Submission>): Submission {
     return {
@@ -143,18 +149,14 @@ describe("nộp bài trong Workspace", () => {
                     index: 1,
                     isHidden: false,
                     diff: {
-                        expected: {
-                            columns: EXAMPLE_COLUMNS,
-                            rows: EXPECTED_ROWS,
-                            isTruncated: false,
-                        },
-                        actual: {
-                            columns: EXAMPLE_COLUMNS,
-                            rows: [EXPECTED_ROWS[0], EXPECTED_ROWS[2]],
-                            isTruncated: false,
-                        },
-                        missingRows: [1],
-                        extraRows: [],
+                        reason: "ROWS",
+                        expectedColumns: EXAMPLE_COLUMNS,
+                        actualColumns: EXAMPLE_COLUMNS,
+                        expectedRowCount: 3,
+                        actualRowCount: 3,
+                        missingRows: [textCells(EXPECTED_ROWS[1])],
+                        extraRows: [[...textCells(["Kỹ thuật", "Nguyễn Văn An"]), NULL_CELL]],
+                        orderMismatch: null,
                     },
                 },
             }),
@@ -163,14 +165,83 @@ describe("nộp bài trong Workspace", () => {
         const panel = await submitCode();
 
         expect(
-            await panel.findByText("Sai ở testcase 1/3, thiếu 1 dòng, 41 ms"),
+            await panel.findByText("Sai ở testcase 1/3, thiếu 1 dòng, thừa 1 dòng, 41 ms"),
         ).toBeInTheDocument();
-        const actual = within(panel.getByRole("table", { name: "Kết quả của bạn: 2 dòng" }));
-        expect(actual.getAllByRole("row")).toHaveLength(3);
-        const expected = within(panel.getByRole("table", { name: "Mong đợi: 3 dòng" }));
+        expect(panel.getByText("Mong đợi 3 dòng, kết quả của bạn có 3 dòng.")).toBeInTheDocument();
+        const missing = within(
+            panel.getByRole("table", { name: "Dòng thiếu so với kết quả mong đợi" }),
+        );
         expect(
-            expected.getByRole("row", { name: "Thiếu Kỹ thuật Nguyễn Văn An 48000000" }),
+            missing.getByRole("row", { name: "Thiếu Kỹ thuật Nguyễn Văn An 48000000" }),
         ).toBeInTheDocument();
+        const extra = within(panel.getByRole("table", { name: "Dòng thừa trong kết quả của bạn" }));
+        expect(
+            extra.getByRole("row", { name: "Thừa Kỹ thuật Nguyễn Văn An NULL" }),
+        ).toBeInTheDocument();
+    });
+
+    it("chỉ ra dòng sai thứ tự khi OM", async () => {
+        judgeAs(
+            submissionOf({
+                verdict: "OM",
+                judgedTestcases: 1,
+                runtimeMs: 41,
+                firstFailedTestcase: {
+                    index: 1,
+                    isHidden: false,
+                    diff: {
+                        reason: "ORDER",
+                        expectedColumns: EXAMPLE_COLUMNS,
+                        actualColumns: EXAMPLE_COLUMNS,
+                        expectedRowCount: 3,
+                        actualRowCount: 3,
+                        missingRows: [],
+                        extraRows: [],
+                        orderMismatch: {
+                            rowNumber: 1,
+                            expected: textCells(EXPECTED_ROWS[0]),
+                            actual: textCells(EXPECTED_ROWS[2]),
+                        },
+                    },
+                },
+            }),
+        );
+
+        const panel = await submitCode();
+
+        const actual = within(await panel.findByRole("table", { name: "Dòng 1 của bạn" }));
+        expect(actual.getByText("Trần Thị Bình")).toBeInTheDocument();
+        const expected = within(panel.getByRole("table", { name: "Dòng 1 mong đợi" }));
+        expect(expected.getByText("Hoàng Quốc Bảo")).toBeInTheDocument();
+    });
+
+    it("liệt kê cột hai bên khi khác số cột", async () => {
+        judgeAs(
+            submissionOf({
+                verdict: "WA",
+                judgedTestcases: 1,
+                firstFailedTestcase: {
+                    index: 1,
+                    isHidden: false,
+                    diff: {
+                        reason: "COLUMN_COUNT",
+                        expectedColumns: EXAMPLE_COLUMNS,
+                        actualColumns: ["department"],
+                        expectedRowCount: 3,
+                        actualRowCount: 2,
+                        missingRows: [],
+                        extraRows: [],
+                        orderMismatch: null,
+                    },
+                },
+            }),
+        );
+
+        const panel = await submitCode();
+
+        expect(await panel.findByText("Mong đợi 3 cột:")).toBeInTheDocument();
+        expect(panel.getByText("department, employee, salary")).toBeInTheDocument();
+        expect(panel.getByText("Kết quả của bạn có 1 cột:")).toBeInTheDocument();
     });
 
     it("không hiện dữ liệu khi sai ở testcase ẩn", async () => {

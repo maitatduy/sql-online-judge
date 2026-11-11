@@ -5,11 +5,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.sqljudge.submission.entity.Dialect;
 import com.sqljudge.submission.entity.JudgeOutcome;
 import com.sqljudge.submission.entity.JudgeResult;
+import com.sqljudge.submission.entity.ResultDiff;
+import com.sqljudge.submission.entity.ResultDiff.CellKind;
+import com.sqljudge.submission.entity.ResultDiff.DiffCell;
+import com.sqljudge.submission.entity.ResultDiff.MismatchReason;
 import com.sqljudge.submission.entity.Submission;
 import com.sqljudge.submission.entity.Submission.SubmittedSolution;
 import com.sqljudge.submission.entity.SubmissionStatus;
 import com.sqljudge.submission.entity.Verdict;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +22,16 @@ import org.junit.jupiter.api.Test;
 class SubmissionTest {
 
     private static final Instant NOW = Instant.parse("2026-11-11T08:00:00Z");
+    private static final ResultDiff DIFF =
+            new ResultDiff(
+                    MismatchReason.ROWS,
+                    List.of("id"),
+                    List.of("id"),
+                    1,
+                    1,
+                    List.of(List.of(new DiffCell(CellKind.NUMBER, "1"))),
+                    List.of(List.of(new DiffCell(CellKind.NUMBER, "2"))),
+                    null);
 
     @Test
     @DisplayName(
@@ -43,7 +58,8 @@ class SubmissionTest {
         Submission submission = pending();
 
         JudgeOutcome outcome =
-                submission.complete(new JudgeResult(1, Verdict.WA, 12, 2, true, null, 2), NOW);
+                submission.complete(
+                        new JudgeResult(1, Verdict.WA, 12, 2, true, null, null, 2), NOW);
 
         assertThat(outcome).isEqualTo(JudgeOutcome.COMPLETED);
         assertThat(submission.getStatus()).isEqualTo(SubmissionStatus.COMPLETED);
@@ -78,8 +94,20 @@ class SubmissionTest {
         assertThat(submission.getStatus()).isEqualTo(SubmissionStatus.COMPLETED);
     }
 
+    @Test
+    @DisplayName("Diff chỉ được lưu khi testcase sai là testcase công khai")
+    void complete_storesDiffOnlyForPublicTestcase() {
+        Submission onPublic = pending();
+        onPublic.complete(new JudgeResult(1, Verdict.WA, 3, 1, false, null, DIFF, 1), NOW);
+        assertThat(onPublic.getDiff()).isEqualTo(DIFF);
+
+        Submission onHidden = pending();
+        onHidden.complete(new JudgeResult(1, Verdict.WA, 3, 2, true, null, DIFF, 2), NOW);
+        assertThat(onHidden.getDiff()).isNull();
+    }
+
     private static JudgeResult result(int attempt, Verdict verdict, String message) {
-        return new JudgeResult(attempt, verdict, 5, null, null, message, 3);
+        return new JudgeResult(attempt, verdict, 5, null, null, message, null, 3);
     }
 
     private static Submission pending() {

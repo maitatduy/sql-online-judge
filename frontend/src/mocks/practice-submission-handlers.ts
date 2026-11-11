@@ -1,12 +1,15 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import type {
+    DiffCell,
     FailedTestcase,
     ProblemDetail,
     Submission,
     SubmissionAccepted,
+    SubmissionDiff,
     SubmitSolutionRequest,
 } from "@/features/practice/types";
+import type { ResultCell, ResultSet } from "@/lib/result-set";
 import type { Verdict } from "@/lib/verdict";
 
 import { apiError } from "./api-error";
@@ -50,20 +53,45 @@ function failedAt(testcase: FailedTestcase, verdict: Verdict): Judgement {
     };
 }
 
+function cellsOf(row: ResultCell[]): DiffCell[] {
+    return row.map((value) => ({ kind: value === null ? "NULL" : "TEXT", value }));
+}
+
+function diffOf(example: ResultSet): SubmissionDiff {
+    return {
+        reason: "ROWS",
+        expectedColumns: example.columns,
+        actualColumns: example.columns,
+        expectedRowCount: example.rows.length,
+        actualRowCount: example.rows.length,
+        missingRows: [],
+        extraRows: [],
+        orderMismatch: null,
+    };
+}
+
 function judgeValidQuery(problem: ProblemDetail, query: string, total: number): Judgement {
     const [example] = problem.examples;
     if (example && KEEPS_ONE_ROW_PER_GROUP.test(query)) {
-        const actual = {
-            ...example,
-            rows: example.rows.filter((_, index) => index !== MISSING_ROW_INDEX),
+        const diff: SubmissionDiff = {
+            ...diffOf(example),
+            actualRowCount: example.rows.length - 1,
+            missingRows: [cellsOf(example.rows[MISSING_ROW_INDEX] ?? [])],
         };
-        const diff = { expected: example, actual, missingRows: [MISSING_ROW_INDEX], extraRows: [] };
         return failedAt({ index: 1, isHidden: false, diff }, "WA");
     }
     if (COMPARES_WITH_GROUP_MAX.test(query)) {
         if (example && problem.requiresOrder && !HAS_ORDER_BY.test(query)) {
-            const actual = { ...example, rows: [...example.rows].reverse() };
-            const diff = { expected: example, actual, missingRows: [], extraRows: [] };
+            const lastRow = example.rows[example.rows.length - 1] ?? [];
+            const diff: SubmissionDiff = {
+                ...diffOf(example),
+                reason: "ORDER",
+                orderMismatch: {
+                    rowNumber: 1,
+                    expected: cellsOf(example.rows[0] ?? []),
+                    actual: cellsOf(lastRow),
+                },
+            };
             return failedAt({ index: 1, isHidden: false, diff }, "OM");
         }
         return {
