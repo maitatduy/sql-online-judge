@@ -25,8 +25,8 @@ import org.hibernate.type.SqlTypes;
                         columnNames = {"user_id", "idempotency_key"}),
         indexes =
                 @Index(
-                        name = "idx_submissions_user_id_problem_id_created_at",
-                        columnList = "user_id, problem_id, created_at"))
+                        name = "idx_submissions_user_id_problem_id_id",
+                        columnList = "user_id, problem_id, id"))
 @Getter
 @NoArgsConstructor
 public class Submission extends BaseEntity {
