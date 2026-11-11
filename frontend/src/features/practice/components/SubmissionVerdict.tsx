@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { ResultTable, type RowMark } from "@/components/shared/ResultTable";
 import { VerdictBadge } from "@/components/shared/VerdictBadge";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/format";
@@ -8,17 +7,15 @@ import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { VERDICT_LABELS, VERDICT_TEXT_CLASSES, type Verdict } from "@/lib/verdict";
 
-import type { ProblemDetail, Submission, SubmissionDiff } from "../types";
+import type { ProblemDetail, Submission } from "../types";
+
+import { DIFF_ROW_LIMIT, SubmissionDiffView } from "./SubmissionDiffView";
 
 const MS_PER_SECOND = 1000;
 
 interface SubmissionVerdictProps {
     problem: ProblemDetail;
     submission: Submission & { verdict: Verdict };
-}
-
-function marksOf(rowIndexes: number[], mark: RowMark): Partial<Record<number, RowMark>> {
-    return Object.fromEntries(rowIndexes.map((rowIndex) => [rowIndex, mark]));
 }
 
 function summaryOf(problem: ProblemDetail, submission: Submission): string | null {
@@ -37,30 +34,19 @@ function summaryOf(problem: ProblemDetail, submission: Submission): string | nul
     const lead = submission.verdict === "OM" ? `Sai thứ tự ở ${position}` : `Sai ở ${position}`;
     const rowCounts = failed.diff
         ? [
-              failed.diff.missingRows.length > 0
-                  ? `thiếu ${failed.diff.missingRows.length} dòng`
-                  : null,
-              failed.diff.extraRows.length > 0 ? `thừa ${failed.diff.extraRows.length} dòng` : null,
+              rowCountOf("thiếu", failed.diff.missingRows.length),
+              rowCountOf("thừa", failed.diff.extraRows.length),
           ].filter((part) => part !== null)
         : [];
     return [lead, ...rowCounts, ...runtime].join(", ");
 }
 
-function DiffTables({ diff }: { diff: SubmissionDiff }) {
-    return (
-        <div className="grid gap-3 xl:grid-cols-2">
-            <ResultTable
-                label={`Kết quả của bạn: ${formatNumber(diff.actual.rows.length)} dòng`}
-                result={diff.actual}
-                rowMarks={marksOf(diff.extraRows, "extra")}
-            />
-            <ResultTable
-                label={`Mong đợi: ${formatNumber(diff.expected.rows.length)} dòng`}
-                result={diff.expected}
-                rowMarks={marksOf(diff.missingRows, "missing")}
-            />
-        </div>
-    );
+function rowCountOf(label: string, count: number): string | null {
+    if (count === 0) {
+        return null;
+    }
+    const atLeast = count >= DIFF_ROW_LIMIT ? "từ " : "";
+    return `${label} ${atLeast}${formatNumber(count)} dòng`;
 }
 
 export function SubmissionVerdict({ problem, submission }: SubmissionVerdictProps) {
@@ -88,7 +74,7 @@ export function SubmissionVerdict({ problem, submission }: SubmissionVerdictProp
                     {submission.errorMessage}
                 </pre>
             ) : null}
-            {failed?.diff ? <DiffTables diff={failed.diff} /> : null}
+            {failed?.diff ? <SubmissionDiffView diff={failed.diff} /> : null}
             {failed?.isHidden ? (
                 <p className="text-[13px] text-muted-foreground">
                     Testcase ẩn nên không hiện dữ liệu so sánh.

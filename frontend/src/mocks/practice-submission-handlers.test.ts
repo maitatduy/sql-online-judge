@@ -80,9 +80,8 @@ describe("nộp bài", () => {
             firstFailedTestcase: { index: 1, isHidden: false },
         });
         const diff = submission.firstFailedTestcase?.diff;
-        expect(diff?.expected.rows).toHaveLength(4);
-        expect(diff?.actual.rows).toHaveLength(3);
-        expect(diff?.missingRows).toEqual([1]);
+        expect(diff).toMatchObject({ reason: "ROWS", expectedRowCount: 4, actualRowCount: 3 });
+        expect(diff?.missingRows).toHaveLength(1);
         expect(diff?.extraRows).toEqual([]);
     });
 
@@ -100,7 +99,11 @@ describe("nộp bài", () => {
 
         expect(submission).toMatchObject({
             verdict: "OM",
-            firstFailedTestcase: { index: 1, isHidden: false },
+            firstFailedTestcase: {
+                index: 1,
+                isHidden: false,
+                diff: { reason: "ORDER", orderMismatch: { rowNumber: 1 } },
+            },
         });
     });
 

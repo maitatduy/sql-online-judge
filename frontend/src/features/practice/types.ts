@@ -92,11 +92,28 @@ export interface SubmissionAccepted {
 
 export type SubmissionStatus = "PENDING" | "JUDGING" | "COMPLETED";
 
+export type DiffReason = "COLUMN_COUNT" | "COLUMN_NAMES" | "ROWS" | "ORDER";
+
+export interface DiffCell {
+    kind: string;
+    value: string | null;
+}
+
+export interface OrderMismatch {
+    rowNumber: number;
+    expected: DiffCell[];
+    actual: DiffCell[];
+}
+
 export interface SubmissionDiff {
-    expected: ResultSet;
-    actual: ResultSet;
-    missingRows: number[];
-    extraRows: number[];
+    reason: DiffReason;
+    expectedColumns: string[];
+    actualColumns: string[];
+    expectedRowCount: number;
+    actualRowCount: number;
+    missingRows: DiffCell[][];
+    extraRows: DiffCell[][];
+    orderMismatch: OrderMismatch | null;
 }
 
 export interface FailedTestcase {

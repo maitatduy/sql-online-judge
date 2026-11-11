@@ -75,6 +75,31 @@ class GetSubmissionApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Sai ở testcase công khai thì trả diff; ở testcase ẩn thì không bao giờ trả diff")
+    void get_failedSubmission_returnsDiffOnlyForPublicTestcase() {
+        String onPublic = storeFailure(false);
+        String onHidden = storeFailure(true);
+
+        DocumentContext publicFailure =
+                JsonPath.parse(get(onPublic, TestJwts.learnerToken()).getBody());
+        assertThat(publicFailure.read("$.firstFailedTestcase.diff.reason", String.class))
+                .isEqualTo("ROWS");
+        assertThat(
+                        publicFailure.read(
+                                "$.firstFailedTestcase.diff.missingRows[0][0].value", String.class))
+                .isEqualTo("Kinh doanh");
+        assertThat(publicFailure.read("$.firstFailedTestcase.diff.expectedRowCount", Integer.class))
+                .isEqualTo(2);
+
+        ResponseEntity<String> hiddenFailure = get(onHidden, TestJwts.learnerToken());
+        assertThat(
+                        JsonPath.parse(hiddenFailure.getBody())
+                                .read("$.firstFailedTestcase.diff", Object.class))
+                .isNull();
+        assertThat(hiddenFailure.getBody()).doesNotContain("Kinh doanh");
+    }
+
+    @Test
     @DisplayName(
             "Bài nộp của người khác, đã xoá hoặc không tồn tại trả 404; chưa đăng nhập trả 401")
     void get_foreignDeletedOrUnknown_isNotFound() {
@@ -108,6 +133,22 @@ class GetSubmissionApiIntegrationTest extends ContainerSupport {
                 status,
                 verdict,
                 judged);
+        return id;
+    }
+
+    private String storeFailure(boolean isHidden) {
+        String id = storeSubmission(TestJwts.LEARNER_ID, "COMPLETED", "WA", 1);
+        jdbcTemplate.update(
+                "UPDATE submissions SET first_failed_index = 1, first_failed_is_hidden = ?,"
+                        + " diff_json = ? WHERE id = UUID_TO_BIN(?)",
+                isHidden,
+                """
+                {"reason": "ROWS", "expectedColumns": ["name"], "actualColumns": ["name"],
+                 "expectedRowCount": 2, "actualRowCount": 1,
+                 "missingRows": [[{"kind": "TEXT", "value": "Kinh doanh"}]],
+                 "extraRows": [], "orderMismatch": null}
+                """,
+                id);
         return id;
     }
 

@@ -7,4 +7,5 @@ public record JudgeResult(
         Integer failedIndex,
         Boolean failedIsHidden,
         String message,
+        ResultDiff diff,
         int judgedTestcases) {}
