@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
 
     Optional<Submission> findByUserIdAndIdempotencyKey(UUID userId, String idempotencyKey);
+
+    Optional<Submission> findByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
 }

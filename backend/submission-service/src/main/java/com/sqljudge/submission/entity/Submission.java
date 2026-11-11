@@ -51,6 +51,22 @@ public class Submission extends BaseEntity {
     @Column(name = "status", nullable = false, length = 16)
     private SubmissionStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verdict", length = 8)
+    private Verdict verdict;
+
+    @Column(name = "runtime_ms")
+    private Integer runtimeMs;
+
+    @Column(name = "error_message", length = 2000)
+    private String errorMessage;
+
+    @Column(name = "first_failed_index")
+    private Integer firstFailedIndex;
+
+    @Column(name = "first_failed_is_hidden")
+    private Boolean firstFailedIsHidden;
+
     @Column(name = "judged_testcases", nullable = false)
     private int judgedTestcases;
 
