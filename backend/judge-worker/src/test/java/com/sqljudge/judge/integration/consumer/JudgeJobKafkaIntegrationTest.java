@@ -67,6 +67,27 @@ class JudgeJobKafkaIntegrationTest {
                            "rows": [["2", "Kinh doanh"], ["1", "Kỹ thuật"]]}]}]}
             """
                     .formatted(VERSION_ID, VARIANT_ID);
+    private static final String SUBMISSION_CREATED = "sqljudge.submission.created";
+    private static final String JUDGE_PROGRESS = "sqljudge.judge.progress";
+    private static final String JUDGE_COMPLETED = "sqljudge.judge.completed";
+    private static final UUID ACCEPTING_REVISION = UUID.randomUUID();
+    private static final UUID HIDDEN_MISMATCH_REVISION = UUID.randomUUID();
+    private static final String JUDGE_PACKAGE_JSON =
+            """
+            {"revisionId": "%s", "datasetVersionId": "%s", "datasetChecksum": "abc123",
+             "requiresOrder": true, "compareColumnNames": false, "floatTolerance": null,
+             "timeLimitMs": 2000, "allowedStatements": ["SELECT", "WITH"],
+             "testcases": [
+               {"testcaseId": "%s", "index": 1, "variantId": "%s", "isPublic": true,
+                "expected": {"columns": ["name"], "rows": [
+                  [{"kind": "TEXT", "value": "Kỹ thuật"}], [{"kind": "TEXT", "value": "Kinh doanh"}]]}},
+               {"testcaseId": "%s", "index": 2, "variantId": "%s", "isPublic": false,
+                "expected": {"columns": ["name"], "rows": %s}}]}
+            """;
+    private static final String BOTH_ROWS =
+            "[[{\"kind\": \"TEXT\", \"value\": \"Kỹ thuật\"}],"
+                    + " [{\"kind\": \"TEXT\", \"value\": \"Kinh doanh\"}]]";
+    private static final String SECRET_ROW = "[[{\"kind\": \"TEXT\", \"value\": \"Bí mật\"}]]";
 
     @ServiceConnection
     static final KafkaContainer KAFKA =
@@ -162,6 +183,70 @@ class JudgeJobKafkaIntegrationTest {
     }
 
     @Test
+    @DisplayName("Bài nộp đúng mọi testcase thì gửi tiến độ từng testcase rồi kết quả AC")
+    void submissionCreated_correctSolution_publishesProgressAndAccepted() {
+        String submissionId =
+                submit(ACCEPTING_REVISION, "SELECT name FROM departments ORDER BY id");
+
+        List<DocumentContext> progress =
+                recordsOf(JUDGE_PROGRESS, submissionId, 2).stream()
+                        .map(record -> JsonPath.parse(record.value()))
+                        .toList();
+        assertThat(progress)
+                .extracting(event -> event.read("$.judgedTestcases", Integer.class))
+                .containsExactly(1, 2);
+        assertThat(progress.get(0).read("$.totalTestcases", Integer.class)).isEqualTo(2);
+        assertThat(progress.get(0).read("$.attempt", Integer.class)).isEqualTo(1);
+        DocumentContext completed =
+                JsonPath.parse(firstRecordOf(JUDGE_COMPLETED, submissionId).value());
+        assertThat(completed.read("$.submissionId", String.class)).isEqualTo(submissionId);
+        assertThat(completed.read("$.version", Integer.class)).isEqualTo(1);
+        assertThat(completed.read("$.verdict", String.class)).isEqualTo("AC");
+        assertThat(completed.read("$.judgedTestcases", Integer.class)).isEqualTo(2);
+        assertThat(completed.read("$.failedIndex", Integer.class)).isNull();
+    }
+
+    @Test
+    @DisplayName("Sai ở testcase ẩn thì WA kèm số thứ tự, không kèm thông báo hay dữ liệu ẩn")
+    void submissionCreated_hiddenMismatch_publishesWrongAnswerWithoutData() {
+        String submissionId =
+                submit(HIDDEN_MISMATCH_REVISION, "SELECT name FROM departments ORDER BY id");
+
+        String payload = firstRecordOf(JUDGE_COMPLETED, submissionId).value();
+        DocumentContext completed = JsonPath.parse(payload);
+        assertThat(completed.read("$.verdict", String.class)).isEqualTo("WA");
+        assertThat(completed.read("$.failedIndex", Integer.class)).isEqualTo(2);
+        assertThat(completed.read("$.failedIsHidden", Boolean.class)).isTrue();
+        assertThat(completed.read("$.message", String.class)).isNull();
+        assertThat(payload).doesNotContain("Bí mật").doesNotContain("Kinh doanh");
+    }
+
+    @Test
+    @DisplayName("Không tải được gói chấm thì gửi kết quả SE để submission-service xử lý lại")
+    void submissionCreated_unknownRevision_publishesSystemError() {
+        String submissionId = submit(UUID.randomUUID(), "SELECT name FROM departments");
+
+        DocumentContext completed =
+                JsonPath.parse(firstRecordOf(JUDGE_COMPLETED, submissionId).value());
+        assertThat(completed.read("$.verdict", String.class)).isEqualTo("SE");
+        assertThat(completed.read("$.judgedTestcases", Integer.class)).isZero();
+    }
+
+    private static String submit(UUID revisionId, String code) {
+        String submissionId = UUID.randomUUID().toString();
+        send(
+                SUBMISSION_CREATED,
+                submissionId,
+                """
+                {"eventId": "%s", "occurredAt": "2026-11-11T08:00:00Z", "version": 1,
+                 "submissionId": "%s", "revisionId": "%s", "dialect": "SQLITE",
+                 "code": "%s", "attempt": 1}
+                """
+                        .formatted(UUID.randomUUID(), submissionId, revisionId, code));
+        return submissionId;
+    }
+
+    @Test
     @DisplayName("Message hỏng được đẩy sang dead letter topic, không làm kẹt partition")
     void runRequested_malformedJob_goesToDeadLetterTopic() {
         String key = UUID.randomUUID().toString();
@@ -231,7 +316,9 @@ class JudgeJobKafkaIntegrationTest {
         try {
             HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
             server.createContext(
-                    "/internal/dataset-versions/", JudgeJobKafkaIntegrationTest::respond);
+                    "/internal/dataset-versions/", exchange -> write(exchange, 200, SNAPSHOT_JSON));
+            server.createContext(
+                    "/internal/problem-revisions/", JudgeJobKafkaIntegrationTest::respondPackage);
             server.start();
             return server;
         } catch (IOException exception) {
@@ -239,12 +326,34 @@ class JudgeJobKafkaIntegrationTest {
         }
     }
 
-    private static void respond(HttpExchange exchange) throws IOException {
-        byte[] body = SNAPSHOT_JSON.getBytes(StandardCharsets.UTF_8);
+    private static void respondPackage(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        if (path.contains(ACCEPTING_REVISION.toString())) {
+            write(exchange, 200, judgePackage(ACCEPTING_REVISION, BOTH_ROWS));
+        } else if (path.contains(HIDDEN_MISMATCH_REVISION.toString())) {
+            write(exchange, 200, judgePackage(HIDDEN_MISMATCH_REVISION, SECRET_ROW));
+        } else {
+            write(exchange, 404, "{\"code\":\"PROBLEM_REVISION_NOT_FOUND\"}");
+        }
+    }
+
+    private static String judgePackage(UUID revisionId, String hiddenRows) {
+        return JUDGE_PACKAGE_JSON.formatted(
+                revisionId,
+                VERSION_ID,
+                UUID.randomUUID(),
+                VARIANT_ID,
+                UUID.randomUUID(),
+                VARIANT_ID,
+                hiddenRows);
+    }
+
+    private static void write(HttpExchange exchange, int status, String body) throws IOException {
+        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(200, body.length);
+        exchange.sendResponseHeaders(status, bytes.length);
         try (OutputStream output = exchange.getResponseBody()) {
-            output.write(body);
+            output.write(bytes);
         }
     }
 }
