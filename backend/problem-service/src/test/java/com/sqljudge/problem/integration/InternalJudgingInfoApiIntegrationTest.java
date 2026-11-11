@@ -42,33 +42,7 @@ class InternalJudgingInfoApiIntegrationTest extends ContainerSupport {
     @BeforeEach
     void submitProblemForReview() {
         studio = new StudioFixtures(restTemplate, SETTER);
-        problemId = studio.createProblem("Phòng ban");
-        String datasetId = studio.createReadyDataset("Công ty");
-        String hiddenVariantId = studio.addVariant(datasetId, "Ẩn", false);
-        studio.chooseDataset(problemId, datasetId);
-        studio.saveAnswer(problemId, studio.variantIdsOf(datasetId).get(0), hiddenVariantId);
-        studio.send(
-                HttpMethod.PATCH,
-                studioPath(),
-                "{\"statementMarkdown\":\"Liệt kê tên phòng ban.\"}");
-        String checkId =
-                JsonPath.parse(
-                                studio.send(HttpMethod.POST, studioPath() + "/answer-checks", null)
-                                        .getBody())
-                        .read("$.id", String.class);
-        jdbcTemplate.update(
-                "UPDATE answer_checks SET status = 'PASSED', completed_at = NOW(6)"
-                        + " WHERE id = UUID_TO_BIN(?)",
-                checkId);
-        jdbcTemplate.update(
-                "INSERT INTO expected_results (id, testcase_id, columns_json, rows_json,"
-                        + " row_count, checksum, created_at, updated_at)"
-                        + " SELECT UUID_TO_BIN(UUID()), t.id, '[\"name\"]', '[]', 0,"
-                        + " REPEAT('0', 64), NOW(6), NOW(6)"
-                        + " FROM testcases t JOIN problems p ON p.draft_revision_id = t.revision_id"
-                        + " WHERE p.id = UUID_TO_BIN(?)",
-                problemId);
-        studio.send(HttpMethod.POST, studioPath() + "/submit-for-review", null);
+        problemId = ReviewFixtures.submitForReview(studio, jdbcTemplate, "[]");
     }
 
     @AfterEach
@@ -143,9 +117,5 @@ class InternalJudgingInfoApiIntegrationTest extends ContainerSupport {
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
                 String.class);
-    }
-
-    private String studioPath() {
-        return "/api/studio/problems/" + problemId;
     }
 }
