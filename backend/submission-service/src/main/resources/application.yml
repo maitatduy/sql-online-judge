@@ -26,6 +26,9 @@ spring:
             read-timeout: 3000
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: submission-service
+      auto-offset-reset: earliest
     producer:
       acks: all
       compression-type: zstd
