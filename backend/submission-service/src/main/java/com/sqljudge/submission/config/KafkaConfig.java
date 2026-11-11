@@ -58,6 +58,16 @@ public class KafkaConfig {
         return topic(SubmissionTopics.JUDGE_COMPLETED + SubmissionTopics.DEAD_LETTER_SUFFIX);
     }
 
+    @Bean
+    NewTopic runRequestedTopic() {
+        return topic(SubmissionTopics.RUN_REQUESTED);
+    }
+
+    @Bean
+    NewTopic runCompletedDeadLetterTopic() {
+        return topic(SubmissionTopics.RUN_COMPLETED + SubmissionTopics.DEAD_LETTER_SUFFIX);
+    }
+
     private static NewTopic topic(String name) {
         return TopicBuilder.name(name).partitions(PARTITIONS).replicas(REPLICAS).build();
     }

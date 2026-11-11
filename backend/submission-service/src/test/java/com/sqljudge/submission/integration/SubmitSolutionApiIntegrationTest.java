@@ -5,10 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.sun.net.httpserver.HttpServer;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -35,13 +31,13 @@ import org.springframework.test.context.DynamicPropertySource;
 @Import(TestJwts.DecoderConfig.class)
 class SubmitSolutionApiIntegrationTest extends ContainerSupport {
 
-    private static final String PUBLISHED_ID = "0192f3d0-0000-7000-8000-000000000005";
-    private static final String REVISION_ID = "0192f3d1-0000-7000-8000-000000000005";
-    private static final String BROKEN_ID = "0192f3d0-0000-7000-8000-00000000000b";
+    private static final String PUBLISHED_ID = ProblemServiceStub.PUBLISHED_ID;
+    private static final String REVISION_ID = ProblemServiceStub.REVISION_ID;
+    private static final String BROKEN_ID = ProblemServiceStub.BROKEN_ID;
     private static final String CREATED_TOPIC = "sqljudge.submission.created";
     private static final String SOLUTION =
             "{\"dialect\":\"POSTGRESQL\",\"code\":\"SELECT name FROM departments\"}";
-    private static final HttpServer PROBLEM_SERVICE = startProblemService();
+    private static final HttpServer PROBLEM_SERVICE = ProblemServiceStub.start();
 
     @Autowired private TestRestTemplate restTemplate;
 
@@ -189,51 +185,5 @@ class SubmitSolutionApiIntegrationTest extends ContainerSupport {
 
     private long count(String table) {
         return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + table, Long.class);
-    }
-
-    private static HttpServer startProblemService() {
-        try {
-            HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
-            server.createContext(
-                    "/internal/problems/",
-                    exchange -> {
-                        String path = exchange.getRequestURI().getPath();
-                        if (!"test-internal-token"
-                                .equals(
-                                        exchange.getRequestHeaders()
-                                                .getFirst("X-Internal-Token"))) {
-                            respond(exchange, 401, "{\"code\":\"UNAUTHORIZED\"}");
-                        } else if (path.contains(PUBLISHED_ID)) {
-                            respond(
-                                    exchange,
-                                    200,
-                                    "{\"problemId\":\""
-                                            + PUBLISHED_ID
-                                            + "\",\"revisionId\":\""
-                                            + REVISION_ID
-                                            + "\",\"dialects\":[\"POSTGRESQL\",\"SQLITE\"],"
-                                            + "\"testcaseCount\":3,\"timeLimitMs\":2000}");
-                        } else if (path.contains(BROKEN_ID)) {
-                            respond(exchange, 500, "{\"code\":\"INTERNAL_ERROR\"}");
-                        } else {
-                            respond(exchange, 404, "{\"code\":\"PROBLEM_NOT_FOUND\"}");
-                        }
-                    });
-            server.start();
-            return server;
-        } catch (IOException exception) {
-            throw new IllegalStateException(exception);
-        }
-    }
-
-    private static void respond(
-            com.sun.net.httpserver.HttpExchange exchange, int status, String body)
-            throws IOException {
-        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(status, bytes.length);
-        try (OutputStream output = exchange.getResponseBody()) {
-            output.write(bytes);
-        }
     }
 }

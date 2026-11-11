@@ -33,6 +33,7 @@ class JudgeResultIntegrationTest extends ContainerSupport {
     private static final String PROGRESS = "sqljudge.judge.progress";
     private static final String COMPLETED = "sqljudge.judge.completed";
     private static final Duration TIMEOUT = Duration.ofSeconds(60);
+    private static final long DUPLICATE_GRACE_MS = 2000;
     private static final UUID USER_ID = UUID.randomUUID();
     private static final UUID PROBLEM_ID = UUID.randomUUID();
 
@@ -51,6 +52,57 @@ class JudgeResultIntegrationTest extends ContainerSupport {
     void deleteAll() {
         jdbcTemplate.update("DELETE FROM outbox_events");
         jdbcTemplate.update("DELETE FROM submissions");
+        jdbcTemplate.update("DELETE FROM code_runs");
+    }
+
+    @Test
+    @DisplayName("Kết quả chạy thử được ghi vào lần chạy; kết quả gửi trùng bị bỏ qua")
+    void runCompleted_storesResultOnce() throws InterruptedException {
+        String runId = UUID.randomUUID().toString();
+        jdbcTemplate.update(
+                "INSERT INTO code_runs (id, user_id, problem_id, problem_revision_id, dialect,"
+                        + " code, status, version, created_at, updated_at) VALUES"
+                        + " (UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(UUID()),"
+                        + " UUID_TO_BIN(UUID()), 'POSTGRESQL', 'SELECT 1', 'PENDING', 0, NOW(6),"
+                        + " NOW(6))",
+                runId,
+                USER_ID.toString());
+
+        send("sqljudge.run.completed", runId, runCompleted(runId, "OK", "[[\"Kỹ thuật\"]]"));
+        awaitRunStatus(runId);
+        send("sqljudge.run.completed", runId, runCompleted(runId, "SE", "[]"));
+        Thread.sleep(DUPLICATE_GRACE_MS);
+
+        Map<String, Object> stored =
+                jdbcTemplate.queryForMap(
+                        "SELECT outcome, runtime_ms, result_json, completed_at FROM code_runs"
+                                + " WHERE id = UUID_TO_BIN(?)",
+                        runId);
+        assertThat(stored).containsEntry("outcome", "OK").containsEntry("runtime_ms", 4);
+        assertThat(stored.get("completed_at")).isNotNull();
+        DocumentContext result = JsonPath.parse(String.valueOf(stored.get("result_json")));
+        assertThat(result.read("$.columns", List.class)).containsExactly("name");
+        assertThat(result.read("$.rows[0][0]", String.class)).isEqualTo("Kỹ thuật");
+        assertThat(result.read("$.isTruncated", Boolean.class)).isFalse();
+    }
+
+    private void awaitRunStatus(String runId) throws InterruptedException {
+        long deadline = System.nanoTime() + TIMEOUT.toNanos();
+        String sql = "SELECT status FROM code_runs WHERE id = UUID_TO_BIN(?)";
+        while (System.nanoTime() < deadline
+                && !"COMPLETED".equals(jdbcTemplate.queryForObject(sql, String.class, runId))) {
+            Thread.sleep(200);
+        }
+        assertThat(jdbcTemplate.queryForObject(sql, String.class, runId)).isEqualTo("COMPLETED");
+    }
+
+    private static String runCompleted(String runId, String outcome, String rows) {
+        return """
+        {"eventId": "%s", "occurredAt": "2026-11-11T08:00:02Z", "version": 1,
+         "runId": "%s", "outcome": "%s", "columns": ["name"], "rows": %s,
+         "isTruncated": false, "runtimeMs": 4, "message": null}
+        """
+                .formatted(UUID.randomUUID(), runId, outcome, rows);
     }
 
     @Test
