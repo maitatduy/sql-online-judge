@@ -1,15 +1,21 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { Dialect } from "@/lib/dialect";
+
 import { DRAFT_SAVE_DELAY_MS, useEditorDraft } from "./useEditorDraft";
 
 const PROBLEM_ID = "0192f3b0-0000-7000-8000-0000000000b8";
 const DRAFT_KEY = `draft:${PROBLEM_ID}:POSTGRESQL`;
 const STARTER_CODE = "SELECT *\nFROM employees;";
 
-function renderDraft(problemId = PROBLEM_ID, starterCode = STARTER_CODE) {
-    return renderHook(({ id, starter }) => useEditorDraft(id, starter), {
-        initialProps: { id: problemId, starter: starterCode },
+function renderDraft(
+    problemId = PROBLEM_ID,
+    starterCode = STARTER_CODE,
+    dialect: Dialect = "POSTGRESQL",
+) {
+    return renderHook(({ id, starter, selected }) => useEditorDraft(id, selected, starter), {
+        initialProps: { id: problemId, starter: starterCode, selected: dialect },
     });
 }
 
@@ -60,10 +66,25 @@ describe("useEditorDraft", () => {
         act(() => result.current.changeCode("SELECT 184;"));
         act(() => vi.advanceTimersByTime(DRAFT_SAVE_DELAY_MS));
 
-        rerender({ id: "other-problem", starter: "SELECT 1;" });
+        rerender({ id: "other-problem", starter: "SELECT 1;", selected: "POSTGRESQL" });
 
         expect(result.current.code).toBe("SELECT 'khác';");
         expect(localStorage.getItem(DRAFT_KEY)).toBe("SELECT 184;");
+    });
+
+    it("tách nháp theo dialect và lưu ngay phần đang gõ khi đổi dialect", () => {
+        localStorage.setItem(`draft:${PROBLEM_ID}:MYSQL`, "SELECT 'mysql';");
+        const { result, rerender } = renderDraft();
+        act(() => result.current.changeCode("SELECT 'postgres';"));
+
+        rerender({ id: PROBLEM_ID, starter: STARTER_CODE, selected: "MYSQL" });
+
+        expect(result.current.code).toBe("SELECT 'mysql';");
+        expect(localStorage.getItem(DRAFT_KEY)).toBe("SELECT 'postgres';");
+
+        rerender({ id: PROBLEM_ID, starter: STARTER_CODE, selected: "SQLITE" });
+
+        expect(result.current.code).toBe(STARTER_CODE);
     });
 
     it("đặt lại về mã khởi đầu và xoá nháp", () => {

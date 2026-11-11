@@ -68,7 +68,7 @@ describe("chạy thử", () => {
             status: 400,
             errors: [{ field: "code", message: "Không được để trống" }],
         });
-        await expect(startRun("SELECT 1;", "MYSQL")).rejects.toMatchObject({
+        await expect(startRun("SELECT 1;", "ORACLE")).rejects.toMatchObject({
             status: 400,
             errors: [{ field: "dialect", message: "Bài này không hỗ trợ dialect đã chọn" }],
         });
