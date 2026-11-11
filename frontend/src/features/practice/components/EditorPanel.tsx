@@ -5,14 +5,19 @@ import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 
 import { LazySqlEditor } from "@/components/shared/LazySqlEditor";
+import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Button } from "@/components/ui/button";
+import { DIALECT_LABELS, type Dialect } from "@/lib/dialect";
 import { formatTime } from "@/lib/format";
 import type { CompletionSchema } from "@/lib/sql-completion";
 
 import { ResetCodeDialog } from "./ResetCodeDialog";
 
 interface EditorPanelProps {
-    engineLabel: string;
+    dialects: Dialect[];
+    dialect: Dialect;
+    engineVersions: Partial<Record<Dialect, string>>;
+    onDialectChange: (dialect: Dialect) => void;
     code: string;
     schema: CompletionSchema;
     savedAt: Date | null;
@@ -21,7 +26,10 @@ interface EditorPanelProps {
 }
 
 export function EditorPanel({
-    engineLabel,
+    dialects,
+    dialect,
+    engineVersions,
+    onDialectChange,
     code,
     schema,
     savedAt,
@@ -33,7 +41,18 @@ export function EditorPanel({
     return (
         <section aria-label="Editor" className="flex min-h-0 flex-1 flex-col">
             <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-card px-3">
-                <span className="rounded-md border px-2 py-0.5 text-[13px]">{engineLabel}</span>
+                <NativeSelect
+                    aria-label="Dialect"
+                    className="h-8 w-auto text-[13px]"
+                    value={dialect}
+                    onChange={(event) => onDialectChange(event.target.value as Dialect)}
+                >
+                    {dialects.map((option) => (
+                        <option key={option} value={option}>
+                            {engineVersions[option] ?? DIALECT_LABELS[option]}
+                        </option>
+                    ))}
+                </NativeSelect>
                 <Button
                     type="button"
                     variant="ghost"

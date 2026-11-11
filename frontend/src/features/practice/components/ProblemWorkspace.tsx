@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from "react";
 
-import { DIALECT_LABELS } from "@/lib/dialect";
 import type { CompletionSchema } from "@/lib/sql-completion";
 import { cn } from "@/lib/utils";
 
 import { useCodeRun } from "../hooks/useCodeRun";
+import { useDialectChoice } from "../hooks/useDialectChoice";
 import { useEditorDraft } from "../hooks/useEditorDraft";
 import { useSubmission } from "../hooks/useSubmission";
 import type { ProblemDetail } from "../types";
@@ -24,9 +24,10 @@ interface ProblemWorkspaceProps {
 }
 
 export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
-    const [dialect] = problem.dialects;
+    const { dialect, chooseDialect } = useDialectChoice(problem.id, problem.dialects);
     const { code, savedAt, changeCode, resetToStarter } = useEditorDraft(
         problem.id,
+        dialect,
         problem.starterCode,
     );
     const codeRun = useCodeRun(problem.id);
@@ -97,7 +98,10 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
                         className={cn("flex min-h-0 flex-1 flex-col", visibleOnNarrowWhen("code"))}
                     >
                         <EditorPanel
-                            engineLabel={problem.engineVersions[dialect] ?? DIALECT_LABELS[dialect]}
+                            dialects={problem.dialects}
+                            dialect={dialect}
+                            engineVersions={problem.engineVersions}
+                            onDialectChange={chooseDialect}
                             code={code}
                             schema={completionSchema}
                             savedAt={savedAt}
