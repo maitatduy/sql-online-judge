@@ -135,7 +135,7 @@ class AdminUserBulkIntegrationTest extends ContainerSupport {
             "Đổi vai trò hàng loạt: phiên của tài khoản được đổi bị thu hồi thật (refresh token cũ"
                     + " trả 401); bỏ qua tài khoản đã đúng vai trò và tài khoản đã xoá")
     void bulkRole_revokesSessionsAndSkipsUnchangedOrDeleted() throws Exception {
-        String adminToken = signInAsAdmin("admin.phien", "admin.phien@gmail.com");
+        String adminToken = signInAsAdmin("admin.hangloat", "admin.hangloat@gmail.com");
         String refreshToken = signUp("phien.mot", "phien.mot@gmail.com");
         saveUser("phien.setter", Role.SETTER);
         saveUser("phien.xoa", Role.LEARNER);
