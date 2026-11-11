@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -52,7 +53,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(QuotaExceededException.class)
     ResponseEntity<ApiError> handleQuotaExceeded(QuotaExceededException ex) {
-        return ResponseEntity.status(ex.getStatus())
+        return json(ex.getStatus())
                 .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.retryAfterSeconds()))
                 .body(ApiError.of(ex.getStatus(), ex.getCode(), ex.getMessage(), clock.instant()));
     }
@@ -152,8 +153,11 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ApiError> respond(HttpStatus status, ErrorCode code, String message) {
-        return ResponseEntity.status(status)
-                .body(ApiError.of(status, code, message, clock.instant()));
+        return json(status).body(ApiError.of(status, code, message, clock.instant()));
+    }
+
+    private static ResponseEntity.BodyBuilder json(HttpStatus status) {
+        return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON);
     }
 
     private ResponseEntity<ApiError> respondMalformed() {
@@ -164,7 +168,7 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ApiError> respondWithViolations(List<FieldViolation> violations) {
-        return ResponseEntity.badRequest()
+        return json(HttpStatus.BAD_REQUEST)
                 .body(
                         ApiError.of(
                                 HttpStatus.BAD_REQUEST,

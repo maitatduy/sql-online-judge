@@ -3,6 +3,7 @@ package com.sqljudge.submission.config;
 import com.sqljudge.common.security.JwtCurrentUserConverter;
 import com.sqljudge.common.web.RestAccessDeniedHandler;
 import com.sqljudge.common.web.RestAuthenticationEntryPoint;
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.ObjectPostProcessor;
@@ -46,7 +47,10 @@ public class SecurityConfig {
                                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(
                         requests ->
-                                requests.requestMatchers(PUBLIC_PATHS)
+                                requests.dispatcherTypeMatchers(
+                                                DispatcherType.ASYNC, DispatcherType.ERROR)
+                                        .permitAll()
+                                        .requestMatchers(PUBLIC_PATHS)
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())
