@@ -65,6 +65,9 @@ public class RunRequestedConsumer {
                     event.revisionId(),
                     exception);
             return CodeRunResult.failed(event.runId(), RunOutcome.SE, 0, null);
+        } catch (RuntimeException exception) {
+            log.error("code_run_failed runId={}", event.runId(), exception);
+            return CodeRunResult.failed(event.runId(), RunOutcome.SE, 0, null);
         }
     }
 }
