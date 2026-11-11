@@ -14,4 +14,7 @@ public interface ProblemServiceClient {
 
     @GetMapping("/internal/dataset-versions/{versionId}/snapshot")
     DatasetSnapshotResponse snapshot(@PathVariable("versionId") UUID versionId);
+
+    @GetMapping("/internal/problem-revisions/{revisionId}/judge-package")
+    JudgePackageResponse judgePackage(@PathVariable("revisionId") UUID revisionId);
 }
