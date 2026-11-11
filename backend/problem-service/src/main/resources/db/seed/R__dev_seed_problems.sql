@@ -342,8 +342,8 @@ INSERT INTO datasets (id, owner_id, slug, name, description, version, created_at
     (UUID_TO_BIN('0192f3c0-0000-7000-8000-000000000001'), UUID_TO_BIN('0192f3a0-0000-7000-8000-0000000000ad'), 'cong-ty', 'Công ty',
      'Phòng ban và nhân viên kèm lương', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000');
 
-INSERT INTO dataset_versions (id, dataset_id, number, frozen_at, created_at, updated_at) VALUES
-    (UUID_TO_BIN('0192f3c1-0000-7000-8000-000000000001'), UUID_TO_BIN('0192f3c0-0000-7000-8000-000000000001'), 1, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000');
+INSERT INTO dataset_versions (id, dataset_id, number, checksum, frozen_at, created_at, updated_at) VALUES
+    (UUID_TO_BIN('0192f3c1-0000-7000-8000-000000000001'), UUID_TO_BIN('0192f3c0-0000-7000-8000-000000000001'), 1, '442934a0235846971678fc5a9f22e8529f71848a2406696791fcd67c96c23b2c', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000');
 
 INSERT INTO dataset_tables (id, version_id, name, position, created_at, updated_at) VALUES
     (UUID_TO_BIN('0192f3c2-0000-7000-8000-000000000001'), UUID_TO_BIN('0192f3c1-0000-7000-8000-000000000001'), 'departments', 0, '2026-10-01 00:00:00.000000', '2026-10-01 00:00:00.000000'),
