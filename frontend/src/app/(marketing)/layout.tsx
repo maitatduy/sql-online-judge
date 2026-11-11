@@ -1,3 +1,4 @@
+import { AppProviders } from "@/app/providers";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { MarketingFooter } from "@/features/marketing/components/MarketingFooter";
 import { MarketingHeader } from "@/features/marketing/components/MarketingHeader";
@@ -8,11 +9,11 @@ export default function MarketingLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <>
+        <AppProviders>
             <SkipLink />
             <MarketingHeader />
             {children}
             <MarketingFooter />
-        </>
+        </AppProviders>
     );
 }

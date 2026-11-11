@@ -1,10 +1,7 @@
 import { Check } from "lucide-react";
-import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
-import { ROUTES } from "@/lib/routes";
 
 import { CtaEditorPreview } from "./CtaEditorPreview";
+import { StartLearningActions } from "./StartLearningActions";
 
 const REASONS = [
     "Hỗ trợ PostgreSQL, MySQL và SQLite",
@@ -30,14 +27,7 @@ export function CtaBanner() {
                         </li>
                     ))}
                 </ul>
-                <div className="mt-8 flex flex-wrap gap-3">
-                    <Button asChild size="lg">
-                        <Link href={ROUTES.register}>Bắt đầu miễn phí</Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline">
-                        <Link href={ROUTES.problems}>Xem bài tập</Link>
-                    </Button>
-                </div>
+                <StartLearningActions />
             </div>
             <CtaEditorPreview />
         </section>
