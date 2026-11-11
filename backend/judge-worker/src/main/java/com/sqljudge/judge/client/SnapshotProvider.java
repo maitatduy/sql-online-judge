@@ -21,12 +21,16 @@ public class SnapshotProvider implements SnapshotSource {
 
     @Override
     public DatasetSnapshotResponse snapshotOf(UUID versionId, String expectedChecksum) {
+        if (expectedChecksum == null) {
+            throw new SnapshotUnavailableException(
+                    "Dataset version " + versionId + " is not frozen", null);
+        }
         DatasetSnapshotResponse cached = cache.get(versionId);
-        if (cached != null && cached.checksum().equals(expectedChecksum)) {
+        if (cached != null && expectedChecksum.equals(cached.checksum())) {
             return cached;
         }
         DatasetSnapshotResponse fetched = problemServiceClient.snapshot(versionId);
-        if (!fetched.checksum().equals(expectedChecksum)) {
+        if (!expectedChecksum.equals(fetched.checksum())) {
             throw new SnapshotUnavailableException(
                     "Dataset checksum mismatch for version " + versionId, null);
         }

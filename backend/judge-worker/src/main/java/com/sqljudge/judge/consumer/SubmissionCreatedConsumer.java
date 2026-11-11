@@ -63,25 +63,29 @@ public class SubmissionCreatedConsumer {
                     event.submissionId(),
                     event.revisionId(),
                     exception);
-            return new SubmissionJudgement(
+            return systemError(event);
+        }
+        try {
+            return processor.judge(
+                    new SubmissionJudgeRequest(
+                            event.submissionId(),
+                            event.attempt(),
+                            event.dialect(),
+                            event.code(),
+                            judgePackage),
+                    publisher::progress);
+        } catch (RuntimeException exception) {
+            log.error(
+                    "submission_judge_failed submissionId={} attempt={}",
                     event.submissionId(),
                     event.attempt(),
-                    Verdict.SE,
-                    0,
-                    null,
-                    null,
-                    null,
-                    null,
-                    0,
-                    0);
+                    exception);
+            return systemError(event);
         }
-        return processor.judge(
-                new SubmissionJudgeRequest(
-                        event.submissionId(),
-                        event.attempt(),
-                        event.dialect(),
-                        event.code(),
-                        judgePackage),
-                publisher::progress);
+    }
+
+    private static SubmissionJudgement systemError(SubmissionCreatedEvent event) {
+        return new SubmissionJudgement(
+                event.submissionId(), event.attempt(), Verdict.SE, 0, null, null, null, null, 0, 0);
     }
 }
