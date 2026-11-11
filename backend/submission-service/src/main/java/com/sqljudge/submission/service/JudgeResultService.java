@@ -6,6 +6,7 @@ import com.sqljudge.submission.entity.JudgeOutcome;
 import com.sqljudge.submission.entity.JudgeResult;
 import com.sqljudge.submission.entity.Submission;
 import com.sqljudge.submission.entity.Verdict;
+import com.sqljudge.submission.event.SubmissionChanged;
 import com.sqljudge.submission.event.SubmissionJudgedEvent;
 import com.sqljudge.submission.event.SubmissionTopics;
 import com.sqljudge.submission.repository.SubmissionRepository;
@@ -13,6 +14,7 @@ import java.time.Clock;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,13 +29,18 @@ public class JudgeResultService {
     private final SubmissionWriter submissionWriter;
     private final OutboxWriter outboxWriter;
     private final Clock clock;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void recordProgress(UUID submissionId, int attempt, int judgedTestcases) {
         submissionRepository
                 .findById(submissionId)
                 .ifPresentOrElse(
-                        submission -> submission.recordProgress(attempt, judgedTestcases),
+                        submission -> {
+                            if (submission.recordProgress(attempt, judgedTestcases)) {
+                                eventPublisher.publishEvent(new SubmissionChanged(submissionId));
+                            }
+                        },
                         () -> logUnknown(submissionId));
     }
 
@@ -47,6 +54,9 @@ public class JudgeResultService {
 
     private void apply(Submission submission, JudgeResult result) {
         JudgeOutcome outcome = submission.complete(result, clock.instant());
+        if (outcome != JudgeOutcome.IGNORED) {
+            eventPublisher.publishEvent(new SubmissionChanged(submission.getId()));
+        }
         if (outcome == JudgeOutcome.RETRY) {
             log.warn(
                     "submission_rejudge_after_system_error submissionId={} attempt={}",

@@ -94,6 +94,15 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("Lỗi ở endpoint luồng sự kiện vẫn trả đúng status và ApiError dạng JSON")
+    void appException_onEventStreamEndpoint_returnsJsonApiError() throws Exception {
+        mockMvc.perform(get("/stream-not-found").accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isNotFound())
+                .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
+    }
+
+    @Test
     @DisplayName("Tệp tải lên vượt giới hạn multipart trả 400 VALIDATION_FAILED trên field file")
     void maxUploadSizeExceeded_returnsFileViolation() throws Exception {
         mockMvc.perform(get("/too-large"))
@@ -279,6 +288,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/not-found")
         void notFound() {
             throw new NotFoundException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy bài tập");
+        }
+
+        @GetMapping(path = "/stream-not-found", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+        String streamNotFound() {
+            throw new NotFoundException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy bài nộp");
         }
 
         @GetMapping("/conflict")

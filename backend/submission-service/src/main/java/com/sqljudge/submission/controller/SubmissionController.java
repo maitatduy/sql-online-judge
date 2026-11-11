@@ -5,11 +5,13 @@ import com.sqljudge.submission.dto.response.SubmissionAcceptedResponse;
 import com.sqljudge.submission.dto.response.SubmissionResponse;
 import com.sqljudge.submission.service.SubmissionQueryService;
 import com.sqljudge.submission.service.SubmissionService;
+import com.sqljudge.submission.service.SubmissionStreamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @PreAuthorize("isAuthenticated()")
@@ -26,6 +29,7 @@ public class SubmissionController {
 
     private final SubmissionService submissionService;
     private final SubmissionQueryService submissionQueryService;
+    private final SubmissionStreamService submissionStreamService;
 
     @PostMapping("/api/problems/{problemId}/submissions")
     @Operation(summary = "Nộp lời giải cho bài đã xuất bản; kết quả chấm đến sau")
@@ -53,5 +57,21 @@ public class SubmissionController {
             description = "Không có bài nộp hoặc không phải của người gọi")
     public SubmissionResponse getSubmission(@PathVariable UUID submissionId) {
         return submissionQueryService.get(submissionId);
+    }
+
+    @GetMapping(
+            path = "/api/submissions/{submissionId}/events",
+            produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(
+            summary =
+                    "Luồng SSE trạng thái bài nộp của chính mình, đóng lại khi chấm xong;"
+                            + " mỗi sự kiện tên submission mang cùng dữ liệu với GET bài nộp")
+    @ApiResponse(responseCode = "200", description = "Luồng sự kiện của bài nộp")
+    @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
+    @ApiResponse(
+            responseCode = "404",
+            description = "Không có bài nộp hoặc không phải của người gọi")
+    public SseEmitter streamSubmission(@PathVariable UUID submissionId) {
+        return submissionStreamService.open(submissionId);
     }
 }
