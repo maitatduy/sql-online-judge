@@ -1,11 +1,13 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+
+import { renderWithProviders } from "@/test/render";
 
 import { CtaBanner } from "./CtaBanner";
 
 describe("CtaBanner", () => {
     it("kêu gọi đăng ký", () => {
-        render(<CtaBanner />);
+        renderWithProviders(<CtaBanner />);
 
         expect(
             screen.getByRole("heading", {
@@ -20,7 +22,7 @@ describe("CtaBanner", () => {
     });
 
     it("có lối xem bài tập trước khi đăng ký", () => {
-        render(<CtaBanner />);
+        renderWithProviders(<CtaBanner />);
 
         expect(screen.getByRole("link", { name: "Xem bài tập" })).toHaveAttribute(
             "href",
@@ -29,7 +31,7 @@ describe("CtaBanner", () => {
     });
 
     it("minh hoạ câu truy vấn đầu tiên bằng khung editor có kết quả", () => {
-        render(<CtaBanner />);
+        renderWithProviders(<CtaBanner />);
 
         const example = screen.getByRole("figure", { name: "Ví dụ câu truy vấn đầu tiên" });
         const headers = within(example)
@@ -41,7 +43,7 @@ describe("CtaBanner", () => {
     });
 
     it("có câu mô tả ngắn và ba lý do để bắt đầu", () => {
-        render(<CtaBanner />);
+        renderWithProviders(<CtaBanner />);
 
         const reasons = within(screen.getByRole("list")).getAllByRole("listitem");
 

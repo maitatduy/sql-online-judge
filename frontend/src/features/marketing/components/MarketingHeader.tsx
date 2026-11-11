@@ -4,6 +4,8 @@ import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 
+import { MarketingAccount } from "./MarketingAccount";
+
 const NAV_LINKS = [
     { label: "Lộ trình", href: ROUTES.learn },
     { label: "Bài tập", href: ROUTES.problems },
@@ -25,12 +27,7 @@ export function MarketingHeader() {
                 ))}
             </nav>
             <div className="ml-auto flex items-center gap-2">
-                <Button asChild variant="ghost">
-                    <Link href={ROUTES.login}>Đăng nhập</Link>
-                </Button>
-                <Button asChild className="hidden sm:inline-flex">
-                    <Link href={ROUTES.register}>Bắt đầu miễn phí</Link>
-                </Button>
+                <MarketingAccount />
             </div>
         </header>
     );

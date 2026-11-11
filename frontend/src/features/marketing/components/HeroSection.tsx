@@ -1,9 +1,5 @@
-import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
-import { ROUTES } from "@/lib/routes";
-
 import { HeroEditorPreview } from "./HeroEditorPreview";
+import { StartLearningActions } from "./StartLearningActions";
 
 export function HeroSection() {
     return (
@@ -16,14 +12,7 @@ export function HeroSection() {
                     Viết truy vấn ngay trên trình duyệt, máy chấm trả kết quả trong vài giây, thi
                     đấu hằng tuần với cộng đồng.
                 </p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                    <Button asChild size="lg">
-                        <Link href={ROUTES.register}>Bắt đầu miễn phí</Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline">
-                        <Link href={ROUTES.problems}>Xem bài tập</Link>
-                    </Button>
-                </div>
+                <StartLearningActions />
             </div>
             <HeroEditorPreview />
         </section>

@@ -1,11 +1,13 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+
+import { renderWithProviders } from "@/test/render";
 
 import LandingPage, { metadata } from "./page";
 
 describe("LandingPage", () => {
     it("vùng nội dung chính là đích của link bỏ qua", () => {
-        render(<LandingPage />);
+        renderWithProviders(<LandingPage />);
 
         expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
     });
@@ -21,7 +23,7 @@ describe("LandingPage", () => {
     });
 
     it("có đúng một tiêu đề cấp 1", () => {
-        render(<LandingPage />);
+        renderWithProviders(<LandingPage />);
 
         const headings = screen.getAllByRole("heading", { level: 1 });
 
@@ -30,13 +32,13 @@ describe("LandingPage", () => {
     });
 
     it("hiện dải số liệu", () => {
-        render(<LandingPage />);
+        renderWithProviders(<LandingPage />);
 
         expect(screen.getByText("bài tập có máy chấm")).toBeInTheDocument();
     });
 
     it("hiện các khối nội dung theo thứ tự của canvas", () => {
-        render(<LandingPage />);
+        renderWithProviders(<LandingPage />);
 
         const sectionTitles = screen
             .getAllByRole("heading", { level: 2 })

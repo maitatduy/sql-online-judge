@@ -1,11 +1,13 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+
+import { renderWithProviders } from "@/test/render";
 
 import MarketingLayout from "./layout";
 
 describe("MarketingLayout", () => {
     it("có vùng header và footer bao quanh nội dung", () => {
-        render(
+        renderWithProviders(
             <MarketingLayout>
                 <main>Nội dung</main>
             </MarketingLayout>,
@@ -17,7 +19,7 @@ describe("MarketingLayout", () => {
     });
 
     it("link bỏ qua tới nội dung chính đứng đầu trang", () => {
-        render(
+        renderWithProviders(
             <MarketingLayout>
                 <main>Nội dung</main>
             </MarketingLayout>,
