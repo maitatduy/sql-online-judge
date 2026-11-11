@@ -37,7 +37,7 @@ public record ExpectedTable(List<String> columns, List<List<WireCell>> rows) {
         return new ExpectedTable(table.columnNames(), rows);
     }
 
-    private static List<WireCell> wireRow(Row row) {
+    static List<WireCell> wireRow(Row row) {
         return row.cells().stream().map(ExpectedTable::wireCell).toList();
     }
 

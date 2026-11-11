@@ -218,6 +218,7 @@ class JudgeJobKafkaIntegrationTest {
         assertThat(completed.read("$.failedIndex", Integer.class)).isEqualTo(2);
         assertThat(completed.read("$.failedIsHidden", Boolean.class)).isTrue();
         assertThat(completed.read("$.message", String.class)).isNull();
+        assertThat(completed.read("$.diff", Object.class)).isNull();
         assertThat(payload).doesNotContain("Bí mật").doesNotContain("Kinh doanh");
     }
 
