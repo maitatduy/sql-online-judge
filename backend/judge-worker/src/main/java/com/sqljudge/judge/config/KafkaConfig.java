@@ -73,6 +73,26 @@ public class KafkaConfig {
                 .build();
     }
 
+    @Bean
+    NewTopic submissionCreatedTopic() {
+        return topic(JudgeTopics.SUBMISSION_CREATED);
+    }
+
+    @Bean
+    NewTopic submissionCreatedDeadLetterTopic() {
+        return topic(JudgeTopics.SUBMISSION_CREATED + JudgeTopics.DEAD_LETTER_SUFFIX);
+    }
+
+    @Bean
+    NewTopic judgeProgressTopic() {
+        return topic(JudgeTopics.JUDGE_PROGRESS);
+    }
+
+    @Bean
+    NewTopic judgeCompletedTopic() {
+        return topic(JudgeTopics.JUDGE_COMPLETED);
+    }
+
     private static NewTopic topic(String name) {
         return TopicBuilder.name(name).partitions(PARTITIONS).replicas(REPLICAS).build();
     }
