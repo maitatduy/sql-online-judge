@@ -6,6 +6,8 @@ public final class SubmissionTopics {
     public static final String SUBMISSION_JUDGED = "sqljudge.submission.judged";
     public static final String JUDGE_PROGRESS = "sqljudge.judge.progress";
     public static final String JUDGE_COMPLETED = "sqljudge.judge.completed";
+    public static final String RUN_REQUESTED = "sqljudge.run.requested";
+    public static final String RUN_COMPLETED = "sqljudge.run.completed";
     public static final String DEAD_LETTER_SUFFIX = ".dlt";
 
     private SubmissionTopics() {}

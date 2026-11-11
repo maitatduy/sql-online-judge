@@ -87,6 +87,28 @@ describe("chạy thử trong Workspace", () => {
         expect(panel.getByText("TLE")).toBeInTheDocument();
     });
 
+    it("báo máy chấm gặp sự cố khi chạy thử bị lỗi hệ thống", async () => {
+        server.use(
+            http.get("*/api/runs/:runId", ({ params }) =>
+                HttpResponse.json({
+                    id: params.runId,
+                    status: "COMPLETED",
+                    outcome: "SE",
+                    result: null,
+                    errorMessage: null,
+                    runtimeMs: 0,
+                }),
+            ),
+        );
+
+        const panel = await runCode();
+
+        expect(
+            await panel.findByText("Máy chấm đang gặp sự cố, bạn chạy thử lại sau ít phút."),
+        ).toBeInTheDocument();
+        expect(panel.getByText("SE")).toHaveAttribute("title", "Lỗi hệ thống chấm");
+    });
+
     it("mời đăng nhập khi chưa đăng nhập", async () => {
         sessionStorage.clear();
 

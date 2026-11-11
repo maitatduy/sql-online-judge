@@ -64,7 +64,7 @@ export interface ProblemDetail {
 
 export type RunStatus = "PENDING" | "COMPLETED";
 
-export type RunOutcome = "OK" | "RE" | "TLE" | "FS";
+export type RunOutcome = "OK" | "RE" | "TLE" | "FS" | "SE";
 
 export interface StartRunRequest {
     dialect: Dialect;

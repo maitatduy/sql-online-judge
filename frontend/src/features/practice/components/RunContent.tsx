@@ -8,6 +8,7 @@ import type { CodeRun, ProblemDetail } from "../types";
 import { ActionError } from "./ActionError";
 
 const MS_PER_SECOND = 1000;
+const SYSTEM_ERROR_MESSAGE = "Máy chấm đang gặp sự cố, bạn chạy thử lại sau ít phút.";
 
 interface RunContentProps {
     problem: ProblemDetail;
@@ -34,7 +35,9 @@ function RunOutcome({ run, problem }: { run: CodeRun; problem: ProblemDetail }) 
     const message =
         run.outcome === "TLE"
             ? `Quá giới hạn ${formatNumber(problem.timeLimitMs / MS_PER_SECOND)} giây.`
-            : run.errorMessage;
+            : run.outcome === "SE"
+              ? SYSTEM_ERROR_MESSAGE
+              : run.errorMessage;
     return (
         <div className="flex flex-col gap-2">
             <p className="flex items-center gap-2 font-semibold">
