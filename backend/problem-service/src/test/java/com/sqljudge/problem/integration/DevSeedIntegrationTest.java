@@ -32,7 +32,7 @@ class DevSeedIntegrationTest {
     private static final String ROOT_USER = "root";
     private static final int MYSQL_PORT = 3306;
     private static final String STUDIO_PROBLEM_ID = "0192f3d0-0000-7000-8000-0000000000aa";
-    private static final String FEATURED_PROBLEM_ID = "0192f3b0-0000-7000-8000-0000000000b8";
+    private static final String FEATURED_PROBLEM_ID = "01a1c5b1-f3a3-7801-8465-41ddf7d6d2cd";
 
     @Autowired private JdbcTemplate jdbcTemplate;
 
@@ -62,7 +62,7 @@ class DevSeedIntegrationTest {
     }
 
     @Test
-    @DisplayName("Seed dev nạp 8 tag và 24 bài đã xuất bản, công khai, mỗi bài có revision")
+    @DisplayName("Seed dev nạp 8 tag và 1 bài đã xuất bản, công khai, mỗi bài có revision")
     void seed_loadsTagsAndPublishedProblems() {
         assertThat(count("SELECT COUNT(*) FROM tags")).isEqualTo(8);
         assertThat(
@@ -70,22 +70,9 @@ class DevSeedIntegrationTest {
                                 "SELECT COUNT(*) FROM problems WHERE status = 'PUBLISHED'"
                                         + " AND visibility = 'PUBLIC'"
                                         + " AND published_revision_id IS NOT NULL"))
-                .isEqualTo(24);
-        assertThat(count("SELECT COUNT(*) FROM reference_solutions")).isEqualTo(72);
-        assertThat(count("SELECT COUNT(*) FROM problem_stats")).isEqualTo(24);
-    }
-
-    @Test
-    @DisplayName("Thống kê seed của bài #184 khớp mock: 41,2% AC, 12.380 người giải")
-    void seed_featuredProblemStatsMatchMock() {
-        Long[] stats =
-                jdbcTemplate.queryForObject(
-                        "SELECT accepted_count, submission_count, solved_user_count"
-                                + " FROM problem_stats WHERE problem_id = UUID_TO_BIN(?)",
-                        (row, index) -> new Long[] {row.getLong(1), row.getLong(2), row.getLong(3)},
-                        FEATURED_PROBLEM_ID);
-
-        assertThat(stats).containsExactly(412L, 1000L, 12380L);
+                .isEqualTo(1);
+        assertThat(count("SELECT COUNT(*) FROM reference_solutions")).isEqualTo(3);
+        assertThat(count("SELECT COUNT(*) FROM problem_stats")).isEqualTo(1);
     }
 
     @Test
@@ -119,8 +106,8 @@ class DevSeedIntegrationTest {
 
     @Test
     @DisplayName(
-            "Bài #184 dùng dataset Công ty đã chốt: đủ schema, 1 testcase công khai, 2 testcase ẩn"
-                    + " và kết quả mong đợi")
+            "Bài tổng lương dùng dataset Công ty đã chốt: đủ schema, 1 testcase công khai, 1"
+                    + " testcase ẩn và kết quả mong đợi")
     void seed_featuredProblemHasFullContent() {
         String revision = "(SELECT published_revision_id FROM problems WHERE id = UUID_TO_BIN(?))";
 
@@ -163,8 +150,8 @@ class DevSeedIntegrationTest {
 
         assertThat(dataset).isEqualTo("cong-ty");
         assertThat(tables).containsExactly("departments", "employees");
-        assertThat(visibility).containsExactly(true, false, false);
-        assertThat(expectedRowCounts).containsExactly(4, 2, 3);
+        assertThat(visibility).containsExactly(true, false);
+        assertThat(expectedRowCounts).containsExactly(3, 2);
     }
 
     @Test
@@ -172,11 +159,11 @@ class DevSeedIntegrationTest {
     void seed_runTwice_keepsSameRows() {
         new ResourceDatabasePopulator(new ClassPathResource(SEED_SCRIPT)).execute(dataSource);
 
-        assertThat(count("SELECT COUNT(*) FROM problems")).isEqualTo(24);
+        assertThat(count("SELECT COUNT(*) FROM problems")).isEqualTo(1);
         assertThat(count("SELECT COUNT(*) FROM tags")).isEqualTo(8);
-        assertThat(count("SELECT COUNT(*) FROM testcases")).isEqualTo(3);
+        assertThat(count("SELECT COUNT(*) FROM testcases")).isEqualTo(2);
         assertThat(count("SELECT COUNT(*) FROM datasets")).isEqualTo(1);
-        assertThat(count("SELECT COUNT(*) FROM dataset_variants")).isEqualTo(3);
+        assertThat(count("SELECT COUNT(*) FROM dataset_variants")).isEqualTo(2);
     }
 
     @Test
