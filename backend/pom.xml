@@ -37,6 +37,7 @@
         <spotless.version>2.44.5</spotless.version>
         <google-java-format.version>1.27.0</google-java-format.version>
         <jacoco.version>0.8.13</jacoco.version>
+        <dependency-check.version>13.0.0</dependency-check.version>
         <jacoco.line-coverage.minimum>0.80</jacoco.line-coverage.minimum>
         <test.jvm.options>-Xmx512m -XX:+UseSerialGC</test.jvm.options>
     </properties>
@@ -124,6 +125,23 @@
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <configuration>
                         <jvmArguments>-Xmx384m</jvmArguments>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${dependency-check.version}</version>
+                    <configuration>
+                        <failBuildOnCVSS>7</failBuildOnCVSS>
+                        <nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
+                        <skipTestScope>true</skipTestScope>
+                        <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                        <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+                        <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
+                        <formats>
+                            <format>HTML</format>
+                            <format>JSON</format>
+                        </formats>
                     </configuration>
                 </plugin>
             </plugins>
