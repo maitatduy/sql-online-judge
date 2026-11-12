@@ -1,6 +1,8 @@
 package com.sqljudge.judge.config;
 
 import com.sqljudge.judge.guard.StatementGuard;
+import com.sqljudge.judge.metrics.JudgeMetrics;
+import com.sqljudge.judge.metrics.MeteredSandbox;
 import com.sqljudge.judge.sandbox.Dialect;
 import com.sqljudge.judge.sandbox.MysqlSandbox;
 import com.sqljudge.judge.sandbox.MysqlSandboxConfig;
@@ -61,12 +63,16 @@ public class JudgeConfig {
     SandboxRegistry sandboxRegistry(
             PostgresSandbox postgresSandbox,
             MysqlSandbox mysqlSandbox,
-            SqliteSandbox sqliteSandbox) {
+            SqliteSandbox sqliteSandbox,
+            JudgeMetrics metrics) {
         return new SandboxRegistry(
                 Map.of(
-                        Dialect.POSTGRESQL, postgresSandbox,
-                        Dialect.MYSQL, mysqlSandbox,
-                        Dialect.SQLITE, sqliteSandbox));
+                        Dialect.POSTGRESQL,
+                        new MeteredSandbox(Dialect.POSTGRESQL, postgresSandbox, metrics),
+                        Dialect.MYSQL,
+                        new MeteredSandbox(Dialect.MYSQL, mysqlSandbox, metrics),
+                        Dialect.SQLITE,
+                        new MeteredSandbox(Dialect.SQLITE, sqliteSandbox, metrics)));
     }
 
     @Bean

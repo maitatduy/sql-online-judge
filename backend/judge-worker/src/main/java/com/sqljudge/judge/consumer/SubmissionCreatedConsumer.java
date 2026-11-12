@@ -10,7 +10,9 @@ import com.sqljudge.judge.job.JudgePackage;
 import com.sqljudge.judge.job.SubmissionJudgeProcessor;
 import com.sqljudge.judge.job.SubmissionJudgeRequest;
 import com.sqljudge.judge.job.SubmissionJudgement;
+import com.sqljudge.judge.metrics.JudgeMetrics;
 import com.sqljudge.judge.publisher.SubmissionJudgePublisher;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -25,16 +27,19 @@ public class SubmissionCreatedConsumer {
     private final JudgePackageProvider judgePackages;
     private final SubmissionJudgeProcessor processor;
     private final SubmissionJudgePublisher publisher;
+    private final JudgeMetrics metrics;
 
     public SubmissionCreatedConsumer(
             ObjectMapper objectMapper,
             JudgePackageProvider judgePackages,
             SubmissionJudgeProcessor processor,
-            SubmissionJudgePublisher publisher) {
+            SubmissionJudgePublisher publisher,
+            JudgeMetrics metrics) {
         this.objectMapper = objectMapper;
         this.judgePackages = judgePackages;
         this.processor = processor;
         this.publisher = publisher;
+        this.metrics = metrics;
     }
 
     @KafkaListener(
@@ -43,7 +48,9 @@ public class SubmissionCreatedConsumer {
     public void onSubmissionCreated(String payload) throws JsonProcessingException {
         SubmissionCreatedEvent event =
                 objectMapper.readValue(payload, SubmissionCreatedEvent.class);
+        Timer.Sample judging = metrics.startJudging();
         SubmissionJudgement judgement = judge(event);
+        metrics.judged(judging, event.dialect(), judgement.verdict());
         publisher.completed(judgement);
         log.info(
                 "submission_judged submissionId={} attempt={} verdict={} codeLength={}",
