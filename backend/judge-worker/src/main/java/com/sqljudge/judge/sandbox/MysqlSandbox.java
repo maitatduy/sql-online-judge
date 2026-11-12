@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.sql.Statement;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +28,24 @@ public final class MysqlSandbox extends JdbcSandbox {
     private final MysqlSandboxConfig config;
     private final MysqlDdl ddl = new MysqlDdl();
 
-    public MysqlSandbox(MysqlSandboxConfig config) {
+    public MysqlSandbox(MysqlSandboxConfig config, Clock clock) {
+        super(clock);
         this.config = config;
+    }
+
+    @Override
+    protected List<String> runNames(Connection admin) throws SQLException {
+        List<String> names = new ArrayList<>();
+        try (Statement statement = admin.createStatement();
+                ResultSet resultSet =
+                        statement.executeQuery(
+                                "SELECT schema_name FROM information_schema.schemata"
+                                        + " WHERE schema_name LIKE 'sb\\_%'")) {
+            while (resultSet.next()) {
+                names.add(resultSet.getString(1));
+            }
+        }
+        return names;
     }
 
     @Override

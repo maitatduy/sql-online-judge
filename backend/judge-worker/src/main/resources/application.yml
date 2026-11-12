@@ -71,3 +71,5 @@ sqljudge:
       admin-password: ${SANDBOX_MYSQL_ADMIN_PASSWORD}
     sqlite:
       work-directory: ${SANDBOX_SQLITE_DIR}
+    orphan-age: 10m
+    sweep-interval: 5m

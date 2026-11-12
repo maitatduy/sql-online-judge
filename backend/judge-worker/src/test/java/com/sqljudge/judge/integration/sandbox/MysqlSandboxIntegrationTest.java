@@ -10,6 +10,7 @@ import com.sqljudge.judge.compare.ResultTable;
 import com.sqljudge.judge.sandbox.MysqlSandbox;
 import com.sqljudge.judge.sandbox.MysqlSandboxConfig;
 import com.sqljudge.judge.sandbox.QueryRun;
+import com.sqljudge.judge.sandbox.RunNames;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -17,7 +18,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -67,7 +70,47 @@ class MysqlSandboxIntegrationTest {
         MYSQL.start();
         String serverUrl =
                 "jdbc:mysql://" + MYSQL.getHost() + ":" + MYSQL.getFirstMappedPort() + "/";
-        sandbox = new MysqlSandbox(new MysqlSandboxConfig(serverUrl, ADMIN_USER, ADMIN_PASSWORD));
+        sandbox =
+                new MysqlSandbox(
+                        new MysqlSandboxConfig(serverUrl, ADMIN_USER, ADMIN_PASSWORD),
+                        Clock.systemUTC());
+    }
+
+    @Test
+    @DisplayName(
+            "Dọn database và user của lần chạy cũ hơn mốc cắt, giữ lần chạy mới và database khác")
+    void removeRunsCreatedBefore_staleRuns_areDropped() throws SQLException {
+        Instant now = Instant.now();
+        String stale = RunNames.newRunName(now.minus(Duration.ofHours(1)));
+        String fresh = RunNames.newRunName(now);
+        executeAsAdmin(
+                "CREATE DATABASE " + stale,
+                "CREATE USER '" + stale + "'@'%' IDENTIFIED BY 'orphan-secret'",
+                "CREATE DATABASE " + fresh,
+                "CREATE DATABASE sb_keep");
+        try {
+            int removed = sandbox.removeRunsCreatedBefore(now.minus(Duration.ofMinutes(10)));
+
+            assertThat(removed).isEqualTo(1);
+            assertThat(countAsRoot("SELECT COUNT(*) FROM mysql.user WHERE user LIKE 'sb\\_%'"))
+                    .isZero();
+            assertThat(
+                            countAsRoot(
+                                    "SELECT COUNT(*) FROM information_schema.schemata"
+                                            + " WHERE schema_name IN ('"
+                                            + fresh
+                                            + "', 'sb_keep')"))
+                    .isEqualTo(2);
+            assertThat(
+                            countAsRoot(
+                                    "SELECT COUNT(*) FROM information_schema.schemata"
+                                            + " WHERE schema_name = '"
+                                            + stale
+                                            + "'"))
+                    .isZero();
+        } finally {
+            executeAsAdmin("DROP DATABASE IF EXISTS " + fresh, "DROP DATABASE IF EXISTS sb_keep");
+        }
     }
 
     @AfterEach
@@ -264,6 +307,18 @@ class MysqlSandboxIntegrationTest {
         try (Connection connection = rootConnection();
                 Statement statement = connection.createStatement()) {
             statement.execute(sql);
+        }
+    }
+
+    private static void executeAsAdmin(String... statements) throws SQLException {
+        String serverUrl =
+                "jdbc:mysql://" + MYSQL.getHost() + ":" + MYSQL.getFirstMappedPort() + "/";
+        try (Connection connection =
+                        DriverManager.getConnection(serverUrl, ADMIN_USER, ADMIN_PASSWORD);
+                Statement statement = connection.createStatement()) {
+            for (String sql : statements) {
+                statement.execute(sql);
+            }
         }
     }
 

@@ -10,15 +10,20 @@ import com.sqljudge.judge.compare.ResultTable;
 import com.sqljudge.judge.sandbox.PostgresSandbox;
 import com.sqljudge.judge.sandbox.PostgresSandboxConfig;
 import com.sqljudge.judge.sandbox.QueryRun;
+import com.sqljudge.judge.sandbox.RunNames;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -55,7 +60,31 @@ class PostgresSandboxIntegrationTest {
         sandbox =
                 new PostgresSandbox(
                         new PostgresSandboxConfig(
-                                POSTGRES.getJdbcUrl(), ADMIN_USER, ADMIN_PASSWORD));
+                                POSTGRES.getJdbcUrl(), ADMIN_USER, ADMIN_PASSWORD),
+                        Clock.systemUTC());
+    }
+
+    @Test
+    @DisplayName("Dọn schema và role của lần chạy cũ hơn mốc cắt, giữ lần chạy mới và schema khác")
+    void removeRunsCreatedBefore_staleRuns_areDropped() throws SQLException {
+        Instant now = Instant.now();
+        String stale = RunNames.newRunName(now.minus(Duration.ofHours(1)));
+        String staleRoleOnly = RunNames.newRunName(now.minus(Duration.ofHours(1)));
+        String fresh = RunNames.newRunName(now);
+        executeAsAdmin(
+                "CREATE SCHEMA " + stale,
+                "CREATE ROLE " + stale,
+                "CREATE ROLE " + staleRoleOnly,
+                "CREATE SCHEMA " + fresh,
+                "CREATE SCHEMA sb_keep");
+        try {
+            int removed = sandbox.removeRunsCreatedBefore(now.minus(Duration.ofMinutes(10)));
+
+            assertThat(removed).isEqualTo(2);
+            assertThat(sandboxObjectNames()).containsExactlyInAnyOrder(fresh, "sb_keep");
+        } finally {
+            executeAsAdmin("DROP SCHEMA IF EXISTS " + fresh, "DROP SCHEMA IF EXISTS sb_keep");
+        }
     }
 
     @AfterEach
@@ -227,6 +256,33 @@ class PostgresSandboxIntegrationTest {
                 ResultSet resultSet = statement.executeQuery(sql)) {
             resultSet.next();
             return resultSet.getLong(1);
+        }
+    }
+
+    private static List<String> sandboxObjectNames() throws SQLException {
+        List<String> names = new ArrayList<>();
+        try (Connection connection = POSTGRES.createConnection("");
+                Statement statement = connection.createStatement();
+                ResultSet resultSet =
+                        statement.executeQuery(
+                                "SELECT nspname FROM pg_namespace WHERE nspname LIKE 'sb\\_%' UNION"
+                                        + " ALL SELECT rolname FROM pg_roles WHERE rolname LIKE"
+                                        + " 'sb\\_%'")) {
+            while (resultSet.next()) {
+                names.add(resultSet.getString(1));
+            }
+        }
+        return names;
+    }
+
+    private static void executeAsAdmin(String... statements) throws SQLException {
+        try (Connection connection =
+                        DriverManager.getConnection(
+                                POSTGRES.getJdbcUrl(), ADMIN_USER, ADMIN_PASSWORD);
+                Statement statement = connection.createStatement()) {
+            for (String sql : statements) {
+                statement.execute(sql);
+            }
         }
     }
 

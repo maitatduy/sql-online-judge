@@ -25,6 +25,7 @@ import com.sqljudge.judge.sandbox.PostgresSandbox;
 import com.sqljudge.judge.sandbox.PostgresSandboxConfig;
 import com.sqljudge.judge.sandbox.SandboxRegistry;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -100,7 +101,8 @@ class SubmissionJudgeAttackIntegrationTest {
         PostgresSandbox sandbox =
                 new PostgresSandbox(
                         new PostgresSandboxConfig(
-                                POSTGRES.getJdbcUrl(), ADMIN_USER, ADMIN_PASSWORD));
+                                POSTGRES.getJdbcUrl(), ADMIN_USER, ADMIN_PASSWORD),
+                        Clock.systemUTC());
         processor =
                 new SubmissionJudgeProcessor(
                         new StatementGuard(),
