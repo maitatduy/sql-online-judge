@@ -7,19 +7,16 @@ import Link from "next/link";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
-import { VerdictBadge } from "@/components/shared/VerdictBadge";
 import { Button } from "@/components/ui/button";
 import { ApiRequestError, isUnauthenticatedError } from "@/lib/api-client";
-import { DIALECT_LABELS } from "@/lib/dialect";
-import { formatNumber, formatRelativeTime } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
-import { cn } from "@/lib/utils";
 
 import { useProblemSubmissions } from "../hooks/useProblemSubmissions";
 import type { ProblemDetail } from "../types";
 
+import { SubmissionHistoryRow } from "./SubmissionHistoryRow";
+
 const SKELETON_ROW_COUNT = 4;
-const CELL_CLASS = "border-b px-3 py-2.5 align-middle";
 
 interface SubmissionHistoryProps {
     problem: ProblemDetail;
@@ -93,33 +90,16 @@ export function SubmissionHistory({ problem, now }: SubmissionHistoryProps) {
                         <th scope="col">Dialect</th>
                         <th scope="col">Thời gian chạy</th>
                         <th scope="col">Thời gian nộp</th>
+                        <th scope="col">Mã đã nộp</th>
                     </tr>
                 </thead>
                 <tbody>
                     {submissions.map((submission) => (
-                        <tr key={submission.id}>
-                            <td className={cn(CELL_CLASS, "w-24")}>
-                                <VerdictBadge verdict={submission.verdict ?? "PENDING"} />
-                            </td>
-                            <td className={cn(CELL_CLASS, "text-muted-foreground")}>
-                                {DIALECT_LABELS[submission.dialect]}
-                            </td>
-                            <td className={cn(CELL_CLASS)}>
-                                {submission.runtimeMs === null
-                                    ? "-"
-                                    : `${formatNumber(submission.runtimeMs)} ms`}
-                            </td>
-                            <td
-                                className={cn(
-                                    CELL_CLASS,
-                                    "text-right whitespace-nowrap text-muted-foreground",
-                                )}
-                            >
-                                <time dateTime={submission.submittedAt}>
-                                    {formatRelativeTime(submission.submittedAt, now ?? mountedAt)}
-                                </time>
-                            </td>
-                        </tr>
+                        <SubmissionHistoryRow
+                            key={submission.id}
+                            submission={submission}
+                            now={now ?? mountedAt}
+                        />
                     ))}
                 </tbody>
             </table>

@@ -2,6 +2,7 @@ package com.sqljudge.submission.controller;
 
 import com.sqljudge.submission.dto.request.SubmitSolutionRequest;
 import com.sqljudge.submission.dto.response.SubmissionAcceptedResponse;
+import com.sqljudge.submission.dto.response.SubmissionCodeResponse;
 import com.sqljudge.submission.dto.response.SubmissionPageResponse;
 import com.sqljudge.submission.dto.response.SubmissionResponse;
 import com.sqljudge.submission.service.SubmissionQueryService;
@@ -76,6 +77,18 @@ public class SubmissionController {
             description = "Không có bài nộp hoặc không phải của người gọi")
     public SubmissionResponse getSubmission(@PathVariable UUID submissionId) {
         return submissionQueryService.get(submissionId);
+    }
+
+    @GetMapping("/api/submissions/{submissionId}/code")
+    @Operation(summary = "Mã và dialect của một bài nộp của chính mình")
+    @ApiResponse(responseCode = "200", description = "Mã đã nộp")
+    @ApiResponse(responseCode = "400", description = "Id bài nộp không hợp lệ")
+    @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
+    @ApiResponse(
+            responseCode = "404",
+            description = "Không có bài nộp hoặc không phải của người gọi")
+    public SubmissionCodeResponse getSubmissionCode(@PathVariable UUID submissionId) {
+        return submissionQueryService.code(submissionId);
     }
 
     @GetMapping(

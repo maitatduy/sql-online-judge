@@ -11,6 +11,7 @@ import type {
     StartRunRequest,
     Submission,
     SubmissionAccepted,
+    SubmissionCode,
     SubmitSolutionRequest,
     TagsResponse,
 } from "./types";
@@ -36,6 +37,10 @@ export const practiceApi = {
         ),
     getSubmission: (submissionId: string, signal?: AbortSignal) =>
         apiClient.get<Submission>(`/api/submissions/${encodeURIComponent(submissionId)}`, {
+            signal,
+        }),
+    getSubmissionCode: (submissionId: string, signal?: AbortSignal) =>
+        apiClient.get<SubmissionCode>(`/api/submissions/${encodeURIComponent(submissionId)}/code`, {
             signal,
         }),
     listProblemSubmissions: (problemId: string, cursor: string | undefined, signal?: AbortSignal) =>

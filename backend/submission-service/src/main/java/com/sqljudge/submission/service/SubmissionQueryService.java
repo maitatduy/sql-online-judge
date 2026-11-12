@@ -3,9 +3,11 @@ package com.sqljudge.submission.service;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.security.SecurityUtils;
+import com.sqljudge.submission.dto.response.SubmissionCodeResponse;
 import com.sqljudge.submission.dto.response.SubmissionPageResponse;
 import com.sqljudge.submission.dto.response.SubmissionResponse;
 import com.sqljudge.submission.dto.response.SubmissionSummaryResponse;
+import com.sqljudge.submission.entity.Submission;
 import com.sqljudge.submission.repository.SubmissionRepository;
 import java.util.List;
 import java.util.UUID;
@@ -22,14 +24,12 @@ public class SubmissionQueryService {
 
     @Transactional(readOnly = true)
     public SubmissionResponse get(UUID submissionId) {
-        UUID userId = SecurityUtils.requireCurrentUser().id();
-        return submissionRepository
-                .findByIdAndUserIdAndDeletedAtIsNull(submissionId, userId)
-                .map(SubmissionResponse::from)
-                .orElseThrow(
-                        () ->
-                                new NotFoundException(
-                                        ErrorCode.SUBMISSION_NOT_FOUND, "Không tìm thấy bài nộp"));
+        return SubmissionResponse.from(ownSubmission(submissionId));
+    }
+
+    @Transactional(readOnly = true)
+    public SubmissionCodeResponse code(UUID submissionId) {
+        return SubmissionCodeResponse.from(ownSubmission(submissionId));
     }
 
     @Transactional(readOnly = true)
@@ -46,5 +46,15 @@ public class SubmissionQueryService {
         }
         List<SubmissionSummaryResponse> items = rows.subList(0, size);
         return new SubmissionPageResponse(items, SubmissionCursor.encode(items.get(size - 1).id()));
+    }
+
+    private Submission ownSubmission(UUID submissionId) {
+        UUID userId = SecurityUtils.requireCurrentUser().id();
+        return submissionRepository
+                .findByIdAndUserIdAndDeletedAtIsNull(submissionId, userId)
+                .orElseThrow(
+                        () ->
+                                new NotFoundException(
+                                        ErrorCode.SUBMISSION_NOT_FOUND, "Không tìm thấy bài nộp"));
     }
 }
