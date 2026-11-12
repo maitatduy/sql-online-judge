@@ -4,10 +4,11 @@ import type {
     ProblemSubmissionSummary,
     ProblemSubmissionsResponse,
     Submission,
+    SubmissionCode,
 } from "@/features/practice/types";
 
 import { apiError } from "./api-error";
-import { listOwnSubmissions } from "./practice-submission-handlers";
+import { findOwnSubmissionCode, listOwnSubmissions } from "./practice-submission-handlers";
 import { findProblem } from "./practice-sql";
 import { DEMO_SESSION_USER, readMockSession } from "./session";
 
@@ -21,12 +22,33 @@ interface HistorySeed {
     verdict: "WA" | "RE";
     runtimeMs: number | null;
     hoursAgo: number;
+    code: string;
 }
 
 const HISTORY_SEEDS: HistorySeed[] = [
-    { id: "0192f3c0-0000-7000-8000-0000000000a2", verdict: "WA", runtimeMs: 41, hoursAgo: 26 },
-    { id: "0192f3c0-0000-7000-8000-0000000000a1", verdict: "RE", runtimeMs: null, hoursAgo: 27 },
+    {
+        id: "0192f3c0-0000-7000-8000-0000000000a2",
+        verdict: "WA",
+        runtimeMs: 41,
+        hoursAgo: 26,
+        code: "SELECT d.name AS department, e.full_name AS employee, e.salary\nFROM employees e\nJOIN departments d ON d.id = e.department_id\nORDER BY e.salary DESC;",
+    },
+    {
+        id: "0192f3c0-0000-7000-8000-0000000000a1",
+        verdict: "RE",
+        runtimeMs: null,
+        hoursAgo: 27,
+        code: "SELEC name FROM employees;",
+    },
 ];
+
+function seededCode(userId: string, submissionId: string): SubmissionCode | null {
+    const seed = HISTORY_SEEDS.find(({ id }) => id === submissionId);
+    if (!seed || userId !== DEMO_SESSION_USER.id) {
+        return null;
+    }
+    return { id: seed.id, dialect: "POSTGRESQL", code: seed.code };
+}
 
 function seededHistory(userId: string, problemId: string, now: Date): ProblemSubmissionSummary[] {
     if (userId !== DEMO_SESSION_USER.id || problemId !== SEEDED_PROBLEM_ID) {
@@ -77,5 +99,20 @@ export const practiceSubmissionHistoryHandlers: RequestHandler[] = [
             nextCursor: endIndex < history.length ? String(endIndex) : null,
         };
         return HttpResponse.json(response);
+    }),
+
+    http.get("*/api/submissions/:submissionId/code", async ({ params }) => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return apiError(401, "UNAUTHENTICATED", "Bạn chưa đăng nhập");
+        }
+        const submissionId = String(params.submissionId);
+        const code =
+            findOwnSubmissionCode(user.id, submissionId) ?? seededCode(user.id, submissionId);
+        if (!code) {
+            return apiError(404, "SUBMISSION_NOT_FOUND", "Không tìm thấy bài nộp");
+        }
+        return HttpResponse.json(code);
     }),
 ];

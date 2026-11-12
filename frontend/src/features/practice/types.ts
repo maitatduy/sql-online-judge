@@ -136,6 +136,12 @@ export interface Submission {
     submittedAt: string;
 }
 
+export interface SubmissionCode {
+    id: string;
+    dialect: Dialect;
+    code: string;
+}
+
 export interface ProblemSubmissionSummary {
     id: string;
     status: SubmissionStatus;

@@ -6,6 +6,7 @@ import type {
     ProblemDetail,
     Submission,
     SubmissionAccepted,
+    SubmissionCode,
     SubmissionDiff,
     SubmitSolutionRequest,
 } from "@/features/practice/types";
@@ -31,6 +32,7 @@ interface Judgement {
 
 interface StoredSubmission {
     userId: string;
+    code: string;
     pollCount: number;
     result: Submission;
 }
@@ -42,6 +44,14 @@ export function listOwnSubmissions(userId: string, problemId: string): Submissio
     return [...submissions.values()]
         .filter((stored) => stored.userId === userId && stored.result.problemId === problemId)
         .map((stored) => stored.result);
+}
+
+export function findOwnSubmissionCode(userId: string, submissionId: string): SubmissionCode | null {
+    const stored = submissions.get(submissionId);
+    if (!stored || stored.userId !== userId) {
+        return null;
+    }
+    return { id: submissionId, dialect: stored.result.dialect, code: stored.code };
 }
 
 function failedAt(testcase: FailedTestcase, verdict: Verdict): Judgement {
@@ -203,7 +213,12 @@ export const practiceSubmissionHandlers: RequestHandler[] = [
         let submissionId = submissionIdsByKey.get(idempotencyKey);
         if (!submissionId) {
             const result = createSubmission(problem, body);
-            submissions.set(result.id, { userId: user.id, pollCount: 0, result });
+            submissions.set(result.id, {
+                userId: user.id,
+                code: body.code,
+                pollCount: 0,
+                result,
+            });
             submissionIdsByKey.set(idempotencyKey, result.id);
             submissionId = result.id;
         }

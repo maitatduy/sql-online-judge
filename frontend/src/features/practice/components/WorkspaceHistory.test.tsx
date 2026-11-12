@@ -48,8 +48,8 @@ describe("lịch sử nộp trong Workspace", () => {
 
         const table = within(await panel.findByRole("table", { name: "Lịch sử nộp" }));
         const [, latest, oldest] = table.getAllByRole("row");
-        expect(latest).toHaveAccessibleName(/^WA PostgreSQL 41 ms 1 ngày trước$/);
-        expect(oldest).toHaveAccessibleName(/^RE PostgreSQL - 1 ngày trước$/);
+        expect(latest).toHaveAccessibleName(/^WA PostgreSQL 41 ms 1 ngày trước Xem mã$/);
+        expect(oldest).toHaveAccessibleName(/^RE PostgreSQL - 1 ngày trước Xem mã$/);
     });
 
     it("báo khi chưa nộp bài này lần nào", async () => {
@@ -82,7 +82,9 @@ describe("lịch sử nộp trong Workspace", () => {
         const panel = within(await screen.findByRole("tabpanel", { name: "Lịch sử nộp" }));
         const table = within(await panel.findByRole("table", { name: "Lịch sử nộp" }));
         expect(table.getAllByRole("row")).toHaveLength(4);
-        expect(table.getAllByRole("row")[1]).toHaveAccessibleName(/^WA PostgreSQL 48 ms Vừa xong$/);
+        expect(table.getAllByRole("row")[1]).toHaveAccessibleName(
+            /^WA PostgreSQL 48 ms Vừa xong Xem mã$/,
+        );
     });
 
     it("tải thêm trang tiếp theo", async () => {
@@ -103,5 +105,42 @@ describe("lịch sử nộp trong Workspace", () => {
         expect(await panel.findByText("TLE")).toBeInTheDocument();
         expect(panel.getByText("AC")).toBeInTheDocument();
         expect(panel.queryByRole("button", { name: "Xem thêm" })).not.toBeInTheDocument();
+    });
+
+    it("bấm Xem mã thì hiện mã của lần nộp đó, bấm lần nữa thì ẩn", async () => {
+        const panel = await openHistory();
+        const table = within(await panel.findByRole("table", { name: "Lịch sử nộp" }));
+        const failed = table.getByRole("row", { name: /^RE PostgreSQL/ });
+        const toggle = within(failed).getByRole("button", { name: "Xem mã" });
+
+        fireEvent.click(toggle);
+
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        expect(await panel.findByText("SELEC name FROM employees;")).toBeInTheDocument();
+        expect(panel.getByText("Mã đã nộp, PostgreSQL")).toBeInTheDocument();
+
+        fireEvent.click(within(failed).getByRole("button", { name: "Ẩn mã" }));
+
+        expect(panel.queryByText("SELEC name FROM employees;")).not.toBeInTheDocument();
+    });
+
+    it("báo lỗi kèm Thử lại khi không tải được mã", async () => {
+        server.use(
+            http.get("*/api/submissions/:submissionId/code", () =>
+                HttpResponse.json(
+                    { status: 500, code: "INTERNAL_ERROR", message: "Đã có lỗi xảy ra" },
+                    { status: 500 },
+                ),
+            ),
+        );
+        const panel = await openHistory();
+        const table = within(await panel.findByRole("table", { name: "Lịch sử nộp" }));
+
+        fireEvent.click(
+            within(table.getAllByRole("row")[1]).getByRole("button", { name: "Xem mã" }),
+        );
+
+        expect(await panel.findByText("Không tải được mã bài nộp")).toBeInTheDocument();
+        expect(panel.getByRole("button", { name: "Thử lại" })).toBeInTheDocument();
     });
 });
