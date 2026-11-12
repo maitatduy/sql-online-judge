@@ -3,10 +3,14 @@ package com.sqljudge.judge.sandbox;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.sql.Statement;
+import java.time.Clock;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import org.postgresql.util.PSQLException;
 
@@ -19,8 +23,25 @@ public final class PostgresSandbox extends JdbcSandbox {
     private final PostgresSandboxConfig config;
     private final PostgresDdl ddl = new PostgresDdl();
 
-    public PostgresSandbox(PostgresSandboxConfig config) {
+    public PostgresSandbox(PostgresSandboxConfig config, Clock clock) {
+        super(clock);
         this.config = config;
+    }
+
+    @Override
+    protected List<String> runNames(Connection admin) throws SQLException {
+        List<String> names = new ArrayList<>();
+        try (Statement statement = admin.createStatement();
+                ResultSet resultSet =
+                        statement.executeQuery(
+                                "SELECT nspname FROM pg_namespace WHERE nspname LIKE 'sb\\_%' UNION"
+                                        + " SELECT rolname FROM pg_roles WHERE rolname LIKE"
+                                        + " 'sb\\_%'")) {
+            while (resultSet.next()) {
+                names.add(resultSet.getString(1));
+            }
+        }
+        return names;
     }
 
     @Override

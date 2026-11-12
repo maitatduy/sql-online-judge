@@ -8,12 +8,15 @@ import com.sqljudge.judge.compare.ExecutionOutcome.Succeeded;
 import com.sqljudge.judge.compare.ExecutionOutcome.TimedOut;
 import com.sqljudge.judge.compare.ResultTable;
 import com.sqljudge.judge.sandbox.QueryRun;
+import com.sqljudge.judge.sandbox.RunNames;
 import com.sqljudge.judge.sandbox.SqliteSandbox;
 import com.sqljudge.judge.sandbox.SqliteSandboxConfig;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -37,7 +40,33 @@ class SqliteSandboxIntegrationTest {
 
     @BeforeEach
     void createSandbox() {
-        sandbox = new SqliteSandbox(new SqliteSandboxConfig(workDirectory));
+        sandbox = new SqliteSandbox(new SqliteSandboxConfig(workDirectory), Clock.systemUTC());
+    }
+
+    @Test
+    @DisplayName("Dọn file của lần chạy cũ hơn mốc cắt, giữ file của lần chạy mới và file khác")
+    void removeRunsCreatedBefore_staleRuns_areDeleted() throws IOException {
+        Instant now = Instant.now();
+        String stale = RunNames.newRunName(now.minus(Duration.ofHours(1)));
+        String fresh = RunNames.newRunName(now);
+        List<Path> staleFiles =
+                List.of(
+                        workDirectory.resolve(stale + ".db"),
+                        workDirectory.resolve(stale + ".db-journal"));
+        Path freshFile = workDirectory.resolve(fresh + ".db");
+        Path otherFile = workDirectory.resolve("notes.txt");
+        for (Path file : List.of(staleFiles.get(0), staleFiles.get(1), freshFile, otherFile)) {
+            Files.createFile(file);
+        }
+
+        int removed = sandbox.removeRunsCreatedBefore(now.minus(Duration.ofMinutes(10)));
+
+        assertThat(removed).isEqualTo(1);
+        try (Stream<Path> files = Files.list(workDirectory)) {
+            assertThat(files).containsExactlyInAnyOrder(freshFile, otherFile);
+        }
+        Files.delete(freshFile);
+        Files.delete(otherFile);
     }
 
     @AfterEach
