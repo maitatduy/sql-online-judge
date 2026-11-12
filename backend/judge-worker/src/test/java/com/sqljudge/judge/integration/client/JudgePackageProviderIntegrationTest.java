@@ -47,7 +47,8 @@ class JudgePackageProviderIntegrationTest {
                 "expected": {"columns": ["name"],
                              "rows": [[{"kind": "TEXT", "value": "Kỹ thuật"}]]}},
                {"testcaseId": "%s", "index": 2, "variantId": "%s", "isPublic": false,
-                "expected": {"columns": ["name"], "rows": [["Kinh doanh"]]}}]}
+                "expected": {"columns": ["name"],
+                             "rows": [[{"kind": "TEXT", "value": "Kinh doanh"}]]}}]}
             """;
     private static final HttpServer PROBLEM_SERVICE = startProblemService();
     private static final AtomicInteger PACKAGE_REQUESTS = new AtomicInteger();

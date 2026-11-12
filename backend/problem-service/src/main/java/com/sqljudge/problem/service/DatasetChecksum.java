@@ -58,7 +58,7 @@ public final class DatasetChecksum {
         return sha256(canonical.toString());
     }
 
-    static String sha256(String text) {
+    public static String sha256(String text) {
         try {
             return HexFormat.of()
                     .formatHex(

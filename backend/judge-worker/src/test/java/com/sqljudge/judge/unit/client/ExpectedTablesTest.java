@@ -1,6 +1,7 @@
 package com.sqljudge.judge.unit.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,12 +13,8 @@ import com.sqljudge.judge.compare.Cell.NumberCell;
 import com.sqljudge.judge.compare.Cell.TemporalCell;
 import com.sqljudge.judge.compare.Cell.TextCell;
 import com.sqljudge.judge.compare.NormalizedTable;
-import com.sqljudge.judge.compare.ResultNormalizer;
-import com.sqljudge.judge.compare.ResultTable;
 import com.sqljudge.judge.compare.TemporalKind;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,27 +51,12 @@ class ExpectedTablesTest {
     }
 
     @Test
-    @DisplayName("Dạng chuỗi cũ của bài seed được chuẩn hoá như kết quả chạy thật")
-    void decode_legacyStrings_matchesNormalizedRun() throws Exception {
-        JsonNode rows =
-                objectMapper.readTree(
-                        "[[\"32000000\", \"Kỹ thuật\", null, \"2024-03-01\", \"0.50\"]]");
+    @DisplayName("Ô không có loại thì bị từ chối, không đoán chuỗi chữ số là số")
+    void decode_cellWithoutKind_isRejected() throws Exception {
+        JsonNode rows = objectMapper.readTree("[[\"007\", \"Kỹ thuật\"]]");
 
-        NormalizedTable decoded = ExpectedTables.decode(List.of("a", "b", "c", "d", "e"), rows);
-
-        NormalizedTable fromRun =
-                new ResultNormalizer()
-                        .normalize(
-                                new ResultTable(
-                                        List.of("a", "b", "c", "d", "e"),
-                                        List.of(
-                                                Arrays.asList(
-                                                        32_000_000L,
-                                                        "Kỹ thuật",
-                                                        null,
-                                                        LocalDate.of(2024, 3, 1),
-                                                        new BigDecimal("0.50")))));
-        assertThat(decoded).isEqualTo(fromRun);
+        assertThatThrownBy(() -> ExpectedTables.decode(List.of("code", "name"), rows))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
