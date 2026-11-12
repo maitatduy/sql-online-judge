@@ -17,8 +17,10 @@ import com.sqljudge.judge.job.CodeRunResult;
 import com.sqljudge.judge.job.RunOutcome;
 import com.sqljudge.judge.job.SubmissionJudgeProcessor;
 import com.sqljudge.judge.job.SubmissionJudgement;
+import com.sqljudge.judge.metrics.JudgeMetrics;
 import com.sqljudge.judge.publisher.CodeRunPublisher;
 import com.sqljudge.judge.publisher.SubmissionJudgePublisher;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,7 +41,11 @@ class UnexpectedFailureTest {
         SubmissionJudgePublisher publisher = mock(SubmissionJudgePublisher.class);
         SubmissionCreatedConsumer consumer =
                 new SubmissionCreatedConsumer(
-                        OBJECT_MAPPER, mock(JudgePackageProvider.class), processor, publisher);
+                        OBJECT_MAPPER,
+                        mock(JudgePackageProvider.class),
+                        processor,
+                        publisher,
+                        new JudgeMetrics(new SimpleMeterRegistry()));
 
         consumer.onSubmissionCreated(
                 """
