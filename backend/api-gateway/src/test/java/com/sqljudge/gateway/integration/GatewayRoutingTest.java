@@ -260,6 +260,23 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName("Khoá học được chuyển tới learning-service, không tới problem-service")
+    void coursePaths_areRoutedToLearningService() {
+        webTestClient
+                .get()
+                .uri("/api/courses?difficulty=EASY&page=2")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+        webTestClient.get().uri("/api/courses/sql-co-ban").exchange().expectStatus().isNotFound();
+
+        assertThat(LEARNING_SERVICE.forwardedRequestLines())
+                .containsExactly(
+                        "GET /api/courses?difficulty=EASY&page=2", "GET /api/courses/sql-co-ban");
+        assertThat(PROBLEM_SERVICE.forwardedRequestLines()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Đường dẫn nội bộ /internal/** không được định tuyến ra ngoài")
     void internalPath_isNotRouted() {
         webTestClient.get().uri("/internal/jwks").exchange().expectStatus().isNotFound();
