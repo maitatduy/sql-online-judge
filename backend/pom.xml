@@ -22,6 +22,7 @@
         <module>api-gateway</module>
         <module>judge-worker</module>
         <module>submission-service</module>
+        <module>learning-service</module>
     </modules>
 
     <properties>
