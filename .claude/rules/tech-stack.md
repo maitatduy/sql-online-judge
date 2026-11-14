@@ -24,6 +24,7 @@
 | Realtime | Server-Sent Events (SSE) | Polling dày đặc; WebSocket chỉ khi SSE không đủ |
 | Sandbox chấm | Container PostgreSQL 16, MySQL 8, SQLite 3 riêng cho judge-worker | Chạy trên DB ứng dụng |
 | Parse SQL | JSqlParser (lọc câu lệnh, chuẩn hoá) | Regex |
+| Quét lỗ hổng phụ thuộc | OSV-Scanner trên SBOM CycloneDX (backend), `npm audit` (frontend) | OWASP dependency-check (cần khoá NVD) |
 | Tài liệu API | springdoc-openapi (OpenAPI 3) | Chỉ có Postman collection |
 | Frontend | Next.js 15 App Router, React 19, TypeScript strict | Vite SPA riêng cho admin, JavaScript thuần |
 | Style | Tailwind CSS v4 + token theo `design-system.md` | CSS-in-JS runtime, MUI |

@@ -29,7 +29,7 @@ Bạn tìm lỗ hổng trước kẻ xấu. SQL Judge mời người lạ gửi 
 4. **Phân quyền**: mỗi endpoint mới có `@PreAuthorize`; thử truy cập tài nguyên của người khác (đổi id trong URL).
 5. **Đầu vào**: validate DTO, giới hạn kích thước, sanitize Markdown, không `dangerouslySetInnerHTML` chưa lọc.
 6. **Hạ tầng**: CORS, header bảo mật, container chạy non-root, cổng actuator không mở ra ngoài, network sandbox tách biệt.
-7. **Phụ thuộc**: `./mvnw dependency-check:check`, `npm audit --omit=dev`.
+7. **Phụ thuộc**: OSV-Scanner trên SBOM CycloneDX của backend, `npm audit --omit=dev`.
 
 ## OWASP Top 10 - điểm áp vào SQL Judge
 
