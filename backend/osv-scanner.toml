@@ -1,0 +1,14 @@
+[[IgnoredVulns]]
+id = "GHSA-9qf2-26p9-2q2q"
+effectiveUntil = 2027-02-14
+reason = "Fixed only in Spring Framework 7. Needs WebFlux functional endpoints on DispatcherServlet; the gateway runs Spring Cloud Gateway on Netty."
+
+[[IgnoredVulns]]
+id = "GHSA-j9f9-w8pj-32f8"
+effectiveUntil = 2027-02-14
+reason = "Fixed only in Spring Framework 7. Needs SSE with view fragments; submission events send JSON data only."
+
+[[IgnoredVulns]]
+id = "GHSA-pc63-qcmh-9cmg"
+effectiveUntil = 2027-02-14
+reason = "Fixed only in Spring Framework 7. Needs XsltView; no service renders views."
