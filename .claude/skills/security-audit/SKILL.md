@@ -44,7 +44,7 @@ Xác định thay đổi chạm vùng nào: máy chấm, xác thực, phân quy�
 ## Bước 3: chạy công cụ
 
 ```bash
-./mvnw dependency-check:check
+cd backend && ./mvnw cyclonedx:makeAggregateBom && osv-scanner scan source --config osv-scanner.toml -L target/bom.json
 npm audit --omit=dev
 gitleaks detect --source . --no-banner        # nếu đã cài
 grep -rEn "(password|secret|api[_-]?key|token)\s*[:=]\s*['\"][^'\"]+" --include=*.java --include=*.ts --include=*.tsx --include=*.yml .

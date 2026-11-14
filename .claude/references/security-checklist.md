@@ -48,7 +48,7 @@
 - [ ] Container chạy user không phải root; image có tag cố định.
 
 ## Phụ thuộc
-- [ ] `./mvnw dependency-check:check` không có High/Critical.
+- [ ] OSV-Scanner trên SBOM backend không có lỗ hổng từ 7 điểm CVSS.
 - [ ] `npm audit --omit=dev` không có High/Critical.
 
 ## Nhật ký và giám sát

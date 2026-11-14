@@ -29,6 +29,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
@@ -50,6 +51,18 @@ jobs:
           cache: maven
           cache-dependency-path: backend/**/pom.xml
       - run: ./mvnw --batch-mode --no-transfer-progress verify
+      - name: Scan dependencies for vulnerabilities
+        env:
+          OSV_SCANNER_VERSION: v2.7.1
+          OSV_SCANNER_SHA256: fb7dab19a8bd9bbe5c3189f09d4b7ee1820c9553a23bac202648a56efd2f6ee8
+        run: |
+          ./mvnw --batch-mode --no-transfer-progress cyclonedx:makeAggregateBom
+          scanner="$RUNNER_TEMP/osv-scanner"
+          curl -sSfL -o "$scanner" "https://github.com/google/osv-scanner/releases/download/$OSV_SCANNER_VERSION/osv-scanner_linux_amd64"
+          echo "$OSV_SCANNER_SHA256  $scanner" | sha256sum --check -
+          chmod +x "$scanner"
+          "$scanner" scan source --config osv-scanner.toml -L target/bom.json --format json --output-file target/osv.json || [ $? -eq 1 ]
+          node ../.github/scripts/check-vulnerabilities.mjs target/osv.json
       - name: Report failed tests
         if: failure()
         run: node ../.github/scripts/report-test-failures.mjs .

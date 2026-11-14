@@ -61,6 +61,6 @@
 
 ## Phụ thuộc
 
-- `./mvnw dependency-check:check` (OWASP) và `npm audit --omit=dev` chạy trong CI; lỗ hổng mức High/Critical chặn merge.
+- CI quét lỗ hổng phụ thuộc: backend bằng OSV-Scanner trên SBOM CycloneDX (`./mvnw cyclonedx:makeAggregateBom`, rồi `osv-scanner scan source --config osv-scanner.toml -L target/bom.json`), frontend bằng `npm audit --omit=dev`. Lỗ hổng từ 7 điểm CVSS (High/Critical) chặn merge. Chỉ bỏ qua lỗi trong `backend/osv-scanner.toml` khi chưa có bản vá cho dòng phiên bản đang dùng và code không chạm điều kiện khai thác, kèm lý do và `effectiveUntil`.
 - Dependabot bật cho Maven, npm, GitHub Actions, Docker.
 - Image Docker dùng bản base chính thức có tag cụ thể, chạy bằng user không phải root.
