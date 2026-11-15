@@ -32,9 +32,9 @@ describe("TopBarAccount", () => {
         writeMockSession(DEMO_SESSION_USER);
         renderWithProviders(<TopBarAccount />);
 
-        expect(await screen.findByTitle("Chuỗi ngày học")).toHaveTextContent(
-            "12 ngày học liên tiếp",
-        );
+        const streak = await screen.findByTitle("Chuỗi ngày học");
+        expect(streak).toHaveTextContent("12 ngày học liên tiếp");
+        expect(streak).toHaveAttribute("href", "/dashboard");
     });
 
     it("hiện nút đăng nhập quay lại đúng trang đang xem khi chưa đăng nhập", async () => {

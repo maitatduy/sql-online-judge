@@ -3,7 +3,7 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-import { formatDateKey, vietnamDateKey } from "../activity-heatmap";
+import { formatDateKey, vietnamDateKey } from "@/lib/activity-calendar";
 import { peakRating, ratingChange } from "../rating-tiers";
 import type { RatingPoint } from "../types";
 

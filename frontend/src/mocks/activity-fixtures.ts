@@ -1,4 +1,4 @@
-import { shiftDateKey, vietnamDateKey } from "@/features/profile/activity-heatmap";
+import { shiftDateKey, vietnamDateKey } from "@/lib/activity-calendar";
 import type { ActivityDay, ActivityResponse } from "@/features/profile/types";
 
 const DAY_COUNT = 364;

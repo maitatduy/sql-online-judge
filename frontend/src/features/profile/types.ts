@@ -1,3 +1,4 @@
+import type { ActivityDay } from "@/lib/activity-calendar";
 import type { Dialect } from "@/lib/dialect";
 import type { Difficulty } from "@/lib/difficulty";
 import type { Verdict } from "@/lib/verdict";
@@ -55,11 +56,6 @@ export interface RatingHistoryResponse {
     items: RatingPoint[];
 }
 
-export interface ActivityDay {
-    date: string;
-    count: number;
-}
-
 export interface ActivityResponse {
     totalSubmissions: number;
     days: ActivityDay[];
@@ -79,3 +75,4 @@ export interface RecentSubmissionsResponse {
     items: RecentSubmission[];
     nextCursor: string | null;
 }
+export type { ActivityDay };

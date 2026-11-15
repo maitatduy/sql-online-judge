@@ -3,7 +3,7 @@
 import { useId } from "react";
 import { Area, AreaChart, ReferenceLine, Tooltip, XAxis, YAxis } from "recharts";
 
-import { formatDateKey, vietnamDateKey } from "../activity-heatmap";
+import { formatDateKey, vietnamDateKey } from "@/lib/activity-calendar";
 import { RATING_TIERS, ratingAxisDomain, tierRangeLabel } from "../rating-tiers";
 import type { RatingPoint } from "../types";
 

@@ -1,4 +1,7 @@
-import type { ActivityDay } from "./types";
+export interface ActivityDay {
+    date: string;
+    count: number;
+}
 
 const DAY_MS = 86_400_000;
 const DAYS_PER_WEEK = 7;
@@ -51,4 +54,15 @@ export function activityLevel(count: number): ActivityLevel {
 export function formatDateKey(dateKey: string): string {
     const [year, month, day] = dateKey.split("-");
     return `${day}/${month}/${year}`;
+}
+
+export function currentStreakDays(days: readonly ActivityDay[], todayKey: string): number {
+    const activeDates = new Set(days.filter((day) => day.count > 0).map((day) => day.date));
+    let dateKey = activeDates.has(todayKey) ? todayKey : shiftDateKey(todayKey, -1);
+    let streak = 0;
+    while (activeDates.has(dateKey)) {
+        streak += 1;
+        dateKey = shiftDateKey(dateKey, -1);
+    }
+    return streak;
 }

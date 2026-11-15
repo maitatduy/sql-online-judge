@@ -1,8 +1,11 @@
+import {
+    activityLevel,
+    formatDateKey,
+    type ActivityDay,
+    type ActivityLevel,
+} from "@/lib/activity-calendar";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-import { activityLevel, formatDateKey, type ActivityLevel } from "../activity-heatmap";
-import type { ActivityDay } from "../types";
 
 const LEVEL_CLASS_NAMES: Record<ActivityLevel, string> = {
     0: "bg-surface-2",
@@ -14,10 +17,11 @@ const LEVEL_CLASS_NAMES: Record<ActivityLevel, string> = {
 
 interface ActivityHeatmapProps {
     weeks: ActivityDay[][];
-    totalSubmissions: number;
+    total: number;
+    unit: string;
 }
 
-export function ActivityHeatmap({ weeks, totalSubmissions }: ActivityHeatmapProps) {
+export function ActivityHeatmap({ weeks, total, unit }: ActivityHeatmapProps) {
     return (
         <div
             role="region"
@@ -27,7 +31,7 @@ export function ActivityHeatmap({ weeks, totalSubmissions }: ActivityHeatmapProp
         >
             <div
                 role="img"
-                aria-label={`Lịch hoạt động ${formatNumber(weeks.length)} tuần gần nhất, ${formatNumber(totalSubmissions)} bài nộp`}
+                aria-label={`Lịch hoạt động ${formatNumber(weeks.length)} tuần gần nhất, ${formatNumber(total)} ${unit}`}
                 className="grid w-max grid-flow-col grid-rows-7 gap-[3px]"
             >
                 {weeks.flat().map((day) => {
@@ -35,7 +39,7 @@ export function ActivityHeatmap({ weeks, totalSubmissions }: ActivityHeatmapProp
                     return (
                         <span
                             key={day.date}
-                            title={`${formatDateKey(day.date)}: ${formatNumber(day.count)} bài nộp`}
+                            title={`${formatDateKey(day.date)}: ${formatNumber(day.count)} ${unit}`}
                             data-level={level}
                             className={cn("size-[11px] rounded-[2px]", LEVEL_CLASS_NAMES[level])}
                         />
