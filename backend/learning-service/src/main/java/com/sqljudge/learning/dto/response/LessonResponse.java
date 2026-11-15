@@ -11,9 +11,11 @@ public record LessonResponse(
         String chapterTitle,
         String courseSlug,
         String courseTitle,
-        List<LessonCellResponse> cells) {
+        List<LessonCellResponse> cells,
+        List<QuizQuestionResponse> questions) {
 
     public LessonResponse {
         cells = List.copyOf(cells);
+        questions = List.copyOf(questions);
     }
 }

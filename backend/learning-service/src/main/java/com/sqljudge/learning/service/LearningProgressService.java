@@ -1,6 +1,7 @@
 package com.sqljudge.learning.service;
 
 import com.sqljudge.common.error.ErrorCode;
+import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.learning.dto.response.CourseProgressResponse;
@@ -13,6 +14,7 @@ import com.sqljudge.learning.repository.LessonOutlineRow;
 import com.sqljudge.learning.repository.LessonProgressRepository;
 import com.sqljudge.learning.repository.LessonRepository;
 import com.sqljudge.learning.repository.PublishedLessonRow;
+import com.sqljudge.learning.repository.QuizOptionRepository;
 import java.time.Clock;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +31,7 @@ public class LearningProgressService {
     private final LessonRepository lessonRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final LessonProgressRepository lessonProgressRepository;
+    private final QuizOptionRepository quizOptionRepository;
     private final Clock clock;
 
     @Transactional(readOnly = true)
@@ -46,15 +49,18 @@ public class LearningProgressService {
 
     @Transactional
     public CourseProgressResponse complete(String courseSlug, String lessonSlug) {
+        if (quizOptionRepository.existsByQuestionLessonId(
+                publishedLesson(courseSlug, lessonSlug).lessonId())) {
+            throw new BusinessRuleException(
+                    ErrorCode.LESSON_HAS_QUIZ, "Trả lời đúng hết câu hỏi để hoàn thành bài");
+        }
+        return recordCompletion(courseSlug, lessonSlug);
+    }
+
+    @Transactional
+    public CourseProgressResponse recordCompletion(String courseSlug, String lessonSlug) {
         CourseRevision revision = publishedRevision(courseSlug);
-        PublishedLessonRow lesson =
-                lessonRepository
-                        .findPublished(courseSlug, lessonSlug)
-                        .orElseThrow(
-                                () ->
-                                        new NotFoundException(
-                                                ErrorCode.LESSON_NOT_FOUND,
-                                                "Không tìm thấy bài giảng"));
+        PublishedLessonRow lesson = publishedLesson(courseSlug, lessonSlug);
         UUID courseId = revision.getCourse().getId();
         UUID userId = currentUserId();
         ensureEnrolled(courseId, userId);
@@ -64,6 +70,15 @@ public class LearningProgressService {
                             courseId, userId, lesson.lessonKey(), clock.instant()));
         }
         return progressOf(revision, userId);
+    }
+
+    private PublishedLessonRow publishedLesson(String courseSlug, String lessonSlug) {
+        return lessonRepository
+                .findPublished(courseSlug, lessonSlug)
+                .orElseThrow(
+                        () ->
+                                new NotFoundException(
+                                        ErrorCode.LESSON_NOT_FOUND, "Không tìm thấy bài giảng"));
     }
 
     private CourseRevision publishedRevision(String courseSlug) {

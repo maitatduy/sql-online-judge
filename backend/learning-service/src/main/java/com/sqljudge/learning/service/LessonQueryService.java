@@ -16,6 +16,7 @@ public class LessonQueryService {
 
     private final LessonRepository lessonRepository;
     private final LessonCellRepository lessonCellRepository;
+    private final QuizService quizService;
 
     @Transactional(readOnly = true)
     public LessonResponse getPublished(String courseSlug, String lessonSlug) {
@@ -35,6 +36,7 @@ public class LessonQueryService {
                 lesson.chapterTitle(),
                 lesson.courseSlug(),
                 lesson.courseTitle(),
-                lessonCellRepository.findByLessonId(lesson.lessonId()));
+                lessonCellRepository.findByLessonId(lesson.lessonId()),
+                quizService.questionsOf(lesson.lessonId()));
     }
 }

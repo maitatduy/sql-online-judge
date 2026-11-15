@@ -17,6 +17,8 @@ final class CourseFixtures {
         jdbcTemplate.update("DELETE FROM lesson_runs");
         jdbcTemplate.update("DELETE FROM lesson_progress");
         jdbcTemplate.update("DELETE FROM enrollments");
+        jdbcTemplate.update("DELETE FROM quiz_options");
+        jdbcTemplate.update("DELETE FROM quiz_questions");
         jdbcTemplate.update("DELETE FROM lesson_cells");
         jdbcTemplate.update("DELETE FROM lessons");
         jdbcTemplate.update("DELETE FROM chapters");
@@ -101,5 +103,37 @@ final class CourseFixtures {
                 UUID.randomUUID().toString(),
                 lessonKey);
         return cellKey;
+    }
+
+    String question(String lessonKey, int position, String prompt, boolean multiple) {
+        String questionKey = UUID.randomUUID().toString();
+        jdbcTemplate.update(
+                "INSERT INTO quiz_questions (id, lesson_id, question_key, prompt, is_multiple,"
+                        + " position, created_at, updated_at) SELECT UUID_TO_BIN(?), id,"
+                        + " UUID_TO_BIN(?), ?, ?, ?, NOW(6), NOW(6) FROM lessons"
+                        + " WHERE lesson_key = UUID_TO_BIN(?)",
+                UUID.randomUUID().toString(),
+                questionKey,
+                prompt,
+                multiple,
+                position,
+                lessonKey);
+        return questionKey;
+    }
+
+    String option(String questionKey, int position, String label, boolean correct) {
+        String optionKey = UUID.randomUUID().toString();
+        jdbcTemplate.update(
+                "INSERT INTO quiz_options (id, question_id, option_key, label, is_correct,"
+                        + " position, created_at, updated_at) SELECT UUID_TO_BIN(?), id,"
+                        + " UUID_TO_BIN(?), ?, ?, ?, NOW(6), NOW(6) FROM quiz_questions WHERE"
+                        + " question_key = UUID_TO_BIN(?)",
+                UUID.randomUUID().toString(),
+                optionKey,
+                label,
+                correct,
+                position,
+                questionKey);
+        return optionKey;
     }
 }
