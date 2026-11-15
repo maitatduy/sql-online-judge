@@ -11,6 +11,8 @@ public final class JudgeTopics {
     public static final String JUDGE_COMPLETED = "sqljudge.judge.completed";
     public static final String RUN_REQUESTED = "sqljudge.run.requested";
     public static final String RUN_COMPLETED = "sqljudge.run.completed";
+    public static final String LESSON_RUN_REQUESTED = "sqljudge.lesson.run-requested";
+    public static final String LESSON_RUN_COMPLETED = "sqljudge.lesson.run-completed";
     public static final String DEAD_LETTER_SUFFIX = ".dlt";
 
     private JudgeTopics() {}

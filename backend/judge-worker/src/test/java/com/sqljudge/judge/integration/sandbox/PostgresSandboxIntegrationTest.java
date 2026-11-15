@@ -98,6 +98,17 @@ class PostgresSandboxIntegrationTest {
     }
 
     @Test
+    @DisplayName("Đọc catalog không trả về tên schema tạm của lần chạy trong bảng kết quả")
+    void run_catalogQuery_hidesRunSchemaNames() {
+        ExecutionOutcome outcome = run("SELECT nspname FROM pg_namespace ORDER BY nspname");
+
+        assertThat(outcome).isInstanceOf(Succeeded.class);
+        assertThat(((Succeeded) outcome).table().rows().toString())
+                .doesNotContain("sb_")
+                .contains("sandbox");
+    }
+
+    @Test
     @DisplayName("Chạy SELECT trên dataset đã nạp, trả đúng tên cột và giá trị theo kiểu")
     void run_select_returnsTypedTable() {
         ExecutionOutcome outcome =

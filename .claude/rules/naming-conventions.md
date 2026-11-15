@@ -41,6 +41,8 @@ Xem bảng đặt tên trong `database.md`. Tên database: `sqljudge_<service>` 
 | `sqljudge.submission.created` | submission → judge-worker |
 | `sqljudge.run.requested` | submission → judge-worker (chạy thử) |
 | `sqljudge.run.completed` | judge-worker → submission (kết quả chạy thử trên dataset mẫu) |
+| `sqljudge.lesson.run-requested` | learning → judge-worker (chạy ô SQL trong bài giảng trên variant công khai) |
+| `sqljudge.lesson.run-completed` | judge-worker → learning |
 | `sqljudge.submission.rejudge-requested` | submission → judge-worker |
 | `sqljudge.judge.progress` | judge-worker → submission (đang chấm testcase n/m) |
 | `sqljudge.judge.completed` | judge-worker → submission |

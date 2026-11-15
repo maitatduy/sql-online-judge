@@ -11,11 +11,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 final class QueryExecution {
 
     static final Pattern RUN_NAME = Pattern.compile("sb_[0-9a-f]{28}");
+    private static final String REDACTED_RUN_NAME = "sandbox";
 
     @FunctionalInterface
     interface RunnerConnection {
@@ -41,7 +45,7 @@ final class QueryExecution {
             if (statement.getMoreResults() || statement.getUpdateCount() != -1) {
                 return failed("Bài này chỉ cho phép 1 câu lệnh", startedAt);
             }
-            return new Succeeded(table, elapsedMs(startedAt));
+            return new Succeeded(withoutRunNames(table), elapsedMs(startedAt));
         } catch (ResultLimitExceededException exception) {
             return failed(exception.getMessage(), startedAt);
         } catch (SQLException exception) {
@@ -61,6 +65,21 @@ final class QueryExecution {
                 .replaceAll("")
                 .replaceAll(" {2,}", " ")
                 .trim();
+    }
+
+    private static ResultTable withoutRunNames(ResultTable table) {
+        List<List<Object>> rows = new ArrayList<>(table.rows().size());
+        for (List<Object> row : table.rows()) {
+            List<Object> cells = new ArrayList<>(row.size());
+            for (Object cell : row) {
+                cells.add(
+                        cell instanceof String text
+                                ? RUN_NAME.matcher(text).replaceAll(REDACTED_RUN_NAME)
+                                : cell);
+            }
+            rows.add(Collections.unmodifiableList(cells));
+        }
+        return new ResultTable(table.columnNames(), rows);
     }
 
     private static Failed failed(String message, long startedAt) {
