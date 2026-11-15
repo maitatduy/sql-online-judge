@@ -46,4 +46,18 @@ public class Lesson extends BaseEntity {
 
     @Column(name = "position", nullable = false)
     private int position;
+
+    public static Lesson of(Chapter chapter, int position) {
+        Lesson lesson = new Lesson();
+        lesson.chapter = chapter;
+        lesson.lessonKey = UUID.randomUUID();
+        lesson.position = position;
+        return lesson;
+    }
+
+    public void write(String slug, String title, String body) {
+        this.slug = slug;
+        this.title = title;
+        this.body = body;
+    }
 }

@@ -62,29 +62,19 @@ public class StudioChapterService {
 
     @Transactional
     public StudioChapterResponse rename(UUID chapterId, ChapterRequest request) {
-        Chapter chapter = editableChapter(chapterId);
+        Chapter chapter = courseAccess.editableChapter(chapterId);
         chapter.setTitle(request.title());
         return responseOf(chapterRepository.saveAndFlush(chapter), List.of());
     }
 
     @Transactional
     public void delete(UUID chapterId) {
-        Chapter chapter = editableChapter(chapterId);
+        Chapter chapter = courseAccess.editableChapter(chapterId);
         if (lessonRepository.existsByChapterId(chapterId)) {
             throw new BusinessRuleException(
                     ErrorCode.CHAPTER_NOT_EMPTY, "Chuyển hoặc xoá bài giảng trước khi xoá chương");
         }
         chapterRepository.delete(chapter);
-    }
-
-    private Chapter editableChapter(UUID chapterId) {
-        Chapter chapter =
-                chapterRepository
-                        .findWithCourse(chapterId)
-                        .filter(found -> StudioCourseAccess.isMine(found.getRevision().getCourse()))
-                        .orElseThrow(StudioCourseAccess::courseNotFound);
-        courseAccess.editableRevision(chapter.getRevision());
-        return chapter;
     }
 
     private static StudioChapterResponse responseOf(Chapter chapter, List<LessonOutline> lessons) {
