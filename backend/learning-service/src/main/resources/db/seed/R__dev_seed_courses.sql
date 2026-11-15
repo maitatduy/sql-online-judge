@@ -1,10 +1,10 @@
 DELETE FROM lessons WHERE chapter_id IN (UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000011'), UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000012'));
 DELETE FROM chapters WHERE revision_id = UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000002');
 DELETE FROM course_revisions WHERE id = UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000002');
-DELETE FROM courses WHERE id = UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000001');
 
 INSERT INTO courses (id, slug, author_id, status, published_revision_id, draft_revision_id, deleted_at, version, created_at, updated_at)
-VALUES (UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000001'), 'sql-co-ban', UUID_TO_BIN('0192f3a0-0000-7000-8000-000000000009'), 'PUBLISHED', UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000002'), NULL, NULL, 0, '2026-11-01 08:00:00', '2026-11-01 08:00:00');
+VALUES (UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000001'), 'sql-co-ban', UUID_TO_BIN('0192f3a0-0000-7000-8000-000000000009'), 'PUBLISHED', UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000002'), NULL, NULL, 0, '2026-11-01 08:00:00', '2026-11-01 08:00:00')
+ON DUPLICATE KEY UPDATE slug = VALUES(slug), author_id = VALUES(author_id), status = VALUES(status), published_revision_id = VALUES(published_revision_id), draft_revision_id = VALUES(draft_revision_id), deleted_at = VALUES(deleted_at);
 
 INSERT INTO course_revisions (id, course_id, status, title, summary, difficulty, estimated_minutes, lesson_count, submitted_at, published_at, created_at, updated_at)
 VALUES (UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000002'), UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000001'), 'PUBLISHED', 'SQL cơ bản', 'Chọn cột, lọc dòng và sắp xếp kết quả.', 'EASY', 40, 4, '2026-11-01 07:00:00', '2026-11-01 08:00:00', '2026-11-01 08:00:00', '2026-11-01 08:00:00');
