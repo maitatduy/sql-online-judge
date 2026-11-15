@@ -14,6 +14,7 @@ final class CourseFixtures {
     }
 
     void clear() {
+        jdbcTemplate.update("DELETE FROM lesson_runs");
         jdbcTemplate.update("DELETE FROM lesson_progress");
         jdbcTemplate.update("DELETE FROM enrollments");
         jdbcTemplate.update("DELETE FROM lesson_cells");
