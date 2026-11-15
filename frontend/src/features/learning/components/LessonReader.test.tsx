@@ -9,6 +9,12 @@ import { LessonReader } from "./LessonReader";
 
 const replaceRoute = vi.fn();
 
+vi.mock("@/components/shared/LazySqlEditor", () => ({
+    LazySqlEditor: ({ value, ariaLabel }: { value: string; ariaLabel: string }) => (
+        <textarea aria-label={ariaLabel} value={value} readOnly />
+    ),
+}));
+
 vi.mock("next/navigation", () => ({
     usePathname: () => "/learn/sql-co-ban/select-la-gi",
     useRouter: () => ({ replace: replaceRoute }),
@@ -119,5 +125,15 @@ describe("LessonReader", () => {
         expect(
             screen.queryByRole("button", { name: "Hoàn thành bài học" }),
         ).not.toBeInTheDocument();
+    });
+
+    it("hiện ô SQL của bài với câu mẫu", async () => {
+        renderLesson("select-la-gi");
+
+        const cell = within(await screen.findByRole("region", { name: "Ô SQL" }));
+        expect(cell.getByRole("textbox", { name: "Câu SQL" })).toHaveValue(
+            "SELECT id, name FROM departments;",
+        );
+        expect(cell.getByRole("button", { name: "Chạy" })).toBeInTheDocument();
     });
 });

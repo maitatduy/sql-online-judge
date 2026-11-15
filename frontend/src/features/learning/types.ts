@@ -1,4 +1,5 @@
 import type { Difficulty } from "@/lib/difficulty";
+import type { ResultSet } from "@/lib/result-set";
 
 export interface CourseSummary {
     id: string;
@@ -27,11 +28,18 @@ export interface CourseDetail extends CourseSummary {
     chapters: ChapterOutline[];
 }
 
+export interface LessonCell {
+    cellKey: string;
+    starterSql: string;
+    dialect: "POSTGRESQL" | "MYSQL" | "SQLITE";
+}
+
 export interface Lesson extends LessonOutline {
     body: string;
     chapterTitle: string;
     courseSlug: string;
     courseTitle: string;
+    cells: LessonCell[];
 }
 
 export interface CourseProgress {
@@ -39,4 +47,15 @@ export interface CourseProgress {
     completedLessonKeys: string[];
     lessonCount: number;
     nextLessonSlug: string | null;
+}
+
+export type LessonRunOutcome = "OK" | "RE" | "TLE" | "FS" | "SE";
+
+export interface LessonRun {
+    id: string;
+    status: "PENDING" | "COMPLETED";
+    outcome: LessonRunOutcome | null;
+    result: ResultSet | null;
+    errorMessage: string | null;
+    runtimeMs: number | null;
 }

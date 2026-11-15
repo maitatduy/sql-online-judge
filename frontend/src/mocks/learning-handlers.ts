@@ -22,6 +22,13 @@ function lessonOf(courseSlug: string, lessonSlug: string): Lesson | undefined {
                 chapterTitle: chapter.title,
                 courseSlug: course.slug,
                 courseTitle: course.title,
+                cells: [
+                    {
+                        cellKey: `cell-${lesson.lessonKey}`,
+                        starterSql: "SELECT id, name FROM departments;",
+                        dialect: "POSTGRESQL",
+                    },
+                ],
             };
         }
     }
