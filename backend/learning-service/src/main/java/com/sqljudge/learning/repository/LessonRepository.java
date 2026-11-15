@@ -33,4 +33,16 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
             """)
     Optional<PublishedLessonRow> findPublished(
             @Param("courseSlug") String courseSlug, @Param("lessonSlug") String lessonSlug);
+
+    boolean existsByChapterId(UUID chapterId);
+
+    @Query(
+            """
+            SELECT new com.sqljudge.learning.repository.StudioLessonRow(
+                l.chapter.id, l.id, l.slug, l.title)
+            FROM Lesson l
+            WHERE l.chapter.revision.id = :revisionId
+            ORDER BY l.chapter.position, l.position
+            """)
+    List<StudioLessonRow> findStudioOutline(@Param("revisionId") UUID revisionId);
 }
