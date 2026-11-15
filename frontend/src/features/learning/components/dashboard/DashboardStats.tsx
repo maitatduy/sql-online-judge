@@ -1,52 +1,71 @@
-import { BookOpenCheck, Flame, GraduationCap } from "lucide-react";
+import { Skeleton } from "@/components/shared/Skeleton";
+import { formatNumber, formatPercent } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
-import { formatNumber } from "@/lib/format";
+import type { SubmissionStats } from "../../types";
 
 interface DashboardStatsProps {
-    streakDays: number;
-    lessonCount: number;
-    courseCount: number;
+    stats: SubmissionStats | undefined;
 }
 
-export function DashboardStats({ streakDays, lessonCount, courseCount }: DashboardStatsProps) {
-    const stats = [
-        {
-            label: "Chuỗi ngày",
-            value: `${formatNumber(streakDays)} ngày`,
-            icon: Flame,
-            iconClass: "bg-streak/12 text-streak",
-        },
-        {
-            label: "Bài đã học",
-            value: `${formatNumber(lessonCount)} bài`,
-            icon: BookOpenCheck,
-            iconClass: "bg-brand/12 text-brand",
-        },
-        {
-            label: "Khoá đang học",
-            value: `${formatNumber(courseCount)} khoá`,
-            icon: GraduationCap,
-            iconClass: "bg-brand/12 text-brand",
-        },
-    ];
+interface StatTile {
+    label: string;
+    value: string | null;
+    note: string;
+    isTrend?: boolean;
+}
 
+const FULL_PERCENT = 100;
+const COMING_SOON = "Sắp có";
+
+function tilesOf(stats: SubmissionStats): StatTile[] {
+    const acceptanceRate =
+        stats.submissionCount === 0
+            ? 0
+            : (stats.acceptedCount / stats.submissionCount) * FULL_PERCENT;
+    return [
+        {
+            label: "Bài đã AC",
+            value: formatNumber(stats.solvedCount),
+            note: `+${formatNumber(stats.solvedThisWeek)} tuần này`,
+            isTrend: stats.solvedThisWeek > 0,
+        },
+        {
+            label: "Tỉ lệ AC",
+            value: formatPercent(acceptanceRate),
+            note: `${formatNumber(stats.submissionCount)} bài nộp`,
+        },
+        { label: "Rating contest", value: null, note: "Mở cùng contest" },
+        { label: "Hạng toàn cục", value: null, note: "Mở cùng bảng xếp hạng" },
+    ];
+}
+
+export function DashboardStats({ stats }: DashboardStatsProps) {
+    if (!stats) {
+        return <Skeleton className="h-28 rounded-lg" />;
+    }
     return (
-        <ul aria-label="Thống kê học" className="grid gap-4 sm:grid-cols-3">
-            {stats.map(({ label, value, icon: Icon, iconClass }) => (
-                <li
-                    key={label}
-                    className="flex items-center gap-4 rounded-lg border bg-card px-5 py-4"
-                >
+        <ul aria-label="Thống kê" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {tilesOf(stats).map((tile) => (
+                <li key={tile.label} className="flex flex-col gap-1 rounded-lg border bg-card p-5">
+                    <span className="text-sm text-muted-foreground">{tile.label}</span>
+                    {tile.value === null ? (
+                        <span className="text-xl font-bold text-muted-foreground">
+                            {COMING_SOON}
+                        </span>
+                    ) : (
+                        <span className="text-[30px] leading-tight font-extrabold tracking-tight">
+                            {tile.value}
+                        </span>
+                    )}
                     <span
-                        aria-hidden="true"
-                        className={`flex size-11 shrink-0 items-center justify-center rounded-full ${iconClass}`}
+                        className={cn(
+                            "text-sm",
+                            tile.isTrend ? "font-semibold text-trend-up" : "text-muted-foreground",
+                        )}
                     >
-                        <Icon className="size-5" />
+                        {tile.note}
                     </span>
-                    <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">{label}</span>
-                        <span className="text-2xl font-extrabold tracking-tight">{value}</span>
-                    </div>
                 </li>
             ))}
         </ul>

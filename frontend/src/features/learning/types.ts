@@ -1,5 +1,7 @@
+import type { Dialect } from "@/lib/dialect";
 import type { Difficulty } from "@/lib/difficulty";
 import type { ResultSet } from "@/lib/result-set";
+import type { Verdict } from "@/lib/verdict";
 
 export interface CourseSummary {
     id: string;
@@ -91,4 +93,33 @@ export interface EnrolledCourse {
     completedCount: number;
     lessonCount: number;
     nextLessonSlug: string | null;
+}
+
+export interface SubmissionStats {
+    submissionCount: number;
+    acceptedCount: number;
+    solvedCount: number;
+    solvedThisWeek: number;
+}
+
+export interface RecentSubmission {
+    id: string;
+    status: "PENDING" | "JUDGING" | "COMPLETED";
+    verdict: Verdict | null;
+    dialect: Dialect;
+    runtimeMs: number | null;
+    createdAt: string;
+    problemId: string;
+    problemNumber: number | null;
+    problemSlug: string | null;
+    problemTitle: string | null;
+}
+
+export interface SuggestedProblem {
+    id: string;
+    number: number;
+    slug: string;
+    title: string;
+    difficulty: Difficulty;
+    tags: { slug: string; name: string }[];
 }

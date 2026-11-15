@@ -66,3 +66,26 @@ export function currentStreakDays(days: readonly ActivityDay[], todayKey: string
     }
     return streak;
 }
+
+export function mergeActivity(...sources: readonly (readonly ActivityDay[])[]): ActivityDay[] {
+    const counts = new Map<string, number>();
+    sources.flat().forEach((day) => counts.set(day.date, (counts.get(day.date) ?? 0) + day.count));
+    return [...counts.entries()]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([date, count]) => ({ date, count }));
+}
+
+export function longestStreakDays(days: readonly ActivityDay[]): number {
+    const activeDates = days
+        .filter((day) => day.count > 0)
+        .map((day) => day.date)
+        .sort();
+    let longest = 0;
+    let current = 0;
+    activeDates.forEach((date, index) => {
+        const isNextDay = index > 0 && shiftDateKey(activeDates[index - 1], 1) === date;
+        current = isNextDay ? current + 1 : 1;
+        longest = Math.max(longest, current);
+    });
+    return longest;
+}

@@ -4,6 +4,8 @@ import {
     activityLevel,
     buildHeatmapWeeks,
     currentStreakDays,
+    longestStreakDays,
+    mergeActivity,
     formatDateKey,
     vietnamDateKey,
 } from "./activity-calendar";
@@ -111,5 +113,40 @@ describe("currentStreakDays", () => {
     it("bỏ lỡ hôm qua và hôm nay thì chuỗi về 0, ngày không có bài không tính", () => {
         expect(currentStreakDays([day("2026-11-12")], "2026-11-14")).toBe(0);
         expect(currentStreakDays([day("2026-11-14", 0)], "2026-11-14")).toBe(0);
+    });
+});
+
+describe("mergeActivity", () => {
+    it("cộng số hoạt động của cùng một ngày và giữ thứ tự ngày tăng dần", () => {
+        const lessons = [
+            { date: "2026-11-12", count: 1 },
+            { date: "2026-11-10", count: 2 },
+        ];
+        const submissions = [
+            { date: "2026-11-12", count: 3 },
+            { date: "2026-11-11", count: 1 },
+        ];
+
+        expect(mergeActivity(lessons, submissions)).toEqual([
+            { date: "2026-11-10", count: 2 },
+            { date: "2026-11-11", count: 1 },
+            { date: "2026-11-12", count: 4 },
+        ]);
+    });
+});
+
+describe("longestStreakDays", () => {
+    it("tìm chuỗi ngày liên tiếp dài nhất, bỏ qua ngày không có hoạt động", () => {
+        const days = [
+            { date: "2026-11-01", count: 1 },
+            { date: "2026-11-02", count: 2 },
+            { date: "2026-11-03", count: 0 },
+            { date: "2026-11-05", count: 1 },
+            { date: "2026-11-06", count: 1 },
+            { date: "2026-11-07", count: 1 },
+        ];
+
+        expect(longestStreakDays(days)).toBe(3);
+        expect(longestStreakDays([])).toBe(0);
     });
 });

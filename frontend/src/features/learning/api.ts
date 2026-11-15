@@ -12,6 +12,9 @@ import type {
     LessonRun,
     QuizAnswer,
     QuizResult,
+    RecentSubmission,
+    SubmissionStats,
+    SuggestedProblem,
 } from "./types";
 
 export const learningApi = {
@@ -50,4 +53,15 @@ export const learningApi = {
         apiClient.get<EnrolledCourse[]>("/api/enrollments", { signal }),
     getLearningActivity: (from: string, signal?: AbortSignal) =>
         apiClient.get<ActivityDay[]>("/api/learning/activity", { params: { from }, signal }),
+    getSubmissionStats: (signal?: AbortSignal) =>
+        apiClient.get<SubmissionStats>("/api/submissions/summary", { signal }),
+    getSubmissionActivity: (from: string, signal?: AbortSignal) =>
+        apiClient.get<ActivityDay[]>("/api/submissions/activity", { params: { from }, signal }),
+    listRecentSubmissions: (size: number, signal?: AbortSignal) =>
+        apiClient.get<RecentSubmission[]>("/api/submissions/recent", { params: { size }, signal }),
+    listSuggestedProblems: (size: number, signal?: AbortSignal) =>
+        apiClient.get<Page<SuggestedProblem>>("/api/problems", {
+            params: { progress: "NOT_STARTED", size },
+            signal,
+        }),
 };
