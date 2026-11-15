@@ -96,7 +96,7 @@ public class LearningProgressService {
         }
     }
 
-    private CourseProgressResponse progressOf(CourseRevision revision, UUID userId) {
+    CourseProgressResponse progressOf(CourseRevision revision, UUID userId) {
         UUID courseId = revision.getCourse().getId();
         List<LessonOutlineRow> lessons =
                 lessonRepository.findOutline(revision.getId()).stream()

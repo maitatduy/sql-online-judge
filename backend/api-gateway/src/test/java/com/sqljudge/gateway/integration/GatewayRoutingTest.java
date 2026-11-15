@@ -283,9 +283,20 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
         String runPath = "/api/lesson-runs/0192f3f0-0000-7000-8000-000000000004";
         webTestClient.post().uri(cellPath).exchange().expectStatus().isNotFound();
         webTestClient.get().uri(runPath).exchange().expectStatus().isNotFound();
+        webTestClient.get().uri("/api/enrollments").exchange().expectStatus().isNotFound();
+        webTestClient
+                .get()
+                .uri("/api/learning/activity?from=2026-11-01")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
 
         assertThat(LEARNING_SERVICE.forwardedRequestLines())
-                .containsExactly("POST " + cellPath, "GET " + runPath);
+                .containsExactly(
+                        "POST " + cellPath,
+                        "GET " + runPath,
+                        "GET /api/enrollments",
+                        "GET /api/learning/activity?from=2026-11-01");
         assertThat(SUBMISSION_SERVICE.forwardedRequestLines()).isEmpty();
     }
 
