@@ -9,7 +9,10 @@ public record JudgingInfo(
         UUID revisionId,
         List<Dialect> dialects,
         int testcaseCount,
-        int timeLimitMs) {
+        int timeLimitMs,
+        Integer number,
+        String slug,
+        String title) {
 
     public JudgingInfo {
         dialects = List.copyOf(dialects);

@@ -40,6 +40,9 @@ public class InternalJudgingInfoService {
                         .sorted()
                         .toList(),
                 revision.getTestcases().size(),
-                problem.getTimeLimitMs());
+                problem.getTimeLimitMs(),
+                problem.getNumber(),
+                problem.getSlug(),
+                problem.getTitle());
     }
 }

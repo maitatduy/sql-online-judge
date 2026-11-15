@@ -43,6 +43,15 @@ public class Submission extends BaseEntity {
     @Column(name = "problem_revision_id", nullable = false, columnDefinition = "BINARY(16)")
     private UUID problemRevisionId;
 
+    @Column(name = "problem_number")
+    private Integer problemNumber;
+
+    @Column(name = "problem_slug", length = 160)
+    private String problemSlug;
+
+    @Column(name = "problem_title", length = 200)
+    private String problemTitle;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "dialect", nullable = false, length = 16)
     private Dialect dialect;
@@ -102,6 +111,9 @@ public class Submission extends BaseEntity {
         submission.userId = userId;
         submission.problemId = solution.problemId();
         submission.problemRevisionId = solution.revisionId();
+        submission.problemNumber = solution.problem().number();
+        submission.problemSlug = solution.problem().slug();
+        submission.problemTitle = solution.problem().title();
         submission.dialect = solution.dialect();
         submission.code = solution.code();
         submission.totalTestcases = solution.testcaseCount();
@@ -147,5 +159,12 @@ public class Submission extends BaseEntity {
     }
 
     public record SubmittedSolution(
-            UUID problemId, UUID revisionId, Dialect dialect, String code, int testcaseCount) {}
+            UUID problemId,
+            UUID revisionId,
+            ProblemLabel problem,
+            Dialect dialect,
+            String code,
+            int testcaseCount) {}
+
+    public record ProblemLabel(Integer number, String slug, String title) {}
 }

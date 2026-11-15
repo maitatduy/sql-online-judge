@@ -87,6 +87,36 @@ class SubmissionStatsApiIntegrationTest extends ContainerSupport {
                 .isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
+    @Test
+    @DisplayName("Bài nộp gần đây của chính mình, mới nhất trước, kèm số, slug và tên bài")
+    void recent_returnsOwnNewestSubmissionsWithProblem() {
+        store(TestJwts.LEARNER_ID, FIRST_PROBLEM, "WA", "NOW(6) - INTERVAL 3 HOUR");
+        UUID middle = store(TestJwts.LEARNER_ID, FIRST_PROBLEM, "AC", "NOW(6) - INTERVAL 2 HOUR");
+        UUID newest = store(TestJwts.LEARNER_ID, SECOND_PROBLEM, "RE", "NOW(6) - INTERVAL 1 HOUR");
+        store(UUID.randomUUID(), SECOND_PROBLEM, "AC", "NOW(6)");
+        jdbcTemplate.update(
+                "UPDATE submissions SET problem_number = 184,"
+                        + " problem_slug = 'highest-salary-per-department',"
+                        + " problem_title = 'Lương cao nhất mỗi phòng ban'"
+                        + " WHERE problem_id = UUID_TO_BIN(?)",
+                FIRST_PROBLEM.toString());
+
+        DocumentContext recent = get("/api/submissions/recent?size=2");
+
+        assertThat(recent.read("$[*].id", List.class))
+                .containsExactly(newest.toString(), middle.toString());
+        assertThat(recent.read("$[0].verdict", String.class)).isEqualTo("RE");
+        assertThat(recent.read("$[0].problemTitle", String.class)).isNull();
+        assertThat(recent.read("$[1].problemNumber", Integer.class)).isEqualTo(184);
+        assertThat(recent.read("$[1].problemSlug", String.class))
+                .isEqualTo("highest-salary-per-department");
+        assertThat(recent.read("$[1].problemTitle", String.class))
+                .isEqualTo("Lương cao nhất mỗi phòng ban");
+        assertThat(recent.read("$[1].dialect", String.class)).isEqualTo("POSTGRESQL");
+        assertThat(exchange("/api/submissions/recent?size=21").getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
     private UUID store(UUID userId, UUID problemId, String verdict, String createdAt) {
         UUID id = UUID.randomUUID();
         jdbcTemplate.update(

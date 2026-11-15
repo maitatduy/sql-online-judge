@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,6 +76,13 @@ class InternalJudgingInfoApiIntegrationTest extends ContainerSupport {
         assertThat(info.read("$.dialects", List.class)).containsExactly("POSTGRESQL", "SQLITE");
         assertThat(info.read("$.testcaseCount", Integer.class)).isEqualTo(2);
         assertThat(info.read("$.timeLimitMs", Integer.class)).isEqualTo(2000);
+        Map<String, Object> problem =
+                jdbcTemplate.queryForMap(
+                        "SELECT number, slug, title FROM problems WHERE id = UUID_TO_BIN(?)",
+                        problemId);
+        assertThat(info.read("$.number", Integer.class)).isEqualTo(problem.get("number"));
+        assertThat(info.read("$.slug", String.class)).isEqualTo(problem.get("slug"));
+        assertThat(info.read("$.title", String.class)).isEqualTo(problem.get("title"));
     }
 
     @Test

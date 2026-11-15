@@ -73,7 +73,8 @@ class SubmitSolutionApiIntegrationTest extends ContainerSupport {
                 jdbcTemplate.queryForMap(
                         "SELECT BIN_TO_UUID(user_id) AS user_id,"
                                 + " BIN_TO_UUID(problem_revision_id) AS revision_id, dialect,"
-                                + " status, total_testcases, attempts FROM submissions"
+                                + " status, total_testcases, attempts, problem_number,"
+                                + " problem_slug, problem_title FROM submissions"
                                 + " WHERE id = UUID_TO_BIN(?)",
                         submissionId);
         assertThat(stored)
@@ -82,7 +83,10 @@ class SubmitSolutionApiIntegrationTest extends ContainerSupport {
                 .containsEntry("dialect", "POSTGRESQL")
                 .containsEntry("status", "PENDING")
                 .containsEntry("total_testcases", 3)
-                .containsEntry("attempts", 1);
+                .containsEntry("attempts", 1)
+                .containsEntry("problem_number", 184)
+                .containsEntry("problem_slug", "highest-salary-per-department")
+                .containsEntry("problem_title", "Lương cao nhất mỗi phòng ban");
         Map<String, Object> outbox =
                 jdbcTemplate.queryForMap("SELECT topic, message_key, payload FROM outbox_events");
         assertThat(outbox.get("topic")).isEqualTo(CREATED_TOPIC);
