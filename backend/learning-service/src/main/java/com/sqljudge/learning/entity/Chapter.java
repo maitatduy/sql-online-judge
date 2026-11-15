@@ -35,4 +35,12 @@ public class Chapter extends BaseEntity {
 
     @Column(name = "position", nullable = false)
     private int position;
+
+    public static Chapter of(CourseRevision revision, String title, int position) {
+        Chapter chapter = new Chapter();
+        chapter.revision = revision;
+        chapter.title = title;
+        chapter.position = position;
+        return chapter;
+    }
 }
