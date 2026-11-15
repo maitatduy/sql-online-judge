@@ -27,4 +27,7 @@ export const ROUTES = {
     profile: (username: string) => `/u/${encodeURIComponent(username)}`,
     studioDataset: (datasetId: string) => `/studio/databases/${encodeURIComponent(datasetId)}`,
     problem: (slug: string) => `/problems/${encodeURIComponent(slug)}`,
+    course: (slug: string) => `/learn/${encodeURIComponent(slug)}`,
+    lesson: (courseSlug: string, lessonSlug: string) =>
+        `/learn/${encodeURIComponent(courseSlug)}/${encodeURIComponent(lessonSlug)}`,
 } as const;
