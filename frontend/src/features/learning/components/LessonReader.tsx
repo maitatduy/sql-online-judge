@@ -15,8 +15,10 @@ import { ApiRequestError, isUnauthenticatedError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
 
 import { useCourse } from "../hooks/useCourse";
+import { useCourseProgress } from "../hooks/useCourseProgress";
 import { useLesson } from "../hooks/useLesson";
 import { neighboursOf } from "../lesson-navigation";
+import { LessonCompletion } from "./LessonCompletion";
 import { LessonOutlineNav } from "./LessonOutlineNav";
 import { LessonPager } from "./LessonPager";
 
@@ -33,6 +35,8 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
     const router = useRouter();
     const { data: lesson, error, isPending, refetch } = useLesson(courseSlug, lessonSlug);
     const { data: course } = useCourse(courseSlug);
+    const { data: progress } = useCourseProgress(courseSlug, lesson !== undefined);
+    const completedKeys = new Set(progress?.completedLessonKeys);
     const isUnauthenticated = isUnauthenticatedError(error);
     const isNotFound = error instanceof ApiRequestError && error.status === 404;
 
@@ -47,7 +51,11 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
             <aside className="hidden lg:block">
                 {course ? (
                     <div className="sticky top-20">
-                        <LessonOutlineNav course={course} currentSlug={lessonSlug} />
+                        <LessonOutlineNav
+                            course={course}
+                            currentSlug={lessonSlug}
+                            completedLessonKeys={completedKeys}
+                        />
                     </div>
                 ) : null}
             </aside>
@@ -93,6 +101,13 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
                             </h1>
                         </header>
                         <Markdown className={LESSON_BODY_CLASSES}>{lesson.body}</Markdown>
+                        {progress ? (
+                            <LessonCompletion
+                                courseSlug={courseSlug}
+                                lessonSlug={lessonSlug}
+                                isCompleted={completedKeys.has(lesson.lessonKey)}
+                            />
+                        ) : null}
                         {course ? (
                             <LessonPager
                                 courseSlug={courseSlug}

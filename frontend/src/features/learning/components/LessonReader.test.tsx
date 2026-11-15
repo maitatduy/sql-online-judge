@@ -1,6 +1,7 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { completeMockLesson, resetMockLearningProgress } from "@/mocks/learning-progress";
 import { clearMockSession, DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
 
@@ -21,6 +22,7 @@ describe("LessonReader", () => {
     beforeEach(() => {
         localStorage.clear();
         replaceRoute.mockClear();
+        resetMockLearningProgress();
         writeMockSession(DEMO_SESSION_USER);
     });
 
@@ -88,5 +90,34 @@ describe("LessonReader", () => {
             "href",
             "/learn/sql-co-ban",
         );
+    });
+
+    it("bấm hoàn thành bài thì hiện đã hoàn thành và đánh dấu trên đề cương", async () => {
+        renderLesson("select-la-gi");
+
+        fireEvent.click(await screen.findByRole("button", { name: "Hoàn thành bài học" }));
+
+        expect(
+            await within(screen.getByRole("main")).findByText("Đã hoàn thành"),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: "Hoàn thành bài học" }),
+        ).not.toBeInTheDocument();
+        const outline = within(screen.getByRole("navigation", { name: "Đề cương" }));
+        expect(
+            outline.getByRole("link", { name: /SELECT là gì.*Đã hoàn thành/ }),
+        ).toBeInTheDocument();
+    });
+
+    it("bài đã hoàn thành từ trước không còn nút hoàn thành", async () => {
+        completeMockLesson("sql-co-ban", "01a1d2c0-0000-7000-8000-000000000201");
+        renderLesson("select-la-gi");
+
+        expect(
+            await within(screen.getByRole("main")).findByText("Đã hoàn thành"),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: "Hoàn thành bài học" }),
+        ).not.toBeInTheDocument();
     });
 });

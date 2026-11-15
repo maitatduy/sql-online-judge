@@ -11,11 +11,14 @@ import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 import { useCourse } from "../hooks/useCourse";
+import { useCourseProgress } from "../hooks/useCourseProgress";
 import type { CourseDetail } from "../types";
 import { CourseMeta } from "./CourseMeta";
 import { CourseOutline } from "./CourseOutline";
+import { CourseProgressBar } from "./CourseProgressBar";
 
 interface CourseOverviewProps {
     slug: string;
@@ -66,7 +69,16 @@ export function CourseOverview({ slug }: CourseOverviewProps) {
 }
 
 function CourseContent({ course }: { course: CourseDetail }) {
+    const { data: currentUser } = useCurrentUser();
+    const { data: progress } = useCourseProgress(course.slug, currentUser !== undefined);
     const startSlug = firstLessonSlug(course);
+    const completedKeys = new Set(progress?.completedLessonKeys);
+    const isLearning = progress !== undefined && (progress.enrolled || completedKeys.size > 0);
+    const action = !isLearning
+        ? { label: "Bắt đầu học", slug: startSlug }
+        : progress.nextLessonSlug
+          ? { label: "Học tiếp", slug: progress.nextLessonSlug }
+          : { label: "Ôn lại", slug: startSlug };
 
     return (
         <>
@@ -79,16 +91,26 @@ function CourseContent({ course }: { course: CourseDetail }) {
                     lessonCount={course.lessonCount}
                     estimatedMinutes={course.estimatedMinutes}
                 />
-                {startSlug ? (
+                {isLearning ? (
+                    <CourseProgressBar
+                        completedCount={completedKeys.size}
+                        lessonCount={progress.lessonCount}
+                    />
+                ) : null}
+                {action.slug ? (
                     <Button asChild className="mt-1 self-start">
-                        <Link href={ROUTES.lesson(course.slug, startSlug)}>
-                            Bắt đầu học
+                        <Link href={ROUTES.lesson(course.slug, action.slug)}>
+                            {action.label}
                             <ArrowRight aria-hidden="true" />
                         </Link>
                     </Button>
                 ) : null}
             </section>
-            <CourseOutline courseSlug={course.slug} chapters={course.chapters} />
+            <CourseOutline
+                courseSlug={course.slug}
+                chapters={course.chapters}
+                completedLessonKeys={completedKeys}
+            />
         </>
     );
 }

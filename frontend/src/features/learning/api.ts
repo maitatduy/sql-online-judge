@@ -2,7 +2,7 @@ import { apiClient } from "@/lib/api-client";
 import type { Difficulty } from "@/lib/difficulty";
 import type { Page } from "@/lib/pagination";
 
-import type { CourseDetail, CourseSummary, Lesson } from "./types";
+import type { CourseDetail, CourseProgress, CourseSummary, Lesson } from "./types";
 
 export const learningApi = {
     listCourses: (difficulty: Difficulty | undefined, signal?: AbortSignal) =>
@@ -16,5 +16,13 @@ export const learningApi = {
         apiClient.get<Lesson>(
             `/api/courses/${encodeURIComponent(courseSlug)}/lessons/${encodeURIComponent(lessonSlug)}`,
             { signal },
+        ),
+    getProgress: (courseSlug: string, signal?: AbortSignal) =>
+        apiClient.get<CourseProgress>(`/api/courses/${encodeURIComponent(courseSlug)}/progress`, {
+            signal,
+        }),
+    completeLesson: (courseSlug: string, lessonSlug: string) =>
+        apiClient.post<CourseProgress>(
+            `/api/courses/${encodeURIComponent(courseSlug)}/lessons/${encodeURIComponent(lessonSlug)}/completion`,
         ),
 };

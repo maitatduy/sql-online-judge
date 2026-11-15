@@ -1,11 +1,61 @@
 import { screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
+import { completeMockLesson, resetMockLearningProgress } from "@/mocks/learning-progress";
+import { DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
 
 import { CourseOverview } from "./CourseOverview";
 
+const FIRST_LESSON_KEY = "01a1d2c0-0000-7000-8000-000000000201";
+const ALL_LESSON_KEYS = [
+    FIRST_LESSON_KEY,
+    "01a1d2c0-0000-7000-8000-000000000202",
+    "01a1d2c0-0000-7000-8000-000000000203",
+    "01a1d2c0-0000-7000-8000-000000000204",
+];
+
 describe("CourseOverview", () => {
+    beforeEach(() => {
+        localStorage.clear();
+        resetMockLearningProgress();
+    });
+
+    it("người đang học thấy tiến độ, nút học tiếp và dấu đã hoàn thành trên đề cương", async () => {
+        writeMockSession(DEMO_SESSION_USER);
+        completeMockLesson("sql-co-ban", FIRST_LESSON_KEY);
+        renderWithProviders(<CourseOverview slug="sql-co-ban" />);
+
+        expect(await screen.findByRole("link", { name: "Học tiếp" })).toHaveAttribute(
+            "href",
+            "/learn/sql-co-ban/chon-cot",
+        );
+        expect(screen.getByText("1/4 bài")).toBeInTheDocument();
+        expect(screen.getByRole("progressbar", { name: "Tiến độ khoá học" })).toHaveAttribute(
+            "aria-valuenow",
+            "25",
+        );
+        const outline = within(screen.getByRole("list", { name: "Đề cương" }));
+        expect(
+            outline.getByRole("link", { name: /SELECT là gì.*Đã hoàn thành/ }),
+        ).toBeInTheDocument();
+        expect(
+            outline.getByRole("link", { name: /Chọn cột và đặt bí danh/ }).textContent,
+        ).not.toContain("Đã hoàn thành");
+    });
+
+    it("học xong cả khoá thì nút chuyển thành ôn lại từ bài đầu", async () => {
+        writeMockSession(DEMO_SESSION_USER);
+        ALL_LESSON_KEYS.forEach((lessonKey) => completeMockLesson("sql-co-ban", lessonKey));
+        renderWithProviders(<CourseOverview slug="sql-co-ban" />);
+
+        expect(await screen.findByRole("link", { name: "Ôn lại" })).toHaveAttribute(
+            "href",
+            "/learn/sql-co-ban/select-la-gi",
+        );
+        expect(screen.getByText("4/4 bài")).toBeInTheDocument();
+    });
+
     it("hiện khoá học, số liệu ngắn và nút bắt đầu dẫn tới bài đầu tiên", async () => {
         renderWithProviders(<CourseOverview slug="sql-co-ban" />);
 

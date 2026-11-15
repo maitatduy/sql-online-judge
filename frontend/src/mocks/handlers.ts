@@ -15,6 +15,7 @@ import { adminProblemReviewHandlers } from "./admin-problem-reviews";
 import { apiError } from "./api-error";
 import { invitationHandlers } from "./invitation-handlers";
 import { learningHandlers } from "./learning-handlers";
+import { learningProgressHandlers } from "./learning-progress";
 import { practiceHandlers } from "./practice-handlers";
 import { practiceRunHandlers } from "./practice-run-handlers";
 import { practiceSubmissionHandlers } from "./practice-submission-handlers";
@@ -182,5 +183,6 @@ export const handlers: RequestHandler[] = [
     ...adminHandlers,
     ...adminProblemReviewHandlers,
     ...invitationHandlers,
+    ...learningProgressHandlers,
     ...learningHandlers,
 ];
