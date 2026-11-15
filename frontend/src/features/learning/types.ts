@@ -26,3 +26,10 @@ export interface CourseDetail extends CourseSummary {
     publishedAt: string;
     chapters: ChapterOutline[];
 }
+
+export interface Lesson extends LessonOutline {
+    body: string;
+    chapterTitle: string;
+    courseSlug: string;
+    courseTitle: string;
+}
