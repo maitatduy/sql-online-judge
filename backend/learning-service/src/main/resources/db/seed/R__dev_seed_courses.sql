@@ -7,7 +7,7 @@ INSERT INTO courses (id, slug, author_id, status, published_revision_id, draft_r
 VALUES (UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000001'), 'sql-co-ban', UUID_TO_BIN('0192f3a0-0000-7000-8000-000000000009'), 'PUBLISHED', UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000002'), NULL, NULL, 0, '2026-11-01 08:00:00', '2026-11-01 08:00:00');
 
 INSERT INTO course_revisions (id, course_id, status, title, summary, difficulty, estimated_minutes, lesson_count, submitted_at, published_at, created_at, updated_at)
-VALUES (UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000002'), UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000001'), 'PUBLISHED', 'SQL cơ bản', 'Viết những câu truy vấn đầu tiên: chọn cột, lọc dòng và sắp xếp kết quả trên dữ liệu phòng ban và nhân viên.', 'EASY', 40, 4, '2026-11-01 07:00:00', '2026-11-01 08:00:00', '2026-11-01 08:00:00', '2026-11-01 08:00:00');
+VALUES (UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000002'), UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000001'), 'PUBLISHED', 'SQL cơ bản', 'Chọn cột, lọc dòng và sắp xếp kết quả.', 'EASY', 40, 4, '2026-11-01 07:00:00', '2026-11-01 08:00:00', '2026-11-01 08:00:00', '2026-11-01 08:00:00');
 
 INSERT INTO chapters (id, revision_id, title, position, created_at, updated_at) VALUES
 (UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000011'), UUID_TO_BIN('01a1d2c0-0000-7000-8000-000000000002'), 'Làm quen với SELECT', 1, '2026-11-01 08:00:00', '2026-11-01 08:00:00'),
