@@ -2,7 +2,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-import { formatDateKey, vietnamDateKey } from "../activity-heatmap";
+import { formatDateKey, vietnamDateKey } from "@/lib/activity-calendar";
 import { badgeAppearance } from "../badge-appearance";
 import type { ProfileBadge } from "../types";
 

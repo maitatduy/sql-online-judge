@@ -7,10 +7,10 @@ import { Skeleton } from "@/components/shared/Skeleton";
 import { ApiRequestError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
 
-import { buildHeatmapWeeks } from "../activity-heatmap";
+import { buildHeatmapWeeks } from "@/lib/activity-calendar";
 import { useActivity } from "../hooks/useActivity";
 
-import { ActivityHeatmap } from "./ActivityHeatmap";
+import { ActivityHeatmap } from "@/components/shared/ActivityHeatmap";
 
 interface ActivityHeatmapCardProps {
     username: string;
@@ -55,7 +55,8 @@ export function ActivityHeatmapCard({
                     </div>
                     <ActivityHeatmap
                         weeks={buildHeatmapWeeks(activity.days, now ?? mountedAt)}
-                        totalSubmissions={activity.totalSubmissions}
+                        total={activity.totalSubmissions}
+                        unit="bài nộp"
                     />
                 </>
             ) : null}

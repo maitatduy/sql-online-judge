@@ -5,7 +5,7 @@ import {
     buildHeatmapWeeks,
     formatDateKey,
     vietnamDateKey,
-} from "./activity-heatmap";
+} from "./activity-calendar";
 
 const TUESDAY_NOON_IN_VIETNAM = new Date("2026-10-13T05:00:00Z");
 

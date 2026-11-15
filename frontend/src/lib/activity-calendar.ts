@@ -1,4 +1,7 @@
-import type { ActivityDay } from "./types";
+export interface ActivityDay {
+    date: string;
+    count: number;
+}
 
 const DAY_MS = 86_400_000;
 const DAYS_PER_WEEK = 7;
