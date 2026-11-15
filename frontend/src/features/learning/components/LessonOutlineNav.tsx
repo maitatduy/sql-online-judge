@@ -4,13 +4,19 @@ import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 import type { CourseDetail } from "../types";
+import { CompletedMark } from "./CompletedMark";
 
 interface LessonOutlineNavProps {
     course: CourseDetail;
     currentSlug: string;
+    completedLessonKeys?: ReadonlySet<string>;
 }
 
-export function LessonOutlineNav({ course, currentSlug }: LessonOutlineNavProps) {
+export function LessonOutlineNav({
+    course,
+    currentSlug,
+    completedLessonKeys,
+}: LessonOutlineNavProps) {
     let lessonNumber = 0;
 
     return (
@@ -44,6 +50,9 @@ export function LessonOutlineNav({ course, currentSlug }: LessonOutlineNavProps)
                                             {lessonNumber}
                                         </span>
                                         <span>{lesson.title}</span>
+                                        {completedLessonKeys?.has(lesson.lessonKey) ? (
+                                            <CompletedMark />
+                                        ) : null}
                                     </Link>
                                 </li>
                             );

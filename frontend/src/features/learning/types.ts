@@ -33,3 +33,10 @@ export interface Lesson extends LessonOutline {
     courseSlug: string;
     courseTitle: string;
 }
+
+export interface CourseProgress {
+    enrolled: boolean;
+    completedLessonKeys: string[];
+    lessonCount: number;
+    nextLessonSlug: string | null;
+}

@@ -3,13 +3,15 @@ import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
 
 import type { ChapterOutline } from "../types";
+import { CompletedMark } from "./CompletedMark";
 
 interface CourseOutlineProps {
     courseSlug: string;
     chapters: ChapterOutline[];
+    completedLessonKeys?: ReadonlySet<string>;
 }
 
-export function CourseOutline({ courseSlug, chapters }: CourseOutlineProps) {
+export function CourseOutline({ courseSlug, chapters, completedLessonKeys }: CourseOutlineProps) {
     let lessonNumber = 0;
 
     return (
@@ -30,6 +32,9 @@ export function CourseOutline({ courseSlug, chapters }: CourseOutlineProps) {
                                             {lessonNumber}
                                         </span>
                                         <span className="font-medium">{lesson.title}</span>
+                                        {completedLessonKeys?.has(lesson.lessonKey) ? (
+                                            <CompletedMark />
+                                        ) : null}
                                     </Link>
                                 </li>
                             );
