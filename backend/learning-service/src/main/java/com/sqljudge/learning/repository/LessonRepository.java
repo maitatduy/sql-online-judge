@@ -45,4 +45,27 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
             ORDER BY l.chapter.position, l.position
             """)
     List<StudioLessonRow> findStudioOutline(@Param("revisionId") UUID revisionId);
+
+    @Query("SELECT COALESCE(MAX(l.position), 0) FROM Lesson l WHERE l.chapter.id = :chapterId")
+    int findLastPosition(@Param("chapterId") UUID chapterId);
+
+    @Query(
+            """
+            SELECT COUNT(l) > 0 FROM Lesson l
+            WHERE l.chapter.revision.id = :revisionId
+              AND l.slug = :slug
+              AND (:excludedId IS NULL OR l.id <> :excludedId)
+            """)
+    boolean isSlugTaken(
+            @Param("revisionId") UUID revisionId,
+            @Param("slug") String slug,
+            @Param("excludedId") UUID excludedId);
+
+    @Query(
+            """
+            SELECT l FROM Lesson l
+            JOIN FETCH l.chapter ch JOIN FETCH ch.revision r JOIN FETCH r.course
+            WHERE l.id = :lessonId
+            """)
+    Optional<Lesson> findWithCourse(@Param("lessonId") UUID lessonId);
 }
