@@ -1,6 +1,8 @@
 package com.sqljudge.learning.repository;
 
 import com.sqljudge.learning.entity.LessonProgress;
+import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +20,11 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
             """)
     Set<UUID> findCompletedLessonKeys(
             @Param("userId") UUID userId, @Param("courseId") UUID courseId);
+
+    @Query(
+            """
+            SELECT p.completedAt FROM LessonProgress p
+            WHERE p.userId = :userId AND p.completedAt >= :from
+            """)
+    List<Instant> findCompletedAtSince(@Param("userId") UUID userId, @Param("from") Instant from);
 }
