@@ -1,6 +1,16 @@
 spring:
+  kafka:
+    bootstrap-servers: localhost:1
+    listener:
+      auto-startup: false
+    admin:
+      auto-create: false
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: http://localhost:1/internal/jwks
+
+sqljudge:
+  outbox:
+    relay-enabled: false

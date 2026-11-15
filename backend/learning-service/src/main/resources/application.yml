@@ -15,6 +15,19 @@ spring:
           time_zone: UTC
   flyway:
     locations: classpath:db/migration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: learning-service
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+      compression-type: zstd
+      properties:
+        enable.idempotence: true
+        max.block.ms: 5000
+        request.timeout.ms: 5000
+        delivery.timeout.ms: 10000
   security:
     oauth2:
       resourceserver:
@@ -39,3 +52,11 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+
+sqljudge:
+  outbox:
+    relay-enabled: true
+    relay-interval: 500ms
+    batch-size: 100
+    send-timeout: 10s
+    claim-timeout: 60s

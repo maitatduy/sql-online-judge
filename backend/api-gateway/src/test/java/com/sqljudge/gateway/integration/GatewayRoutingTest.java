@@ -277,6 +277,19 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName("Chạy ô SQL bài giảng và xem lần chạy được chuyển tới learning-service")
+    void lessonRunPaths_areRoutedToLearningService() {
+        String cellPath = "/api/lesson-cells/0192f3f0-0000-7000-8000-000000000003/runs";
+        String runPath = "/api/lesson-runs/0192f3f0-0000-7000-8000-000000000004";
+        webTestClient.post().uri(cellPath).exchange().expectStatus().isNotFound();
+        webTestClient.get().uri(runPath).exchange().expectStatus().isNotFound();
+
+        assertThat(LEARNING_SERVICE.forwardedRequestLines())
+                .containsExactly("POST " + cellPath, "GET " + runPath);
+        assertThat(SUBMISSION_SERVICE.forwardedRequestLines()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Đường dẫn nội bộ /internal/** không được định tuyến ra ngoài")
     void internalPath_isNotRouted() {
         webTestClient.get().uri("/internal/jwks").exchange().expectStatus().isNotFound();
