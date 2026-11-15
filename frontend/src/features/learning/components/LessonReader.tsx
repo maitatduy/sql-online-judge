@@ -21,6 +21,7 @@ import { neighboursOf } from "../lesson-navigation";
 import { LessonCompletion } from "./LessonCompletion";
 import { LessonOutlineNav } from "./LessonOutlineNav";
 import { LessonPager } from "./LessonPager";
+import { LessonQuiz } from "./LessonQuiz";
 import { LessonSqlCell } from "./LessonSqlCell";
 
 interface LessonReaderProps {
@@ -105,7 +106,17 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
                         {lesson.cells.map((cell) => (
                             <LessonSqlCell key={cell.cellKey} cell={cell} />
                         ))}
-                        {progress ? (
+                        {progress &&
+                        lesson.questions.length > 0 &&
+                        !completedKeys.has(lesson.lessonKey) ? (
+                            <LessonQuiz
+                                courseSlug={courseSlug}
+                                lessonSlug={lessonSlug}
+                                questions={lesson.questions}
+                            />
+                        ) : null}
+                        {progress &&
+                        (lesson.questions.length === 0 || completedKeys.has(lesson.lessonKey)) ? (
                             <LessonCompletion
                                 courseSlug={courseSlug}
                                 lessonSlug={lessonSlug}

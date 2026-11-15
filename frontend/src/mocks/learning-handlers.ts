@@ -6,7 +6,7 @@ import type { Page } from "@/lib/pagination";
 
 import { validationFailed } from "./admin-user-errors";
 import { apiError } from "./api-error";
-import { LEARNING_COURSES } from "./learning-fixtures";
+import { LEARNING_COURSES, LEARNING_QUIZ, QUIZ_LESSON_SLUG } from "./learning-fixtures";
 import { readMockSession } from "./session";
 
 const PAGE_SIZE = 20;
@@ -22,6 +22,7 @@ function lessonOf(courseSlug: string, lessonSlug: string): Lesson | undefined {
                 chapterTitle: chapter.title,
                 courseSlug: course.slug,
                 courseTitle: course.title,
+                questions: lesson.slug === QUIZ_LESSON_SLUG ? [...LEARNING_QUIZ] : [],
                 cells: [
                     {
                         cellKey: `cell-${lesson.lessonKey}`,
