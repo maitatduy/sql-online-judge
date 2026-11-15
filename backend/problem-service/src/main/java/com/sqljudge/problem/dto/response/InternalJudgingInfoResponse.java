@@ -9,7 +9,10 @@ public record InternalJudgingInfoResponse(
         UUID revisionId,
         List<Dialect> dialects,
         int testcaseCount,
-        int timeLimitMs) {
+        int timeLimitMs,
+        Integer number,
+        String slug,
+        String title) {
 
     public InternalJudgingInfoResponse {
         dialects = List.copyOf(dialects);

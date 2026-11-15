@@ -3,6 +3,7 @@ package com.sqljudge.submission.service;
 import com.sqljudge.common.exception.InvalidFieldException;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.submission.dto.response.ActivityDayResponse;
+import com.sqljudge.submission.dto.response.RecentSubmissionResponse;
 import com.sqljudge.submission.dto.response.SubmissionStatsResponse;
 import com.sqljudge.submission.repository.FirstSolveRow;
 import com.sqljudge.submission.repository.SubmissionRepository;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,5 +71,11 @@ public class SubmissionStatsService {
         return counts.entrySet().stream()
                 .map(day -> new ActivityDayResponse(day.getKey(), day.getValue()))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecentSubmissionResponse> recent(int size) {
+        UUID userId = SecurityUtils.requireCurrentUser().id();
+        return submissionRepository.findRecent(userId, Limit.of(size));
     }
 }

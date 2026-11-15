@@ -40,7 +40,9 @@ final class ProblemServiceStub {
                             + "\",\"revisionId\":\""
                             + REVISION_ID
                             + "\",\"dialects\":[\"POSTGRESQL\",\"SQLITE\"],"
-                            + "\"testcaseCount\":3,\"timeLimitMs\":2000}");
+                            + "\"testcaseCount\":3,\"timeLimitMs\":2000,\"number\":184,"
+                            + "\"slug\":\"highest-salary-per-department\","
+                            + "\"title\":\"Lương cao nhất mỗi phòng ban\"}");
         } else if (path.contains(BROKEN_ID)) {
             respond(exchange, 500, "{\"code\":\"INTERNAL_ERROR\"}");
         } else {

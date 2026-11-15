@@ -7,6 +7,7 @@ import com.sqljudge.submission.client.ProblemServiceClient;
 import com.sqljudge.submission.dto.request.SubmitSolutionRequest;
 import com.sqljudge.submission.dto.response.SubmissionAcceptedResponse;
 import com.sqljudge.submission.entity.Submission;
+import com.sqljudge.submission.entity.Submission.ProblemLabel;
 import com.sqljudge.submission.entity.Submission.SubmittedSolution;
 import com.sqljudge.submission.repository.SubmissionRepository;
 import java.util.Optional;
@@ -47,6 +48,7 @@ public class SubmissionService {
                         new SubmittedSolution(
                                 info.problemId(),
                                 info.revisionId(),
+                                new ProblemLabel(info.number(), info.slug(), info.title()),
                                 request.dialect(),
                                 request.code(),
                                 info.testcaseCount()),

@@ -1,5 +1,6 @@
 package com.sqljudge.submission.repository;
 
+import com.sqljudge.submission.dto.response.RecentSubmissionResponse;
 import com.sqljudge.submission.dto.response.SubmissionSummaryResponse;
 import com.sqljudge.submission.entity.Submission;
 import java.time.Instant;
@@ -54,6 +55,14 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
             "SELECT s.createdAt FROM Submission s WHERE s.userId = :userId"
                     + " AND s.deletedAt IS NULL AND s.createdAt >= :from")
     List<Instant> findCreatedAtSince(@Param("userId") UUID userId, @Param("from") Instant from);
+
+    @Query(
+            "SELECT new com.sqljudge.submission.dto.response.RecentSubmissionResponse(s.id,"
+                    + " s.status, s.verdict, s.dialect, s.runtimeMs, s.createdAt, s.problemId,"
+                    + " s.problemNumber, s.problemSlug, s.problemTitle) FROM Submission s"
+                    + " WHERE s.userId = :userId AND s.deletedAt IS NULL"
+                    + " ORDER BY s.createdAt DESC, s.id DESC")
+    List<RecentSubmissionResponse> findRecent(@Param("userId") UUID userId, Limit limit);
 
     String HISTORY_SELECT =
             "SELECT new com.sqljudge.submission.dto.response.SubmissionSummaryResponse("

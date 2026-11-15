@@ -10,6 +10,7 @@ import com.sqljudge.submission.entity.ResultDiff.CellKind;
 import com.sqljudge.submission.entity.ResultDiff.DiffCell;
 import com.sqljudge.submission.entity.ResultDiff.MismatchReason;
 import com.sqljudge.submission.entity.Submission;
+import com.sqljudge.submission.entity.Submission.ProblemLabel;
 import com.sqljudge.submission.entity.Submission.SubmittedSolution;
 import com.sqljudge.submission.entity.SubmissionStatus;
 import com.sqljudge.submission.entity.Verdict;
@@ -114,7 +115,12 @@ class SubmissionTest {
         return Submission.pending(
                 UUID.randomUUID(),
                 new SubmittedSolution(
-                        UUID.randomUUID(), UUID.randomUUID(), Dialect.POSTGRESQL, "SELECT 1", 3),
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        new ProblemLabel(1, "bai-1", "Bài 1"),
+                        Dialect.POSTGRESQL,
+                        "SELECT 1",
+                        3),
                 null);
     }
 }
