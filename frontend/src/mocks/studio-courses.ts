@@ -1,0 +1,141 @@
+import { delay, http, HttpResponse, type RequestHandler } from "msw";
+
+import type { CourseInfo, CreateCourseRequest, StudioCourse } from "@/features/course-studio/types";
+
+import { apiError } from "./api-error";
+import { readMockSession, SETTER_SESSION_USER } from "./session";
+
+const STORAGE_KEY = "sqljudge:mock:studio-courses";
+const HOUR_MS = 60 * 60_000;
+
+interface StoredCourse extends StudioCourse {
+    authorId: string;
+}
+
+function seededCourses(): StoredCourse[] {
+    const hoursAgo = (hours: number) => new Date(Date.now() - hours * HOUR_MS).toISOString();
+    return [
+        {
+            id: "0192f3f1-0000-7000-8000-000000000001",
+            authorId: SETTER_SESSION_USER.id,
+            slug: "window-function-tu-dau",
+            status: "DRAFT",
+            revisionId: "0192f3f1-0000-7000-8000-000000000011",
+            revisionStatus: "DRAFT",
+            title: "Window function từ đầu",
+            summary: "Xếp hạng, cộng dồn và so sánh với dòng trước bằng OVER.",
+            difficulty: "MEDIUM",
+            estimatedMinutes: 90,
+            updatedAt: hoursAgo(2),
+        },
+        {
+            id: "0192f3f1-0000-7000-8000-000000000002",
+            authorId: SETTER_SESSION_USER.id,
+            slug: "join-trong-thuc-te",
+            status: "DRAFT",
+            revisionId: "0192f3f1-0000-7000-8000-000000000012",
+            revisionStatus: "IN_REVIEW",
+            title: "JOIN trong thực tế",
+            summary: "Ghép bảng đơn hàng, khách hàng và sản phẩm.",
+            difficulty: "EASY",
+            estimatedMinutes: 60,
+            updatedAt: hoursAgo(30),
+        },
+    ];
+}
+
+function readCourses(): StoredCourse[] {
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    return stored ? (JSON.parse(stored) as StoredCourse[]) : seededCourses();
+}
+
+function writeCourses(courses: StoredCourse[]): void {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
+}
+
+function publicOf(course: StoredCourse): StudioCourse {
+    const publicCourse: Partial<StoredCourse> = { ...course };
+    delete publicCourse.authorId;
+    return publicCourse as StudioCourse;
+}
+
+function courseNotFound() {
+    return apiError(404, "COURSE_NOT_FOUND", "Không tìm thấy khoá học");
+}
+
+function unauthenticated() {
+    return apiError(401, "UNAUTHENTICATED", "Bạn chưa đăng nhập");
+}
+
+function ownedCourse(courseId: string, userId: string): StoredCourse | undefined {
+    return readCourses().find((course) => course.id === courseId && course.authorId === userId);
+}
+
+export const studioCourseHandlers: RequestHandler[] = [
+    http.get("*/api/studio/courses", async () => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return unauthenticated();
+        }
+        return HttpResponse.json(
+            readCourses()
+                .filter((course) => course.authorId === user.id)
+                .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+                .map(publicOf),
+        );
+    }),
+    http.post("*/api/studio/courses", async ({ request }) => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return unauthenticated();
+        }
+        const body = (await request.json()) as CreateCourseRequest;
+        const courses = readCourses();
+        if (courses.some((course) => course.slug === body.slug)) {
+            return apiError(409, "SLUG_TAKEN", "Slug đã được khoá khác dùng");
+        }
+        const created: StoredCourse = {
+            ...body,
+            id: crypto.randomUUID(),
+            authorId: user.id,
+            status: "DRAFT",
+            revisionId: crypto.randomUUID(),
+            revisionStatus: "DRAFT",
+            updatedAt: new Date().toISOString(),
+        };
+        writeCourses([created, ...courses]);
+        return HttpResponse.json(publicOf(created), { status: 201 });
+    }),
+    http.get("*/api/studio/courses/:courseId", async ({ params }) => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return unauthenticated();
+        }
+        const course = ownedCourse(String(params.courseId), user.id);
+        return course ? HttpResponse.json(publicOf(course)) : courseNotFound();
+    }),
+    http.patch("*/api/studio/courses/:courseId", async ({ params, request }) => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return unauthenticated();
+        }
+        const course = ownedCourse(String(params.courseId), user.id);
+        if (!course) {
+            return courseNotFound();
+        }
+        if (course.revisionStatus !== "DRAFT") {
+            return apiError(422, "COURSE_LOCKED", "Khoá đang chờ duyệt nên chưa sửa được");
+        }
+        const updated: StoredCourse = {
+            ...course,
+            ...((await request.json()) as CourseInfo),
+            updatedAt: new Date().toISOString(),
+        };
+        writeCourses(readCourses().map((stored) => (stored.id === course.id ? updated : stored)));
+        return HttpResponse.json(publicOf(updated));
+    }),
+];

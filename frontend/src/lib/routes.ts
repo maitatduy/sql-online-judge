@@ -16,6 +16,7 @@ export const ROUTES = {
     admin: "/admin",
     studioProblems: "/studio/problems",
     studioDatasets: "/studio/databases",
+    studioCourses: "/studio/courses",
     adminUsers: "/admin/users",
     adminMessages: "/admin/messages",
     adminReports: "/admin/reports",
@@ -27,6 +28,7 @@ export const ROUTES = {
     invitation: (token: string) => `/invitations/${encodeURIComponent(token)}`,
     profile: (username: string) => `/u/${encodeURIComponent(username)}`,
     studioDataset: (datasetId: string) => `/studio/databases/${encodeURIComponent(datasetId)}`,
+    studioCourse: (courseId: string) => `/studio/courses/${encodeURIComponent(courseId)}`,
     problem: (slug: string) => `/problems/${encodeURIComponent(slug)}`,
     course: (slug: string) => `/learn/${encodeURIComponent(slug)}`,
     lesson: (courseSlug: string, lessonSlug: string) =>
