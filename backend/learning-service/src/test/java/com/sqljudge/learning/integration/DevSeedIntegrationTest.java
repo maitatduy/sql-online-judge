@@ -18,6 +18,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -35,6 +36,7 @@ class DevSeedIntegrationTest {
 
     @Autowired private TestRestTemplate restTemplate;
     @Autowired private ObjectMapper objectMapper;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     @DynamicPropertySource
     static void useSeparateSeedDatabase(DynamicPropertyRegistry registry) throws SQLException {
@@ -71,6 +73,8 @@ class DevSeedIntegrationTest {
         assertThat(course.get("chapters")).hasSize(2);
         assertThat(course.get("chapters").get(0).get("lessons")).hasSize(2);
         assertThat(course.get("chapters").get(1).get("lessons")).hasSize(2);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_cells", Long.class))
+                .isEqualTo(4);
     }
 
     @Test

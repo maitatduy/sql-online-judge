@@ -1,6 +1,5 @@
 package com.sqljudge.learning.repository;
 
-import com.sqljudge.learning.dto.response.LessonResponse;
 import com.sqljudge.learning.entity.Lesson;
 import java.util.List;
 import java.util.Optional;
@@ -23,8 +22,8 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
 
     @Query(
             """
-            SELECT new com.sqljudge.learning.dto.response.LessonResponse(
-                l.lessonKey, l.slug, l.title, l.body, ch.title, c.slug, r.title)
+            SELECT new com.sqljudge.learning.repository.PublishedLessonRow(
+                l.id, l.lessonKey, l.slug, l.title, l.body, ch.title, c.slug, r.title)
             FROM Lesson l JOIN l.chapter ch JOIN ch.revision r JOIN r.course c
             WHERE c.slug = :courseSlug
               AND l.slug = :lessonSlug
@@ -32,6 +31,6 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
               AND c.deletedAt IS NULL
               AND r.id = c.publishedRevisionId
             """)
-    Optional<LessonResponse> findPublished(
+    Optional<PublishedLessonRow> findPublished(
             @Param("courseSlug") String courseSlug, @Param("lessonSlug") String lessonSlug);
 }

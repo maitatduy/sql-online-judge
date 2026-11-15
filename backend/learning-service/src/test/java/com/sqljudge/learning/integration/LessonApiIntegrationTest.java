@@ -55,6 +55,29 @@ class LessonApiIntegrationTest extends ContainerSupport {
         assertThat(lesson.get("chapterTitle").asText()).isEqualTo("Làm quen với SELECT");
         assertThat(lesson.get("courseSlug").asText()).isEqualTo("sql-co-ban");
         assertThat(lesson.get("courseTitle").asText()).isEqualTo("Khoá sql-co-ban");
+        assertThat(lesson.get("cells")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Bài giảng trả các ô SQL theo thứ tự, không lộ dataset của ô")
+    void read_lessonWithCells_returnsOrderedCellsWithoutDataset() throws Exception {
+        String revisionId = fixtures.publishedCourse("sql-co-ban", "EASY", "2026-11-01 08:00:00");
+        String lessonKey = fixtures.lesson(fixtures.chapter(revisionId, "Chương", 1), "bai", 1);
+        String secondCell = fixtures.cell(lessonKey, 2, "SELECT name FROM employees;");
+        String firstCell = fixtures.cell(lessonKey, 1, "SELECT * FROM departments;");
+
+        JsonNode cells =
+                objectMapper
+                        .readTree(getAsLearner("/api/courses/sql-co-ban/lessons/bai").getBody())
+                        .get("cells");
+
+        assertThat(cells)
+                .extracting(cell -> cell.get("cellKey").asText())
+                .containsExactly(firstCell, secondCell);
+        assertThat(cells.get(0).get("starterSql").asText()).isEqualTo("SELECT * FROM departments;");
+        assertThat(cells.get(0).get("dialect").asText()).isEqualTo("POSTGRESQL");
+        assertThat(cells.get(0).has("datasetVersionId")).isFalse();
+        assertThat(cells.get(0).has("datasetVariantId")).isFalse();
     }
 
     @Test

@@ -16,6 +16,7 @@ final class CourseFixtures {
     void clear() {
         jdbcTemplate.update("DELETE FROM lesson_progress");
         jdbcTemplate.update("DELETE FROM enrollments");
+        jdbcTemplate.update("DELETE FROM lesson_cells");
         jdbcTemplate.update("DELETE FROM lessons");
         jdbcTemplate.update("DELETE FROM chapters");
         jdbcTemplate.update("DELETE FROM course_revisions");
@@ -81,5 +82,23 @@ final class CourseFixtures {
                 "# Nội dung " + slug,
                 position);
         return lessonKey;
+    }
+
+    String cell(String lessonKey, int position, String starterSql) {
+        String cellKey = UUID.randomUUID().toString();
+        jdbcTemplate.update(
+                "INSERT INTO lesson_cells (id, lesson_id, cell_key, position, starter_sql, dialect,"
+                        + " dataset_version_id, dataset_variant_id, dataset_checksum, created_at,"
+                        + " updated_at) SELECT UUID_TO_BIN(?), id, UUID_TO_BIN(?), ?, ?,"
+                        + " 'POSTGRESQL', UUID_TO_BIN(?), UUID_TO_BIN(?), 'abc123', NOW(6), NOW(6)"
+                        + " FROM lessons WHERE lesson_key = UUID_TO_BIN(?)",
+                UUID.randomUUID().toString(),
+                cellKey,
+                position,
+                starterSql,
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                lessonKey);
+        return cellKey;
     }
 }

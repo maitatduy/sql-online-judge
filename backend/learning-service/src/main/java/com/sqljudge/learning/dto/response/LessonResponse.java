@@ -1,5 +1,6 @@
 package com.sqljudge.learning.dto.response;
 
+import java.util.List;
 import java.util.UUID;
 
 public record LessonResponse(
@@ -9,4 +10,10 @@ public record LessonResponse(
         String body,
         String chapterTitle,
         String courseSlug,
-        String courseTitle) {}
+        String courseTitle,
+        List<LessonCellResponse> cells) {
+
+    public LessonResponse {
+        cells = List.copyOf(cells);
+    }
+}
