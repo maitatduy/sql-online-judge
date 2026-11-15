@@ -4,7 +4,6 @@ import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.learning.dto.response.CourseProgressResponse;
-import com.sqljudge.learning.dto.response.LessonResponse;
 import com.sqljudge.learning.entity.CourseRevision;
 import com.sqljudge.learning.entity.Enrollment;
 import com.sqljudge.learning.entity.LessonProgress;
@@ -13,6 +12,7 @@ import com.sqljudge.learning.repository.EnrollmentRepository;
 import com.sqljudge.learning.repository.LessonOutlineRow;
 import com.sqljudge.learning.repository.LessonProgressRepository;
 import com.sqljudge.learning.repository.LessonRepository;
+import com.sqljudge.learning.repository.PublishedLessonRow;
 import java.time.Clock;
 import java.util.List;
 import java.util.Set;
@@ -47,7 +47,7 @@ public class LearningProgressService {
     @Transactional
     public CourseProgressResponse complete(String courseSlug, String lessonSlug) {
         CourseRevision revision = publishedRevision(courseSlug);
-        LessonResponse lesson =
+        PublishedLessonRow lesson =
                 lessonRepository
                         .findPublished(courseSlug, lessonSlug)
                         .orElseThrow(
