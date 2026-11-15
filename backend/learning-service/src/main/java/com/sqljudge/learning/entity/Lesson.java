@@ -47,6 +47,9 @@ public class Lesson extends BaseEntity {
     @Column(name = "position", nullable = false)
     private int position;
 
+    @Column(name = "estimated_minutes", nullable = false)
+    private int estimatedMinutes;
+
     public static Lesson of(Chapter chapter, int position) {
         Lesson lesson = new Lesson();
         lesson.chapter = chapter;

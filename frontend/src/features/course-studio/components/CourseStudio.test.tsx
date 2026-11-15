@@ -28,6 +28,8 @@ describe("trang soạn khoá học", () => {
 
         const title = await screen.findByRole("textbox", { name: "Tên khoá" });
         expect(title).toHaveValue("Window function từ đầu");
+        expect(screen.getByText("4 bài giảng, 90 phút")).toBeInTheDocument();
+        expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
         fireEvent.change(title, { target: { value: "Window function thực chiến" } });
         fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
 

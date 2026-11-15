@@ -39,12 +39,21 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     @Query(
             """
             SELECT new com.sqljudge.learning.repository.StudioLessonRow(
-                l.chapter.id, l.id, l.slug, l.title)
+                l.chapter.id, l.id, l.slug, l.title, l.estimatedMinutes)
             FROM Lesson l
             WHERE l.chapter.revision.id = :revisionId
             ORDER BY l.chapter.position, l.position
             """)
     List<StudioLessonRow> findStudioOutline(@Param("revisionId") UUID revisionId);
+
+    @Query(
+            """
+            SELECT new com.sqljudge.learning.repository.LessonTotals(
+                COUNT(l), COALESCE(SUM(l.estimatedMinutes), 0))
+            FROM Lesson l
+            WHERE l.chapter.revision.id = :revisionId
+            """)
+    LessonTotals findTotals(@Param("revisionId") UUID revisionId);
 
     @Query("SELECT COALESCE(MAX(l.position), 0) FROM Lesson l WHERE l.chapter.id = :chapterId")
     int findLastPosition(@Param("chapterId") UUID chapterId);

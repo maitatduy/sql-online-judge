@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { ApiRequestError } from "@/lib/api-client";
+import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 
 import { useStudioCourse } from "../hooks/useStudioCourse";
@@ -50,11 +51,17 @@ export function CourseStudio({ courseId }: CourseStudioProps) {
             ) : null}
             {course ? (
                 <>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <h1 className="text-[28px] font-extrabold tracking-[-0.02em]">
-                            {course.title}
-                        </h1>
-                        <RevisionStatusBadge status={course.revisionStatus} />
+                    <div>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <h1 className="text-[28px] font-extrabold tracking-[-0.02em]">
+                                {course.title}
+                            </h1>
+                            <RevisionStatusBadge status={course.revisionStatus} />
+                        </div>
+                        <p className="mt-1 text-muted-foreground">
+                            {formatNumber(course.lessonCount)} bài giảng,{" "}
+                            {formatNumber(course.estimatedMinutes)} phút
+                        </p>
                     </div>
                     <CourseInfoForm key={course.revisionId} course={course} />
                 </>

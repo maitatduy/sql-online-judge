@@ -32,7 +32,7 @@ export function CourseInfoFields({ idPrefix, slugField }: CourseInfoFieldsProps)
                 {(props) => (
                     <Input
                         autoComplete="off"
-                        className="text-base"
+                        className="h-10 text-base md:text-base"
                         {...props}
                         {...register("title")}
                     />
@@ -48,42 +48,25 @@ export function CourseInfoFields({ idPrefix, slugField }: CourseInfoFieldsProps)
                     <textarea className={TEXTAREA_CLASS} {...props} {...register("summary")} />
                 )}
             </CourseFormField>
-            <div className="grid gap-4 sm:grid-cols-2">
-                <CourseFormField
-                    id={`${idPrefix}-difficulty`}
-                    label="Độ khó"
-                    error={errors.difficulty?.message}
-                >
-                    {(props) => (
-                        <NativeSelect
-                            className="h-10 text-base"
-                            {...props}
-                            {...register("difficulty")}
-                        >
-                            {DIFFICULTIES.map((difficulty) => (
-                                <option key={difficulty} value={difficulty}>
-                                    {DIFFICULTY_LABELS[difficulty]}
-                                </option>
-                            ))}
-                        </NativeSelect>
-                    )}
-                </CourseFormField>
-                <CourseFormField
-                    id={`${idPrefix}-minutes`}
-                    label="Thời lượng (phút)"
-                    error={errors.estimatedMinutes?.message}
-                >
-                    {(props) => (
-                        <Input
-                            type="number"
-                            inputMode="numeric"
-                            className="text-base"
-                            {...props}
-                            {...register("estimatedMinutes", { valueAsNumber: true })}
-                        />
-                    )}
-                </CourseFormField>
-            </div>
+            <CourseFormField
+                id={`${idPrefix}-difficulty`}
+                label="Độ khó"
+                error={errors.difficulty?.message}
+            >
+                {(props) => (
+                    <NativeSelect
+                        className="h-10 text-base sm:w-60"
+                        {...props}
+                        {...register("difficulty")}
+                    >
+                        {DIFFICULTIES.map((difficulty) => (
+                            <option key={difficulty} value={difficulty}>
+                                {DIFFICULTY_LABELS[difficulty]}
+                            </option>
+                        ))}
+                    </NativeSelect>
+                )}
+            </CourseFormField>
         </>
     );
 }

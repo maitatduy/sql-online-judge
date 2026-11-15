@@ -26,6 +26,7 @@ function seededCourses(): StoredCourse[] {
             summary: "Xếp hạng, cộng dồn và so sánh với dòng trước bằng OVER.",
             difficulty: "MEDIUM",
             estimatedMinutes: 90,
+            lessonCount: 4,
             updatedAt: hoursAgo(2),
         },
         {
@@ -39,6 +40,7 @@ function seededCourses(): StoredCourse[] {
             summary: "Ghép bảng đơn hàng, khách hàng và sản phẩm.",
             difficulty: "EASY",
             estimatedMinutes: 60,
+            lessonCount: 3,
             updatedAt: hoursAgo(30),
         },
     ];
@@ -103,6 +105,8 @@ export const studioCourseHandlers: RequestHandler[] = [
             status: "DRAFT",
             revisionId: crypto.randomUUID(),
             revisionStatus: "DRAFT",
+            estimatedMinutes: 0,
+            lessonCount: 0,
             updatedAt: new Date().toISOString(),
         };
         writeCourses([created, ...courses]);

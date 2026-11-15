@@ -12,7 +12,7 @@ import { serverFieldErrorOf } from "../server-errors";
 import type { StudioCourse } from "../types";
 import { CourseInfoFields } from "./CourseInfoFields";
 
-const FIELDS = ["title", "summary", "difficulty", "estimatedMinutes"] as const;
+const FIELDS = ["title", "summary", "difficulty"] as const;
 
 interface CourseInfoFormProps {
     course: StudioCourse;
@@ -28,7 +28,6 @@ export function CourseInfoForm({ course }: CourseInfoFormProps) {
             title: course.title,
             summary: course.summary,
             difficulty: course.difficulty,
-            estimatedMinutes: course.estimatedMinutes,
         },
     });
     const {

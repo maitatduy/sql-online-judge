@@ -10,5 +10,5 @@ public record StudioChapterResponse(
         lessons = List.copyOf(lessons);
     }
 
-    public record LessonOutline(UUID id, String slug, String title) {}
+    public record LessonOutline(UUID id, String slug, String title, int estimatedMinutes) {}
 }

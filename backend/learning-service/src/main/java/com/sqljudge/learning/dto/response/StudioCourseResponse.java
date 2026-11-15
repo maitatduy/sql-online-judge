@@ -18,6 +18,7 @@ public record StudioCourseResponse(
         String summary,
         Difficulty difficulty,
         int estimatedMinutes,
+        int lessonCount,
         Instant updatedAt) {
 
     public static StudioCourseResponse of(Course course, CourseRevision revision) {
@@ -31,6 +32,7 @@ public record StudioCourseResponse(
                 revision.getSummary(),
                 revision.getDifficulty(),
                 revision.getEstimatedMinutes(),
+                revision.getLessonCount(),
                 revision.getUpdatedAt());
     }
 }

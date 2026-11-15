@@ -39,7 +39,8 @@ public class StudioChapterService {
                                                         new LessonOutline(
                                                                 row.lessonId(),
                                                                 row.slug(),
-                                                                row.title()),
+                                                                row.title(),
+                                                                row.estimatedMinutes()),
                                                 Collectors.toList())));
         return chapterRepository.findByRevisionIdOrderByPosition(revision.getId()).stream()
                 .map(

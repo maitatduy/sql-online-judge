@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,8 +47,7 @@ class StudioLessonApiIntegrationTest extends ContainerSupport {
                                 "/api/studio/courses",
                                 "{\"slug\": \"sql-moi\", \"title\": \"SQL mới\","
                                         + " \"summary\": \"Tóm tắt.\","
-                                        + " \"difficulty\": \"EASY\","
-                                        + " \"estimatedMinutes\": 30}",
+                                        + " \"difficulty\": \"EASY\"}",
                                 SETTER))
                         .get("id")
                         .asText();
@@ -90,6 +90,59 @@ class StudioLessonApiIntegrationTest extends ContainerSupport {
         assertThat(outline.get(0).get("lessons"))
                 .extracting(lesson -> lesson.get("slug").asText())
                 .containsExactly("select-dau-tien", "loc-du-lieu");
+    }
+
+    @Test
+    @DisplayName("Thời lượng và số bài của khoá là tổng của các bài giảng")
+    void courseTotals_followLessons() throws Exception {
+        String first =
+                idOf(
+                        send(
+                                HttpMethod.POST,
+                                "/api/studio/chapters/" + chapterId + "/lessons",
+                                lessonJson("bai-1", "Bài 1", "", 10),
+                                SETTER));
+        String second =
+                idOf(
+                        send(
+                                HttpMethod.POST,
+                                "/api/studio/chapters/" + chapterId + "/lessons",
+                                lessonJson("bai-2", "Bài 2", "", 15),
+                                SETTER));
+        assertThat(totals()).containsExactly(25, 2);
+
+        JsonNode updated =
+                body(
+                        send(
+                                HttpMethod.PATCH,
+                                "/api/studio/lessons/" + first,
+                                lessonJson("bai-1", "Bài 1", "", 20),
+                                SETTER));
+        assertThat(updated.get("estimatedMinutes").asInt()).isEqualTo(20);
+        assertThat(totals()).containsExactly(35, 2);
+
+        send(HttpMethod.DELETE, "/api/studio/lessons/" + second, null, SETTER);
+        assertThat(totals()).containsExactly(20, 1);
+        assertThat(
+                        body(send(
+                                        HttpMethod.GET,
+                                        "/api/studio/courses/" + courseId + "/chapters",
+                                        null,
+                                        SETTER))
+                                .get(0)
+                                .get("lessons")
+                                .get(0)
+                                .get("estimatedMinutes")
+                                .asInt())
+                .isEqualTo(20);
+        assertThat(
+                        send(
+                                        HttpMethod.POST,
+                                        "/api/studio/chapters/" + chapterId + "/lessons",
+                                        lessonJson("bai-3", "Bài 3", "", 0),
+                                        SETTER)
+                                .getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -212,7 +265,19 @@ class StudioLessonApiIntegrationTest extends ContainerSupport {
     }
 
     private String lessonJson(String slug, String title, String body) throws Exception {
-        return objectMapper.writeValueAsString(Map.of("slug", slug, "title", title, "body", body));
+        return lessonJson(slug, title, body, 10);
+    }
+
+    private String lessonJson(String slug, String title, String body, int minutes)
+            throws Exception {
+        return objectMapper.writeValueAsString(
+                Map.of("slug", slug, "title", title, "body", body, "estimatedMinutes", minutes));
+    }
+
+    private List<Integer> totals() throws Exception {
+        JsonNode course =
+                body(send(HttpMethod.GET, "/api/studio/courses/" + courseId, null, SETTER));
+        return List.of(course.get("estimatedMinutes").asInt(), course.get("lessonCount").asInt());
     }
 
     private int count(String table) {
