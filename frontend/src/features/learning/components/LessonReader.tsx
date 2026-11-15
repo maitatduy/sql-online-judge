@@ -21,6 +21,7 @@ import { neighboursOf } from "../lesson-navigation";
 import { LessonCompletion } from "./LessonCompletion";
 import { LessonOutlineNav } from "./LessonOutlineNav";
 import { LessonPager } from "./LessonPager";
+import { LessonSqlCell } from "./LessonSqlCell";
 
 interface LessonReaderProps {
     courseSlug: string;
@@ -101,6 +102,9 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
                             </h1>
                         </header>
                         <Markdown className={LESSON_BODY_CLASSES}>{lesson.body}</Markdown>
+                        {lesson.cells.map((cell) => (
+                            <LessonSqlCell key={cell.cellKey} cell={cell} />
+                        ))}
                         {progress ? (
                             <LessonCompletion
                                 courseSlug={courseSlug}
