@@ -48,4 +48,12 @@ public class Course extends BaseEntity {
     @Version
     @Column(name = "version", nullable = false)
     private long version;
+
+    public static Course draft(String slug, UUID authorId) {
+        Course course = new Course();
+        course.slug = slug;
+        course.authorId = authorId;
+        course.status = CourseStatus.DRAFT;
+        return course;
+    }
 }

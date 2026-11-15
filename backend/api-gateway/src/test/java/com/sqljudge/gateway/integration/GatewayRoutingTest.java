@@ -284,6 +284,7 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
         webTestClient.post().uri(cellPath).exchange().expectStatus().isNotFound();
         webTestClient.get().uri(runPath).exchange().expectStatus().isNotFound();
         webTestClient.get().uri("/api/enrollments").exchange().expectStatus().isNotFound();
+        webTestClient.post().uri("/api/studio/courses").exchange().expectStatus().isNotFound();
         webTestClient
                 .get()
                 .uri("/api/learning/activity?from=2026-11-01")
@@ -296,6 +297,7 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
                         "POST " + cellPath,
                         "GET " + runPath,
                         "GET /api/enrollments",
+                        "POST /api/studio/courses",
                         "GET /api/learning/activity?from=2026-11-01");
         assertThat(SUBMISSION_SERVICE.forwardedRequestLines()).isEmpty();
     }

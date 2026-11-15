@@ -3,6 +3,8 @@ package com.sqljudge.learning.repository;
 import com.sqljudge.learning.dto.response.CourseSummaryResponse;
 import com.sqljudge.learning.entity.Course;
 import com.sqljudge.learning.entity.Difficulty;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,4 +36,10 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
                     """)
     Page<CourseSummaryResponse> findPublished(
             @Param("difficulty") Difficulty difficulty, Pageable pageable);
+
+    boolean existsBySlug(String slug);
+
+    Optional<Course> findByIdAndDeletedAtIsNull(UUID id);
+
+    List<Course> findTop100ByAuthorIdAndDeletedAtIsNullOrderByUpdatedAtDesc(UUID authorId);
 }

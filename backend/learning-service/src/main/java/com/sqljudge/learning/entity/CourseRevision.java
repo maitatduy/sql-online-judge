@@ -58,4 +58,22 @@ public class CourseRevision extends BaseEntity {
 
     @Column(name = "published_at")
     private Instant publishedAt;
+
+    public static CourseRevision draftOf(Course course) {
+        CourseRevision revision = new CourseRevision();
+        revision.course = course;
+        revision.status = CourseRevisionStatus.DRAFT;
+        return revision;
+    }
+
+    public boolean isEditable() {
+        return status == CourseRevisionStatus.DRAFT;
+    }
+
+    public void describe(String title, String summary, Difficulty difficulty, int minutes) {
+        this.title = title;
+        this.summary = summary;
+        this.difficulty = difficulty;
+        this.estimatedMinutes = minutes;
+    }
 }
