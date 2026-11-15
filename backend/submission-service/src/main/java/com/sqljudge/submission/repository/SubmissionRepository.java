@@ -2,6 +2,7 @@ package com.sqljudge.submission.repository;
 
 import com.sqljudge.submission.dto.response.SubmissionSummaryResponse;
 import com.sqljudge.submission.entity.Submission;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +33,27 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
             @Param("problemId") UUID problemId,
             @Param("beforeId") UUID beforeId,
             Limit limit);
+
+    @Query("SELECT COUNT(s) FROM Submission s WHERE s.userId = :userId AND s.deletedAt IS NULL")
+    long countOwn(@Param("userId") UUID userId);
+
+    @Query(
+            "SELECT COUNT(s) FROM Submission s WHERE s.userId = :userId AND s.deletedAt IS NULL"
+                    + " AND s.verdict = com.sqljudge.submission.entity.Verdict.AC")
+    long countOwnAccepted(@Param("userId") UUID userId);
+
+    @Query(
+            "SELECT new com.sqljudge.submission.repository.FirstSolveRow(s.problemId,"
+                    + " MIN(s.createdAt)) FROM Submission s WHERE s.userId = :userId"
+                    + " AND s.deletedAt IS NULL"
+                    + " AND s.verdict = com.sqljudge.submission.entity.Verdict.AC"
+                    + " GROUP BY s.problemId")
+    List<FirstSolveRow> findFirstSolves(@Param("userId") UUID userId);
+
+    @Query(
+            "SELECT s.createdAt FROM Submission s WHERE s.userId = :userId"
+                    + " AND s.deletedAt IS NULL AND s.createdAt >= :from")
+    List<Instant> findCreatedAtSince(@Param("userId") UUID userId, @Param("from") Instant from);
 
     String HISTORY_SELECT =
             "SELECT new com.sqljudge.submission.dto.response.SubmissionSummaryResponse("
