@@ -83,3 +83,12 @@ export interface QuizResult {
     results: { questionKey: string; correct: boolean }[];
     progress: CourseProgress;
 }
+
+export interface EnrolledCourse {
+    slug: string;
+    title: string;
+    difficulty: Difficulty;
+    completedCount: number;
+    lessonCount: number;
+    nextLessonSlug: string | null;
+}

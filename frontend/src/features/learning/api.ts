@@ -1,3 +1,4 @@
+import type { ActivityDay } from "@/lib/activity-calendar";
 import { apiClient } from "@/lib/api-client";
 import type { Difficulty } from "@/lib/difficulty";
 import type { Page } from "@/lib/pagination";
@@ -6,6 +7,7 @@ import type {
     CourseDetail,
     CourseProgress,
     CourseSummary,
+    EnrolledCourse,
     Lesson,
     LessonRun,
     QuizAnswer,
@@ -44,4 +46,8 @@ export const learningApi = {
             `/api/courses/${encodeURIComponent(courseSlug)}/lessons/${encodeURIComponent(lessonSlug)}/quiz-attempts`,
             { answers },
         ),
+    listEnrollments: (signal?: AbortSignal) =>
+        apiClient.get<EnrolledCourse[]>("/api/enrollments", { signal }),
+    getLearningActivity: (from: string, signal?: AbortSignal) =>
+        apiClient.get<ActivityDay[]>("/api/learning/activity", { params: { from }, signal }),
 };

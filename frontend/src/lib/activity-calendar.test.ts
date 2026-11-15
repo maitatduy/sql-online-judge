@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
     activityLevel,
     buildHeatmapWeeks,
+    currentStreakDays,
     formatDateKey,
     vietnamDateKey,
 } from "./activity-calendar";
@@ -86,5 +87,29 @@ describe("formatDateKey", () => {
 describe("vietnamDateKey", () => {
     it("lấy ngày theo giờ Việt Nam", () => {
         expect(vietnamDateKey(new Date("2026-09-12T18:30:00Z"))).toBe("2026-09-13");
+    });
+});
+
+describe("currentStreakDays", () => {
+    const day = (date: string, count = 1) => ({ date, count });
+
+    it("đếm số ngày liên tiếp có hoạt động tới hôm nay", () => {
+        const days = [
+            day("2026-11-12"),
+            day("2026-11-13", 3),
+            day("2026-11-14"),
+            day("2026-11-10"),
+        ];
+
+        expect(currentStreakDays(days, "2026-11-14")).toBe(3);
+    });
+
+    it("hôm nay chưa học thì chuỗi vẫn giữ nếu hôm qua có học", () => {
+        expect(currentStreakDays([day("2026-11-12"), day("2026-11-13")], "2026-11-14")).toBe(2);
+    });
+
+    it("bỏ lỡ hôm qua và hôm nay thì chuỗi về 0, ngày không có bài không tính", () => {
+        expect(currentStreakDays([day("2026-11-12")], "2026-11-14")).toBe(0);
+        expect(currentStreakDays([day("2026-11-14", 0)], "2026-11-14")).toBe(0);
     });
 });

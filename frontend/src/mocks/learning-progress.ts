@@ -7,6 +7,8 @@ import type {
     QuizResult,
 } from "@/features/learning/types";
 
+import { vietnamDateKey } from "@/lib/activity-calendar";
+
 import { apiError } from "./api-error";
 import {
     LEARNING_COURSES,
@@ -18,14 +20,19 @@ import { readMockSession } from "./session";
 
 const enrolledCourses = new Set<string>();
 const completedLessons = new Set<string>();
+const completionDates: string[] = [];
 
 export function resetMockLearningProgress(): void {
     enrolledCourses.clear();
     completedLessons.clear();
+    completionDates.length = 0;
 }
 
 export function completeMockLesson(courseSlug: string, lessonKey: string): void {
     enrolledCourses.add(courseSlug);
+    if (!completedLessons.has(lessonKey)) {
+        completionDates.push(vietnamDateKey(new Date()));
+    }
     completedLessons.add(lessonKey);
 }
 
@@ -54,6 +61,36 @@ function withCourse(slug: unknown, respond: (course: CourseDetail) => Response):
 }
 
 export const learningProgressHandlers: RequestHandler[] = [
+    http.get("*/api/enrollments", async () => {
+        await delay(100);
+        if (!readMockSession()) {
+            return apiError(401, "UNAUTHENTICATED", "Bạn chưa đăng nhập");
+        }
+        return HttpResponse.json(
+            LEARNING_COURSES.filter((course) => enrolledCourses.has(course.slug)).map((course) => {
+                const progress = progressOf(course);
+                return {
+                    slug: course.slug,
+                    title: course.title,
+                    difficulty: course.difficulty,
+                    completedCount: progress.completedLessonKeys.length,
+                    lessonCount: progress.lessonCount,
+                    nextLessonSlug: progress.nextLessonSlug,
+                };
+            }),
+        );
+    }),
+    http.get("*/api/learning/activity", async () => {
+        await delay(100);
+        if (!readMockSession()) {
+            return apiError(401, "UNAUTHENTICATED", "Bạn chưa đăng nhập");
+        }
+        const counts = new Map<string, number>();
+        completionDates.forEach((date) => counts.set(date, (counts.get(date) ?? 0) + 1));
+        return HttpResponse.json(
+            [...counts.entries()].sort().map(([date, count]) => ({ date, count })),
+        );
+    }),
     http.get("*/api/courses/:slug/progress", async ({ params }) => {
         await delay(100);
         return withCourse(params.slug, (course) => HttpResponse.json(progressOf(course)));

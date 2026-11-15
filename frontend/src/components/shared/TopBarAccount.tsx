@@ -31,14 +31,15 @@ export function TopBarAccount() {
 
     return (
         <>
-            <span
+            <Link
+                href={ROUTES.dashboard}
                 title="Chuỗi ngày học"
-                className="hidden items-center gap-1 font-bold text-streak sm:inline-flex"
+                className="hidden min-h-11 items-center gap-1 rounded-md px-2 font-bold text-streak hover:bg-streak/12 sm:inline-flex"
             >
                 <Flame aria-hidden="true" className="size-4" />
                 {formatNumber(currentUser.currentStreakDays)}
                 <span className="sr-only"> ngày học liên tiếp</span>
-            </span>
+            </Link>
             <Link
                 href={ROUTES.profile(currentUser.username)}
                 aria-label="Hồ sơ của tôi"
