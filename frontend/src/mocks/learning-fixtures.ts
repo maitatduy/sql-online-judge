@@ -1,4 +1,4 @@
-import type { CourseDetail } from "@/features/learning/types";
+import type { CourseDetail, QuizQuestion } from "@/features/learning/types";
 
 export const LEARNING_COURSES: readonly CourseDetail[] = [
     {
@@ -66,6 +66,21 @@ export const LEARNING_COURSES: readonly CourseDetail[] = [
                     },
                 ],
             },
+        ],
+    },
+];
+
+export const QUIZ_LESSON_SLUG = "select-la-gi";
+export const QUIZ_CORRECT_OPTION = "option-all-columns";
+
+export const LEARNING_QUIZ: readonly QuizQuestion[] = [
+    {
+        questionKey: "question-star",
+        prompt: "Dấu * sau SELECT nghĩa là gì?",
+        multiple: false,
+        options: [
+            { optionKey: QUIZ_CORRECT_OPTION, label: "Lấy mọi cột của bảng" },
+            { optionKey: "option-all-tables", label: "Lấy mọi bảng trong database" },
         ],
     },
 ];

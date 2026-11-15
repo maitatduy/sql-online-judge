@@ -99,7 +99,7 @@ describe("LessonReader", () => {
     });
 
     it("bấm hoàn thành bài thì hiện đã hoàn thành và đánh dấu trên đề cương", async () => {
-        renderLesson("select-la-gi");
+        renderLesson("chon-cot");
 
         fireEvent.click(await screen.findByRole("button", { name: "Hoàn thành bài học" }));
 
@@ -111,7 +111,7 @@ describe("LessonReader", () => {
         ).not.toBeInTheDocument();
         const outline = within(screen.getByRole("navigation", { name: "Đề cương" }));
         expect(
-            outline.getByRole("link", { name: /SELECT là gì.*Đã hoàn thành/ }),
+            outline.getByRole("link", { name: /Chọn cột và đặt bí danh.*Đã hoàn thành/ }),
         ).toBeInTheDocument();
     });
 
@@ -135,5 +135,40 @@ describe("LessonReader", () => {
             "SELECT id, name FROM departments;",
         );
         expect(cell.getByRole("button", { name: "Chạy" })).toBeInTheDocument();
+    });
+
+    it("bài có quiz hiện câu hỏi thay cho nút hoàn thành", async () => {
+        renderLesson("select-la-gi");
+
+        const quiz = within(await screen.findByRole("form", { name: "Câu hỏi" }));
+        expect(quiz.getByText("Dấu * sau SELECT nghĩa là gì?")).toBeInTheDocument();
+        expect(quiz.getAllByRole("radio")).toHaveLength(2);
+        expect(
+            screen.queryByRole("button", { name: "Hoàn thành bài học" }),
+        ).not.toBeInTheDocument();
+    });
+
+    it("trả lời sai thì báo chưa đúng và bài chưa hoàn thành", async () => {
+        renderLesson("select-la-gi");
+
+        fireEvent.click(await screen.findByRole("radio", { name: "Lấy mọi bảng trong database" }));
+        fireEvent.click(screen.getByRole("button", { name: "Nộp bài" }));
+
+        expect(await screen.findByText("Chưa đúng")).toBeInTheDocument();
+        expect(
+            within(screen.getByRole("main")).queryByText("Đã hoàn thành"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("trả lời đúng hết thì bài được hoàn thành", async () => {
+        renderLesson("select-la-gi");
+
+        fireEvent.click(await screen.findByRole("radio", { name: "Lấy mọi cột của bảng" }));
+        fireEvent.click(screen.getByRole("button", { name: "Nộp bài" }));
+
+        expect(
+            await within(screen.getByRole("main")).findByText("Đã hoàn thành"),
+        ).toBeInTheDocument();
+        expect(screen.queryByRole("form", { name: "Câu hỏi" })).not.toBeInTheDocument();
     });
 });

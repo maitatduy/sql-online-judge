@@ -40,6 +40,7 @@ export interface Lesson extends LessonOutline {
     courseSlug: string;
     courseTitle: string;
     cells: LessonCell[];
+    questions: QuizQuestion[];
 }
 
 export interface CourseProgress {
@@ -58,4 +59,27 @@ export interface LessonRun {
     result: ResultSet | null;
     errorMessage: string | null;
     runtimeMs: number | null;
+}
+
+export interface QuizOption {
+    optionKey: string;
+    label: string;
+}
+
+export interface QuizQuestion {
+    questionKey: string;
+    prompt: string;
+    multiple: boolean;
+    options: QuizOption[];
+}
+
+export interface QuizAnswer {
+    questionKey: string;
+    optionKeys: string[];
+}
+
+export interface QuizResult {
+    allCorrect: boolean;
+    results: { questionKey: string; correct: boolean }[];
+    progress: CourseProgress;
 }
