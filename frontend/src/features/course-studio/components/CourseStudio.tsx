@@ -13,6 +13,7 @@ import { ROUTES } from "@/lib/routes";
 
 import { useStudioCourse } from "../hooks/useStudioCourse";
 import { CourseInfoForm } from "./CourseInfoForm";
+import { CourseOutline } from "./CourseOutline";
 import { RevisionStatusBadge } from "./RevisionStatusBadge";
 
 const NOT_FOUND_STATUS = 404;
@@ -64,6 +65,10 @@ export function CourseStudio({ courseId }: CourseStudioProps) {
                         </p>
                     </div>
                     <CourseInfoForm key={course.revisionId} course={course} />
+                    <CourseOutline
+                        courseId={course.id}
+                        isLocked={course.revisionStatus !== "DRAFT"}
+                    />
                 </>
             ) : null}
         </div>

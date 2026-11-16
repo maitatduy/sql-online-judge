@@ -143,3 +143,16 @@ export const studioCourseHandlers: RequestHandler[] = [
         return HttpResponse.json(publicOf(updated));
     }),
 ];
+
+export function findOwnedCourse(courseId: string, userId: string): StudioCourse | undefined {
+    const course = ownedCourse(courseId, userId);
+    return course ? publicOf(course) : undefined;
+}
+
+export function updateCourseTotals(courseId: string, lessonCount: number, minutes: number): void {
+    writeCourses(
+        readCourses().map((course) =>
+            course.id === courseId ? { ...course, lessonCount, estimatedMinutes: minutes } : course,
+        ),
+    );
+}

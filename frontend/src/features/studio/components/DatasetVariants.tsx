@@ -4,6 +4,7 @@ import { type Dispatch, type SetStateAction, useState } from "react";
 
 import { Plus } from "lucide-react";
 
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useToast } from "@/components/shared/ToastProvider";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,6 @@ import {
     type VariantDrafts,
     withoutDraft,
 } from "../variant-drafts";
-import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { VariantCard } from "./VariantCard";
 import { VariantDialog } from "./VariantDialog";
 import { VariantTableEditor } from "./VariantTableEditor";

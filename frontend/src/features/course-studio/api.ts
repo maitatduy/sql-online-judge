@@ -1,9 +1,24 @@
 import { apiClient } from "@/lib/api-client";
 
-import type { CourseInfo, CreateCourseRequest, StudioCourse } from "./types";
+import type {
+    CourseInfo,
+    CreateCourseRequest,
+    LessonRequest,
+    StudioChapter,
+    StudioCourse,
+    StudioLesson,
+} from "./types";
 
 function coursePath(courseId: string): string {
     return `/api/studio/courses/${encodeURIComponent(courseId)}`;
+}
+
+function chapterPath(chapterId: string): string {
+    return `/api/studio/chapters/${encodeURIComponent(chapterId)}`;
+}
+
+function lessonPath(lessonId: string): string {
+    return `/api/studio/lessons/${encodeURIComponent(lessonId)}`;
 }
 
 export const courseStudioApi = {
@@ -15,4 +30,14 @@ export const courseStudioApi = {
         apiClient.get<StudioCourse>(coursePath(courseId), { signal }),
     updateCourse: (courseId: string, info: CourseInfo) =>
         apiClient.patch<StudioCourse>(coursePath(courseId), info),
+    listChapters: (courseId: string, signal?: AbortSignal) =>
+        apiClient.get<StudioChapter[]>(`${coursePath(courseId)}/chapters`, { signal }),
+    addChapter: (courseId: string, title: string) =>
+        apiClient.post<StudioChapter>(`${coursePath(courseId)}/chapters`, { title }),
+    renameChapter: (chapterId: string, title: string) =>
+        apiClient.patch<StudioChapter>(chapterPath(chapterId), { title }),
+    deleteChapter: (chapterId: string) => apiClient.delete<void>(chapterPath(chapterId)),
+    addLesson: (chapterId: string, request: LessonRequest) =>
+        apiClient.post<StudioLesson>(`${chapterPath(chapterId)}/lessons`, request),
+    deleteLesson: (lessonId: string) => apiClient.delete<void>(lessonPath(lessonId)),
 };
