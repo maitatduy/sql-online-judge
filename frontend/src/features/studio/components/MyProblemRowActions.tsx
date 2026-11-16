@@ -4,13 +4,13 @@ import { useState } from "react";
 
 import { Eye, Pencil, Trash2 } from "lucide-react";
 
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 import { IconAction } from "@/components/shared/IconAction";
 import { useToast } from "@/components/shared/ToastProvider";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 import { useDeleteProblem } from "../hooks/useDeleteProblem";
 import { EDITABLE_STATUSES, type StudioProblemSummary } from "../types";
-import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { ProblemDetailDialog } from "./ProblemDetailDialog";
 
 interface MyProblemRowActionsProps {

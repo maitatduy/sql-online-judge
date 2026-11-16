@@ -23,3 +23,29 @@ export const createCourseSchema = courseInfoSchema.extend({
 
 export type CourseInfoValues = z.infer<typeof courseInfoSchema>;
 export type CreateCourseValues = z.infer<typeof createCourseSchema>;
+
+const MAX_CHAPTER_TITLE_LENGTH = 200;
+const MIN_LESSON_MINUTES = 1;
+const MAX_LESSON_MINUTES = 600;
+const LESSON_MINUTES_MESSAGE = "Từ 1 đến 600 phút";
+
+export const chapterSchema = z.object({
+    title: z
+        .string()
+        .trim()
+        .min(1, REQUIRED_MESSAGE)
+        .max(MAX_CHAPTER_TITLE_LENGTH, "Tối đa 200 ký tự"),
+});
+
+export const newLessonSchema = z.object({
+    title: z.string().trim().min(1, REQUIRED_MESSAGE).max(MAX_TITLE_LENGTH, "Tối đa 200 ký tự"),
+    slug: createCourseSchema.shape.slug,
+    estimatedMinutes: z
+        .number({ message: LESSON_MINUTES_MESSAGE })
+        .int(LESSON_MINUTES_MESSAGE)
+        .min(MIN_LESSON_MINUTES, LESSON_MINUTES_MESSAGE)
+        .max(MAX_LESSON_MINUTES, LESSON_MINUTES_MESSAGE),
+});
+
+export type ChapterValues = z.infer<typeof chapterSchema>;
+export type NewLessonValues = z.infer<typeof newLessonSchema>;

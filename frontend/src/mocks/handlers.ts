@@ -31,6 +31,7 @@ import {
     SETTER_SESSION_USER,
     writeMockSession,
 } from "./session";
+import { studioCourseOutlineHandlers } from "./studio-course-outline";
 import { studioCourseHandlers } from "./studio-courses";
 import { studioDatasetHandlers } from "./studio-datasets";
 import { studioProblemHandlers } from "./studio-problems";
@@ -184,6 +185,7 @@ export const handlers: RequestHandler[] = [
     ...studioRunHandlers,
     ...studioAnswerCheckHandlers,
     ...studioDatasetHandlers,
+    ...studioCourseOutlineHandlers,
     ...studioCourseHandlers,
     ...adminHandlers,
     ...adminProblemReviewHandlers,

@@ -27,3 +27,30 @@ export interface CourseInfo {
 export interface CreateCourseRequest extends CourseInfo {
     slug: string;
 }
+
+export interface StudioLessonOutline {
+    id: string;
+    slug: string;
+    title: string;
+    estimatedMinutes: number;
+}
+
+export interface StudioChapter {
+    id: string;
+    title: string;
+    position: number;
+    lessons: StudioLessonOutline[];
+}
+
+export interface LessonRequest {
+    slug: string;
+    title: string;
+    body: string;
+    estimatedMinutes: number;
+}
+
+export interface StudioLesson extends LessonRequest {
+    id: string;
+    chapterId: string;
+    position: number;
+}

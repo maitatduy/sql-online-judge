@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Eye, Pencil, Trash2 } from "lucide-react";
 
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 import { IconAction } from "@/components/shared/IconAction";
 import { useToast } from "@/components/shared/ToastProvider";
 import { ROUTES } from "@/lib/routes";
@@ -11,7 +12,6 @@ import { ROUTES } from "@/lib/routes";
 import { useDeleteDataset } from "../hooks/useMyDatasets";
 import type { StudioDatasetSummary } from "../types";
 import { DatasetDetailDialog } from "./DatasetDetailDialog";
-import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 
 interface MyDatasetRowActionsProps {
     dataset: StudioDatasetSummary;
