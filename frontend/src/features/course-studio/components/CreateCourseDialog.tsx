@@ -16,8 +16,7 @@ import { serverFieldErrorOf } from "../server-errors";
 import { CourseFormField } from "./CourseFormField";
 import { CourseInfoFields } from "./CourseInfoFields";
 
-const FIELDS = ["slug", "title", "summary", "difficulty", "estimatedMinutes"] as const;
-const DEFAULT_MINUTES = 60;
+const FIELDS = ["slug", "title", "summary", "difficulty"] as const;
 
 interface CreateCourseDialogProps {
     open: boolean;
@@ -35,7 +34,6 @@ export function CreateCourseDialog({ open, onOpenChange }: CreateCourseDialogPro
             title: "",
             summary: "",
             difficulty: "EASY",
-            estimatedMinutes: DEFAULT_MINUTES,
         },
     });
     const {
@@ -96,7 +94,7 @@ export function CreateCourseDialog({ open, onOpenChange }: CreateCourseDialogPro
                                         <Input
                                             autoComplete="off"
                                             placeholder="vi-du-sql-co-ban"
-                                            className="text-base"
+                                            className="h-10 text-base md:text-base"
                                             {...props}
                                             {...register("slug")}
                                         />

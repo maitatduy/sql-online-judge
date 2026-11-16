@@ -46,8 +46,7 @@ class StudioChapterApiIntegrationTest extends ContainerSupport {
                                 "/api/studio/courses",
                                 "{\"slug\": \"sql-moi\", \"title\": \"SQL mới\","
                                         + " \"summary\": \"Tóm tắt.\","
-                                        + " \"difficulty\": \"EASY\","
-                                        + " \"estimatedMinutes\": 30}",
+                                        + " \"difficulty\": \"EASY\"}",
                                 SETTER))
                         .get("id")
                         .asText();

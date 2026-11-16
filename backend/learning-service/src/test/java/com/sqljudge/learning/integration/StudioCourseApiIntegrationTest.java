@@ -32,7 +32,7 @@ class StudioCourseApiIntegrationTest extends ContainerSupport {
     private static final String NEW_COURSE =
             """
             {"slug": "window-function", "title": "Window function",
-             "summary": "Xếp hạng và cộng dồn.", "difficulty": "HARD", "estimatedMinutes": 90}
+             "summary": "Xếp hạng và cộng dồn.", "difficulty": "HARD"}
             """;
 
     @Autowired private TestRestTemplate restTemplate;
@@ -59,7 +59,8 @@ class StudioCourseApiIntegrationTest extends ContainerSupport {
         assertThat(course.get("revisionStatus").asText()).isEqualTo("DRAFT");
         assertThat(course.get("title").asText()).isEqualTo("Window function");
         assertThat(course.get("difficulty").asText()).isEqualTo("HARD");
-        assertThat(course.get("estimatedMinutes").asInt()).isEqualTo(90);
+        assertThat(course.get("estimatedMinutes").asInt()).isZero();
+        assertThat(course.get("lessonCount").asInt()).isZero();
 
         JsonNode mine = body(send(HttpMethod.GET, "/api/studio/courses", null, SETTER));
         JsonNode others = body(send(HttpMethod.GET, "/api/studio/courses", null, OTHER_SETTER));
@@ -83,7 +84,7 @@ class StudioCourseApiIntegrationTest extends ContainerSupport {
                         HttpMethod.POST,
                         "/api/studio/courses",
                         "{\"slug\": \"Sai Slug\", \"title\": \"\", \"summary\": \"x\","
-                                + " \"difficulty\": \"EASY\", \"estimatedMinutes\": 0}",
+                                + " \"difficulty\": \"EASY\"}",
                         SETTER);
 
         assertThat(duplicate.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
@@ -91,8 +92,7 @@ class StudioCourseApiIntegrationTest extends ContainerSupport {
         assertThat(invalid.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(invalid.getBody())
                 .contains("\"field\":\"slug\"")
-                .contains("\"field\":\"title\"")
-                .contains("\"field\":\"estimatedMinutes\"");
+                .contains("\"field\":\"title\"");
     }
 
     @Test
@@ -121,7 +121,7 @@ class StudioCourseApiIntegrationTest extends ContainerSupport {
         String path = "/api/studio/courses/" + id;
         String change =
                 "{\"title\": \"Window function nâng cao\", \"summary\": \"Mới.\","
-                        + " \"difficulty\": \"MEDIUM\", \"estimatedMinutes\": 120}";
+                        + " \"difficulty\": \"MEDIUM\"}";
 
         JsonNode updated = body(send(HttpMethod.PATCH, path, change, SETTER));
         jdbcTemplate.update("UPDATE course_revisions SET status = 'IN_REVIEW'");
@@ -129,7 +129,6 @@ class StudioCourseApiIntegrationTest extends ContainerSupport {
 
         assertThat(updated.get("title").asText()).isEqualTo("Window function nâng cao");
         assertThat(updated.get("difficulty").asText()).isEqualTo("MEDIUM");
-        assertThat(updated.get("estimatedMinutes").asInt()).isEqualTo(120);
         assertThat(locked.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
         assertThat(locked.getBody()).contains("\"code\":\"COURSE_LOCKED\"");
     }

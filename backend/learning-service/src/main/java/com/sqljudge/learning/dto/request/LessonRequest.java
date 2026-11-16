@@ -1,5 +1,7 @@
 package com.sqljudge.learning.dto.request;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -11,4 +13,5 @@ public record LessonRequest(
                         message = "Chỉ gồm chữ thường không dấu, số và dấu gạch nối")
                 String slug,
         @NotBlank(message = "Không được để trống") @Size(max = 200, message = "Tối đa 200 ký tự") String title,
-        @NotNull(message = "Không được để trống") @Size(max = 51_200, message = "Tối đa 50 KB") String body) {}
+        @NotNull(message = "Không được để trống") @Size(max = 51_200, message = "Tối đa 50 KB") String body,
+        @Min(value = 1, message = "Từ 1 đến 600 phút") @Max(value = 600, message = "Từ 1 đến 600 phút") int estimatedMinutes) {}

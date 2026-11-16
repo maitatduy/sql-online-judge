@@ -1,0 +1,1 @@
+ALTER TABLE lessons ADD COLUMN estimated_minutes INT NOT NULL DEFAULT 0;

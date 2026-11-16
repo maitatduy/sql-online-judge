@@ -36,9 +36,6 @@ function fillCourse(dialog: ReturnType<typeof within>, slug: string) {
     fireEvent.change(dialog.getByRole("textbox", { name: "Tóm tắt" }), {
         target: { value: "Viết truy vấn gọn hơn với WITH." },
     });
-    fireEvent.change(dialog.getByRole("spinbutton", { name: "Thời lượng (phút)" }), {
-        target: { value: "45" },
-    });
 }
 
 describe("Khoá học của tôi trong Studio", () => {

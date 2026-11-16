@@ -70,10 +70,14 @@ public class CourseRevision extends BaseEntity {
         return status == CourseRevisionStatus.DRAFT;
     }
 
-    public void describe(String title, String summary, Difficulty difficulty, int minutes) {
+    public void describe(String title, String summary, Difficulty difficulty) {
         this.title = title;
         this.summary = summary;
         this.difficulty = difficulty;
-        this.estimatedMinutes = minutes;
+    }
+
+    public void recount(int lessonCount, int estimatedMinutes) {
+        this.lessonCount = lessonCount;
+        this.estimatedMinutes = estimatedMinutes;
     }
 }

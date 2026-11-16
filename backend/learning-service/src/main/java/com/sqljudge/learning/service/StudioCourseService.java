@@ -33,11 +33,7 @@ public class StudioCourseService {
                 courseRepository.saveAndFlush(
                         Course.draft(request.slug(), SecurityUtils.requireCurrentUser().id()));
         CourseRevision revision = CourseRevision.draftOf(course);
-        revision.describe(
-                request.title(),
-                request.summary(),
-                request.difficulty(),
-                request.estimatedMinutes());
+        revision.describe(request.title(), request.summary(), request.difficulty());
         revision = courseRevisionRepository.saveAndFlush(revision);
         course.setDraftRevisionId(revision.getId());
         return StudioCourseResponse.of(course, revision);
@@ -67,11 +63,7 @@ public class StudioCourseService {
         Course course = courseAccess.accessible(courseId);
         CourseRevision revision =
                 courseAccess.editableRevision(courseAccess.workingRevisionOf(course));
-        revision.describe(
-                request.title(),
-                request.summary(),
-                request.difficulty(),
-                request.estimatedMinutes());
+        revision.describe(request.title(), request.summary(), request.difficulty());
         return StudioCourseResponse.of(course, courseRevisionRepository.saveAndFlush(revision));
     }
 }

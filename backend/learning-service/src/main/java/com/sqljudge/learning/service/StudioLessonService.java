@@ -6,9 +6,11 @@ import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.learning.dto.request.LessonRequest;
 import com.sqljudge.learning.dto.response.StudioLessonResponse;
 import com.sqljudge.learning.entity.Chapter;
+import com.sqljudge.learning.entity.CourseRevision;
 import com.sqljudge.learning.entity.Lesson;
 import com.sqljudge.learning.repository.LessonCellRepository;
 import com.sqljudge.learning.repository.LessonRepository;
+import com.sqljudge.learning.repository.LessonTotals;
 import com.sqljudge.learning.repository.QuizOptionRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +31,9 @@ public class StudioLessonService {
         Chapter chapter = courseAccess.editableChapter(chapterId);
         requireFreeSlug(chapter, request.slug(), null);
         Lesson lesson = Lesson.of(chapter, lessonRepository.findLastPosition(chapterId) + 1);
-        lesson.write(request.slug(), request.title(), request.body());
-        return StudioLessonResponse.of(lessonRepository.saveAndFlush(lesson));
+        Lesson saved = lessonRepository.save(writeInto(lesson, request));
+        recount(chapter.getRevision());
+        return StudioLessonResponse.of(saved);
     }
 
     @Transactional(readOnly = true)
@@ -42,8 +45,9 @@ public class StudioLessonService {
     public StudioLessonResponse update(UUID lessonId, LessonRequest request) {
         Lesson lesson = editableLesson(lessonId);
         requireFreeSlug(lesson.getChapter(), request.slug(), lessonId);
-        lesson.write(request.slug(), request.title(), request.body());
-        return StudioLessonResponse.of(lessonRepository.saveAndFlush(lesson));
+        Lesson saved = lessonRepository.save(writeInto(lesson, request));
+        recount(lesson.getChapter().getRevision());
+        return StudioLessonResponse.of(saved);
     }
 
     @Transactional
@@ -53,6 +57,18 @@ public class StudioLessonService {
         quizOptionRepository.deleteQuestionsByLessonId(lessonId);
         lessonCellRepository.deleteByLessonId(lessonId);
         lessonRepository.delete(lesson);
+        recount(lesson.getChapter().getRevision());
+    }
+
+    private static Lesson writeInto(Lesson lesson, LessonRequest request) {
+        lesson.write(request.slug(), request.title(), request.body());
+        lesson.setEstimatedMinutes(request.estimatedMinutes());
+        return lesson;
+    }
+
+    private void recount(CourseRevision revision) {
+        LessonTotals totals = lessonRepository.findTotals(revision.getId());
+        revision.recount(Math.toIntExact(totals.lessonCount()), Math.toIntExact(totals.minutes()));
     }
 
     private Lesson accessibleLesson(UUID lessonId) {

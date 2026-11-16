@@ -14,6 +14,7 @@ export interface StudioCourse {
     summary: string;
     difficulty: Difficulty;
     estimatedMinutes: number;
+    lessonCount: number;
     updatedAt: string;
 }
 
@@ -21,7 +22,6 @@ export interface CourseInfo {
     title: string;
     summary: string;
     difficulty: Difficulty;
-    estimatedMinutes: number;
 }
 
 export interface CreateCourseRequest extends CourseInfo {

@@ -4,7 +4,13 @@ import com.sqljudge.learning.entity.Lesson;
 import java.util.UUID;
 
 public record StudioLessonResponse(
-        UUID id, UUID chapterId, String slug, String title, String body, int position) {
+        UUID id,
+        UUID chapterId,
+        String slug,
+        String title,
+        String body,
+        int position,
+        int estimatedMinutes) {
 
     public static StudioLessonResponse of(Lesson lesson) {
         return new StudioLessonResponse(
@@ -13,6 +19,7 @@ public record StudioLessonResponse(
                 lesson.getSlug(),
                 lesson.getTitle(),
                 lesson.getBody(),
-                lesson.getPosition());
+                lesson.getPosition(),
+                lesson.getEstimatedMinutes());
     }
 }
