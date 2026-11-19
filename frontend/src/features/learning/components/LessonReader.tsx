@@ -7,7 +7,7 @@ import { useEffect } from "react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { Markdown } from "@/components/shared/Markdown";
+import { LessonMarkdown } from "@/components/shared/LessonMarkdown";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { Button } from "@/components/ui/button";
@@ -28,9 +28,6 @@ interface LessonReaderProps {
     courseSlug: string;
     lessonSlug: string;
 }
-
-const LESSON_BODY_CLASSES =
-    "[&_h2]:mt-2 [&_h2]:text-lg [&_h2]:font-bold [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:border [&_pre]:bg-surface-2 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0";
 
 export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
     const pathname = usePathname();
@@ -102,7 +99,7 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
                                 {lesson.title}
                             </h1>
                         </header>
-                        <Markdown className={LESSON_BODY_CLASSES}>{lesson.body}</Markdown>
+                        <LessonMarkdown>{lesson.body}</LessonMarkdown>
                         {lesson.cells.map((cell) => (
                             <LessonSqlCell key={cell.cellKey} cell={cell} />
                         ))}
