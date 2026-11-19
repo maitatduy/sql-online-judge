@@ -15,7 +15,7 @@ import { CourseFormField } from "./CourseFormField";
 
 const FIELDS = ["title", "slug", "estimatedMinutes"] as const;
 const DEFAULT_MINUTES = 10;
-const INPUT_CLASS = "h-10 text-base md:text-base";
+const INPUT_CLASS = "h-10 bg-card text-base md:text-base";
 
 interface NewLessonFormProps {
     chapterId: string;

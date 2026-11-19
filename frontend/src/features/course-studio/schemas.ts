@@ -49,3 +49,11 @@ export const newLessonSchema = z.object({
 
 export type ChapterValues = z.infer<typeof chapterSchema>;
 export type NewLessonValues = z.infer<typeof newLessonSchema>;
+
+export const MAX_LESSON_BODY_LENGTH = 51_200;
+
+export const lessonSchema = newLessonSchema.extend({
+    body: z.string().max(MAX_LESSON_BODY_LENGTH, "Tối đa 50 KB"),
+});
+
+export type LessonValues = z.infer<typeof lessonSchema>;
