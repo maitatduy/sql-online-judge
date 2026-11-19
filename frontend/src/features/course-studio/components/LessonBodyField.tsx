@@ -2,7 +2,7 @@
 
 import { useFormContext, useWatch } from "react-hook-form";
 
-import { Markdown } from "@/components/shared/Markdown";
+import { LessonMarkdown } from "@/components/shared/LessonMarkdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatNumber } from "@/lib/format";
 
@@ -37,7 +37,7 @@ export function LessonBodyField() {
                 </TabsContent>
                 <TabsContent value="preview" className="min-h-[480px] p-4">
                     {body.trim() ? (
-                        <Markdown>{body}</Markdown>
+                        <LessonMarkdown>{body}</LessonMarkdown>
                     ) : (
                         <p className="text-muted-foreground">Chưa có nội dung để xem trước.</p>
                     )}
