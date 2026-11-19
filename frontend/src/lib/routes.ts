@@ -29,6 +29,8 @@ export const ROUTES = {
     profile: (username: string) => `/u/${encodeURIComponent(username)}`,
     studioDataset: (datasetId: string) => `/studio/databases/${encodeURIComponent(datasetId)}`,
     studioCourse: (courseId: string) => `/studio/courses/${encodeURIComponent(courseId)}`,
+    studioLesson: (courseId: string, lessonId: string) =>
+        `/studio/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}`,
     problem: (slug: string) => `/problems/${encodeURIComponent(slug)}`,
     course: (slug: string) => `/learn/${encodeURIComponent(slug)}`,
     lesson: (courseSlug: string, lessonSlug: string) =>

@@ -224,3 +224,74 @@ export const studioCourseOutlineHandlers: RequestHandler[] = [
         return new HttpResponse(null, { status: 204 });
     }),
 ];
+
+const BODIES_KEY = "sqljudge:mock:studio-lesson-bodies";
+const SEEDED_BODIES: Record<string, string> = {
+    "0192f3f3-0000-7000-8000-000000000001":
+        "## Đánh số thứ tự\n\n`ROW_NUMBER()` đánh số từng dòng trong mỗi nhóm.",
+};
+
+function readBodies(): Record<string, string> {
+    const stored = sessionStorage.getItem(BODIES_KEY);
+    return stored ? (JSON.parse(stored) as Record<string, string>) : SEEDED_BODIES;
+}
+
+function lessonResponse(chapters: StudioChapter[], lessonId: string) {
+    const chapter = chapters.find((item) => item.lessons.some((found) => found.id === lessonId));
+    const index = chapter?.lessons.findIndex((found) => found.id === lessonId) ?? -1;
+    const outline = chapter?.lessons[index];
+    return outline && chapter
+        ? {
+              ...outline,
+              chapterId: chapter.id,
+              position: index + 1,
+              body: readBodies()[lessonId] ?? "",
+          }
+        : undefined;
+}
+
+function lessonNotFound(located: Response): Response {
+    return located.status === 404
+        ? apiError(404, "LESSON_NOT_FOUND", "Không tìm thấy bài giảng")
+        : located;
+}
+
+export const studioLessonHandlers: RequestHandler[] = [
+    http.get("*/api/studio/lessons/:lessonId", async ({ params }) => {
+        await delay();
+        const lessonId = String(params.lessonId);
+        const located = locate(hasLesson(lessonId));
+        return located instanceof Response
+            ? lessonNotFound(located)
+            : HttpResponse.json(lessonResponse(located.chapters, lessonId));
+    }),
+    http.patch("*/api/studio/lessons/:lessonId", async ({ params, request }) => {
+        await delay();
+        const lessonId = String(params.lessonId);
+        const located = editable(locate(hasLesson(lessonId)));
+        if (located instanceof Response) {
+            return lessonNotFound(located);
+        }
+        const body = (await request.json()) as LessonRequest;
+        const isTaken = located.chapters.some((chapter) =>
+            chapter.lessons.some((item) => item.slug === body.slug && item.id !== lessonId),
+        );
+        if (isTaken) {
+            return apiError(409, "SLUG_TAKEN", "Slug đã được bài giảng khác trong khoá dùng");
+        }
+        const chapters = located.chapters.map((chapter) => ({
+            ...chapter,
+            lessons: chapter.lessons.map((item) =>
+                item.id === lessonId
+                    ? lesson(lessonId, body.slug, body.title, body.estimatedMinutes)
+                    : item,
+            ),
+        }));
+        writeOutline(located.course.id, chapters);
+        sessionStorage.setItem(
+            BODIES_KEY,
+            JSON.stringify({ ...readBodies(), [lessonId]: body.body }),
+        );
+        return HttpResponse.json(lessonResponse(chapters, lessonId));
+    }),
+];

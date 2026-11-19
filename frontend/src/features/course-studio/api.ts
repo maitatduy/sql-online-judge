@@ -39,5 +39,9 @@ export const courseStudioApi = {
     deleteChapter: (chapterId: string) => apiClient.delete<void>(chapterPath(chapterId)),
     addLesson: (chapterId: string, request: LessonRequest) =>
         apiClient.post<StudioLesson>(`${chapterPath(chapterId)}/lessons`, request),
+    getLesson: (lessonId: string, signal?: AbortSignal) =>
+        apiClient.get<StudioLesson>(lessonPath(lessonId), { signal }),
+    updateLesson: (lessonId: string, request: LessonRequest) =>
+        apiClient.patch<StudioLesson>(lessonPath(lessonId), request),
     deleteLesson: (lessonId: string) => apiClient.delete<void>(lessonPath(lessonId)),
 };

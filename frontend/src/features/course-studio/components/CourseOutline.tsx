@@ -40,7 +40,12 @@ export function CourseOutline({ courseId, isLocked }: CourseOutlineProps) {
                 <EmptyState title="Khoá chưa có chương nào." />
             ) : null}
             {chapters?.map((chapter) => (
-                <ChapterCard key={chapter.id} chapter={chapter} isLocked={isLocked} />
+                <ChapterCard
+                    key={chapter.id}
+                    courseId={courseId}
+                    chapter={chapter}
+                    isLocked={isLocked}
+                />
             ))}
             {isLocked || !chapters ? null : <AddChapterForm courseId={courseId} />}
         </section>

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import Link from "next/link";
+
 import { Pencil, Plus, Trash2 } from "lucide-react";
 
 import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
@@ -9,6 +11,7 @@ import { IconAction } from "@/components/shared/IconAction";
 import { useToast } from "@/components/shared/ToastProvider";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/format";
+import { ROUTES } from "@/lib/routes";
 
 import { useDeleteChapter, useDeleteLesson } from "../hooks/useCourseOutline";
 import type { StudioChapter, StudioLessonOutline } from "../types";
@@ -18,11 +21,12 @@ import { NewLessonForm } from "./NewLessonForm";
 type PendingDelete = { kind: "chapter" } | { kind: "lesson"; lesson: StudioLessonOutline };
 
 interface ChapterCardProps {
+    courseId: string;
     chapter: StudioChapter;
     isLocked: boolean;
 }
 
-export function ChapterCard({ chapter, isLocked }: ChapterCardProps) {
+export function ChapterCard({ courseId, chapter, isLocked }: ChapterCardProps) {
     const showToast = useToast();
     const deleteChapter = useDeleteChapter();
     const deleteLesson = useDeleteLesson();
@@ -78,7 +82,12 @@ export function ChapterCard({ chapter, isLocked }: ChapterCardProps) {
                 {chapter.lessons.map((lesson) => (
                     <li key={lesson.id} className="flex items-center gap-3 px-4 py-2.5">
                         <div className="min-w-0 flex-1">
-                            <p className="truncate font-semibold">{lesson.title}</p>
+                            <Link
+                                href={ROUTES.studioLesson(courseId, lesson.id)}
+                                className="block truncate font-semibold hover:text-brand hover:underline"
+                            >
+                                {lesson.title}
+                            </Link>
                             <p className="truncate text-sm text-muted-foreground">{lesson.slug}</p>
                         </div>
                         <span className="text-sm whitespace-nowrap text-muted-foreground">
