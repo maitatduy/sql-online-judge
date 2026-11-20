@@ -80,4 +80,26 @@ public class CourseRevision extends BaseEntity {
         this.lessonCount = lessonCount;
         this.estimatedMinutes = estimatedMinutes;
     }
+
+    public boolean isInReview() {
+        return status == CourseRevisionStatus.IN_REVIEW;
+    }
+
+    public void submit(Instant now) {
+        this.status = CourseRevisionStatus.IN_REVIEW;
+        this.submittedAt = now;
+    }
+
+    public void returnToDraft() {
+        this.status = CourseRevisionStatus.DRAFT;
+    }
+
+    public void publish(Instant now) {
+        this.status = CourseRevisionStatus.PUBLISHED;
+        this.publishedAt = now;
+    }
+
+    public void supersede() {
+        this.status = CourseRevisionStatus.SUPERSEDED;
+    }
 }

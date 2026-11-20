@@ -309,6 +309,13 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
                 .exchange()
                 .expectStatus()
                 .isNotFound();
+        webTestClient.get().uri("/api/admin/courses?page=2").exchange().expectStatus().isNotFound();
+        webTestClient
+                .post()
+                .uri("/api/admin/courses/0192f3f0-0000-7000-8000-000000000009/approve")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
         webTestClient
                 .get()
                 .uri("/api/learning/activity?from=2026-11-01")
@@ -326,6 +333,8 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
                         "DELETE /api/studio/lessons/0192f3f0-0000-7000-8000-000000000006",
                         "PATCH /api/studio/cells/0192f3f0-0000-7000-8000-000000000007",
                         "DELETE /api/studio/quiz-questions/0192f3f0-0000-7000-8000-000000000008",
+                        "GET /api/admin/courses?page=2",
+                        "POST /api/admin/courses/0192f3f0-0000-7000-8000-000000000009/approve",
                         "GET /api/learning/activity?from=2026-11-01");
         assertThat(SUBMISSION_SERVICE.forwardedRequestLines()).isEmpty();
     }
