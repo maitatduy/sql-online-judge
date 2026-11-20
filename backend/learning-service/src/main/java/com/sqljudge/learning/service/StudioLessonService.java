@@ -11,6 +11,7 @@ import com.sqljudge.learning.repository.LessonCellRepository;
 import com.sqljudge.learning.repository.LessonRepository;
 import com.sqljudge.learning.repository.LessonTotals;
 import com.sqljudge.learning.repository.QuizOptionRepository;
+import com.sqljudge.learning.repository.QuizQuestionRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class StudioLessonService {
     private final LessonRepository lessonRepository;
     private final LessonCellRepository lessonCellRepository;
     private final QuizOptionRepository quizOptionRepository;
+    private final QuizQuestionRepository quizQuestionRepository;
     private final StudioCourseAccess courseAccess;
 
     @Transactional
@@ -53,7 +55,7 @@ public class StudioLessonService {
     public void delete(UUID lessonId) {
         Lesson lesson = courseAccess.editableLesson(lessonId);
         quizOptionRepository.deleteByLessonId(lessonId);
-        quizOptionRepository.deleteQuestionsByLessonId(lessonId);
+        quizQuestionRepository.deleteByLessonId(lessonId);
         lessonCellRepository.deleteByLessonId(lessonId);
         lessonRepository.delete(lesson);
         recount(lesson.getChapter().getRevision());

@@ -43,4 +43,17 @@ public class QuizQuestion extends BaseEntity {
 
     @Column(name = "position", nullable = false)
     private int position;
+
+    public static QuizQuestion of(Lesson lesson, int position) {
+        QuizQuestion question = new QuizQuestion();
+        question.lesson = lesson;
+        question.questionKey = UUID.randomUUID();
+        question.position = position;
+        return question;
+    }
+
+    public void ask(String prompt, boolean multiple) {
+        this.prompt = prompt;
+        this.multiple = multiple;
+    }
 }
