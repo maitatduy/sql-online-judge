@@ -55,4 +55,23 @@ public class LessonCell extends BaseEntity {
 
     @Column(name = "dataset_checksum", nullable = false, length = 64)
     private String datasetChecksum;
+
+    public static LessonCell of(Lesson lesson, int position) {
+        LessonCell cell = new LessonCell();
+        cell.lesson = lesson;
+        cell.cellKey = UUID.randomUUID();
+        cell.position = position;
+        return cell;
+    }
+
+    public void configure(String starterSql, Dialect dialect) {
+        this.starterSql = starterSql;
+        this.dialect = dialect;
+    }
+
+    public void useDataset(UUID variantId, UUID versionId, String checksum) {
+        this.datasetVariantId = variantId;
+        this.datasetVersionId = versionId;
+        this.datasetChecksum = checksum;
+    }
 }

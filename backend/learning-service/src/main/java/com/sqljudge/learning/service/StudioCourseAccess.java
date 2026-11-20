@@ -9,9 +9,11 @@ import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.learning.entity.Chapter;
 import com.sqljudge.learning.entity.Course;
 import com.sqljudge.learning.entity.CourseRevision;
+import com.sqljudge.learning.entity.Lesson;
 import com.sqljudge.learning.repository.ChapterRepository;
 import com.sqljudge.learning.repository.CourseRepository;
 import com.sqljudge.learning.repository.CourseRevisionRepository;
+import com.sqljudge.learning.repository.LessonRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,7 @@ class StudioCourseAccess {
     private final CourseRepository courseRepository;
     private final CourseRevisionRepository courseRevisionRepository;
     private final ChapterRepository chapterRepository;
+    private final LessonRepository lessonRepository;
 
     Course accessible(UUID courseId) {
         return courseRepository
@@ -49,6 +52,22 @@ class StudioCourseAccess {
                         .orElseThrow(StudioCourseAccess::courseNotFound);
         editableRevision(chapter.getRevision());
         return chapter;
+    }
+
+    Lesson accessibleLesson(UUID lessonId) {
+        return lessonRepository
+                .findWithCourse(lessonId)
+                .filter(found -> isMine(found.getChapter().getRevision().getCourse()))
+                .orElseThrow(
+                        () ->
+                                new NotFoundException(
+                                        ErrorCode.LESSON_NOT_FOUND, "Không tìm thấy bài giảng"));
+    }
+
+    Lesson editableLesson(UUID lessonId) {
+        Lesson lesson = accessibleLesson(lessonId);
+        editableRevision(lesson.getChapter().getRevision());
+        return lesson;
     }
 
     CourseRevision editableRevision(CourseRevision revision) {
