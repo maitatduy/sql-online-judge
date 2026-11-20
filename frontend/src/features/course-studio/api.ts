@@ -8,10 +8,12 @@ import type {
     DatasetChoice,
     DatasetOption,
     LessonRequest,
+    QuizQuestionRequest,
     StudioCell,
     StudioChapter,
     StudioCourse,
     StudioLesson,
+    StudioQuizQuestion,
 } from "./types";
 
 function coursePath(courseId: string): string {
@@ -23,6 +25,10 @@ function chapterPath(chapterId: string): string {
 }
 
 const MAX_DATASET_OPTIONS = 100;
+
+function quizQuestionPath(questionId: string): string {
+    return `/api/studio/quiz-questions/${encodeURIComponent(questionId)}`;
+}
 
 function cellPath(cellId: string): string {
     return `/api/studio/cells/${encodeURIComponent(cellId)}`;
@@ -71,4 +77,12 @@ export const courseStudioApi = {
         apiClient.get<DatasetChoice>(`/api/studio/datasets/${encodeURIComponent(datasetId)}`, {
             signal,
         }),
+    listQuizQuestions: (lessonId: string, signal?: AbortSignal) =>
+        apiClient.get<StudioQuizQuestion[]>(`${lessonPath(lessonId)}/quiz-questions`, { signal }),
+    addQuizQuestion: (lessonId: string, request: QuizQuestionRequest) =>
+        apiClient.post<StudioQuizQuestion>(`${lessonPath(lessonId)}/quiz-questions`, request),
+    replaceQuizQuestion: (questionId: string, request: QuizQuestionRequest) =>
+        apiClient.put<StudioQuizQuestion>(quizQuestionPath(questionId), request),
+    deleteQuizQuestion: (questionId: string) =>
+        apiClient.delete<void>(quizQuestionPath(questionId)),
 };

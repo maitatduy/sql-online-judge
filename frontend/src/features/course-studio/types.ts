@@ -81,3 +81,19 @@ export interface DatasetChoice {
     schema: { isDraft: boolean };
     variants: { id: string; name: string; isPublic: boolean }[];
 }
+
+export interface QuizOptionDraft {
+    label: string;
+    correct: boolean;
+}
+
+export interface QuizQuestionRequest {
+    prompt: string;
+    multiple: boolean;
+    options: QuizOptionDraft[];
+}
+
+export interface StudioQuizQuestion extends QuizQuestionRequest {
+    id: string;
+    position: number;
+}
