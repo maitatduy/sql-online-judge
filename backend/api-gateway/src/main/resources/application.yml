@@ -32,7 +32,7 @@ spring:
             - id: learning-service
               uri: ${LEARNING_SERVICE_URL}
               predicates:
-                - Path=/api/courses,/api/courses/**,/api/lesson-cells/**,/api/lesson-runs/**,/api/enrollments,/api/learning/**,/api/studio/courses,/api/studio/courses/**,/api/studio/chapters/**,/api/studio/lessons/**
+                - Path=/api/courses,/api/courses/**,/api/lesson-cells/**,/api/lesson-runs/**,/api/enrollments,/api/learning/**,/api/studio/courses,/api/studio/courses/**,/api/studio/chapters/**,/api/studio/lessons/**,/api/studio/cells/**
             - id: problem-service
               uri: ${PROBLEM_SERVICE_URL}
               predicates:

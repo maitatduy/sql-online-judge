@@ -36,4 +36,19 @@ public interface LessonCellRepository extends JpaRepository<LessonCell, UUID> {
     @Modifying
     @Query("DELETE FROM LessonCell c WHERE c.lesson.id = :lessonId")
     void deleteByLessonId(@Param("lessonId") UUID lessonId);
+
+    @Query("SELECT c FROM LessonCell c WHERE c.lesson.id = :lessonId ORDER BY c.position")
+    List<LessonCell> findStudioCells(@Param("lessonId") UUID lessonId);
+
+    @Query("SELECT COALESCE(MAX(c.position), 0) FROM LessonCell c WHERE c.lesson.id = :lessonId")
+    int findLastPosition(@Param("lessonId") UUID lessonId);
+
+    @Query(
+            """
+            SELECT cell FROM LessonCell cell
+            JOIN FETCH cell.lesson l JOIN FETCH l.chapter ch
+            JOIN FETCH ch.revision r JOIN FETCH r.course
+            WHERE cell.id = :cellId
+            """)
+    Optional<LessonCell> findWithCourse(@Param("cellId") UUID cellId);
 }
