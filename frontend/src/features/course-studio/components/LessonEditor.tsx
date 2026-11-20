@@ -12,6 +12,7 @@ import { ROUTES } from "@/lib/routes";
 
 import { useStudioCourse } from "../hooks/useStudioCourse";
 import { useStudioLesson } from "../hooks/useStudioLesson";
+import { LessonCells } from "./LessonCells";
 import { LessonForm } from "./LessonForm";
 
 const NOT_FOUND_STATUS = 404;
@@ -65,6 +66,7 @@ export function LessonEditor({ courseId, lessonId }: LessonEditorProps) {
                         </p>
                     ) : null}
                     <LessonForm key={lesson.data.id} lesson={lesson.data} isLocked={isLocked} />
+                    <LessonCells lessonId={lesson.data.id} isLocked={isLocked} />
                 </>
             ) : null}
         </div>

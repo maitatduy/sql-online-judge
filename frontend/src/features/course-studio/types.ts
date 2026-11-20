@@ -1,3 +1,4 @@
+import type { Dialect } from "@/lib/dialect";
 import type { Difficulty } from "@/lib/difficulty";
 
 export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -53,4 +54,30 @@ export interface StudioLesson extends LessonRequest {
     id: string;
     chapterId: string;
     position: number;
+}
+
+export interface StudioCell {
+    id: string;
+    position: number;
+    dialect: Dialect;
+    starterSql: string;
+    datasetVariantId: string;
+}
+
+export interface CellRequest {
+    datasetVariantId: string;
+    dialect: Dialect;
+    starterSql: string;
+}
+
+export interface DatasetOption {
+    id: string;
+    name: string;
+}
+
+export interface DatasetChoice {
+    id: string;
+    name: string;
+    schema: { isDraft: boolean };
+    variants: { id: string; name: string; isPublic: boolean }[];
 }

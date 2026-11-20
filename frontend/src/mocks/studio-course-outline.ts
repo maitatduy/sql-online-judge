@@ -295,3 +295,12 @@ export const studioLessonHandlers: RequestHandler[] = [
         return HttpResponse.json(lessonResponse(chapters, lessonId));
     }),
 ];
+
+export function lessonAccess(lessonId: string, mustEdit: boolean): Response | null {
+    const located = locate(hasLesson(lessonId));
+    if (located instanceof Response) {
+        return lessonNotFound(located);
+    }
+    const checked = mustEdit ? editable(located) : located;
+    return checked instanceof Response ? checked : null;
+}
