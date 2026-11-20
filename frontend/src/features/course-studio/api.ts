@@ -1,9 +1,14 @@
 import { apiClient } from "@/lib/api-client";
+import type { Page } from "@/lib/pagination";
 
 import type {
+    CellRequest,
     CourseInfo,
     CreateCourseRequest,
+    DatasetChoice,
+    DatasetOption,
     LessonRequest,
+    StudioCell,
     StudioChapter,
     StudioCourse,
     StudioLesson,
@@ -15,6 +20,12 @@ function coursePath(courseId: string): string {
 
 function chapterPath(chapterId: string): string {
     return `/api/studio/chapters/${encodeURIComponent(chapterId)}`;
+}
+
+const MAX_DATASET_OPTIONS = 100;
+
+function cellPath(cellId: string): string {
+    return `/api/studio/cells/${encodeURIComponent(cellId)}`;
 }
 
 function lessonPath(lessonId: string): string {
@@ -44,4 +55,20 @@ export const courseStudioApi = {
     updateLesson: (lessonId: string, request: LessonRequest) =>
         apiClient.patch<StudioLesson>(lessonPath(lessonId), request),
     deleteLesson: (lessonId: string) => apiClient.delete<void>(lessonPath(lessonId)),
+    listCells: (lessonId: string, signal?: AbortSignal) =>
+        apiClient.get<StudioCell[]>(`${lessonPath(lessonId)}/cells`, { signal }),
+    addCell: (lessonId: string, request: CellRequest) =>
+        apiClient.post<StudioCell>(`${lessonPath(lessonId)}/cells`, request),
+    updateCell: (cellId: string, request: CellRequest) =>
+        apiClient.patch<StudioCell>(cellPath(cellId), request),
+    deleteCell: (cellId: string) => apiClient.delete<void>(cellPath(cellId)),
+    listDatasets: (signal?: AbortSignal) =>
+        apiClient.get<Page<DatasetOption>>("/api/studio/datasets", {
+            params: { page: 1, size: MAX_DATASET_OPTIONS, sort: "updatedAt,desc" },
+            signal,
+        }),
+    getDataset: (datasetId: string, signal?: AbortSignal) =>
+        apiClient.get<DatasetChoice>(`/api/studio/datasets/${encodeURIComponent(datasetId)}`, {
+            signal,
+        }),
 };
