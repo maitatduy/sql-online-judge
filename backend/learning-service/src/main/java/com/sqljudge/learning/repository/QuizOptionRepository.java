@@ -1,6 +1,7 @@
 package com.sqljudge.learning.repository;
 
 import com.sqljudge.learning.entity.QuizOption;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,7 +29,10 @@ public interface QuizOptionRepository extends JpaRepository<QuizOption, UUID> {
                     + " (SELECT q.id FROM QuizQuestion q WHERE q.lesson.id = :lessonId)")
     void deleteByLessonId(@Param("lessonId") UUID lessonId);
 
-    @Modifying
-    @Query("DELETE FROM QuizQuestion q WHERE q.lesson.id = :lessonId")
-    void deleteQuestionsByLessonId(@Param("lessonId") UUID lessonId);
+    @Query("SELECT o FROM QuizOption o WHERE o.question.id IN :questionIds ORDER BY o.position")
+    List<QuizOption> findByQuestionIds(@Param("questionIds") Collection<UUID> questionIds);
+
+    @Modifying(flushAutomatically = true)
+    @Query("DELETE FROM QuizOption o WHERE o.question.id = :questionId")
+    void deleteByQuestionId(@Param("questionId") UUID questionId);
 }

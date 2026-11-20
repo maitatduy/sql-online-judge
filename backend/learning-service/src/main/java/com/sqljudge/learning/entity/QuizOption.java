@@ -42,4 +42,17 @@ public class QuizOption extends BaseEntity {
 
     @Column(name = "position", nullable = false)
     private int position;
+
+    public static QuizOption of(QuizQuestion question, int position) {
+        QuizOption option = new QuizOption();
+        option.question = question;
+        option.optionKey = UUID.randomUUID();
+        option.position = position;
+        return option;
+    }
+
+    public void describe(String label, boolean correct) {
+        this.label = label;
+        this.correct = correct;
+    }
 }
