@@ -5,6 +5,7 @@ import com.sqljudge.common.exception.ConflictException;
 import com.sqljudge.common.exception.InvalidFieldException;
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.contest.dto.request.CreateContestRequest;
+import com.sqljudge.contest.dto.response.AdminContestResponse;
 import com.sqljudge.contest.dto.response.ContestResponse;
 import com.sqljudge.contest.dto.response.ContestSummaryResponse;
 import com.sqljudge.contest.entity.Contest;
@@ -50,11 +51,11 @@ public class AdminContestService {
     }
 
     @Transactional(readOnly = true)
-    public ContestResponse get(UUID contestId) {
+    public AdminContestResponse get(UUID contestId) {
         Contest contest =
                 contestRepository
                         .findById(contestId)
                         .orElseThrow(ContestQueryService::contestNotFound);
-        return ContestResponse.from(contest, clock.instant());
+        return AdminContestResponse.from(contest, clock.instant());
     }
 }

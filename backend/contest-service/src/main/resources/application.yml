@@ -15,6 +15,15 @@ spring:
           time_zone: UTC
   flyway:
     locations: classpath:db/migration
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+      client:
+        config:
+          problem-service:
+            connect-timeout: 1000
+            read-timeout: 3000
   security:
     oauth2:
       resourceserver:
@@ -39,3 +48,21 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+
+sqljudge:
+  problem-service-url: ${PROBLEM_SERVICE_URL}
+  internal:
+    api-token: ${INTERNAL_API_TOKEN}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 20
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s

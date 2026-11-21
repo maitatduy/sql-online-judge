@@ -1,13 +1,18 @@
 package com.sqljudge.contest.entity;
 
 import com.sqljudge.common.persistence.BaseEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -54,6 +59,10 @@ public class Contest extends BaseEntity {
     @Column(name = "version", nullable = false)
     private long version;
 
+    @OneToMany(mappedBy = "contest", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("position ASC")
+    private List<ContestProblem> problems = new ArrayList<>();
+
     public static Contest schedule(ContestSchedule schedule) {
         Contest contest = new Contest();
         contest.slug = schedule.slug();
@@ -73,5 +82,19 @@ public class Contest extends BaseEntity {
             return ContestPhase.UPCOMING;
         }
         return now.isBefore(endAt) ? ContestPhase.RUNNING : ContestPhase.FINISHED;
+    }
+
+    public boolean hasStartedAt(Instant now) {
+        return !now.isBefore(startAt);
+    }
+
+    public void clearProblems() {
+        problems.clear();
+    }
+
+    public void addProblems(List<ContestProblemInfo> infos) {
+        for (ContestProblemInfo info : infos) {
+            problems.add(new ContestProblem(this, problems.size(), info));
+        }
     }
 }

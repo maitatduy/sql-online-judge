@@ -2,9 +2,12 @@ package com.sqljudge.contest.controller;
 
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.contest.dto.request.CreateContestRequest;
+import com.sqljudge.contest.dto.request.ReplaceContestProblemsRequest;
+import com.sqljudge.contest.dto.response.AdminContestResponse;
 import com.sqljudge.contest.dto.response.ContestResponse;
 import com.sqljudge.contest.dto.response.ContestSummaryResponse;
 import com.sqljudge.contest.service.AdminContestService;
+import com.sqljudge.contest.service.ContestProblemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -18,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,6 +36,7 @@ public class AdminContestController {
     private static final int MAX_PAGE_SIZE = 100;
 
     private final AdminContestService adminContestService;
+    private final ContestProblemService contestProblemService;
 
     @PostMapping
     @Operation(summary = "Lên lịch một contest mới")
@@ -61,7 +66,21 @@ public class AdminContestController {
     @Operation(summary = "Chi tiết một contest")
     @ApiResponse(responseCode = "200", description = "Contest")
     @ApiResponse(responseCode = "404", description = "Không có contest")
-    public ContestResponse get(@PathVariable UUID contestId) {
+    public AdminContestResponse get(@PathVariable UUID contestId) {
         return adminContestService.get(contestId);
+    }
+
+    @PutMapping("/{contestId}/problems")
+    @Operation(summary = "Thay toàn bộ danh sách bài của contest, thứ tự quyết định chữ cái A, B")
+    @ApiResponse(responseCode = "200", description = "Contest với danh sách bài mới")
+    @ApiResponse(responseCode = "400", description = "Quá 26 bài hoặc trùng bài")
+    @ApiResponse(responseCode = "404", description = "Không có contest")
+    @ApiResponse(responseCode = "409", description = "Contest đã bắt đầu")
+    @ApiResponse(responseCode = "422", description = "Có bài chưa được duyệt cho contest")
+    @ApiResponse(responseCode = "503", description = "Không gọi được problem-service")
+    public AdminContestResponse replaceProblems(
+            @PathVariable UUID contestId,
+            @Valid @RequestBody ReplaceContestProblemsRequest request) {
+        return contestProblemService.replace(contestId, request);
     }
 }

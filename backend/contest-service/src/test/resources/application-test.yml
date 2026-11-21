@@ -4,3 +4,8 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: http://localhost:1/internal/jwks
+
+sqljudge:
+  problem-service-url: http://localhost:1
+  internal:
+    api-token: test-internal-token
