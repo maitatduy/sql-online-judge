@@ -6,7 +6,7 @@ import type {
     PendingTask,
     WorkerStatus,
 } from "@/features/admin/types";
-import type { AdminNavigationCounts } from "@/lib/admin-navigation";
+import type { AdminServiceCounts } from "@/lib/admin-navigation";
 import type { Verdict } from "@/lib/verdict";
 
 const MINUTE_MS = 60_000;
@@ -112,11 +112,10 @@ function hasWorkerWithStatus(workers: JudgeWorker[], statuses: WorkerStatus[]): 
     return workers.some((worker) => statuses.includes(worker.status));
 }
 
-export function buildNavigationCounts(workers: JudgeWorker[]): AdminNavigationCounts {
+export function buildNavigationCounts(workers: JudgeWorker[]): AdminServiceCounts {
     return {
         abuseReports: 12,
         supportMessages: 3,
-        problemReviews: 5,
         hasLiveContest: true,
         hasJudgeIncident: hasWorkerWithStatus(workers, ["DISCONNECTED"]),
     };

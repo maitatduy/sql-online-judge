@@ -10,6 +10,7 @@ const BUSY_COUNTS: AdminNavigationCounts = {
     abuseReports: 12,
     supportMessages: 3,
     problemReviews: 5,
+    courseReviews: 2,
     hasLiveContest: true,
     hasJudgeIncident: true,
 };
@@ -17,6 +18,7 @@ const QUIET_COUNTS: AdminNavigationCounts = {
     abuseReports: 0,
     supportMessages: 0,
     problemReviews: 0,
+    courseReviews: 0,
     hasLiveContest: false,
     hasJudgeIncident: false,
 };
