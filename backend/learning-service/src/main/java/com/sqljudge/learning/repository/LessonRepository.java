@@ -77,4 +77,7 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
             WHERE l.id = :lessonId
             """)
     Optional<Lesson> findWithCourse(@Param("lessonId") UUID lessonId);
+
+    @Query("SELECT l FROM Lesson l WHERE l.chapter.revision.id = :revisionId")
+    List<Lesson> findByRevision(@Param("revisionId") UUID revisionId);
 }

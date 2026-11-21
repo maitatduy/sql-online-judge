@@ -55,4 +55,14 @@ public class QuizOption extends BaseEntity {
         this.label = label;
         this.correct = correct;
     }
+
+    public QuizOption copyTo(QuizQuestion target) {
+        QuizOption copy = new QuizOption();
+        copy.question = target;
+        copy.optionKey = optionKey;
+        copy.label = label;
+        copy.correct = correct;
+        copy.position = position;
+        return copy;
+    }
 }

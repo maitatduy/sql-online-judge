@@ -2,6 +2,7 @@ package com.sqljudge.learning.repository;
 
 import com.sqljudge.learning.dto.response.LessonCellResponse;
 import com.sqljudge.learning.entity.LessonCell;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,4 +52,7 @@ public interface LessonCellRepository extends JpaRepository<LessonCell, UUID> {
             WHERE cell.id = :cellId
             """)
     Optional<LessonCell> findWithCourse(@Param("cellId") UUID cellId);
+
+    @Query("SELECT c FROM LessonCell c WHERE c.lesson.id IN :lessonIds")
+    List<LessonCell> findByLessonIds(@Param("lessonIds") Collection<UUID> lessonIds);
 }
