@@ -23,6 +23,7 @@
         <module>judge-worker</module>
         <module>submission-service</module>
         <module>learning-service</module>
+        <module>contest-service</module>
     </modules>
 
     <properties>

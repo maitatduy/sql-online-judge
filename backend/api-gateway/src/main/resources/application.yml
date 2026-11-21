@@ -33,6 +33,10 @@ spring:
               uri: ${LEARNING_SERVICE_URL}
               predicates:
                 - Path=/api/courses,/api/courses/**,/api/lesson-cells/**,/api/lesson-runs/**,/api/enrollments,/api/learning/**,/api/studio/courses,/api/studio/courses/**,/api/studio/chapters/**,/api/studio/lessons/**,/api/studio/cells/**,/api/studio/quiz-questions/**,/api/admin/courses,/api/admin/courses/**
+            - id: contest-service
+              uri: ${CONTEST_SERVICE_URL}
+              predicates:
+                - Path=/api/contests,/api/contests/**,/api/admin/contests,/api/admin/contests/**
             - id: problem-service
               uri: ${PROBLEM_SERVICE_URL}
               predicates:
