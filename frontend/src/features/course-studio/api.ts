@@ -45,6 +45,8 @@ export const courseStudioApi = {
         apiClient.post<StudioCourse>("/api/studio/courses", request),
     getCourse: (courseId: string, signal?: AbortSignal) =>
         apiClient.get<StudioCourse>(coursePath(courseId), { signal }),
+    createDraft: (courseId: string) =>
+        apiClient.post<StudioCourse>(`${coursePath(courseId)}/draft`),
     submitCourse: (courseId: string) =>
         apiClient.post<StudioCourse>(`${coursePath(courseId)}/submit`),
     updateCourse: (courseId: string, info: CourseInfo) =>

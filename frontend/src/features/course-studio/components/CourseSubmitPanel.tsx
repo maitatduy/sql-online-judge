@@ -54,7 +54,9 @@ export function CourseSubmitPanel({ course }: CourseSubmitPanelProps) {
                     </>
                 ) : (
                     <p className="text-muted-foreground">
-                        Soạn xong thì gửi duyệt để khoá được xuất bản.
+                        {course.status === "PUBLISHED"
+                            ? "Đây là bản sửa. Học viên vẫn học bản đang xuất bản cho tới khi bản này được duyệt."
+                            : "Soạn xong thì gửi duyệt để khoá được xuất bản."}
                     </p>
                 )}
                 {isEmpty ? (

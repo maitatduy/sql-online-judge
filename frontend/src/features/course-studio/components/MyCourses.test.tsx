@@ -54,7 +54,7 @@ describe("Khoá học của tôi trong Studio", () => {
             "/studio/courses/0192f3f1-0000-7000-8000-000000000001",
         );
         expect(table.getByText("Chờ duyệt")).toBeInTheDocument();
-        expect(screen.getByText("2 khoá")).toBeInTheDocument();
+        expect(screen.getByText("3 khoá")).toBeInTheDocument();
     });
 
     it("tạo khoá nháp rồi mở trang soạn của khoá đó", async () => {

@@ -47,3 +47,17 @@ export function useSubmitCourse(courseId: string) {
         },
     });
 }
+
+export function useCreateCourseDraft(courseId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: () => courseStudioApi.createDraft(courseId),
+        onSuccess: (course) => {
+            queryClient.setQueryData(courseKey(courseId), course);
+            return queryClient.invalidateQueries({
+                queryKey: STUDIO_COURSES_KEY,
+                predicate: (query) => query.queryKey[1] !== "detail",
+            });
+        },
+    });
+}
