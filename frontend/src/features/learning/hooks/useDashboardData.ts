@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { submissionActivityQuery } from "@/lib/useLearningStreak";
+
 import { learningApi } from "../api";
 
 const RECENT_SUBMISSIONS = 5;
@@ -13,10 +15,7 @@ export function useSubmissionStats() {
 }
 
 export function useSubmissionActivity(from: string) {
-    return useQuery({
-        queryKey: ["submission-activity", from],
-        queryFn: ({ signal }) => learningApi.getSubmissionActivity(from, signal),
-    });
+    return useQuery(submissionActivityQuery(from));
 }
 
 export function useRecentSubmissions() {

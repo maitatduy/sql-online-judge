@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { learningApi } from "../api";
+import { learningActivityQuery } from "@/lib/useLearningStreak";
 
 export function useLearningActivity(from: string) {
-    return useQuery({
-        queryKey: ["learning-activity", from],
-        queryFn: ({ signal }) => learningApi.getLearningActivity(from, signal),
-    });
+    return useQuery(learningActivityQuery(from));
 }

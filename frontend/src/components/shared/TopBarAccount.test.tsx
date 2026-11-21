@@ -3,6 +3,7 @@ import { http, HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
 
 import { getAccessToken, setAccessToken } from "@/lib/auth-session";
+import { completeMockLesson, resetMockLearningProgress } from "@/mocks/learning-progress";
 import { server } from "@/mocks/server";
 import { DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
@@ -28,12 +29,14 @@ describe("TopBarAccount", () => {
         expect(screen.queryByRole("link", { name: "Đăng nhập" })).not.toBeInTheDocument();
     });
 
-    it("hiện chuỗi ngày học của người đang đăng nhập", async () => {
+    it("tính chuỗi ngày từ bài nộp và bài giảng giống dashboard", async () => {
+        resetMockLearningProgress();
         writeMockSession(DEMO_SESSION_USER);
+        completeMockLesson("sql-co-ban", "01a1d2c0-0000-7000-8000-000000000201");
         renderWithProviders(<TopBarAccount />);
 
         const streak = await screen.findByTitle("Chuỗi ngày học");
-        expect(streak).toHaveTextContent("12 ngày học liên tiếp");
+        await waitFor(() => expect(streak).toHaveTextContent("3 ngày học liên tiếp"));
         expect(streak).toHaveAttribute("href", "/dashboard");
     });
 

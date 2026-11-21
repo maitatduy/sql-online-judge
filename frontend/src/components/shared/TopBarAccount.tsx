@@ -10,12 +10,14 @@ import { isUnauthenticatedError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { useLearningStreak } from "@/lib/useLearningStreak";
 import { useLogout } from "@/lib/useLogout";
 
 export function TopBarAccount() {
     const pathname = usePathname();
     const { data: currentUser, error, isPending } = useCurrentUser();
     const logout = useLogout();
+    const streakDays = useLearningStreak(currentUser !== undefined);
 
     if (isPending) {
         return <span aria-hidden="true" className="size-8 shrink-0 rounded-full bg-surface-2" />;
@@ -37,7 +39,7 @@ export function TopBarAccount() {
                 className="hidden min-h-11 items-center gap-1 rounded-md px-2 font-bold text-streak hover:bg-streak/12 sm:inline-flex"
             >
                 <Flame aria-hidden="true" className="size-4" />
-                {formatNumber(currentUser.currentStreakDays)}
+                {formatNumber(streakDays ?? 0)}
                 <span className="sr-only"> ngày học liên tiếp</span>
             </Link>
             <Link
