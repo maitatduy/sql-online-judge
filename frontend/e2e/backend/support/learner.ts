@@ -31,7 +31,7 @@ export async function registerVerifiedLearner(request: APIRequestContext): Promi
 }
 
 export async function logIn(page: Page, learner: Learner, nextPath: string): Promise<void> {
-    await page.goto(`/login?next=${encodeURIComponent(nextPath)}`);
+    await page.goto(`/login?next=${encodeURIComponent(nextPath)}`, { waitUntil: "networkidle" });
     await page.getByLabel("Email").fill(learner.email);
     await page.getByLabel("Mật khẩu", { exact: true }).fill(learner.password);
     await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
