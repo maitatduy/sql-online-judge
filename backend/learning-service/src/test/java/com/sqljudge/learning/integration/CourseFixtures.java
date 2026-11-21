@@ -37,13 +37,15 @@ final class CourseFixtures {
         String revisionId = UUID.randomUUID().toString();
         jdbcTemplate.update(
                 "INSERT INTO courses (id, slug, author_id, status, published_revision_id,"
-                        + " deleted_at, version, created_at, updated_at) VALUES (UUID_TO_BIN(?), ?,"
-                        + " UUID_TO_BIN(?), ?, UUID_TO_BIN(?), ?, 0, NOW(6), NOW(6))",
+                        + " draft_revision_id, deleted_at, version, created_at, updated_at) VALUES"
+                        + " (UUID_TO_BIN(?), ?, UUID_TO_BIN(?), ?, UUID_TO_BIN(?), UUID_TO_BIN(?),"
+                        + " ?, 0, NOW(6), NOW(6))",
                 courseId,
                 slug,
                 AUTHOR_ID,
                 status,
                 publishedAt == null ? null : revisionId,
+                publishedAt == null ? revisionId : null,
                 deleted ? "2026-11-10 08:00:00" : null);
         jdbcTemplate.update(
                 "INSERT INTO course_revisions (id, course_id, status, title, summary, difficulty,"
