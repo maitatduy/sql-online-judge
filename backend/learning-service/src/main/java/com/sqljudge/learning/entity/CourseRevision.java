@@ -102,4 +102,11 @@ public class CourseRevision extends BaseEntity {
     public void supersede() {
         this.status = CourseRevisionStatus.SUPERSEDED;
     }
+
+    public CourseRevision copyAsDraft() {
+        CourseRevision copy = draftOf(course);
+        copy.describe(title, summary, difficulty);
+        copy.recount(lessonCount, estimatedMinutes);
+        return copy;
+    }
 }

@@ -63,4 +63,16 @@ public class Lesson extends BaseEntity {
         this.title = title;
         this.body = body;
     }
+
+    public Lesson copyTo(Chapter target) {
+        Lesson copy = new Lesson();
+        copy.chapter = target;
+        copy.lessonKey = lessonKey;
+        copy.slug = slug;
+        copy.title = title;
+        copy.body = body;
+        copy.position = position;
+        copy.estimatedMinutes = estimatedMinutes;
+        return copy;
+    }
 }

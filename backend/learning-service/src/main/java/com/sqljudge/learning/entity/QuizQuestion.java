@@ -56,4 +56,14 @@ public class QuizQuestion extends BaseEntity {
         this.prompt = prompt;
         this.multiple = multiple;
     }
+
+    public QuizQuestion copyTo(Lesson target) {
+        QuizQuestion copy = new QuizQuestion();
+        copy.lesson = target;
+        copy.questionKey = questionKey;
+        copy.prompt = prompt;
+        copy.multiple = multiple;
+        copy.position = position;
+        return copy;
+    }
 }

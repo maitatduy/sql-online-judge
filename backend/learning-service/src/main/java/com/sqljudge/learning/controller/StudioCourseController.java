@@ -3,6 +3,7 @@ package com.sqljudge.learning.controller;
 import com.sqljudge.learning.dto.request.CreateCourseRequest;
 import com.sqljudge.learning.dto.request.UpdateCourseRequest;
 import com.sqljudge.learning.dto.response.StudioCourseResponse;
+import com.sqljudge.learning.service.StudioCourseDraftService;
 import com.sqljudge.learning.service.StudioCourseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,6 +29,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class StudioCourseController {
 
     private final StudioCourseService studioCourseService;
+    private final StudioCourseDraftService studioCourseDraftService;
+
+    @PostMapping("/{courseId}/draft")
+    @Operation(summary = "Tạo bản nháp mới từ bản đang xuất bản để sửa khoá")
+    @ApiResponse(responseCode = "201", description = "Bản nháp vừa tạo, đã chép đủ nội dung")
+    @ApiResponse(responseCode = "409", description = "Khoá đã có bản nháp đang soạn")
+    @ApiResponse(responseCode = "422", description = "Khoá chưa xuất bản")
+    public ResponseEntity<StudioCourseResponse> createDraft(@PathVariable UUID courseId) {
+        StudioCourseResponse draft = studioCourseDraftService.createDraft(courseId);
+        return ResponseEntity.created(URI.create("/api/studio/courses/" + courseId)).body(draft);
+    }
 
     @PostMapping
     @Operation(summary = "Tạo khoá học nháp của người gọi")

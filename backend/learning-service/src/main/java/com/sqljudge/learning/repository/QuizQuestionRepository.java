@@ -1,6 +1,7 @@
 package com.sqljudge.learning.repository;
 
 import com.sqljudge.learning.entity.QuizQuestion;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,4 +30,7 @@ public interface QuizQuestionRepository extends JpaRepository<QuizQuestion, UUID
     @Modifying
     @Query("DELETE FROM QuizQuestion q WHERE q.lesson.id = :lessonId")
     void deleteByLessonId(@Param("lessonId") UUID lessonId);
+
+    @Query("SELECT q FROM QuizQuestion q WHERE q.lesson.id IN :lessonIds")
+    List<QuizQuestion> findByLessonIds(@Param("lessonIds") Collection<UUID> lessonIds);
 }

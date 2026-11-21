@@ -74,4 +74,17 @@ public class LessonCell extends BaseEntity {
         this.datasetVersionId = versionId;
         this.datasetChecksum = checksum;
     }
+
+    public LessonCell copyTo(Lesson target) {
+        LessonCell copy = new LessonCell();
+        copy.lesson = target;
+        copy.cellKey = cellKey;
+        copy.position = position;
+        copy.starterSql = starterSql;
+        copy.dialect = dialect;
+        copy.datasetVersionId = datasetVersionId;
+        copy.datasetVariantId = datasetVariantId;
+        copy.datasetChecksum = datasetChecksum;
+        return copy;
+    }
 }
