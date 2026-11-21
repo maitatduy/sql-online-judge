@@ -6,8 +6,10 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.ContainerCustomizer;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
@@ -21,6 +23,12 @@ public class KafkaConfig {
     private static final int MAX_RETRIES = 3;
     private static final long INITIAL_BACKOFF_MS = 1_000;
     private static final double BACKOFF_MULTIPLIER = 2.0;
+
+    @Bean
+    ContainerCustomizer<Object, Object, ConcurrentMessageListenerContainer<Object, Object>>
+            deliveryAttemptHeader() {
+        return container -> container.getContainerProperties().setDeliveryAttemptHeader(true);
+    }
 
     @Bean
     DefaultErrorHandler kafkaErrorHandler(KafkaTemplate<String, String> kafkaTemplate) {

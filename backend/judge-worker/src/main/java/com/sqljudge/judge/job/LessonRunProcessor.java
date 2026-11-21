@@ -60,6 +60,11 @@ public class LessonRunProcessor {
             return Optional.of(
                     snapshots.snapshotOf(request.datasetVersionId(), request.datasetChecksum()));
         } catch (SnapshotUnavailableException exception) {
+            log.warn(
+                    "lesson_run_snapshot_unavailable runId={} versionId={}",
+                    request.runId(),
+                    request.datasetVersionId(),
+                    exception);
             return Optional.empty();
         }
     }
