@@ -16,7 +16,17 @@ export interface StudioCourse {
     difficulty: Difficulty;
     estimatedMinutes: number;
     lessonCount: number;
+    submittedAt: string | null;
     updatedAt: string;
+    latestReview: CourseReview | null;
+}
+
+export type CourseReviewDecision = "APPROVED" | "CHANGES_REQUESTED";
+
+export interface CourseReview {
+    decision: CourseReviewDecision;
+    reason: string | null;
+    reviewedAt: string;
 }
 
 export interface CourseInfo {

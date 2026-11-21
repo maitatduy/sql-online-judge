@@ -14,6 +14,7 @@ import { ROUTES } from "@/lib/routes";
 import { useStudioCourse } from "../hooks/useStudioCourse";
 import { CourseInfoForm } from "./CourseInfoForm";
 import { CourseOutline } from "./CourseOutline";
+import { CourseSubmitPanel } from "./CourseSubmitPanel";
 import { RevisionStatusBadge } from "./RevisionStatusBadge";
 
 const NOT_FOUND_STATUS = 404;
@@ -64,6 +65,7 @@ export function CourseStudio({ courseId }: CourseStudioProps) {
                             {formatNumber(course.estimatedMinutes)} phút
                         </p>
                     </div>
+                    <CourseSubmitPanel course={course} />
                     <CourseInfoForm key={course.revisionId} course={course} />
                     <CourseOutline
                         courseId={course.id}

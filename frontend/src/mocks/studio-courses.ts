@@ -27,6 +27,12 @@ function seededCourses(): StoredCourse[] {
             difficulty: "MEDIUM",
             estimatedMinutes: 90,
             lessonCount: 4,
+            submittedAt: hoursAgo(26),
+            latestReview: {
+                decision: "CHANGES_REQUESTED",
+                reason: "Thêm ví dụ cho bài DENSE_RANK.",
+                reviewedAt: hoursAgo(20),
+            },
             updatedAt: hoursAgo(2),
         },
         {
@@ -41,6 +47,8 @@ function seededCourses(): StoredCourse[] {
             difficulty: "EASY",
             estimatedMinutes: 60,
             lessonCount: 3,
+            submittedAt: hoursAgo(30),
+            latestReview: null,
             updatedAt: hoursAgo(30),
         },
     ];
@@ -107,6 +115,8 @@ export const studioCourseHandlers: RequestHandler[] = [
             revisionStatus: "DRAFT",
             estimatedMinutes: 0,
             lessonCount: 0,
+            submittedAt: null,
+            latestReview: null,
             updatedAt: new Date().toISOString(),
         };
         writeCourses([created, ...courses]);
@@ -120,6 +130,34 @@ export const studioCourseHandlers: RequestHandler[] = [
         }
         const course = ownedCourse(String(params.courseId), user.id);
         return course ? HttpResponse.json(publicOf(course)) : courseNotFound();
+    }),
+    http.post("*/api/studio/courses/:courseId/submit", async ({ params }) => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return unauthenticated();
+        }
+        const course = ownedCourse(String(params.courseId), user.id);
+        if (!course) {
+            return courseNotFound();
+        }
+        if (course.revisionStatus !== "DRAFT") {
+            return apiError(422, "COURSE_LOCKED", "Khoá đang chờ duyệt nên chưa sửa được");
+        }
+        if (course.lessonCount === 0) {
+            return apiError(
+                422,
+                "COURSE_EMPTY",
+                "Khoá cần ít nhất một bài giảng trước khi gửi duyệt",
+            );
+        }
+        const submitted: StoredCourse = {
+            ...course,
+            revisionStatus: "IN_REVIEW",
+            submittedAt: new Date().toISOString(),
+        };
+        writeCourses(readCourses().map((stored) => (stored.id === course.id ? submitted : stored)));
+        return HttpResponse.json({ ...publicOf(submitted), latestReview: null });
     }),
     http.patch("*/api/studio/courses/:courseId", async ({ params, request }) => {
         await delay();
