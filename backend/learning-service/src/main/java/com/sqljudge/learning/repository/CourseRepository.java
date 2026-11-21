@@ -1,7 +1,9 @@
 package com.sqljudge.learning.repository;
 
+import com.sqljudge.learning.dto.response.AdminCourseItem;
 import com.sqljudge.learning.dto.response.CourseSummaryResponse;
 import com.sqljudge.learning.entity.Course;
+import com.sqljudge.learning.entity.CourseStatus;
 import com.sqljudge.learning.entity.Difficulty;
 import java.util.List;
 import java.util.Optional;
@@ -42,4 +44,24 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     Optional<Course> findByIdAndDeletedAtIsNull(UUID id);
 
     List<Course> findTop100ByAuthorIdAndDeletedAtIsNullOrderByUpdatedAtDesc(UUID authorId);
+
+    @Query(
+            value =
+                    """
+                    SELECT new com.sqljudge.learning.dto.response.AdminCourseItem(
+                        c.id, c.slug, w.title, w.difficulty, c.status, w.status, w.lessonCount,
+                        c.authorId, c.updatedAt, p.publishedAt)
+                    FROM Course c
+                    JOIN CourseRevision w
+                        ON w.id = COALESCE(c.draftRevisionId, c.publishedRevisionId)
+                    LEFT JOIN CourseRevision p ON p.id = c.publishedRevisionId
+                    WHERE c.deletedAt IS NULL AND (:status IS NULL OR c.status = :status)
+                    ORDER BY c.updatedAt DESC
+                    """,
+            countQuery =
+                    """
+                    SELECT COUNT(c) FROM Course c
+                    WHERE c.deletedAt IS NULL AND (:status IS NULL OR c.status = :status)
+                    """)
+    Page<AdminCourseItem> findCatalog(@Param("status") CourseStatus status, Pageable pageable);
 }

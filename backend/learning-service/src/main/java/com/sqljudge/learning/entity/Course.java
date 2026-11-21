@@ -62,4 +62,20 @@ public class Course extends BaseEntity {
         this.publishedRevisionId = revision.getId();
         this.draftRevisionId = null;
     }
+
+    public boolean isPublished() {
+        return status == CourseStatus.PUBLISHED;
+    }
+
+    public boolean isArchived() {
+        return status == CourseStatus.ARCHIVED;
+    }
+
+    public void archive() {
+        this.status = CourseStatus.ARCHIVED;
+    }
+
+    public void restore() {
+        this.status = CourseStatus.PUBLISHED;
+    }
 }
