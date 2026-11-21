@@ -57,12 +57,22 @@ public class StudioCourseController {
     }
 
     @PatchMapping("/{courseId}")
-    @Operation(summary = "Sửa tên, tóm tắt, độ khó và thời lượng của bản nháp")
+    @Operation(summary = "Sửa tên, tóm tắt và độ khó của bản nháp")
     @ApiResponse(responseCode = "200", description = "Khoá học sau khi sửa")
     @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ")
     @ApiResponse(responseCode = "422", description = "Khoá đang chờ duyệt")
     public StudioCourseResponse update(
             @PathVariable UUID courseId, @Valid @RequestBody UpdateCourseRequest request) {
         return studioCourseService.update(courseId, request);
+    }
+
+    @PostMapping("/{courseId}/submit")
+    @Operation(summary = "Gửi bản nháp cho ADMIN duyệt")
+    @ApiResponse(responseCode = "200", description = "Khoá chuyển sang chờ duyệt")
+    @ApiResponse(
+            responseCode = "422",
+            description = "Khoá chưa có bài giảng hoặc không còn là bản nháp")
+    public StudioCourseResponse submit(@PathVariable UUID courseId) {
+        return studioCourseService.submit(courseId);
     }
 }

@@ -56,4 +56,10 @@ public class Course extends BaseEntity {
         course.status = CourseStatus.DRAFT;
         return course;
     }
+
+    public void publish(CourseRevision revision) {
+        this.status = CourseStatus.PUBLISHED;
+        this.publishedRevisionId = revision.getId();
+        this.draftRevisionId = null;
+    }
 }

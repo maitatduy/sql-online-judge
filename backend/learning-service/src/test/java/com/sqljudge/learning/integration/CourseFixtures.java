@@ -22,6 +22,7 @@ final class CourseFixtures {
         jdbcTemplate.update("DELETE FROM lesson_cells");
         jdbcTemplate.update("DELETE FROM lessons");
         jdbcTemplate.update("DELETE FROM chapters");
+        jdbcTemplate.update("DELETE FROM course_reviews");
         jdbcTemplate.update("DELETE FROM course_revisions");
         jdbcTemplate.update("DELETE FROM courses");
     }
