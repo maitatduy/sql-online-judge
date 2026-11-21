@@ -4,15 +4,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
-import {
-    currentStreakDays,
-    mergeActivity,
-    shiftDateKey,
-    vietnamDateKey,
-} from "@/lib/activity-calendar";
+import { mergeActivity } from "@/lib/activity-calendar";
 import { isUnauthenticatedError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { activitySince, useLearningStreak } from "@/lib/useLearningStreak";
 
 import {
     useRecentSubmissions,
@@ -30,15 +26,14 @@ import { DashboardHeader } from "./DashboardHeader";
 import { DashboardStats } from "./DashboardStats";
 import { RecentSubmissionsSection } from "./RecentSubmissionsSection";
 
-const ACTIVITY_DAYS = 364;
 const ROW = "flex flex-wrap gap-6";
 
 export function LearningDashboard() {
     const pathname = usePathname();
     const router = useRouter();
     const [now] = useState(() => new Date());
-    const todayKey = vietnamDateKey(now);
-    const from = shiftDateKey(todayKey, -ACTIVITY_DAYS);
+    const from = activitySince(now);
+    const streakDays = useLearningStreak(true);
     const { data: currentUser, error: userError } = useCurrentUser();
     const enrollments = useEnrollments();
     const learningActivity = useLearningActivity(from);
@@ -67,7 +62,7 @@ export function LearningDashboard() {
         >
             <DashboardHeader
                 displayName={currentUser?.displayName}
-                streakDays={activity ? currentStreakDays(activity, todayKey) : undefined}
+                streakDays={streakDays}
                 challengeHref={challenge ? ROUTES.problem(challenge.slug) : ROUTES.problems}
                 now={now}
             />

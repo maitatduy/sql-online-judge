@@ -1,4 +1,3 @@
-import type { ActivityDay } from "@/lib/activity-calendar";
 import { apiClient } from "@/lib/api-client";
 import type { Difficulty } from "@/lib/difficulty";
 import type { Page } from "@/lib/pagination";
@@ -51,12 +50,8 @@ export const learningApi = {
         ),
     listEnrollments: (signal?: AbortSignal) =>
         apiClient.get<EnrolledCourse[]>("/api/enrollments", { signal }),
-    getLearningActivity: (from: string, signal?: AbortSignal) =>
-        apiClient.get<ActivityDay[]>("/api/learning/activity", { params: { from }, signal }),
     getSubmissionStats: (signal?: AbortSignal) =>
         apiClient.get<SubmissionStats>("/api/submissions/summary", { signal }),
-    getSubmissionActivity: (from: string, signal?: AbortSignal) =>
-        apiClient.get<ActivityDay[]>("/api/submissions/activity", { params: { from }, signal }),
     listRecentSubmissions: (size: number, signal?: AbortSignal) =>
         apiClient.get<RecentSubmission[]>("/api/submissions/recent", { params: { size }, signal }),
     listSuggestedProblems: (size: number, signal?: AbortSignal) =>
