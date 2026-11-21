@@ -23,12 +23,20 @@ export interface AdminNavigationCounts {
     abuseReports: number;
     supportMessages: number;
     problemReviews: number;
+    courseReviews: number;
     hasLiveContest: boolean;
     hasJudgeIncident: boolean;
 }
 
+export type AdminServiceCounts = Omit<AdminNavigationCounts, "problemReviews" | "courseReviews">;
+
 export type AdminNavigationIndicator =
-    "abuseReports" | "supportMessages" | "problemReviews" | "liveContest" | "judgeIncident";
+    | "abuseReports"
+    | "supportMessages"
+    | "problemReviews"
+    | "courseReviews"
+    | "liveContest"
+    | "judgeIncident";
 
 export interface AdminNavigationItem {
     label: string;
@@ -91,6 +99,7 @@ export const ADMIN_NAVIGATION_GROUPS: AdminNavigationGroup[] = [
                 label: "Duyệt khoá học",
                 href: ADMIN_ROUTES.courseReviews,
                 icon: ClipboardCheck,
+                indicator: "courseReviews",
             },
             { label: "Khoá học", href: `${ROUTES.admin}/courses`, icon: BookOpen },
             {

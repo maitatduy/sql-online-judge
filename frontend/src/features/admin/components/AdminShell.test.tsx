@@ -71,7 +71,12 @@ describe("AdminShell", () => {
         await waitFor(() =>
             expect(
                 within(navigation).getByRole("link", { name: /^Duyệt bài tập/ }),
-            ).toHaveTextContent("5 đang chờ"),
+            ).toHaveTextContent("1 đang chờ"),
+        );
+        await waitFor(() =>
+            expect(
+                within(navigation).getByRole("link", { name: /^Duyệt khoá học/ }),
+            ).toHaveTextContent("1 đang chờ"),
         );
         expect(navigation).toHaveTextContent("admin.huy");
     });

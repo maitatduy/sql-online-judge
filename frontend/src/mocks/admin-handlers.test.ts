@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { AdminOverviewResponse, JudgeWorkersResponse } from "@/features/admin/types";
-import type { AdminNavigationCounts } from "@/lib/admin-navigation";
+import type { AdminServiceCounts } from "@/lib/admin-navigation";
 import { apiClient } from "@/lib/api-client";
 import type { CurrentUser } from "@/lib/current-user";
 
@@ -101,7 +101,7 @@ describe("số liệu sau khi worker hoạt động lại", () => {
         writeMockSession(ADMIN_SESSION_USER);
 
         const overview = await apiClient.get<AdminOverviewResponse>("/api/admin/overview");
-        const counts = await apiClient.get<AdminNavigationCounts>("/api/admin/navigation-counts");
+        const counts = await apiClient.get<AdminServiceCounts>("/api/admin/navigation-counts");
 
         expect(overview.queue).toEqual({ size: 146, averageWaitMs: 3800, isDegraded: true });
         expect(counts.hasJudgeIncident).toBe(true);
@@ -112,7 +112,7 @@ describe("số liệu sau khi worker hoạt động lại", () => {
         recordWorkerRestart("judge-my-02", Date.now() - LONG_AGO_MS);
 
         const overview = await apiClient.get<AdminOverviewResponse>("/api/admin/overview");
-        const counts = await apiClient.get<AdminNavigationCounts>("/api/admin/navigation-counts");
+        const counts = await apiClient.get<AdminServiceCounts>("/api/admin/navigation-counts");
         const { items } = await apiClient.get<JudgeWorkersResponse>("/api/admin/judge/workers");
 
         expect(overview.queue).toEqual({ size: 107, averageWaitMs: 2100, isDegraded: false });

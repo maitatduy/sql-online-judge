@@ -43,6 +43,8 @@ function appearanceOf(
             return pendingCount(counts.supportMessages, "bg-count-support");
         case "problemReviews":
             return pendingCount(counts.problemReviews, "bg-count-review");
+        case "courseReviews":
+            return pendingCount(counts.courseReviews, "bg-count-review");
         case "liveContest":
             return counts.hasLiveContest
                 ? { fillClassName: "bg-count-live", isDotOnly: false, content: "Live" }

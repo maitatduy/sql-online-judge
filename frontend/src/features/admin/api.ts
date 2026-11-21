@@ -1,5 +1,6 @@
-import type { AdminNavigationCounts } from "@/lib/admin-navigation";
+import type { AdminServiceCounts } from "@/lib/admin-navigation";
 import { apiClient } from "@/lib/api-client";
+import type { Page } from "@/lib/pagination";
 
 import { AUDIT_PAGE_SIZE, auditQueryOf, type AuditFilters } from "./audit/search-params";
 import type { AuditActorsResponse, AuditLogResponse } from "./audit/types";
@@ -147,8 +148,22 @@ export const adminApi = {
         apiClient.post<UserNote>(`/api/admin/users/${encodeURIComponent(username)}/notes`, {
             body,
         }),
-    getNavigationCounts: (signal?: AbortSignal) =>
-        apiClient.get<AdminNavigationCounts>("/api/admin/navigation-counts", { signal }),
+    getServiceCounts: (signal?: AbortSignal) =>
+        apiClient.get<AdminServiceCounts>("/api/admin/navigation-counts", { signal }),
+    getPendingProblemCount: async (signal?: AbortSignal) =>
+        (
+            await apiClient.get<Page<unknown>>("/api/admin/problems", {
+                params: { status: "PENDING_REVIEW", page: 1, size: 1 },
+                signal,
+            })
+        ).totalItems,
+    getPendingCourseCount: async (signal?: AbortSignal) =>
+        (
+            await apiClient.get<Page<unknown>>("/api/admin/courses", {
+                params: { page: 1, size: 1 },
+                signal,
+            })
+        ).totalItems,
     getOverview: (signal?: AbortSignal) =>
         apiClient.get<AdminOverviewResponse>("/api/admin/overview", { signal }),
     getJudgeWorkers: (signal?: AbortSignal) =>
