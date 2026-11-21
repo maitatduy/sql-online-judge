@@ -61,7 +61,7 @@ export function CourseInfoForm({ course }: CourseInfoFormProps) {
             <h2 id="course-info-title" className="text-lg font-bold">
                 Thông tin khoá
             </h2>
-            {isLocked ? (
+            {course.revisionStatus === "IN_REVIEW" ? (
                 <p className="mt-2 text-muted-foreground">Khoá đang chờ duyệt nên chưa sửa được.</p>
             ) : null}
             <FormProvider {...form}>

@@ -51,6 +51,26 @@ function seededCourses(): StoredCourse[] {
             latestReview: null,
             updatedAt: hoursAgo(30),
         },
+        {
+            id: "0192f3f1-0000-7000-8000-000000000003",
+            authorId: SETTER_SESSION_USER.id,
+            slug: "cte-thuc-chien",
+            status: "PUBLISHED",
+            revisionId: "0192f3f1-0000-7000-8000-000000000013",
+            revisionStatus: "PUBLISHED",
+            title: "CTE và truy vấn đệ quy",
+            summary: "Viết truy vấn gọn hơn với WITH và WITH RECURSIVE.",
+            difficulty: "HARD",
+            estimatedMinutes: 75,
+            lessonCount: 3,
+            submittedAt: hoursAgo(80),
+            latestReview: {
+                decision: "APPROVED",
+                reason: null,
+                reviewedAt: hoursAgo(72),
+            },
+            updatedAt: hoursAgo(72),
+        },
     ];
 }
 
@@ -133,6 +153,36 @@ export const studioCourseHandlers: RequestHandler[] = [
         }
         const course = ownedCourse(String(params.courseId), user.id);
         return course ? HttpResponse.json(publicOf(course)) : courseNotFound();
+    }),
+    http.post("*/api/studio/courses/:courseId/draft", async ({ params }) => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return unauthenticated();
+        }
+        const course = ownedCourse(String(params.courseId), user.id);
+        if (!course) {
+            return courseNotFound();
+        }
+        if (course.status !== "PUBLISHED") {
+            return apiError(
+                422,
+                "COURSE_NOT_PUBLISHED",
+                "Khoá chưa xuất bản nên chưa tạo bản sửa được",
+            );
+        }
+        if (course.revisionStatus !== "PUBLISHED") {
+            return apiError(409, "COURSE_DRAFT_EXISTS", "Khoá đã có bản nháp đang soạn");
+        }
+        const draft: StoredCourse = {
+            ...course,
+            revisionId: crypto.randomUUID(),
+            revisionStatus: "DRAFT",
+            submittedAt: null,
+            latestReview: null,
+        };
+        writeCourses(readCourses().map((stored) => (stored.id === course.id ? draft : stored)));
+        return HttpResponse.json(publicOf(draft), { status: 201 });
     }),
     http.post("*/api/studio/courses/:courseId/submit", async ({ params }) => {
         await delay();
