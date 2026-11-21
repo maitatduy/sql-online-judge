@@ -34,7 +34,11 @@ import {
 import { studioCourseOutlineHandlers, studioLessonHandlers } from "./studio-course-outline";
 import { studioLessonCellHandlers } from "./studio-lesson-cells";
 import { studioLessonQuizHandlers } from "./studio-lesson-quiz";
-import { adminCourseReviewHandlers, studioCourseHandlers } from "./studio-courses";
+import {
+    adminCourseCatalogHandlers,
+    adminCourseReviewHandlers,
+    studioCourseHandlers,
+} from "./studio-courses";
 import { studioDatasetHandlers } from "./studio-datasets";
 import { studioProblemHandlers } from "./studio-problems";
 import { studioAnswerCheckHandlers } from "./studio-answer-checks";
@@ -193,6 +197,7 @@ export const handlers: RequestHandler[] = [
     ...studioLessonQuizHandlers,
     ...studioCourseHandlers,
     ...adminCourseReviewHandlers,
+    ...adminCourseCatalogHandlers,
     ...adminHandlers,
     ...adminProblemReviewHandlers,
     ...invitationHandlers,
