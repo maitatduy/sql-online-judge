@@ -336,3 +336,57 @@ export const adminCourseReviewHandlers: RequestHandler[] = [
         });
     }),
 ];
+
+function changeStatus(courseId: string, from: StoredCourse["status"], to: StoredCourse["status"]) {
+    const course = readCourses().find((item) => item.id === courseId);
+    if (!course) {
+        return courseNotFound();
+    }
+    if (course.status !== from) {
+        return from === "PUBLISHED"
+            ? apiError(422, "COURSE_NOT_PUBLISHED", "Chỉ ẩn được khoá đang xuất bản")
+            : apiError(422, "COURSE_NOT_ARCHIVED", "Khoá không ở trạng thái đã ẩn");
+    }
+    return saveReviewed({ ...course, status: to });
+}
+
+export const adminCourseCatalogHandlers: RequestHandler[] = [
+    http.get("*/api/admin/courses/catalog", async ({ request }) => {
+        await delay();
+        const denied = adminOnly();
+        if (denied) {
+            return denied;
+        }
+        const status = new URL(request.url).searchParams.get("status");
+        const items = readCourses()
+            .filter((course) => !status || course.status === status)
+            .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+            .map((course) => ({
+                courseId: course.id,
+                slug: course.slug,
+                title: course.title,
+                difficulty: course.difficulty,
+                status: course.status,
+                revisionStatus: course.revisionStatus,
+                lessonCount: course.lessonCount,
+                authorId: course.authorId,
+                updatedAt: course.updatedAt,
+                publishedAt: course.status === "DRAFT" ? null : course.updatedAt,
+            }));
+        return HttpResponse.json({
+            items,
+            page: 1,
+            size: 100,
+            totalItems: items.length,
+            totalPages: 1,
+        });
+    }),
+    http.post("*/api/admin/courses/:courseId/archive", async ({ params }) => {
+        await delay();
+        return adminOnly() ?? changeStatus(String(params.courseId), "PUBLISHED", "ARCHIVED");
+    }),
+    http.post("*/api/admin/courses/:courseId/restore", async ({ params }) => {
+        await delay();
+        return adminOnly() ?? changeStatus(String(params.courseId), "ARCHIVED", "PUBLISHED");
+    }),
+];
