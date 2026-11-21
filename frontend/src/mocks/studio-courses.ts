@@ -78,7 +78,10 @@ function unauthenticated() {
 }
 
 function ownedCourse(courseId: string, userId: string): StoredCourse | undefined {
-    return readCourses().find((course) => course.id === courseId && course.authorId === userId);
+    const isAdmin = readMockSession()?.role === "ADMIN";
+    return readCourses().find(
+        (course) => course.id === courseId && (course.authorId === userId || isAdmin),
+    );
 }
 
 export const studioCourseHandlers: RequestHandler[] = [
@@ -194,3 +197,92 @@ export function updateCourseTotals(courseId: string, lessonCount: number, minute
         ),
     );
 }
+
+function adminOnly(): Response | null {
+    const user = readMockSession();
+    if (!user) {
+        return unauthenticated();
+    }
+    return user.role === "ADMIN"
+        ? null
+        : apiError(403, "FORBIDDEN", "Bạn không có quyền thực hiện thao tác này");
+}
+
+function pendingCourse(courseId: string): StoredCourse | Response {
+    const course = readCourses().find((item) => item.id === courseId);
+    if (!course) {
+        return courseNotFound();
+    }
+    return course.revisionStatus === "IN_REVIEW"
+        ? course
+        : apiError(422, "COURSE_NOT_IN_REVIEW", "Khoá không ở trạng thái chờ duyệt");
+}
+
+function saveReviewed(course: StoredCourse): Response {
+    writeCourses(readCourses().map((stored) => (stored.id === course.id ? course : stored)));
+    return HttpResponse.json(publicOf(course));
+}
+
+export const adminCourseReviewHandlers: RequestHandler[] = [
+    http.get("*/api/admin/courses", async () => {
+        await delay();
+        const denied = adminOnly();
+        if (denied) {
+            return denied;
+        }
+        const items = readCourses()
+            .filter((course) => course.revisionStatus === "IN_REVIEW")
+            .sort((left, right) => (left.submittedAt ?? "").localeCompare(right.submittedAt ?? ""))
+            .map((course) => ({
+                courseId: course.id,
+                slug: course.slug,
+                title: course.title,
+                difficulty: course.difficulty,
+                lessonCount: course.lessonCount,
+                estimatedMinutes: course.estimatedMinutes,
+                authorId: course.authorId,
+                submittedAt: course.submittedAt,
+            }));
+        return HttpResponse.json({
+            items,
+            page: 1,
+            size: 50,
+            totalItems: items.length,
+            totalPages: 1,
+        });
+    }),
+    http.post("*/api/admin/courses/:courseId/approve", async ({ params }) => {
+        await delay();
+        const course = adminOnly() ?? pendingCourse(String(params.courseId));
+        if (course instanceof Response) {
+            return course;
+        }
+        return saveReviewed({
+            ...course,
+            status: "PUBLISHED",
+            revisionStatus: "PUBLISHED",
+            latestReview: {
+                decision: "APPROVED",
+                reason: null,
+                reviewedAt: new Date().toISOString(),
+            },
+        });
+    }),
+    http.post("*/api/admin/courses/:courseId/request-changes", async ({ params, request }) => {
+        await delay();
+        const course = adminOnly() ?? pendingCourse(String(params.courseId));
+        if (course instanceof Response) {
+            return course;
+        }
+        const { reason } = (await request.json()) as { reason: string };
+        return saveReviewed({
+            ...course,
+            revisionStatus: "DRAFT",
+            latestReview: {
+                decision: "CHANGES_REQUESTED",
+                reason: reason.trim(),
+                reviewedAt: new Date().toISOString(),
+            },
+        });
+    }),
+];

@@ -28,6 +28,7 @@ const EXPECTED_LINKS = [
     ["Kho bài tập", "/admin/problems"],
     ["Duyệt bài tập", "/admin/problem-reviews"],
     ["Lời giải chính thức", "/admin/solutions"],
+    ["Duyệt khoá học", "/admin/course-reviews"],
     ["Khoá học", "/admin/courses"],
     ["Contest", "/admin/contests"],
     ["Trang nội dung", "/admin/pages"],
@@ -64,7 +65,7 @@ describe("AdminSidebar", () => {
         ).toHaveLength(3);
         expect(
             within(within(navigation).getByRole("list", { name: "Nội dung" })).getAllByRole("link"),
-        ).toHaveLength(6);
+        ).toHaveLength(7);
         expect(
             within(within(navigation).getByRole("list", { name: "Hệ thống" })).getAllByRole("link"),
         ).toHaveLength(5);
@@ -204,7 +205,7 @@ describe("AdminSidebar thu gọn", () => {
         expect(reportsLink).toHaveAttribute("href", "/admin/reports");
         expect(reportsLink).toHaveAttribute("aria-current", "page");
         expect(reportsLink).toHaveAttribute("title", "Báo cáo vi phạm");
-        expect(within(navigation).getAllByRole("link")).toHaveLength(17);
+        expect(within(navigation).getAllByRole("link")).toHaveLength(18);
     });
 
     it("làm mờ tên mục thay vì gỡ khỏi bố cục để chuyển động không giật", () => {

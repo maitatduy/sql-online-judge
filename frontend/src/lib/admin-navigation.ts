@@ -46,6 +46,7 @@ export const ADMIN_ROUTES = {
     reports: `${ROUTES.admin}/reports`,
     messages: `${ROUTES.admin}/messages`,
     problemReviews: `${ROUTES.admin}/problem-reviews`,
+    courseReviews: `${ROUTES.admin}/course-reviews`,
     judge: `${ROUTES.admin}/judge`,
     ai: `${ROUTES.admin}/ai`,
 } as const;
@@ -86,6 +87,11 @@ export const ADMIN_NAVIGATION_GROUPS: AdminNavigationGroup[] = [
                 indicator: "problemReviews",
             },
             { label: "Lời giải chính thức", href: `${ROUTES.admin}/solutions`, icon: Lightbulb },
+            {
+                label: "Duyệt khoá học",
+                href: ADMIN_ROUTES.courseReviews,
+                icon: ClipboardCheck,
+            },
             { label: "Khoá học", href: `${ROUTES.admin}/courses`, icon: BookOpen },
             {
                 label: "Contest",
