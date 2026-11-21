@@ -52,6 +52,9 @@ public interface ProblemRepository extends JpaRepository<Problem, UUID> {
     Optional<Problem> findBySlugAndStatusAndVisibilityAndDeletedAtIsNull(
             String slug, ProblemStatus status, ProblemVisibility visibility);
 
+    List<Problem> findByIdInAndStatusAndVisibilityAndDeletedAtIsNull(
+            Collection<UUID> ids, ProblemStatus status, ProblemVisibility visibility);
+
     Optional<Problem> findByIdAndStatusAndVisibilityAndDeletedAtIsNull(
             UUID id, ProblemStatus status, ProblemVisibility visibility);
 

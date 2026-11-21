@@ -4,6 +4,7 @@ import com.sqljudge.problem.entity.Difficulty;
 import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.entity.ProblemRevision;
 import com.sqljudge.problem.entity.ProblemStatus;
+import com.sqljudge.problem.entity.ProblemVisibility;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -15,6 +16,7 @@ public record StudioProblemResponse(
         String slug,
         String title,
         ProblemStatus status,
+        ProblemVisibility visibility,
         Difficulty difficulty,
         List<TagResponse> tags,
         String statementMarkdown,
@@ -33,6 +35,7 @@ public record StudioProblemResponse(
                 problem.getSlug(),
                 problem.getTitle(),
                 problem.getStatus(),
+                problem.getVisibility(),
                 problem.getDifficulty(),
                 problem.getTags().stream()
                         .map(TagResponse::from)

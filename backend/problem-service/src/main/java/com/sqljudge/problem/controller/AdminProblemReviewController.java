@@ -35,6 +35,18 @@ public class AdminProblemReviewController {
         return adminProblemReviewService.approve(problemId);
     }
 
+    @PostMapping("/approve-for-contest")
+    @Operation(summary = "Duyệt bài để dùng trong contest: chốt bản hiện tại nhưng chưa công khai")
+    @ApiResponse(responseCode = "200", description = "Bài sẵn sàng cho contest")
+    @ApiResponse(responseCode = "403", description = "Không phải ADMIN")
+    @ApiResponse(responseCode = "404", description = "Không có bài")
+    @ApiResponse(
+            responseCode = "422",
+            description = "Bài không chờ duyệt, hoặc đáp án chưa đạt kiểm tra với bản hiện tại")
+    public StudioProblemResponse approveForContest(@PathVariable UUID problemId) {
+        return adminProblemReviewService.approveForContest(problemId);
+    }
+
     @PostMapping("/request-changes")
     @Operation(summary = "Trả bài về cho người ra đề sửa, kèm lý do")
     @ApiResponse(responseCode = "200", description = "Bài chuyển sang cần sửa")

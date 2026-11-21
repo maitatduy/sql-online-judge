@@ -156,13 +156,30 @@ public class Problem extends BaseEntity {
     }
 
     public void publish(UUID reviewerId, int nextNumber, String checksum, Instant now) {
-        recordReview(reviewerId, ReviewDecision.APPROVED, null);
-        draftRevision.freeze(checksum, now);
+        approveDraft(reviewerId, checksum, now);
+        openToPublic(nextNumber);
+    }
+
+    public void publishForContest(UUID reviewerId, String checksum, Instant now) {
+        approveDraft(reviewerId, checksum, now);
+        visibility = ProblemVisibility.CONTEST_ONLY;
+    }
+
+    public boolean isContestOnly() {
+        return visibility == ProblemVisibility.CONTEST_ONLY;
+    }
+
+    public void openToPublic(int nextNumber) {
         if (number == null) {
             number = nextNumber;
         }
-        status = ProblemStatus.PUBLISHED;
         visibility = ProblemVisibility.PUBLIC;
+    }
+
+    private void approveDraft(UUID reviewerId, String checksum, Instant now) {
+        recordReview(reviewerId, ReviewDecision.APPROVED, null);
+        draftRevision.freeze(checksum, now);
+        status = ProblemStatus.PUBLISHED;
         publishedRevision = draftRevision;
         publishedAt = now;
     }
