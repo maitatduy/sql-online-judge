@@ -10,12 +10,15 @@ import com.sqljudge.judge.publisher.LessonRunPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 @Component
 public class LessonRunConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(LessonRunConsumer.class);
+    private static final int LAST_DELIVERY_ATTEMPT = 3;
 
     private final ObjectMapper objectMapper;
     private final LessonRunProcessor processor;
@@ -31,16 +34,30 @@ public class LessonRunConsumer {
     @KafkaListener(
             topics = JudgeTopics.LESSON_RUN_REQUESTED,
             concurrency = "${sqljudge.judge.consumer-concurrency}")
-    public void onLessonRunRequested(String payload) throws JsonProcessingException {
+    public void onLessonRunRequested(
+            String payload,
+            @Header(name = KafkaHeaders.DELIVERY_ATTEMPT, required = false) Integer deliveryAttempt)
+            throws JsonProcessingException {
         LessonRunRequestedEvent event =
                 objectMapper.readValue(payload, LessonRunRequestedEvent.class);
         CodeRunResult result = run(event);
+        if (shouldRetry(result, deliveryAttempt)) {
+            log.warn(
+                    "lesson_run_retry runId={} deliveryAttempt={}", event.runId(), deliveryAttempt);
+            throw new LessonRunRetryException(event.runId(), deliveryAttempt);
+        }
         publisher.completed(result);
         log.info(
                 "lesson_run_completed runId={} outcome={} sqlLength={}",
                 event.runId(),
                 result.outcome(),
                 event.sql().length());
+    }
+
+    private static boolean shouldRetry(CodeRunResult result, Integer deliveryAttempt) {
+        return result.outcome() == RunOutcome.SE
+                && deliveryAttempt != null
+                && deliveryAttempt < LAST_DELIVERY_ATTEMPT;
     }
 
     private CodeRunResult run(LessonRunRequestedEvent event) {
