@@ -1,8 +1,8 @@
 package com.sqljudge.contest.controller;
 
 import com.sqljudge.common.web.PageResponse;
-import com.sqljudge.contest.dto.response.ContestResponse;
 import com.sqljudge.contest.dto.response.ContestSummaryResponse;
+import com.sqljudge.contest.dto.response.PublicContestResponse;
 import com.sqljudge.contest.entity.ContestPhase;
 import com.sqljudge.contest.service.ContestQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,7 +40,7 @@ public class ContestController {
     @Operation(summary = "Chi tiết contest theo slug")
     @ApiResponse(responseCode = "200", description = "Contest")
     @ApiResponse(responseCode = "404", description = "Không có contest")
-    public ContestResponse get(@PathVariable String slug) {
+    public PublicContestResponse get(@PathVariable String slug) {
         return contestQueryService.getBySlug(slug);
     }
 }

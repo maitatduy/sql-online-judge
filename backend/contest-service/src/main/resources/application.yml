@@ -24,6 +24,9 @@ spring:
           problem-service:
             connect-timeout: 1000
             read-timeout: 3000
+          auth-service:
+            connect-timeout: 1000
+            read-timeout: 3000
   security:
     oauth2:
       resourceserver:
@@ -51,6 +54,7 @@ springdoc:
 
 sqljudge:
   problem-service-url: ${PROBLEM_SERVICE_URL}
+  auth-service-url: ${AUTH_SERVICE_URL}
   internal:
     api-token: ${INTERNAL_API_TOKEN}
 
@@ -62,6 +66,8 @@ resilience4j:
         failure-rate-threshold: 50
         wait-duration-in-open-state: 30s
         permitted-number-of-calls-in-half-open-state: 3
+        ignore-exceptions:
+          - feign.FeignException$NotFound
   timelimiter:
     configs:
       default:

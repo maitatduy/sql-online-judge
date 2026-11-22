@@ -5,8 +5,10 @@ import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.contest.dto.response.ContestResponse;
 import com.sqljudge.contest.dto.response.ContestSummaryResponse;
+import com.sqljudge.contest.dto.response.PublicContestResponse;
 import com.sqljudge.contest.entity.Contest;
 import com.sqljudge.contest.entity.ContestPhase;
+import com.sqljudge.contest.repository.ContestRegistrationRepository;
 import com.sqljudge.contest.repository.ContestRepository;
 import java.time.Clock;
 import java.time.Instant;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ContestQueryService {
 
     private final ContestRepository contestRepository;
+    private final ContestRegistrationRepository registrationRepository;
     private final Clock clock;
 
     static NotFoundException contestNotFound() {
@@ -37,12 +40,14 @@ public class ContestQueryService {
     }
 
     @Transactional(readOnly = true)
-    public ContestResponse getBySlug(String slug) {
+    public PublicContestResponse getBySlug(String slug) {
         Contest contest =
                 contestRepository
                         .findBySlug(slug)
                         .orElseThrow(ContestQueryService::contestNotFound);
-        return ContestResponse.from(contest, clock.instant());
+        return new PublicContestResponse(
+                ContestResponse.from(contest, clock.instant()),
+                registrationRepository.countByContestId(contest.getId()));
     }
 
     private Page<Contest> findByPhase(ContestPhase phase, Instant now, Pageable pageable) {

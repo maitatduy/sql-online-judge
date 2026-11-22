@@ -4,7 +4,7 @@ import feign.RequestInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 
-class ProblemServiceClientConfig {
+class InternalTokenClientConfig {
 
     private static final String INTERNAL_TOKEN_HEADER = "X-Internal-Token";
 
