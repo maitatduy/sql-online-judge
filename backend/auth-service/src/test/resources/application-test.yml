@@ -21,6 +21,8 @@ spring:
     port: 1025
 
 sqljudge:
+  internal:
+    api-token: test-internal-token
   admin:
     user-export:
       batch-size: 2

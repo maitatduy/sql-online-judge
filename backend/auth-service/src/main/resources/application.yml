@@ -72,6 +72,8 @@ management:
       show-details: never
 
 sqljudge:
+  internal:
+    api-token: ${INTERNAL_API_TOKEN}
   admin:
     user-export:
       batch-size: 500
