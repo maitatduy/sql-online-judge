@@ -84,6 +84,30 @@ export const contestHandlers: RequestHandler[] = [
             registrantCount: registrantsOf(contest.id).size,
         });
     }),
+    http.get("*/api/contests/:slug/problems", async ({ params }) => {
+        await delay();
+        const user = readMockSession();
+        const contest = findContest(params.slug);
+        if (!user) {
+            return unauthenticated();
+        }
+        if (!contest) {
+            return notFound();
+        }
+        if (contest.phase === "UPCOMING") {
+            return apiError(403, "CONTEST_NOT_STARTED", "Contest chưa bắt đầu, chưa xem được đề");
+        }
+        if (contest.phase === "RUNNING" && !registrantsOf(contest.id).has(user.id)) {
+            return apiError(403, "CONTEST_NOT_REGISTERED", "Bạn cần đăng ký contest để xem đề");
+        }
+        return HttpResponse.json(
+            contest.problems.map(({ letter, title, difficulty }) => ({
+                letter,
+                title,
+                difficulty,
+            })),
+        );
+    }),
     http.get("*/api/contests/:slug/registration", async ({ params }) => {
         await delay();
         const user = readMockSession();

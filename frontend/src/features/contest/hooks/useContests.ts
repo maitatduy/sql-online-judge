@@ -7,6 +7,7 @@ import { contestApi } from "../api";
 const CONTESTS_KEY = "contests";
 const CONTEST_KEY = "contest";
 const REGISTRATION_KEY = "contest-registration";
+const PROBLEMS_KEY = "contest-problems";
 
 export function useContests(phase: ContestPhase) {
     return useQuery({
@@ -19,6 +20,15 @@ export function useContest(slug: string) {
     return useQuery({
         queryKey: [CONTEST_KEY, slug],
         queryFn: ({ signal }) => contestApi.get(slug, signal),
+    });
+}
+
+export function useContestProblems(slug: string, isSignedIn: boolean) {
+    return useQuery({
+        queryKey: [PROBLEMS_KEY, slug],
+        queryFn: ({ signal }) => contestApi.problems(slug, signal),
+        enabled: isSignedIn,
+        retry: false,
     });
 }
 
@@ -44,6 +54,7 @@ export function useChangeRegistration(slug: string) {
             Promise.all([
                 queryClient.invalidateQueries({ queryKey: [REGISTRATION_KEY, slug] }),
                 queryClient.invalidateQueries({ queryKey: [CONTEST_KEY, slug] }),
+                queryClient.invalidateQueries({ queryKey: [PROBLEMS_KEY, slug] }),
             ]),
     });
 }

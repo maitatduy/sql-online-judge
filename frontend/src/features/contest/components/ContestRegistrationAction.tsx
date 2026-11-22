@@ -60,7 +60,7 @@ export function ContestRegistrationAction({ contest }: ContestRegistrationAction
     }
     return (
         <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 text-lg font-semibold text-brand">
+            <span className="inline-flex items-center gap-1.5 text-lg font-semibold text-contest-hero-accent">
                 <CircleCheck aria-hidden="true" className="size-5" />
                 Bạn đã đăng ký
             </span>
@@ -68,6 +68,7 @@ export function ContestRegistrationAction({ contest }: ContestRegistrationAction
                 <Button
                     type="button"
                     variant="outline"
+                    className="border-contest-hero-line bg-transparent text-contest-hero-text hover:bg-contest-hero-panel hover:text-contest-hero-text"
                     disabled={change.isPending}
                     onClick={() => changeRegistration(false)}
                 >
