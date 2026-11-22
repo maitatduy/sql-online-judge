@@ -1,4 +1,8 @@
 spring:
+  kafka:
+    bootstrap-servers: localhost:1
+    admin:
+      auto-create: false
   security:
     oauth2:
       resourceserver:
@@ -6,6 +10,10 @@ spring:
           jwk-set-uri: http://localhost:1/internal/jwks
 
 sqljudge:
+  outbox:
+    relay-enabled: false
+  contest:
+    lifecycle-enabled: false
   problem-service-url: http://localhost:1
   auth-service-url: http://localhost:1
   internal:

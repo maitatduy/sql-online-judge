@@ -55,6 +55,12 @@ public class Contest extends BaseEntity {
     @Column(name = "is_rated", nullable = false)
     private boolean rated;
 
+    @Column(name = "started_announced_at")
+    private Instant startedAnnouncedAt;
+
+    @Column(name = "finished_announced_at")
+    private Instant finishedAnnouncedAt;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -82,6 +88,22 @@ public class Contest extends BaseEntity {
             return ContestPhase.UPCOMING;
         }
         return now.isBefore(endAt) ? ContestPhase.RUNNING : ContestPhase.FINISHED;
+    }
+
+    public boolean needsStartAnnouncementAt(Instant now) {
+        return startedAnnouncedAt == null && hasStartedAt(now);
+    }
+
+    public boolean needsFinishAnnouncementAt(Instant now) {
+        return finishedAnnouncedAt == null && !now.isBefore(endAt);
+    }
+
+    public void markStartAnnounced(Instant now) {
+        startedAnnouncedAt = now;
+    }
+
+    public void markFinishAnnounced(Instant now) {
+        finishedAnnouncedAt = now;
     }
 
     public boolean hasStartedAt(Instant now) {

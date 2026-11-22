@@ -27,6 +27,16 @@ spring:
           auth-service:
             connect-timeout: 1000
             read-timeout: 3000
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      acks: all
+      compression-type: zstd
+      properties:
+        enable.idempotence: true
+        max.block.ms: 5000
+        request.timeout.ms: 5000
+        delivery.timeout.ms: 10000
   security:
     oauth2:
       resourceserver:
@@ -53,6 +63,15 @@ springdoc:
     enabled: false
 
 sqljudge:
+  outbox:
+    relay-enabled: true
+    relay-interval: 500ms
+    batch-size: 100
+    send-timeout: 10s
+    claim-timeout: 60s
+  contest:
+    lifecycle-enabled: true
+    lifecycle-interval: 5s
   problem-service-url: ${PROBLEM_SERVICE_URL}
   auth-service-url: ${AUTH_SERVICE_URL}
   internal:
