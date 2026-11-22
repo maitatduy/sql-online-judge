@@ -1,7 +1,6 @@
+import type { ContestPhase } from "@/lib/contest";
 import type { Difficulty } from "@/lib/difficulty";
 import type { Page } from "@/lib/pagination";
-
-export type ContestPhase = "UPCOMING" | "RUNNING" | "FINISHED";
 
 export interface AdminContestSummary {
     id: string;

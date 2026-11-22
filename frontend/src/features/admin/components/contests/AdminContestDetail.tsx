@@ -9,8 +9,8 @@ import { Skeleton } from "@/components/shared/Skeleton";
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { ApiRequestError } from "@/lib/api-client";
 import { ADMIN_ROUTES } from "@/lib/admin-navigation";
+import { CONTEST_PHASE_LABELS, formatContestMoment, formatMinutes } from "@/lib/contest";
 
-import { CONTEST_PHASE_LABELS, formatContestMoment, formatMinutes } from "../../contests/format";
 import type { AdminContest } from "../../contests/types";
 import { useAdminContest } from "../../hooks/useAdminContests";
 import { ContestProblemList } from "./ContestProblemList";

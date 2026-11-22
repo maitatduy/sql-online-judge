@@ -3,9 +3,9 @@ import { delay, http, HttpResponse, type RequestHandler } from "msw";
 import type {
     AdminContest,
     AdminContestSummary,
-    ContestPhase,
     CreateContestRequest,
 } from "@/features/admin/contests/types";
+import type { ContestPhase } from "@/lib/contest";
 
 import { apiError } from "./api-error";
 import { readMockSession } from "./session";
@@ -67,6 +67,13 @@ function seedContests(): AdminContest[] {
             "2099-01-10T12:00:00Z",
             [],
         ),
+        contest(
+            "0193a000-0000-7000-8000-000000000003",
+            "sql-cup-live",
+            "SQL Cup đang thi",
+            new Date(Date.now() - 30 * MS_PER_MINUTE).toISOString(),
+            [],
+        ),
     ];
 }
 
@@ -98,6 +105,10 @@ function toSummary(item: AdminContest): AdminContestSummary {
         isRated: item.isRated,
         phase: item.phase,
     };
+}
+
+export function mockContests(): AdminContest[] {
+    return contests.map(withPhase);
 }
 
 function adminOnly(): Response | null {

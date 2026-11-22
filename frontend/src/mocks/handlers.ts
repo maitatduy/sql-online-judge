@@ -32,6 +32,7 @@ import {
     writeMockSession,
 } from "./session";
 import { adminContestHandlers } from "./admin-contests";
+import { contestHandlers } from "./contests";
 import { studioCourseOutlineHandlers, studioLessonHandlers } from "./studio-course-outline";
 import { studioLessonCellHandlers } from "./studio-lesson-cells";
 import { studioLessonQuizHandlers } from "./studio-lesson-quiz";
@@ -200,6 +201,7 @@ export const handlers: RequestHandler[] = [
     ...adminCourseReviewHandlers,
     ...adminCourseCatalogHandlers,
     ...adminContestHandlers,
+    ...contestHandlers,
     ...adminHandlers,
     ...adminProblemReviewHandlers,
     ...invitationHandlers,
