@@ -22,6 +22,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -33,12 +35,18 @@ class ContestProblemAccessApiIntegrationTest extends ContainerSupport {
     private static final String CONTESTANT = TestJwts.token(CONTESTANT_ID, "LEARNER");
     private static final String OUTSIDER = TestJwts.token(UUID.randomUUID(), "LEARNER");
     private static final String PROBLEMS = "/api/contests/sql-cup/problems";
+    private static final UUID FIRST_PROBLEM_ID = UUID.randomUUID();
 
     @Autowired private TestRestTemplate restTemplate;
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private ObjectMapper objectMapper;
 
     private String contestId;
+
+    @DynamicPropertySource
+    static void problemService(DynamicPropertyRegistry registry) {
+        registry.add("sqljudge.problem-service-url", ProblemServiceStub::url);
+    }
 
     @BeforeEach
     void createContestWithProblems() throws Exception {
@@ -68,8 +76,10 @@ class ContestProblemAccessApiIntegrationTest extends ContainerSupport {
                                         .getBody())
                         .get("id")
                         .asText();
-        insertProblem(0, "ghep-phong-ban", "Ghép phòng ban");
-        insertProblem(1, "xep-hang-luong", "Xếp hạng lương");
+        ProblemServiceStub.reset();
+        ProblemServiceStub.statement(FIRST_PROBLEM_ID, "Ghép phòng ban");
+        insertProblem(0, FIRST_PROBLEM_ID, "Ghép phòng ban");
+        insertProblem(1, UUID.randomUUID(), "Xếp hạng lương");
         jdbcTemplate.update(
                 "INSERT INTO contest_registrations (id, contest_id, user_id, username, created_at,"
                         + " updated_at) VALUES (UUID_TO_BIN(UUID()), UUID_TO_BIN(?),"
@@ -117,16 +127,40 @@ class ContestProblemAccessApiIntegrationTest extends ContainerSupport {
                 .isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
-    private void insertProblem(int position, String slug, String title) {
+    private void insertProblem(int position, UUID problemId, String title) {
         jdbcTemplate.update(
                 "INSERT INTO contest_problems (id, contest_id, problem_id, position, slug, title,"
                         + " difficulty, created_at, updated_at) VALUES (UUID_TO_BIN(UUID()),"
-                        + " UUID_TO_BIN(?), UUID_TO_BIN(UUID()), ?, ?, ?, 'MEDIUM', NOW(6),"
+                        + " UUID_TO_BIN(?), UUID_TO_BIN(?), ?, ?, ?, 'MEDIUM', NOW(6),"
                         + " NOW(6))",
                 contestId,
+                problemId.toString(),
                 position,
-                slug,
+                "bai-" + position,
                 title);
+    }
+
+    @Test
+    @DisplayName("Người thi xem đề từng bài theo chữ cái, chữ cái lạ trả 404, chưa thi thì 403")
+    void statement_followsTheSameAccessRules() throws Exception {
+        String first = PROBLEMS + "/A";
+        assertThat(send(HttpMethod.GET, first, CONTESTANT, null).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
+        moveStartToPast(Duration.ofMinutes(10));
+        ResponseEntity<String> response = send(HttpMethod.GET, first, CONTESTANT, null);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        JsonNode statement = body(response);
+        assertThat(statement.get("letter").asText()).isEqualTo("A");
+        assertThat(statement.get("title").asText()).isEqualTo("Ghép phòng ban");
+        assertThat(statement.get("statementMarkdown").asText()).isEqualTo("Liệt kê phòng ban.");
+        assertThat(statement.get("timeLimitMs").asInt()).isEqualTo(2000);
+        assertThat(statement.has("problemId")).isFalse();
+        assertThat(send(HttpMethod.GET, PROBLEMS + "/Z", CONTESTANT, null).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(send(HttpMethod.GET, first, OUTSIDER, null).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     private void moveStartToPast(Duration ago) {

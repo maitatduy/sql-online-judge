@@ -15,6 +15,9 @@ import java.util.stream.Collectors;
 final class ProblemServiceStub {
 
     private static final String CONTEST_READY_PATH = "/internal/problems/contest-ready";
+    private static final String PROBLEMS_PATH = "/internal/problems/";
+    private static final String STATEMENT_SUFFIX = "/contest-statement";
+    private static final Map<String, String> STATEMENTS = new ConcurrentHashMap<>();
     private static final Map<String, String> READY_PROBLEMS = new ConcurrentHashMap<>();
     private static final AtomicInteger FAILURE_STATUS = new AtomicInteger();
     private static final AtomicReference<String> RECEIVED_TOKEN = new AtomicReference<>();
@@ -28,6 +31,7 @@ final class ProblemServiceStub {
 
     static void reset() {
         READY_PROBLEMS.clear();
+        STATEMENTS.clear();
         FAILURE_STATUS.set(0);
         RECEIVED_TOKEN.set(null);
     }
@@ -39,6 +43,18 @@ final class ProblemServiceStub {
                 {"problemId": "%s", "slug": "%s", "title": "%s", "difficulty": "MEDIUM"}
                 """
                         .formatted(problemId, slug, title));
+    }
+
+    static void statement(UUID problemId, String title) {
+        STATEMENTS.put(
+                problemId.toString(),
+                """
+                {"title": "%s", "difficulty": "MEDIUM", "statementMarkdown": "Liệt kê phòng ban.",
+                 "dialects": ["POSTGRESQL"], "engineVersions": {"POSTGRESQL": "16"},
+                 "starterCode": "SELECT", "schema": [], "examples": [], "requiresOrder": false,
+                 "allowedStatements": ["SELECT"], "timeLimitMs": 2000, "hiddenTestcaseCount": 3}
+                """
+                        .formatted(title));
     }
 
     static void failWith(int status) {
@@ -65,6 +81,23 @@ final class ProblemServiceStub {
                                         .getBytes(StandardCharsets.UTF_8);
                         exchange.getResponseHeaders().add("Content-Type", "application/json");
                         exchange.sendResponseHeaders(failure == 0 ? 200 : failure, body.length);
+                        exchange.getResponseBody().write(body);
+                        exchange.close();
+                    });
+            server.createContext(
+                    PROBLEMS_PATH,
+                    exchange -> {
+                        String path = exchange.getRequestURI().getPath();
+                        String problemId =
+                                path.substring(
+                                        PROBLEMS_PATH.length(),
+                                        path.length() - STATEMENT_SUFFIX.length());
+                        String statement = STATEMENTS.get(problemId);
+                        byte[] body =
+                                (statement == null ? "{}" : statement)
+                                        .getBytes(StandardCharsets.UTF_8);
+                        exchange.getResponseHeaders().add("Content-Type", "application/json");
+                        exchange.sendResponseHeaders(statement == null ? 404 : 200, body.length);
                         exchange.getResponseBody().write(body);
                         exchange.close();
                     });
