@@ -1,15 +1,26 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import type { AdminContest } from "@/features/admin/contests/types";
+import type { StartRunRequest, SubmitSolutionRequest } from "@/features/practice/types";
 
 import { mockContests } from "./admin-contests";
 import { apiError } from "./api-error";
+import { acceptMockRun } from "./practice-run-handlers";
+import { findProblem } from "./practice-sql";
+import { acceptMockSubmission } from "./practice-submission-handlers";
 import { readMockSession } from "./session";
 
 let registrations = new Map<string, Map<string, string>>();
 
 export function resetContestRegistrations() {
     registrations = new Map();
+}
+
+export function registerForMockContest(slug: string, userId: string) {
+    const contest = findContest(slug);
+    if (contest) {
+        registrantsOf(contest.id).set(userId, new Date().toISOString());
+    }
 }
 
 function registrantsOf(contestId: string): Map<string, string> {
@@ -39,7 +50,82 @@ function statusOf(contest: AdminContest, userId: string) {
     return { isRegistered: registeredAt !== null, registeredAt };
 }
 
+function enteredProblem(slug: unknown, letter: unknown, userId: string) {
+    const contest = findContest(slug);
+    if (!contest) {
+        return notFound();
+    }
+    if (contest.phase === "UPCOMING") {
+        return apiError(403, "CONTEST_NOT_STARTED", "Contest chưa bắt đầu, chưa xem được đề");
+    }
+    if (contest.phase === "RUNNING" && !registrantsOf(contest.id).has(userId)) {
+        return apiError(403, "CONTEST_NOT_REGISTERED", "Bạn cần đăng ký contest để xem đề");
+    }
+    const entry = contest.problems.find((problem) => problem.letter === letter);
+    const problem = entry ? findProblem(entry.problemId) : null;
+    return problem && entry
+        ? { contest, letter: entry.letter, problem }
+        : apiError(404, "PROBLEM_NOT_FOUND", "Contest không có bài này");
+}
+
 export const contestHandlers: RequestHandler[] = [
+    http.get("*/api/contests/:slug/problems/:letter", async ({ params }) => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return unauthenticated();
+        }
+        const entered = enteredProblem(params.slug, params.letter, user.id);
+        if (entered instanceof Response) {
+            return entered;
+        }
+        const { problem } = entered;
+        return HttpResponse.json({
+            letter: entered.letter,
+            title: problem.title,
+            difficulty: problem.difficulty,
+            statementMarkdown: problem.statementMarkdown,
+            dialects: problem.dialects,
+            engineVersions: problem.engineVersions,
+            starterCode: problem.starterCode,
+            schema: problem.schema,
+            examples: problem.examples,
+            requiresOrder: problem.requiresOrder,
+            allowedStatements: problem.allowedStatements,
+            timeLimitMs: problem.timeLimitMs,
+            hiddenTestcaseCount: problem.hiddenTestcaseCount,
+        });
+    }),
+    http.post("*/api/contests/:slug/problems/:letter/runs", async ({ params, request }) => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return unauthenticated();
+        }
+        const entered = enteredProblem(params.slug, params.letter, user.id);
+        if (entered instanceof Response) {
+            return entered;
+        }
+        return acceptMockRun(user.id, entered.problem, (await request.json()) as StartRunRequest);
+    }),
+    http.post("*/api/contests/:slug/problems/:letter/submissions", async ({ params, request }) => {
+        await delay();
+        const user = readMockSession();
+        if (!user) {
+            return unauthenticated();
+        }
+        const entered = enteredProblem(params.slug, params.letter, user.id);
+        if (entered instanceof Response) {
+            return entered;
+        }
+        return acceptMockSubmission({
+            userId: user.id,
+            problem: entered.problem,
+            body: (await request.json()) as SubmitSolutionRequest,
+            idempotencyKey: request.headers.get("Idempotency-Key"),
+            isInContest: true,
+        });
+    }),
     http.get("*/api/contests", async ({ request }) => {
         await delay();
         const phase = new URL(request.url).searchParams.get("phase") ?? "UPCOMING";

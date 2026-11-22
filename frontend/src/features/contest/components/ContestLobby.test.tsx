@@ -76,7 +76,7 @@ describe("sảnh chờ contest", () => {
         expect(screen.queryByRole("button", { name: "Huỷ đăng ký" })).toBeNull();
         expect(screen.getByRole("timer", { name: "Còn lại" })).toBeInTheDocument();
         const problems = within(await screen.findByRole("table", { name: "Bài trong contest" }));
-        expect(problems.getByText("Ghép phòng ban")).toBeInTheDocument();
+        expect(problems.getByText("Lương cao nhất mỗi phòng ban")).toBeInTheDocument();
     });
 
     it("contest đã kết thúc không còn nút đăng ký", async () => {

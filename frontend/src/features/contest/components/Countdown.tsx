@@ -1,7 +1,7 @@
 "use client";
 
 import { countdownParts } from "../countdown";
-import { useNow } from "../hooks/useNow";
+import { useNow } from "@/lib/useNow";
 
 interface CountdownProps {
     label: string;

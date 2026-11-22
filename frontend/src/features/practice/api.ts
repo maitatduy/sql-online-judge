@@ -4,6 +4,9 @@ import type { Page } from "@/lib/pagination";
 import { type ProblemFilters, problemsQueryOf } from "./problem-filters";
 import type {
     CodeRun,
+    ContestProblemLink,
+    ContestStatement,
+    ContestTiming,
     ProblemDetail,
     ProblemSubmissionsResponse,
     ProblemSummary,
@@ -15,6 +18,10 @@ import type {
     SubmitSolutionRequest,
     TagsResponse,
 } from "./types";
+
+function contestProblemPath(slug: string, letter: string): string {
+    return `/api/contests/${encodeURIComponent(slug)}/problems/${encodeURIComponent(letter)}`;
+}
 
 export const practiceApi = {
     listProblems: (filters: ProblemFilters, signal?: AbortSignal) =>
@@ -47,5 +54,28 @@ export const practiceApi = {
         apiClient.get<ProblemSubmissionsResponse>(
             `/api/problems/${encodeURIComponent(problemId)}/submissions`,
             { params: { cursor }, signal },
+        ),
+    getContestStatement: (slug: string, letter: string, signal?: AbortSignal) =>
+        apiClient.get<ContestStatement>(contestProblemPath(slug, letter), { signal }),
+    listContestProblems: (slug: string, signal?: AbortSignal) =>
+        apiClient.get<ContestProblemLink[]>(`/api/contests/${encodeURIComponent(slug)}/problems`, {
+            signal,
+        }),
+    getContestTiming: (slug: string, signal?: AbortSignal) =>
+        apiClient.get<ContestTiming>(`/api/contests/${encodeURIComponent(slug)}`, { signal }),
+    startContestRun: (slug: string, letter: string, request: StartRunRequest) =>
+        apiClient.post<RunAccepted>(`${contestProblemPath(slug, letter)}/runs`, request),
+    submitInContest: (
+        slug: string,
+        letter: string,
+        request: SubmitSolutionRequest,
+        idempotencyKey: string,
+    ) =>
+        apiClient.post<SubmissionAccepted>(
+            `${contestProblemPath(slug, letter)}/submissions`,
+            request,
+            {
+                headers: { "Idempotency-Key": idempotencyKey },
+            },
         ),
 };

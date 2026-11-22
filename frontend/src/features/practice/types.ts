@@ -158,3 +158,18 @@ export interface ProblemSubmissionsResponse {
     items: ProblemSubmissionSummary[];
     nextCursor: string | null;
 }
+
+export interface ContestStatement extends WorkspaceProblem {
+    letter: string;
+}
+
+export interface ContestProblemLink {
+    letter: string;
+    title: string;
+}
+
+export interface ContestTiming {
+    slug: string;
+    title: string;
+    endAt: string;
+}
