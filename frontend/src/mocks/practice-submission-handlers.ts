@@ -193,6 +193,44 @@ function createSubmission(problem: ProblemDetail, request: SubmitSolutionRequest
     };
 }
 
+function withoutDiff(submission: Submission): Submission {
+    return submission.firstFailedTestcase
+        ? { ...submission, firstFailedTestcase: { ...submission.firstFailedTestcase, diff: null } }
+        : submission;
+}
+
+interface MockSubmissionRequest {
+    userId: string;
+    problem: ProblemDetail;
+    body: SubmitSolutionRequest;
+    idempotencyKey: string | null;
+    isInContest: boolean;
+}
+
+export function acceptMockSubmission({
+    userId,
+    problem,
+    body,
+    idempotencyKey,
+    isInContest,
+}: MockSubmissionRequest) {
+    const invalid = invalidQueryRequest(problem, body);
+    if (invalid) {
+        return invalid;
+    }
+    const key = `${userId}:${idempotencyKey ?? crypto.randomUUID()}`;
+    let submissionId = submissionIdsByKey.get(key);
+    if (!submissionId) {
+        const judged = createSubmission(problem, body);
+        const result = isInContest ? withoutDiff(judged) : judged;
+        submissions.set(result.id, { userId, code: body.code, pollCount: 0, result });
+        submissionIdsByKey.set(key, result.id);
+        submissionId = result.id;
+    }
+    const response: SubmissionAccepted = { submissionId };
+    return HttpResponse.json(response, { status: 202 });
+}
+
 export const practiceSubmissionHandlers: RequestHandler[] = [
     http.post("*/api/problems/:problemId/submissions", async ({ params, request }) => {
         await delay();
@@ -204,26 +242,13 @@ export const practiceSubmissionHandlers: RequestHandler[] = [
         if (!problem) {
             return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
         }
-        const body = (await request.json()) as SubmitSolutionRequest;
-        const invalid = invalidQueryRequest(problem, body);
-        if (invalid) {
-            return invalid;
-        }
-        const idempotencyKey = `${user.id}:${request.headers.get("Idempotency-Key") ?? crypto.randomUUID()}`;
-        let submissionId = submissionIdsByKey.get(idempotencyKey);
-        if (!submissionId) {
-            const result = createSubmission(problem, body);
-            submissions.set(result.id, {
-                userId: user.id,
-                code: body.code,
-                pollCount: 0,
-                result,
-            });
-            submissionIdsByKey.set(idempotencyKey, result.id);
-            submissionId = result.id;
-        }
-        const response: SubmissionAccepted = { submissionId };
-        return HttpResponse.json(response, { status: 202 });
+        return acceptMockSubmission({
+            userId: user.id,
+            problem,
+            body: (await request.json()) as SubmitSolutionRequest,
+            idempotencyKey: request.headers.get("Idempotency-Key"),
+            isInContest: false,
+        });
     }),
 
     http.get("*/api/submissions/:submissionId", async ({ params }) => {

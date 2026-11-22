@@ -43,6 +43,21 @@ function outcomeOf(problem: ProblemDetail, code: string): RunOutcomeFields {
     };
 }
 
+export function acceptMockRun(userId: string, problem: ProblemDetail, body: StartRunRequest) {
+    const invalid = invalidQueryRequest(problem, body);
+    if (invalid) {
+        return invalid;
+    }
+    const runId = crypto.randomUUID();
+    runs.set(runId, {
+        userId,
+        isFirstPoll: true,
+        run: { id: runId, status: "COMPLETED", ...outcomeOf(problem, body.code) },
+    });
+    const response: RunAccepted = { runId };
+    return HttpResponse.json(response, { status: 202 });
+}
+
 export const practiceRunHandlers: RequestHandler[] = [
     http.post("*/api/problems/:problemId/runs", async ({ params, request }) => {
         await delay();
@@ -54,19 +69,7 @@ export const practiceRunHandlers: RequestHandler[] = [
         if (!problem) {
             return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
         }
-        const body = (await request.json()) as StartRunRequest;
-        const invalid = invalidQueryRequest(problem, body);
-        if (invalid) {
-            return invalid;
-        }
-        const runId = crypto.randomUUID();
-        runs.set(runId, {
-            userId: user.id,
-            isFirstPoll: true,
-            run: { id: runId, status: "COMPLETED", ...outcomeOf(problem, body.code) },
-        });
-        const response: RunAccepted = { runId };
-        return HttpResponse.json(response, { status: 202 });
+        return acceptMockRun(user.id, problem, (await request.json()) as StartRunRequest);
     }),
 
     http.get("*/api/runs/:runId", async ({ params }) => {

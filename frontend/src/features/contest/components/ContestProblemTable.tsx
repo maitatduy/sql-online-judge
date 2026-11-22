@@ -1,11 +1,14 @@
 "use client";
 
+import Link from "next/link";
+
 import { LockKeyhole } from "lucide-react";
 
 import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { ApiRequestError } from "@/lib/api-client";
+import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 import { useContestProblems } from "../hooks/useContests";
@@ -80,7 +83,14 @@ export function ContestProblemTable({ slug }: ContestProblemTableProps) {
                             <td className="border-b px-4 py-3 text-lg font-extrabold">
                                 {problem.letter}
                             </td>
-                            <td className="border-b px-4 py-3 font-semibold">{problem.title}</td>
+                            <td className="border-b px-4 py-3 font-semibold">
+                                <Link
+                                    href={ROUTES.contestProblem(slug, problem.letter)}
+                                    className="hover:text-brand"
+                                >
+                                    {problem.title}
+                                </Link>
+                            </td>
                             <td className="border-b px-4 py-3">
                                 <DifficultyLabel difficulty={problem.difficulty} />
                             </td>

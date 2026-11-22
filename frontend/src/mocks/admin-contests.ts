@@ -75,10 +75,10 @@ function seedContests(): AdminContest[] {
             [
                 {
                     letter: "A",
-                    problemId: "0193a100-0000-7000-8000-000000000003",
-                    slug: "ghep-phong-ban-live",
-                    title: "Ghép phòng ban",
-                    difficulty: "EASY",
+                    problemId: "0192f3b0-0000-7000-8000-0000000000b8",
+                    slug: "highest-salary-per-department",
+                    title: "Lương cao nhất mỗi phòng ban",
+                    difficulty: "MEDIUM",
                 },
             ],
         ),
