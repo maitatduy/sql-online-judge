@@ -1,6 +1,7 @@
 package com.sqljudge.contest.entity;
 
 import com.sqljudge.common.persistence.BaseEntity;
+import com.sqljudge.contest.scoring.ScoringRules;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -105,6 +106,11 @@ public class Contest extends BaseEntity {
 
     public void markFinishAnnounced(Instant now) {
         finishedAnnouncedAt = now;
+    }
+
+    public ScoringRules scoringRules() {
+        return new ScoringRules(
+                startAt, endAt.minus(Duration.ofMinutes(freezeMinutes)), penaltyMinutes);
     }
 
     public boolean hasStartedAt(Instant now) {
