@@ -1,6 +1,7 @@
 package com.sqljudge.problem.controller;
 
 import com.sqljudge.problem.dto.response.InternalContestProblemResponse;
+import com.sqljudge.problem.dto.response.InternalContestStatementResponse;
 import com.sqljudge.problem.dto.response.InternalJudgingInfoResponse;
 import com.sqljudge.problem.service.InternalContestProblemService;
 import com.sqljudge.problem.service.InternalJudgingInfoService;
@@ -45,5 +46,14 @@ public class InternalProblemController {
     @ApiResponse(responseCode = "404", description = "Không có bài hoặc bài chưa xuất bản")
     public InternalJudgingInfoResponse judgingInfo(@PathVariable UUID problemId) {
         return internalJudgingInfoService.judgingInfo(problemId);
+    }
+
+    @GetMapping("/{problemId}/contest-statement")
+    @Operation(summary = "Đề của bài đã xuất bản để hiện trong contest, không kèm số, slug, tag")
+    @ApiResponse(responseCode = "200", description = "Đề bài")
+    @ApiResponse(responseCode = "401", description = "Thiếu hoặc sai token nội bộ")
+    @ApiResponse(responseCode = "404", description = "Không có bài hoặc bài chưa xuất bản")
+    public InternalContestStatementResponse contestStatement(@PathVariable UUID problemId) {
+        return internalContestProblemService.statement(problemId);
     }
 }

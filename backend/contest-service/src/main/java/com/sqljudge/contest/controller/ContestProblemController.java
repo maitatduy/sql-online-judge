@@ -1,5 +1,6 @@
 package com.sqljudge.contest.controller;
 
+import com.sqljudge.contest.dto.response.ContestProblemStatementResponse;
 import com.sqljudge.contest.dto.response.ContestantProblemResponse;
 import com.sqljudge.contest.service.ContestantProblemService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,5 +30,18 @@ public class ContestProblemController {
     @ApiResponse(responseCode = "404", description = "Không có contest")
     public List<ContestantProblemResponse> list(@PathVariable String slug) {
         return contestantProblemService.list(slug);
+    }
+
+    @GetMapping("/{letter}")
+    @Operation(summary = "Đề của một bài trong contest theo chữ cái")
+    @ApiResponse(responseCode = "200", description = "Đề bài")
+    @ApiResponse(
+            responseCode = "403",
+            description = "Contest chưa bắt đầu, hoặc đang thi mà chưa đăng ký")
+    @ApiResponse(responseCode = "404", description = "Không có contest hoặc không có bài này")
+    @ApiResponse(responseCode = "503", description = "Không gọi được problem-service")
+    public ContestProblemStatementResponse statement(
+            @PathVariable String slug, @PathVariable String letter) {
+        return contestantProblemService.statement(slug, letter);
     }
 }

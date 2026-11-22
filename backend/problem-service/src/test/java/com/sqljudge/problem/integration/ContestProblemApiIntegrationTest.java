@@ -125,6 +125,35 @@ class ContestProblemApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("API nội bộ trả đề cho contest, không lộ số, slug, tag hay thống kê")
+    void contestStatement_returnsStatementWithoutPublicIdentity() {
+        String path = "/internal/problems/" + problemId + "/contest-statement";
+        ResponseEntity<String> beforeApproval =
+                restTemplate.exchange(
+                        path, HttpMethod.GET, new HttpEntity<>(internalHeaders()), String.class);
+        approveForContest(ADMIN);
+
+        ResponseEntity<String> response =
+                restTemplate.exchange(
+                        path, HttpMethod.GET, new HttpEntity<>(internalHeaders()), String.class);
+
+        assertThat(beforeApproval.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        DocumentContext statement = JsonPath.parse(response.getBody());
+        assertThat(statement.read("$.title", String.class)).isEqualTo("Phòng ban");
+        assertThat(statement.read("$.statementMarkdown", String.class)).isNotBlank();
+        assertThat(statement.read("$.dialects", List.class)).isNotEmpty();
+        assertThat(statement.read("$.hiddenTestcaseCount", Integer.class)).isNotNull();
+        assertThat(response.getBody())
+                .doesNotContain("\"slug\"")
+                .doesNotContain("\"number\"")
+                .doesNotContain("\"tags\"")
+                .doesNotContain("solvedCount");
+        assertThat(restTemplate.getForEntity(path, String.class).getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
     @DisplayName("Contest kết thúc thì bài được mở công khai, có số và phát event một lần")
     void contestFinished_opensProblemsOnce() {
         String slug = JsonPath.parse(approveForContest(ADMIN).getBody()).read("$.slug");
