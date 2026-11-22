@@ -48,6 +48,8 @@ class ContestRegistrationApiIntegrationTest extends ContainerSupport {
 
     @BeforeEach
     void createContest() {
+        jdbcTemplate.update("DELETE FROM contest_cells");
+        jdbcTemplate.update("DELETE FROM contest_attempts");
         jdbcTemplate.update("DELETE FROM contest_registrations");
         jdbcTemplate.update("DELETE FROM contest_problems");
         jdbcTemplate.update("DELETE FROM contests");
