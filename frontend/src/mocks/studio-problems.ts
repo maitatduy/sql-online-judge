@@ -1,5 +1,6 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
+import type { ProblemVisibility } from "@/features/admin/problem-reviews/types";
 import type {
     ProblemAnswer,
     ProblemReview,
@@ -33,6 +34,7 @@ export interface StoredProblem extends StudioProblemSummary {
     datasetId?: string;
     answer?: SaveProblemAnswerRequest;
     latestReview?: ProblemReview;
+    visibility?: ProblemVisibility;
 }
 
 const COMPANY_DATASET_ID = "0192f3e0-0000-7000-8000-000000000001";
@@ -112,6 +114,8 @@ const SEEDS: ProblemSeed[] = [
     ["Sản phẩm bán chạy theo quý", "best-sellers-per-quarter", "PUBLISHED", "MEDIUM", 52, 1700],
 ];
 
+const CONTEST_ONLY_SLUGS = new Set(["booking-gaps", "best-sellers-per-quarter"]);
+
 function seedProblems(): StoredProblem[] {
     return SEEDS.map(([title, slug, status, difficulty, number, hoursAgo], index) => ({
         id: `0192f3d0-0000-7000-8000-${String(index + 1).padStart(12, "0")}`,
@@ -125,6 +129,7 @@ function seedProblems(): StoredProblem[] {
         tagSlugs: [],
         statementMarkdown: "",
         datasetId: SEEDED_DATASETS[slug],
+        visibility: CONTEST_ONLY_SLUGS.has(slug) ? "CONTEST_ONLY" : undefined,
     }));
 }
 

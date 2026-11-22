@@ -9,6 +9,7 @@ import type {
 
 import { apiError } from "./api-error";
 import { readMockSession } from "./session";
+import { readStudioProblems } from "./studio-problems";
 
 const MS_PER_MINUTE = 60_000;
 
@@ -160,5 +161,55 @@ export const adminContestHandlers: RequestHandler[] = [
         };
         contests = [...contests, created];
         return HttpResponse.json(withPhase(created), { status: 201 });
+    }),
+    http.put("*/api/admin/contests/:contestId/problems", async ({ params, request }) => {
+        await delay();
+        const denied = adminOnly();
+        if (denied) {
+            return denied;
+        }
+        const found = contests.find((item) => item.id === params.contestId);
+        if (!found) {
+            return apiError(404, "CONTEST_NOT_FOUND", "Không tìm thấy contest");
+        }
+        if (withPhase(found).phase !== "UPCOMING") {
+            return apiError(
+                409,
+                "CONTEST_ALREADY_STARTED",
+                "Contest đã bắt đầu, không đổi bài được nữa",
+            );
+        }
+        const { problemIds } = (await request.json()) as { problemIds: string[] };
+        const ready = readStudioProblems().filter(
+            (problem) => problem.status === "PUBLISHED" && problem.visibility === "CONTEST_ONLY",
+        );
+        const problems = problemIds.map((problemId) =>
+            ready.find((problem) => problem.id === problemId),
+        );
+        if (problems.some((problem) => !problem)) {
+            return apiError(
+                422,
+                "CONTEST_PROBLEM_NOT_READY",
+                "Có bài chưa được duyệt cho contest hoặc không còn tồn tại",
+            );
+        }
+        const updated: AdminContest = {
+            ...found,
+            problems: problems.flatMap((problem, index) =>
+                problem
+                    ? [
+                          {
+                              letter: String.fromCharCode(65 + index),
+                              problemId: problem.id,
+                              slug: problem.slug,
+                              title: problem.title,
+                              difficulty: problem.difficulty,
+                          },
+                      ]
+                    : [],
+            ),
+        };
+        contests = contests.map((item) => (item.id === updated.id ? updated : item));
+        return HttpResponse.json(withPhase(updated));
     }),
 ];

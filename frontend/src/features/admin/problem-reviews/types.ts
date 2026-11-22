@@ -12,6 +12,7 @@ export interface ReviewProblemSummary {
     slug: string;
     title: string;
     status: ReviewProblemStatus;
+    visibility: ProblemVisibility | null;
     difficulty: Difficulty;
     authorId: string;
     updatedAt: string;
@@ -41,4 +42,6 @@ export interface ReviewAnswerCheck {
     testcases: { isPassed: boolean }[];
 }
 
-export type ReviewAction = "approve" | "request-changes" | "reject";
+export type ReviewAction = "approve" | "approve-for-contest" | "request-changes" | "reject";
+
+export type ProblemVisibility = "PUBLIC" | "CONTEST_ONLY" | "HIDDEN";

@@ -79,6 +79,26 @@ class ContestProblemApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Admin lọc được bài đã xuất bản theo phạm vi: chỉ cho contest hoặc công khai")
+    void adminList_filtersByVisibility() {
+        approveForContest(ADMIN);
+        String published = "/api/admin/problems?status=PUBLISHED&visibility=";
+
+        DocumentContext contestOnly =
+                JsonPath.parse(
+                        studio.send(HttpMethod.GET, published + "CONTEST_ONLY", null, ADMIN)
+                                .getBody());
+        DocumentContext publicOnes =
+                JsonPath.parse(
+                        studio.send(HttpMethod.GET, published + "PUBLIC", null, ADMIN).getBody());
+
+        assertThat(contestOnly.read("$.items[*].id", List.class)).containsExactly(problemId);
+        assertThat(contestOnly.read("$.items[0].visibility", String.class))
+                .isEqualTo("CONTEST_ONLY");
+        assertThat(publicOnes.read("$.items", List.class)).isEmpty();
+    }
+
+    @Test
     @DisplayName("Chỉ ADMIN duyệt cho contest được")
     void approveForContest_asSetter_isForbidden() {
         assertThat(approveForContest(SETTER).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);

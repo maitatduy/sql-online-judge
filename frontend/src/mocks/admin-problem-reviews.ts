@@ -1,6 +1,7 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import type {
+    ProblemVisibility,
     ReviewDecision,
     ReviewProblemStatus,
     ReviewProblemSummary,
@@ -17,8 +18,19 @@ import {
 
 const DEFAULT_PAGE_SIZE = 20;
 
-const DECISIONS: Record<string, { decision: ReviewDecision; status: ReviewProblemStatus }> = {
-    approve: { decision: "APPROVED", status: "PUBLISHED" },
+interface Decision {
+    decision: ReviewDecision;
+    status: ReviewProblemStatus;
+    visibility?: ProblemVisibility;
+}
+
+const DECISIONS: Record<string, Decision> = {
+    approve: { decision: "APPROVED", status: "PUBLISHED", visibility: "PUBLIC" },
+    "approve-for-contest": {
+        decision: "APPROVED",
+        status: "PUBLISHED",
+        visibility: "CONTEST_ONLY",
+    },
     "request-changes": { decision: "CHANGES_REQUESTED", status: "CHANGES_REQUESTED" },
     reject: { decision: "REJECTED", status: "REJECTED" },
 };
@@ -30,6 +42,7 @@ function toSummary(problem: StoredProblem): ReviewProblemSummary {
         slug: problem.slug,
         title: problem.title,
         status: problem.status,
+        visibility: problem.status === "PUBLISHED" ? (problem.visibility ?? "PUBLIC") : null,
         difficulty: problem.difficulty,
         authorId: problem.authorId,
         updatedAt: problem.updatedAt,
@@ -50,10 +63,12 @@ export const adminProblemReviewHandlers: RequestHandler[] = [
         await delay();
         const params = new URL(request.url).searchParams;
         const status = params.get("status") ?? "PENDING_REVIEW";
+        const visibility = params.get("visibility");
         const page = Number(params.get("page") ?? 1);
         const size = Number(params.get("size") ?? DEFAULT_PAGE_SIZE);
         const matching = readStudioProblems()
             .filter((problem) => !problem.deletedAt && problem.status === status)
+            .filter((problem) => !visibility || toSummary(problem).visibility === visibility)
             .sort((first, second) => first.updatedAt.localeCompare(second.updatedAt));
         return HttpResponse.json({
             items: matching.slice((page - 1) * size, page * size).map(toSummary),
@@ -78,6 +93,7 @@ export const adminProblemReviewHandlers: RequestHandler[] = [
             return apiError(422, "PROBLEM_NOT_PENDING_REVIEW", "Bài không ở trạng thái chờ duyệt");
         }
         const reason = outcome.decision === "APPROVED" ? null : await reasonOf(request);
+        const isPublic = outcome.visibility === "PUBLIC";
         if (reason === "") {
             return validationFailed({ field: "reason", message: "Cần ghi lý do" });
         }
@@ -85,10 +101,8 @@ export const adminProblemReviewHandlers: RequestHandler[] = [
         const reviewed: StoredProblem = {
             ...problem,
             status: outcome.status,
-            number:
-                outcome.status === "PUBLISHED"
-                    ? (problem.number ?? nextNumber(problems))
-                    : problem.number,
+            number: isPublic ? (problem.number ?? nextNumber(problems)) : problem.number,
+            visibility: outcome.visibility ?? problem.visibility,
             latestReview: { decision: outcome.decision, reason, reviewedAt: now },
             updatedAt: now,
         };

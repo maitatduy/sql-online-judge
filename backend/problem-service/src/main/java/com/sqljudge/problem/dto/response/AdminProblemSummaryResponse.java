@@ -3,6 +3,7 @@ package com.sqljudge.problem.dto.response;
 import com.sqljudge.problem.entity.Difficulty;
 import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.entity.ProblemStatus;
+import com.sqljudge.problem.entity.ProblemVisibility;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ public record AdminProblemSummaryResponse(
         String slug,
         String title,
         ProblemStatus status,
+        ProblemVisibility visibility,
         Difficulty difficulty,
         UUID authorId,
         Instant updatedAt) {
@@ -23,6 +25,7 @@ public record AdminProblemSummaryResponse(
                 problem.getSlug(),
                 problem.getTitle(),
                 problem.getStatus(),
+                problem.getVisibility(),
                 problem.getDifficulty(),
                 problem.getAuthorId(),
                 problem.getUpdatedAt());

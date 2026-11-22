@@ -2,10 +2,14 @@ package com.sqljudge.problem.service;
 
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.response.AdminProblemSummaryResponse;
+import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.entity.ProblemStatus;
+import com.sqljudge.problem.entity.ProblemVisibility;
 import com.sqljudge.problem.repository.ProblemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +24,17 @@ public class AdminProblemQueryService {
 
     @Transactional(readOnly = true)
     public PageResponse<AdminProblemSummaryResponse> list(
-            ProblemStatus status, int page, int size) {
+            ProblemStatus status, ProblemVisibility visibility, int page, int size) {
         return PageResponse.from(
-                problemRepository.findByStatusAndDeletedAtIsNull(
-                        status, PageRequest.of(page - 1, size, OLDEST_UPDATE_FIRST)),
+                find(status, visibility, PageRequest.of(page - 1, size, OLDEST_UPDATE_FIRST)),
                 AdminProblemSummaryResponse::from);
+    }
+
+    private Page<Problem> find(
+            ProblemStatus status, ProblemVisibility visibility, Pageable pageable) {
+        return visibility == null
+                ? problemRepository.findByStatusAndDeletedAtIsNull(status, pageable)
+                : problemRepository.findByStatusAndVisibilityAndDeletedAtIsNull(
+                        status, visibility, pageable);
     }
 }

@@ -17,29 +17,31 @@ interface ReviewDecisionFormProps {
     canApprove: boolean;
 }
 
-function toastOf(action: ReviewAction, title: string): string {
-    if (action === "approve") {
-        return `Đã xuất bản bài ${title}.`;
-    }
-    return action === "reject"
-        ? `Đã từ chối bài ${title}.`
-        : `Đã trả bài ${title} về cho người ra đề.`;
+const TOASTS: Record<ReviewAction, (title: string) => string> = {
+    approve: (title) => `Đã xuất bản bài ${title}.`,
+    "approve-for-contest": (title) => `Đã duyệt bài ${title} cho contest.`,
+    reject: (title) => `Đã từ chối bài ${title}.`,
+    "request-changes": (title) => `Đã trả bài ${title} về cho người ra đề.`,
+};
+
+function needsReason(action: ReviewAction): boolean {
+    return action === "reject" || action === "request-changes";
 }
 
 export function ReviewDecisionForm({ problemId, title, canApprove }: ReviewDecisionFormProps) {
     const showToast = useToast();
     const [reason, setReason] = useState("");
     const [reasonError, setReasonError] = useState<string | null>(null);
-    const decision = useReviewDecision(problemId, (_, action) => showToast(toastOf(action, title)));
+    const decision = useReviewDecision(problemId, (_, action) => showToast(TOASTS[action](title)));
 
     function decide(action: ReviewAction) {
         const trimmed = reason.trim();
-        if (action !== "approve" && trimmed === "") {
+        if (needsReason(action) && trimmed === "") {
             setReasonError(REASON_REQUIRED);
             return;
         }
         setReasonError(null);
-        decision.mutate({ action, reason: action === "approve" ? null : trimmed });
+        decision.mutate({ action, reason: needsReason(action) ? trimmed : null });
     }
 
     return (
@@ -90,6 +92,14 @@ export function ReviewDecisionForm({ problemId, title, canApprove }: ReviewDecis
                     onClick={() => decide("request-changes")}
                 >
                     Yêu cầu sửa
+                </Button>
+                <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!canApprove || decision.isPending}
+                    onClick={() => decide("approve-for-contest")}
+                >
+                    Duyệt cho contest
                 </Button>
                 <Button
                     type="button"
