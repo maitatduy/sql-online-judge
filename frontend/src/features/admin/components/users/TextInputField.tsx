@@ -8,7 +8,7 @@ interface TextInputFieldProps {
     registration: UseFormRegisterReturn;
     error?: string;
     placeholder?: string;
-    type?: "text" | "email";
+    type?: "text" | "email" | "number" | "datetime-local";
     isReadOnly?: boolean;
 }
 

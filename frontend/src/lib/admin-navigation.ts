@@ -55,6 +55,8 @@ export const ADMIN_ROUTES = {
     messages: `${ROUTES.admin}/messages`,
     problemReviews: `${ROUTES.admin}/problem-reviews`,
     courseReviews: `${ROUTES.admin}/course-reviews`,
+    contests: `${ROUTES.admin}/contests`,
+    contest: (contestId: string) => `${ROUTES.admin}/contests/${encodeURIComponent(contestId)}`,
     judge: `${ROUTES.admin}/judge`,
     ai: `${ROUTES.admin}/ai`,
 } as const;
@@ -104,7 +106,7 @@ export const ADMIN_NAVIGATION_GROUPS: AdminNavigationGroup[] = [
             { label: "Khoá học", href: `${ROUTES.admin}/courses`, icon: BookOpen },
             {
                 label: "Contest",
-                href: `${ROUTES.admin}/contests`,
+                href: ADMIN_ROUTES.contests,
                 icon: Trophy,
                 indicator: "liveContest",
             },

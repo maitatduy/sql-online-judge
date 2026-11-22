@@ -31,6 +31,7 @@ import {
     SETTER_SESSION_USER,
     writeMockSession,
 } from "./session";
+import { adminContestHandlers } from "./admin-contests";
 import { studioCourseOutlineHandlers, studioLessonHandlers } from "./studio-course-outline";
 import { studioLessonCellHandlers } from "./studio-lesson-cells";
 import { studioLessonQuizHandlers } from "./studio-lesson-quiz";
@@ -198,6 +199,7 @@ export const handlers: RequestHandler[] = [
     ...studioCourseHandlers,
     ...adminCourseReviewHandlers,
     ...adminCourseCatalogHandlers,
+    ...adminContestHandlers,
     ...adminHandlers,
     ...adminProblemReviewHandlers,
     ...invitationHandlers,
