@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -108,6 +109,10 @@ public class Contest extends BaseEntity {
 
     public boolean hasStartedAt(Instant now) {
         return !now.isBefore(startAt);
+    }
+
+    public Optional<ContestProblem> problemByLetter(String letter) {
+        return problems.stream().filter(problem -> problem.letter().equals(letter)).findFirst();
     }
 
     public void clearProblems() {

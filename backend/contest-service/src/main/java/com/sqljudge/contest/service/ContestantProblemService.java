@@ -37,9 +37,8 @@ public class ContestantProblemService {
         ContestProblem problem =
                 transactionTemplate.execute(
                         status ->
-                                accessibleContest(slug).getProblems().stream()
-                                        .filter(candidate -> candidate.letter().equals(letter))
-                                        .findFirst()
+                                accessibleContest(slug)
+                                        .problemByLetter(letter)
                                         .orElseThrow(
                                                 () ->
                                                         new NotFoundException(
