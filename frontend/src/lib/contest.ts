@@ -1,6 +1,6 @@
 import { formatDate, formatTime } from "@/lib/format";
 
-import type { ContestPhase } from "./types";
+export type ContestPhase = "UPCOMING" | "RUNNING" | "FINISHED";
 
 export const CONTEST_PHASE_LABELS: Record<ContestPhase, string> = {
     UPCOMING: "Sắp diễn ra",

@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 import { ADMIN_ROUTES } from "@/lib/admin-navigation";
+import { CONTEST_PHASE_LABELS, formatContestMoment, formatMinutes } from "@/lib/contest";
 
-import { CONTEST_PHASE_LABELS, formatContestMoment, formatMinutes } from "../../contests/format";
 import type { AdminContestSummary } from "../../contests/types";
 
 const CELL_CLASS = "border-b px-4 py-3";

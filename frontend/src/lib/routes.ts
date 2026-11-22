@@ -33,6 +33,7 @@ export const ROUTES = {
         `/studio/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}`,
     problem: (slug: string) => `/problems/${encodeURIComponent(slug)}`,
     course: (slug: string) => `/learn/${encodeURIComponent(slug)}`,
+    contest: (slug: string) => `/contests/${encodeURIComponent(slug)}`,
     lesson: (courseSlug: string, lessonSlug: string) =>
         `/learn/${encodeURIComponent(courseSlug)}/${encodeURIComponent(lessonSlug)}`,
 } as const;
