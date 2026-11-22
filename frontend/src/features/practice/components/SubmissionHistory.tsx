@@ -12,18 +12,18 @@ import { ApiRequestError, isUnauthenticatedError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
 
 import { useProblemSubmissions } from "../hooks/useProblemSubmissions";
-import type { ProblemDetail } from "../types";
 
 import { SubmissionHistoryRow } from "./SubmissionHistoryRow";
 
 const SKELETON_ROW_COUNT = 4;
 
 interface SubmissionHistoryProps {
-    problem: ProblemDetail;
+    problemId: string;
+    loginPath: string;
     now?: Date;
 }
 
-export function SubmissionHistory({ problem, now }: SubmissionHistoryProps) {
+export function SubmissionHistory({ problemId, loginPath, now }: SubmissionHistoryProps) {
     const [mountedAt] = useState(() => new Date());
     const {
         submissions,
@@ -35,7 +35,7 @@ export function SubmissionHistory({ problem, now }: SubmissionHistoryProps) {
         isFetchingNextPage,
         fetchNextPage,
         refetch,
-    } = useProblemSubmissions(problem.id);
+    } = useProblemSubmissions(problemId);
 
     if (isPending) {
         return (
@@ -55,10 +55,7 @@ export function SubmissionHistory({ problem, now }: SubmissionHistoryProps) {
         return (
             <p className="px-6 py-5 text-[13px]">
                 Đăng nhập để xem lịch sử nộp.{" "}
-                <Link
-                    href={ROUTES.loginWithNext(ROUTES.problem(problem.slug))}
-                    className="font-semibold text-brand"
-                >
+                <Link href={ROUTES.loginWithNext(loginPath)} className="font-semibold text-brand">
                     Đăng nhập
                 </Link>
             </p>

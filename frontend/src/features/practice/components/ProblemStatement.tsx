@@ -1,17 +1,18 @@
 import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
 import { Markdown } from "@/components/shared/Markdown";
 import { ResultTable } from "@/components/shared/ResultTable";
-import { formatNumber, formatPercent } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
 
-import type { ProblemDetail } from "../types";
+import type { WorkspaceProblem } from "../types";
 
 const MS_PER_SECOND = 1000;
 
 interface ProblemStatementProps {
-    problem: ProblemDetail;
+    problem: WorkspaceProblem;
+    meta?: React.ReactNode;
 }
 
-export function ProblemStatement({ problem }: ProblemStatementProps) {
+export function ProblemStatement({ problem, meta }: ProblemStatementProps) {
     const [example] = problem.examples;
 
     return (
@@ -20,17 +21,7 @@ export function ProblemStatement({ problem }: ProblemStatementProps) {
                 <h1 className="text-xl leading-snug font-bold">{problem.title}</h1>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                     <DifficultyLabel difficulty={problem.difficulty} className="text-[13px]" />
-                    {problem.tags.map((tag) => (
-                        <span
-                            key={tag.slug}
-                            className="rounded-sm bg-surface-2 px-2 py-0.5 text-xs text-muted-foreground"
-                        >
-                            {tag.name}
-                        </span>
-                    ))}
-                    <span className="ml-1 text-xs text-muted-foreground">
-                        {`AC ${formatPercent(problem.acceptanceRate)}, ${formatNumber(problem.solvedCount)} người giải`}
-                    </span>
+                    {meta}
                 </div>
             </div>
             <Markdown>{problem.statementMarkdown}</Markdown>

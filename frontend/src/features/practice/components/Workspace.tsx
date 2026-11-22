@@ -5,8 +5,13 @@ import { notFound } from "next/navigation";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { ToastProvider } from "@/components/shared/ToastProvider";
+import { ROUTES } from "@/lib/routes";
 
+import { practiceApi } from "../api";
 import { isProblemNotFound, useProblemDetail } from "../hooks/useProblemDetail";
+import type { ProblemDetail } from "../types";
+import type { WorkspaceTarget } from "../workspace-target";
+import { ProblemStatementMeta } from "./ProblemStatementMeta";
 import { ProblemWorkspace } from "./ProblemWorkspace";
 import { WorkspaceHeader } from "./WorkspaceHeader";
 
@@ -25,6 +30,19 @@ function WorkspaceSkeleton() {
     );
 }
 
+function practiceTarget(problem: ProblemDetail): WorkspaceTarget {
+    return {
+        storageKey: problem.id,
+        heading: `#${problem.number}. ${problem.title}`,
+        loginPath: ROUTES.problem(problem.slug),
+        historyProblemId: problem.id,
+        statementMeta: <ProblemStatementMeta problem={problem} />,
+        startRun: (request) => practiceApi.startRun(problem.id, request),
+        submit: (request, idempotencyKey) =>
+            practiceApi.submitSolution(problem.id, request, idempotencyKey),
+    };
+}
+
 export function Workspace({ slug }: WorkspaceProps) {
     const { data: problem, error, isPending, refetch } = useProblemDetail(slug);
 
@@ -36,7 +54,11 @@ export function Workspace({ slug }: WorkspaceProps) {
         <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
             {problem ? (
                 <ToastProvider>
-                    <ProblemWorkspace key={problem.id} problem={problem} />
+                    <ProblemWorkspace
+                        key={problem.id}
+                        problem={problem}
+                        target={practiceTarget(problem)}
+                    />
                 </ToastProvider>
             ) : null}
             {!problem ? <WorkspaceHeader title={null} /> : null}

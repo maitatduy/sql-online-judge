@@ -4,21 +4,22 @@ import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 import { VERDICT_LABELS } from "@/lib/verdict";
 
-import type { CodeRun, ProblemDetail } from "../types";
+import type { CodeRun, WorkspaceProblem } from "../types";
 import { ActionError } from "./ActionError";
 
 const MS_PER_SECOND = 1000;
 const SYSTEM_ERROR_MESSAGE = "Máy chấm đang gặp sự cố, bạn chạy thử lại sau ít phút.";
 
 interface RunContentProps {
-    problem: ProblemDetail;
+    problem: WorkspaceProblem;
+    loginPath: string;
     run: CodeRun | null;
     isRunning: boolean;
     error: Error | null;
     onRetry: () => void;
 }
 
-function RunOutcome({ run, problem }: { run: CodeRun; problem: ProblemDetail }) {
+function RunOutcome({ run, problem }: { run: CodeRun; problem: WorkspaceProblem }) {
     if (run.outcome === "OK" && run.result) {
         return (
             <div className="flex flex-col gap-2">
@@ -53,7 +54,14 @@ function RunOutcome({ run, problem }: { run: CodeRun; problem: ProblemDetail }) 
     );
 }
 
-export function RunContent({ problem, run, isRunning, error, onRetry }: RunContentProps) {
+export function RunContent({
+    problem,
+    loginPath,
+    run,
+    isRunning,
+    error,
+    onRetry,
+}: RunContentProps) {
     if (isRunning) {
         return (
             <p
@@ -70,7 +78,7 @@ export function RunContent({ problem, run, isRunning, error, onRetry }: RunConte
             <ActionError
                 error={error}
                 loginMessage="Đăng nhập để chạy thử."
-                loginHref={ROUTES.loginWithNext(ROUTES.problem(problem.slug))}
+                loginHref={ROUTES.loginWithNext(loginPath)}
                 rateLimitedMessage="Bạn chạy thử quá nhanh."
                 onRetry={onRetry}
             />

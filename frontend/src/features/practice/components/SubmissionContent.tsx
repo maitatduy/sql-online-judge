@@ -2,12 +2,13 @@ import { VerdictBadge } from "@/components/shared/VerdictBadge";
 import { ROUTES } from "@/lib/routes";
 import type { Verdict } from "@/lib/verdict";
 
-import type { ProblemDetail, Submission } from "../types";
+import type { Submission, WorkspaceProblem } from "../types";
 import { ActionError } from "./ActionError";
 import { SubmissionVerdict } from "./SubmissionVerdict";
 
 interface SubmissionContentProps {
-    problem: ProblemDetail;
+    problem: WorkspaceProblem;
+    loginPath: string;
     submission: Submission | null;
     isJudging: boolean;
     error: Error | null;
@@ -53,6 +54,7 @@ function hasVerdict(submission: Submission): submission is Submission & { verdic
 
 export function SubmissionContent({
     problem,
+    loginPath,
     submission,
     isJudging,
     error,
@@ -63,7 +65,7 @@ export function SubmissionContent({
             <ActionError
                 error={error}
                 loginMessage="Đăng nhập để nộp bài."
-                loginHref={ROUTES.loginWithNext(ROUTES.problem(problem.slug))}
+                loginHref={ROUTES.loginWithNext(loginPath)}
                 rateLimitedMessage="Bạn nộp bài quá nhanh."
                 onRetry={onRetry}
             />
