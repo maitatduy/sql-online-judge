@@ -76,6 +76,14 @@
     --diff-removed: #fca5a5;
     --diff-added: #86efac;
 
+    --contest-hero: #0b0f17;
+    --contest-hero-panel: #111827;
+    --contest-hero-line: #1f2937;
+    --contest-hero-text: #f8fafc;
+    --contest-hero-muted: #94a3b8;
+    --contest-hero-accent: #93c5fd;
+    --contest-live: #f87171;
+
     --account-active: #15803d;
     --account-banned: #c81e1e;
     --account-unverified: #9a5b05;
@@ -168,6 +176,14 @@
     --diff-border: #2b3a52;
     --diff-removed: #fca5a5;
     --diff-added: #86efac;
+
+    --contest-hero: #0b0f17;
+    --contest-hero-panel: #111827;
+    --contest-hero-line: #1f2937;
+    --contest-hero-text: #f8fafc;
+    --contest-hero-muted: #94a3b8;
+    --contest-hero-accent: #93c5fd;
+    --contest-live: #f87171;
 
     --account-active: #4ade80;
     --account-banned: #f87171;
@@ -288,6 +304,14 @@
     --color-diff-border: var(--diff-border);
     --color-diff-removed: var(--diff-removed);
     --color-diff-added: var(--diff-added);
+
+    --color-contest-hero: var(--contest-hero);
+    --color-contest-hero-panel: var(--contest-hero-panel);
+    --color-contest-hero-line: var(--contest-hero-line);
+    --color-contest-hero-text: var(--contest-hero-text);
+    --color-contest-hero-muted: var(--contest-hero-muted);
+    --color-contest-hero-accent: var(--contest-hero-accent);
+    --color-contest-live: var(--contest-live);
 
     --color-account-active: var(--account-active);
     --color-account-banned: var(--account-banned);

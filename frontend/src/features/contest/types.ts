@@ -1,4 +1,5 @@
 import type { ContestPhase } from "@/lib/contest";
+import type { Difficulty } from "@/lib/difficulty";
 import type { Page } from "@/lib/pagination";
 
 export interface ContestSummary {
@@ -24,4 +25,10 @@ export interface ContestDetail extends ContestSummary {
 export interface ContestRegistration {
     isRegistered: boolean;
     registeredAt: string | null;
+}
+
+export interface ContestProblem {
+    letter: string;
+    title: string;
+    difficulty: Difficulty;
 }

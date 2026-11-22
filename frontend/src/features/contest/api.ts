@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 import type { ContestPhase } from "@/lib/contest";
 
-import type { ContestDetail, ContestPage, ContestRegistration } from "./types";
+import type { ContestDetail, ContestPage, ContestProblem, ContestRegistration } from "./types";
 
 const CONTEST_PAGE_SIZE = 20;
 
@@ -17,6 +17,10 @@ export const contestApi = {
         }),
     get: (slug: string, signal?: AbortSignal) =>
         apiClient.get<ContestDetail>(`/api/contests/${encodeURIComponent(slug)}`, { signal }),
+    problems: (slug: string, signal?: AbortSignal) =>
+        apiClient.get<ContestProblem[]>(`/api/contests/${encodeURIComponent(slug)}/problems`, {
+            signal,
+        }),
     registration: (slug: string, signal?: AbortSignal) =>
         apiClient.get<ContestRegistration>(registrationPath(slug), { signal }),
     register: (slug: string) => apiClient.post<ContestRegistration>(registrationPath(slug)),

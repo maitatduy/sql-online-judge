@@ -72,7 +72,15 @@ function seedContests(): AdminContest[] {
             "sql-cup-live",
             "SQL Cup đang thi",
             new Date(Date.now() - 30 * MS_PER_MINUTE).toISOString(),
-            [],
+            [
+                {
+                    letter: "A",
+                    problemId: "0193a100-0000-7000-8000-000000000003",
+                    slug: "ghep-phong-ban-live",
+                    title: "Ghép phòng ban",
+                    difficulty: "EASY",
+                },
+            ],
         ),
     ];
 }

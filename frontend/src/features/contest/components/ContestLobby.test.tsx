@@ -1,4 +1,4 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import { http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -24,6 +24,10 @@ function renderLobby(slug: string) {
     );
 }
 
+function participants() {
+    return screen.getByRole("region", { name: "Người tham gia" });
+}
+
 describe("sảnh chờ contest", () => {
     beforeEach(() => {
         localStorage.clear();
@@ -36,7 +40,11 @@ describe("sảnh chờ contest", () => {
 
         expect(await screen.findByRole("heading", { name: "SQL Cup 2" })).toBeInTheDocument();
         expect(screen.getByText("Sắp diễn ra")).toBeInTheDocument();
-        expect(screen.getByText("Đã đăng ký: 0")).toBeInTheDocument();
+        expect(participants()).toHaveTextContent("0");
+        expect(screen.getByRole("timer", { name: "Bắt đầu sau" })).toBeInTheDocument();
+        expect(screen.getByText(/phạt 20 phút/)).toBeInTheDocument();
+        expect(screen.getByText(/đóng băng 30 phút cuối/)).toBeInTheDocument();
+        expect(screen.getByText(/Đề bài mở lúc/)).toBeInTheDocument();
         expect(await screen.findByRole("link", { name: "Đăng nhập để đăng ký" })).toHaveAttribute(
             "href",
             "/login?next=%2Fcontests%2Fsql-cup-2",
@@ -50,12 +58,12 @@ describe("sảnh chờ contest", () => {
         fireEvent.click(await screen.findByRole("button", { name: "Đăng ký" }));
 
         expect(await screen.findByText("Bạn đã đăng ký")).toBeInTheDocument();
-        expect(screen.getByText("Đã đăng ký: 1")).toBeInTheDocument();
+        expect(participants()).toHaveTextContent("1");
 
         fireEvent.click(screen.getByRole("button", { name: "Huỷ đăng ký" }));
 
         expect(await screen.findByRole("button", { name: "Đăng ký" })).toBeInTheDocument();
-        expect(screen.getByText("Đã đăng ký: 0")).toBeInTheDocument();
+        expect(participants()).toHaveTextContent("0");
     });
 
     it("contest đang diễn ra cho đăng ký muộn nhưng không cho huỷ", async () => {
@@ -66,6 +74,9 @@ describe("sảnh chờ contest", () => {
 
         expect(await screen.findByText("Bạn đã đăng ký")).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Huỷ đăng ký" })).toBeNull();
+        expect(screen.getByRole("timer", { name: "Còn lại" })).toBeInTheDocument();
+        const problems = within(await screen.findByRole("table", { name: "Bài trong contest" }));
+        expect(problems.getByText("Ghép phòng ban")).toBeInTheDocument();
     });
 
     it("contest đã kết thúc không còn nút đăng ký", async () => {
@@ -74,6 +85,8 @@ describe("sảnh chờ contest", () => {
 
         expect(await screen.findByText("Đã kết thúc")).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Đăng ký" })).toBeNull();
+        const problems = within(await screen.findByRole("table", { name: "Bài trong contest" }));
+        expect(problems.getAllByRole("row")).toHaveLength(3);
     });
 
     it("tài khoản bị cấm thi contest tính rating thấy lý do", async () => {
