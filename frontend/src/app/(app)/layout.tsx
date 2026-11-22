@@ -1,5 +1,6 @@
 import { AppProviders } from "@/app/providers";
 import { SkipLink } from "@/components/shared/SkipLink";
+import { ToastProvider } from "@/components/shared/ToastProvider";
 import { TopBar } from "@/components/shared/TopBar";
 
 export default function AppLayout({
@@ -12,7 +13,7 @@ export default function AppLayout({
             <div className="min-h-screen bg-surface">
                 <SkipLink />
                 <TopBar />
-                {children}
+                <ToastProvider>{children}</ToastProvider>
             </div>
         </AppProviders>
     );
