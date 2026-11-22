@@ -53,8 +53,13 @@ describe("quản lý contest", () => {
             "/admin/contests/0193a000-0000-7000-8000-000000000002",
         );
         expect(row.getByText("Sắp diễn ra")).toBeInTheDocument();
-        expect(row.getByText("90 phút")).toBeInTheDocument();
+        expect(row.getByText(/90 phút/)).toBeInTheDocument();
         expect(row.getByText("Có")).toBeInTheDocument();
+        expect(row.getByRole("link", { name: "Sửa SQL Cup 2" })).toHaveAttribute(
+            "href",
+            "/admin/contests/0193a000-0000-7000-8000-000000000002",
+        );
+        expect(screen.getByText("1 đang diễn ra, 1 sắp tới")).toBeInTheDocument();
         expect(
             within(table.getByRole("row", { name: /SQL Cup 1/ })).getByText("Đã kết thúc"),
         ).toBeInTheDocument();
@@ -65,7 +70,7 @@ describe("quản lý contest", () => {
         const dialog = await openCreateDialog();
 
         expect(dialog.getByLabelText("Thời lượng (phút)")).toHaveValue(90);
-        expect(dialog.getByLabelText("Đóng băng trước khi kết thúc (phút)")).toHaveValue(30);
+        expect(dialog.getByLabelText("Đóng băng cuối (phút)")).toHaveValue(30);
         expect(dialog.getByLabelText("Phạt mỗi lần sai (phút)")).toHaveValue(20);
         fillContest(dialog, "sql-cup-3");
         fireEvent.click(dialog.getByRole("button", { name: "Tạo contest" }));
@@ -94,7 +99,7 @@ describe("quản lý contest", () => {
         const dialog = await openCreateDialog();
 
         fillContest(dialog, "dong-bang-dai");
-        fireEvent.change(dialog.getByLabelText("Đóng băng trước khi kết thúc (phút)"), {
+        fireEvent.change(dialog.getByLabelText("Đóng băng cuối (phút)"), {
             target: { value: "120" },
         });
         fireEvent.click(dialog.getByRole("button", { name: "Tạo contest" }));

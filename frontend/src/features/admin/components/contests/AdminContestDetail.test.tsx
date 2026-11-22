@@ -22,10 +22,8 @@ function renderDetail(contestId: string) {
 }
 
 async function addProblem(title: string) {
-    const select = await screen.findByRole("combobox", { name: "Thêm bài" });
-    const option = await within(select).findByRole("option", { name: title });
-    fireEvent.change(select, { target: { value: option.getAttribute("value") } });
-    fireEvent.click(screen.getByRole("button", { name: "Thêm" }));
+    const library = within(await screen.findByRole("region", { name: "Thêm từ kho bài" }));
+    fireEvent.click(await library.findByRole("button", { name: `Thêm ${title}` }));
 }
 
 function selectedTitles(): string[] {
