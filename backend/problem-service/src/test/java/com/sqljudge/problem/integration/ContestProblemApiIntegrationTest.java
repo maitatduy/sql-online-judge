@@ -154,6 +154,35 @@ class ContestProblemApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Bài dành cho contest có thông tin chấm riêng, không lộ số và slug")
+    void contestJudgingInfo_servesContestOnlyProblems() {
+        approveForContest(ADMIN);
+        String base = "/internal/problems/" + problemId;
+
+        ResponseEntity<String> practice =
+                restTemplate.exchange(
+                        base + "/judging-info",
+                        HttpMethod.GET,
+                        new HttpEntity<>(internalHeaders()),
+                        String.class);
+        ResponseEntity<String> contest =
+                restTemplate.exchange(
+                        base + "/contest-judging-info",
+                        HttpMethod.GET,
+                        new HttpEntity<>(internalHeaders()),
+                        String.class);
+
+        assertThat(practice.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(contest.getStatusCode()).isEqualTo(HttpStatus.OK);
+        DocumentContext info = JsonPath.parse(contest.getBody());
+        assertThat(info.read("$.problemId", String.class)).isEqualTo(problemId);
+        assertThat(info.read("$.revisionId", String.class)).isNotBlank();
+        assertThat(info.read("$.title", String.class)).isEqualTo("Phòng ban");
+        assertThat(info.read("$.slug", String.class)).isNull();
+        assertThat(info.read("$.number", Integer.class)).isNull();
+    }
+
+    @Test
     @DisplayName("Contest kết thúc thì bài được mở công khai, có số và phát event một lần")
     void contestFinished_opensProblemsOnce() {
         String slug = JsonPath.parse(approveForContest(ADMIN).getBody()).read("$.slug");

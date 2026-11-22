@@ -26,11 +26,22 @@ public class InternalJudgingInfoService {
                 problemRepository
                         .findByIdAndStatusAndVisibilityAndDeletedAtIsNull(
                                 problemId, ProblemStatus.PUBLISHED, ProblemVisibility.PUBLIC)
-                        .orElseThrow(
-                                () ->
-                                        new NotFoundException(
-                                                ErrorCode.PROBLEM_NOT_FOUND,
-                                                "Không tìm thấy bài tập"));
+                        .orElseThrow(InternalJudgingInfoService::problemNotFound);
+        return toResponse(problem, problem.getNumber(), problem.getSlug());
+    }
+
+    @Transactional(readOnly = true)
+    public InternalJudgingInfoResponse contestJudgingInfo(UUID problemId) {
+        Problem problem =
+                problemRepository
+                        .findByIdAndDeletedAtIsNull(problemId)
+                        .filter(candidate -> candidate.getStatus() == ProblemStatus.PUBLISHED)
+                        .orElseThrow(InternalJudgingInfoService::problemNotFound);
+        return toResponse(problem, null, null);
+    }
+
+    private static InternalJudgingInfoResponse toResponse(
+            Problem problem, Integer number, String slug) {
         ProblemRevision revision = problem.getPublishedRevision();
         return new InternalJudgingInfoResponse(
                 problem.getId(),
@@ -41,8 +52,12 @@ public class InternalJudgingInfoService {
                         .toList(),
                 revision.getTestcases().size(),
                 problem.getTimeLimitMs(),
-                problem.getNumber(),
-                problem.getSlug(),
+                number,
+                slug,
                 problem.getTitle());
+    }
+
+    private static NotFoundException problemNotFound() {
+        return new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND, "Không tìm thấy bài tập");
     }
 }

@@ -48,6 +48,15 @@ public class InternalProblemController {
         return internalJudgingInfoService.judgingInfo(problemId);
     }
 
+    @GetMapping("/{problemId}/contest-judging-info")
+    @Operation(summary = "Thông tin để nhận bài nộp trong contest, không kèm số và slug của bài")
+    @ApiResponse(responseCode = "200", description = "Bài đã xuất bản")
+    @ApiResponse(responseCode = "401", description = "Thiếu hoặc sai token nội bộ")
+    @ApiResponse(responseCode = "404", description = "Không có bài hoặc bài chưa xuất bản")
+    public InternalJudgingInfoResponse contestJudgingInfo(@PathVariable UUID problemId) {
+        return internalJudgingInfoService.contestJudgingInfo(problemId);
+    }
+
     @GetMapping("/{problemId}/contest-statement")
     @Operation(summary = "Đề của bài đã xuất bản để hiện trong contest, không kèm số, slug, tag")
     @ApiResponse(responseCode = "200", description = "Đề bài")
