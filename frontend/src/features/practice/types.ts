@@ -41,13 +41,9 @@ export interface SchemaTable {
     columns: SchemaColumn[];
 }
 
-export interface ProblemDetail {
-    id: string;
-    number: number;
-    slug: string;
+export interface WorkspaceProblem {
     title: string;
     difficulty: Difficulty;
-    tags: Tag[];
     statementMarkdown: string;
     dialects: Dialect[];
     engineVersions: Partial<Record<Dialect, string>>;
@@ -58,6 +54,13 @@ export interface ProblemDetail {
     allowedStatements: StatementType[];
     timeLimitMs: number;
     hiddenTestcaseCount: number;
+}
+
+export interface ProblemDetail extends WorkspaceProblem {
+    id: string;
+    number: number;
+    slug: string;
+    tags: Tag[];
     acceptanceRate: number;
     solvedCount: number;
 }

@@ -7,18 +7,18 @@ import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { VERDICT_LABELS, VERDICT_TEXT_CLASSES, type Verdict } from "@/lib/verdict";
 
-import type { ProblemDetail, Submission } from "../types";
+import type { WorkspaceProblem, Submission } from "../types";
 
 import { DIFF_ROW_LIMIT, SubmissionDiffView } from "./SubmissionDiffView";
 
 const MS_PER_SECOND = 1000;
 
 interface SubmissionVerdictProps {
-    problem: ProblemDetail;
+    problem: WorkspaceProblem;
     submission: Submission & { verdict: Verdict };
 }
 
-function summaryOf(problem: ProblemDetail, submission: Submission): string | null {
+function summaryOf(problem: WorkspaceProblem, submission: Submission): string | null {
     const { firstFailedTestcase: failed, totalTestcases, runtimeMs } = submission;
     const runtime = runtimeMs === null ? [] : [`${formatNumber(runtimeMs)} ms`];
     if (submission.verdict === "AC") {

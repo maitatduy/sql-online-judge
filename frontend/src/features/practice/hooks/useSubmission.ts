@@ -6,6 +6,7 @@ import { useToast } from "@/components/shared/ToastProvider";
 
 import { practiceApi } from "../api";
 import type { SubmitSolutionRequest } from "../types";
+import type { WorkspaceTarget } from "../workspace-target";
 import { problemSubmissionsQueryKey } from "./useProblemSubmissions";
 import { submissionQueryKey, useSubmissionEvents } from "./useSubmissionEvents";
 
@@ -17,13 +18,16 @@ interface SubmitVariables {
     idempotencyKey: string;
 }
 
-export function useSubmission(problemId: string) {
+export function useSubmission(
+    submitSolution: WorkspaceTarget["submit"],
+    historyProblemId: string | null,
+) {
     const showToast = useToast();
     const queryClient = useQueryClient();
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const start = useMutation({
         mutationFn: ({ request, idempotencyKey }: SubmitVariables) =>
-            practiceApi.submitSolution(problemId, request, idempotencyKey),
+            submitSolution(request, idempotencyKey),
         onMutate: () => setSubmissionId(null),
         onSuccess: (accepted) => setSubmissionId(accepted.submissionId),
     });
@@ -43,10 +47,12 @@ export function useSubmission(problemId: string) {
     const isCompleted = submission?.status === "COMPLETED";
 
     useEffect(() => {
-        if (isCompleted) {
-            void queryClient.invalidateQueries({ queryKey: problemSubmissionsQueryKey(problemId) });
+        if (isCompleted && historyProblemId !== null) {
+            void queryClient.invalidateQueries({
+                queryKey: problemSubmissionsQueryKey(historyProblemId),
+            });
         }
-    }, [isCompleted, problemId, queryClient]);
+    }, [isCompleted, historyProblemId, queryClient]);
 
     const isJudging = start.isPending || (submissionId !== null && !isCompleted);
 

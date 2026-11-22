@@ -4,13 +4,14 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { practiceApi } from "../api";
 import type { StartRunRequest } from "../types";
+import type { WorkspaceTarget } from "../workspace-target";
 
 const RUN_POLL_INTERVAL_MS = 1000;
 
-export function useCodeRun(problemId: string) {
+export function useCodeRun(startRun: WorkspaceTarget["startRun"]) {
     const [runId, setRunId] = useState<string | null>(null);
     const start = useMutation({
-        mutationFn: (request: StartRunRequest) => practiceApi.startRun(problemId, request),
+        mutationFn: (request: StartRunRequest) => startRun(request),
         onMutate: () => setRunId(null),
         onSuccess: (accepted) => setRunId(accepted.runId),
     });

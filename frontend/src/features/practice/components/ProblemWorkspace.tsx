@@ -9,7 +9,8 @@ import { useCodeRun } from "../hooks/useCodeRun";
 import { useDialectChoice } from "../hooks/useDialectChoice";
 import { useEditorDraft } from "../hooks/useEditorDraft";
 import { useSubmission } from "../hooks/useSubmission";
-import type { ProblemDetail } from "../types";
+import type { WorkspaceProblem } from "../types";
+import type { WorkspaceTarget } from "../workspace-target";
 import { EditorPanel } from "./EditorPanel";
 import { ProblemTabs } from "./ProblemTabs";
 import { ResultPanel, type ResultTab } from "./ResultPanel";
@@ -20,18 +21,20 @@ import { type WorkspaceArea, WorkspaceAreaTabs, workspaceAreaId } from "./Worksp
 import { WorkspaceHeader } from "./WorkspaceHeader";
 
 interface ProblemWorkspaceProps {
-    problem: ProblemDetail;
+    problem: WorkspaceProblem;
+    target: WorkspaceTarget;
+    header?: React.ReactNode;
 }
 
-export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
-    const { dialect, chooseDialect } = useDialectChoice(problem.id, problem.dialects);
+export function ProblemWorkspace({ problem, target, header }: ProblemWorkspaceProps) {
+    const { dialect, chooseDialect } = useDialectChoice(target.storageKey, problem.dialects);
     const { code, savedAt, changeCode, resetToStarter } = useEditorDraft(
-        problem.id,
+        target.storageKey,
         dialect,
         problem.starterCode,
     );
-    const codeRun = useCodeRun(problem.id);
-    const judging = useSubmission(problem.id);
+    const codeRun = useCodeRun(target.startRun);
+    const judging = useSubmission(target.submit, target.historyProblemId);
     const [resultTab, setResultTab] = useState<ResultTab>("run");
     const [activeArea, setActiveArea] = useState<WorkspaceArea>("problem");
     const completionSchema = useMemo<CompletionSchema>(
@@ -68,7 +71,7 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
 
     return (
         <>
-            <WorkspaceHeader title={`#${problem.number}. ${problem.title}`}>
+            <WorkspaceHeader title={target.heading}>
                 <WorkspaceActions
                     isRunning={codeRun.isRunning}
                     isJudging={judging.isJudging}
@@ -76,6 +79,7 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
                     onSubmit={handleSubmit}
                 />
             </WorkspaceHeader>
+            {header}
             <WorkspaceAreaTabs
                 activeArea={activeArea}
                 onAreaChange={setActiveArea}
@@ -84,6 +88,7 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
             <div className="flex min-h-0 flex-1 flex-col max-lg:pb-[68px] lg:flex-row">
                 <ProblemTabs
                     problem={problem}
+                    target={target}
                     id={workspaceAreaId("problem")}
                     className={cn(visibleOnNarrowWhen("problem"))}
                 />
@@ -117,6 +122,7 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
                         runContent={
                             <RunContent
                                 problem={problem}
+                                loginPath={target.loginPath}
                                 run={codeRun.run}
                                 isRunning={codeRun.isRunning}
                                 error={codeRun.error}
@@ -126,6 +132,7 @@ export function ProblemWorkspace({ problem }: ProblemWorkspaceProps) {
                         submissionContent={
                             <SubmissionContent
                                 problem={problem}
+                                loginPath={target.loginPath}
                                 submission={judging.submission}
                                 isJudging={judging.isJudging}
                                 error={judging.error}
