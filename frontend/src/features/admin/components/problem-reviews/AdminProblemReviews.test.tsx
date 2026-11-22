@@ -108,6 +108,21 @@ describe("trang duyệt bài tập", () => {
         expect(await queue.findByText("Không có bài nào ở trạng thái này.")).toBeInTheDocument();
     });
 
+    it("duyệt cho contest thì bài được chốt nhưng chưa công khai", async () => {
+        useLatestCheck(true);
+        const detail = await openPendingProblem();
+
+        const approve = await detail.findByRole("button", { name: "Duyệt cho contest" });
+        await vi.waitFor(() => expect(approve).toBeEnabled());
+        fireEvent.click(approve);
+
+        expect(
+            await screen.findByText(`Đã duyệt bài ${PENDING_TITLE} cho contest.`),
+        ).toBeInTheDocument();
+        const queue = within(screen.getByRole("region", { name: "Hàng đợi duyệt" }));
+        expect(await queue.findByText("Không có bài nào ở trạng thái này.")).toBeInTheDocument();
+    });
+
     it("yêu cầu sửa và từ chối cần ghi lý do", async () => {
         useLatestCheck(true);
         const bodies = recordReviewBodies();

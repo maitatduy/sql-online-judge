@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 
-import { ArrowLeft, ListOrdered } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
-import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
-import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
@@ -15,6 +13,8 @@ import { ADMIN_ROUTES } from "@/lib/admin-navigation";
 import { CONTEST_PHASE_LABELS, formatContestMoment, formatMinutes } from "../../contests/format";
 import type { AdminContest } from "../../contests/types";
 import { useAdminContest } from "../../hooks/useAdminContests";
+import { ContestProblemList } from "./ContestProblemList";
+import { ContestProblemsEditor } from "./ContestProblemsEditor";
 
 interface AdminContestDetailProps {
     contestId: string;
@@ -75,28 +75,10 @@ export function AdminContestDetail({ contestId }: AdminContestDetailProps) {
                     </dl>
                     <section className="flex flex-col gap-3">
                         <h2 className="text-base font-bold">Bài trong contest</h2>
-                        {contest.problems.length === 0 ? (
-                            <EmptyState title="Chưa gắn bài nào." icon={<ListOrdered />} />
+                        {contest.phase === "UPCOMING" ? (
+                            <ContestProblemsEditor key={contest.id} contest={contest} />
                         ) : (
-                            <ol
-                                aria-label="Bài trong contest"
-                                className="divide-y rounded-lg border bg-card"
-                            >
-                                {contest.problems.map((problem) => (
-                                    <li
-                                        key={problem.problemId}
-                                        className="flex items-center gap-4 px-4 py-3"
-                                    >
-                                        <span className="flex size-8 items-center justify-center rounded-md bg-surface-2 font-bold">
-                                            {problem.letter}
-                                        </span>
-                                        <span className="flex-1 font-semibold">
-                                            {problem.title}
-                                        </span>
-                                        <DifficultyLabel difficulty={problem.difficulty} />
-                                    </li>
-                                ))}
-                            </ol>
+                            <ContestProblemList problems={contest.problems} />
                         )}
                     </section>
                 </>

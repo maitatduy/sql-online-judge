@@ -3,6 +3,7 @@ package com.sqljudge.problem.controller;
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.response.AdminProblemSummaryResponse;
 import com.sqljudge.problem.entity.ProblemStatus;
+import com.sqljudge.problem.entity.ProblemVisibility;
 import com.sqljudge.problem.service.AdminProblemQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,15 +27,19 @@ public class AdminProblemController {
     private final AdminProblemQueryService adminProblemQueryService;
 
     @GetMapping
-    @Operation(summary = "Bài theo trạng thái cho admin, mặc định bài chờ duyệt, cũ nhất lên đầu")
+    @Operation(
+            summary =
+                    "Bài theo trạng thái và phạm vi cho admin, mặc định bài chờ duyệt, cũ nhất lên"
+                            + " đầu")
     @ApiResponse(responseCode = "200", description = "Một trang bài")
     @ApiResponse(responseCode = "400", description = "Trạng thái hoặc tham số phân trang sai")
     @ApiResponse(responseCode = "403", description = "Không phải ADMIN")
     public PageResponse<AdminProblemSummaryResponse> listProblems(
             @RequestParam(defaultValue = "PENDING_REVIEW") ProblemStatus status,
+            @RequestParam(required = false) ProblemVisibility visibility,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Phải từ 1 trở lên") int page,
             @RequestParam(defaultValue = "20")
                     @Min(value = 1, message = "Phải từ 1 đến 100") @Max(value = MAX_PAGE_SIZE, message = "Phải từ 1 đến 100") int size) {
-        return adminProblemQueryService.list(status, page, size);
+        return adminProblemQueryService.list(status, visibility, page, size);
     }
 }
