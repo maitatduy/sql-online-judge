@@ -134,7 +134,7 @@ export function CreateContestDialog({ open, onOpenChange }: CreateContestDialogP
                             error={errors.durationMinutes?.message}
                         />
                         <TextInputField
-                            label="Đóng băng trước khi kết thúc (phút)"
+                            label="Đóng băng cuối (phút)"
                             type="number"
                             registration={register("freezeMinutes", minutesOptions)}
                             error={errors.freezeMinutes?.message}

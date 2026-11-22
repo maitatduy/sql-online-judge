@@ -22,13 +22,16 @@ export function ContestProblemList({ problems, renderActions }: ContestProblemLi
         return <EmptyState title="Chưa gắn bài nào." icon={<ListOrdered />} />;
     }
     return (
-        <ol aria-label="Bài trong contest" className="divide-y rounded-lg border bg-card">
+        <ol aria-label="Bài trong contest" className="flex flex-col gap-2">
             {problems.map((problem, index) => (
-                <li key={problem.problemId} className="flex items-center gap-4 px-4 py-2.5">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-surface-2 font-bold">
+                <li
+                    key={problem.problemId}
+                    className="flex items-center gap-4 rounded-lg border bg-card px-4 py-2.5"
+                >
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand/12 text-lg font-extrabold text-brand">
                         {String.fromCharCode(FIRST_LETTER_CODE + index)}
                     </span>
-                    <span className="flex-1 font-semibold">{problem.title}</span>
+                    <span className="min-w-0 flex-1 font-semibold">{problem.title}</span>
                     <DifficultyLabel difficulty={problem.difficulty} />
                     {renderActions?.(problem, index)}
                 </li>
