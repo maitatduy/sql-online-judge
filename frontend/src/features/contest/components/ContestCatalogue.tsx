@@ -24,7 +24,7 @@ export function ContestCatalogue() {
     return (
         <main
             id={MAIN_CONTENT_ID}
-            className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 pt-7 pb-16 md:px-6"
+            className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-7 pb-16 md:px-6"
         >
             <h1 className="text-[24px] font-extrabold tracking-tight">Contest</h1>
             {running.data?.items.map((contest) => (

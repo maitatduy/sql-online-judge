@@ -24,7 +24,7 @@ export function ContestLobby({ slug }: ContestLobbyProps) {
     return (
         <main
             id={MAIN_CONTENT_ID}
-            className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pt-6 pb-16 md:px-6"
+            className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-6 pb-16 md:px-6"
         >
             {isPending ? (
                 <div role="status" aria-label="Đang tải contest" className="flex flex-col gap-3">
