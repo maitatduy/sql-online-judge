@@ -10,4 +10,6 @@ public interface ContestRegistrationRepository extends JpaRepository<ContestRegi
     Optional<ContestRegistration> findByContestIdAndUserId(UUID contestId, UUID userId);
 
     long countByContestId(UUID contestId);
+
+    boolean existsByContestIdAndUserId(UUID contestId, UUID userId);
 }
