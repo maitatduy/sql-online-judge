@@ -95,6 +95,9 @@ public class Submission extends BaseEntity {
     @Column(name = "idempotency_key", length = 100)
     private String idempotencyKey;
 
+    @Column(name = "contest_id", columnDefinition = "BINARY(16)")
+    private UUID contestId;
+
     @Column(name = "judged_at")
     private Instant judgedAt;
 
@@ -110,6 +113,7 @@ public class Submission extends BaseEntity {
         Submission submission = new Submission();
         submission.userId = userId;
         submission.problemId = solution.problemId();
+        submission.contestId = solution.contestId();
         submission.problemRevisionId = solution.revisionId();
         submission.problemNumber = solution.problem().number();
         submission.problemSlug = solution.problem().slug();
@@ -130,6 +134,10 @@ public class Submission extends BaseEntity {
         status = SubmissionStatus.JUDGING;
         judgedTestcases = Math.max(judgedTestcases, judged);
         return true;
+    }
+
+    public boolean isInContest() {
+        return contestId != null;
     }
 
     public JudgeOutcome complete(JudgeResult result, Instant now) {
@@ -164,7 +172,8 @@ public class Submission extends BaseEntity {
             ProblemLabel problem,
             Dialect dialect,
             String code,
-            int testcaseCount) {}
+            int testcaseCount,
+            UUID contestId) {}
 
     public record ProblemLabel(Integer number, String slug, String title) {}
 }

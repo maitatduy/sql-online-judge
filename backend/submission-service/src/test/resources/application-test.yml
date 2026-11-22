@@ -18,6 +18,7 @@ spring:
 
 sqljudge:
   problem-service-url: http://localhost:1
+  contest-service-url: http://localhost:1
   internal:
     api-token: test-internal-token
   outbox:

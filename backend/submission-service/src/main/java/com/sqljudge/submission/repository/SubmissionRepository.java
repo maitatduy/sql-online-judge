@@ -60,7 +60,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
             "SELECT new com.sqljudge.submission.dto.response.RecentSubmissionResponse(s.id,"
                     + " s.status, s.verdict, s.dialect, s.runtimeMs, s.createdAt, s.problemId,"
                     + " s.problemNumber, s.problemSlug, s.problemTitle) FROM Submission s"
-                    + " WHERE s.userId = :userId AND s.deletedAt IS NULL"
+                    + " WHERE s.userId = :userId AND s.deletedAt IS NULL AND s.contestId IS NULL"
                     + " ORDER BY s.createdAt DESC, s.id DESC")
     List<RecentSubmissionResponse> findRecent(@Param("userId") UUID userId, Limit limit);
 

@@ -367,6 +367,31 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName(
+            "Nộp bài và chạy thử trong contest đi tới submission-service, không tới"
+                    + " contest-service")
+    void contestSubmissionPaths_areRoutedToSubmissionService() {
+        webTestClient
+                .post()
+                .uri("/api/contests/sql-cup/problems/A/submissions")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+        webTestClient
+                .post()
+                .uri("/api/contests/sql-cup/problems/A/runs")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        assertThat(SUBMISSION_SERVICE.forwardedRequestLines())
+                .containsExactly(
+                        "POST /api/contests/sql-cup/problems/A/submissions",
+                        "POST /api/contests/sql-cup/problems/A/runs");
+        assertThat(CONTEST_SERVICE.forwardedRequestLines()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Đường dẫn nội bộ /internal/** không được định tuyến ra ngoài")
     void internalPath_isNotRouted() {
         webTestClient.get().uri("/internal/jwks").exchange().expectStatus().isNotFound();

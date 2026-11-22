@@ -12,6 +12,8 @@ public record SubmissionJudgedEvent(
         UUID submissionId,
         UUID userId,
         UUID problemId,
+        UUID contestId,
         Verdict verdict,
+        Instant submittedAt,
         Instant judgedAt)
         implements DomainEvent {}

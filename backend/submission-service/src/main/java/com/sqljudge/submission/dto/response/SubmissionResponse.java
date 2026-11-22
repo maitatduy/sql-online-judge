@@ -11,6 +11,7 @@ import java.util.UUID;
 public record SubmissionResponse(
         UUID id,
         UUID problemId,
+        UUID contestId,
         Dialect dialect,
         SubmissionStatus status,
         Verdict verdict,
@@ -27,6 +28,7 @@ public record SubmissionResponse(
         return new SubmissionResponse(
                 submission.getId(),
                 submission.getProblemId(),
+                submission.getContestId(),
                 submission.getDialect(),
                 submission.getStatus(),
                 submission.getVerdict(),
@@ -43,7 +45,10 @@ public record SubmissionResponse(
             return null;
         }
         boolean isHidden = !Boolean.FALSE.equals(submission.getFirstFailedIsHidden());
+        boolean showsDiff = !isHidden && !submission.isInContest();
         return new FailedTestcase(
-                submission.getFirstFailedIndex(), isHidden, isHidden ? null : submission.getDiff());
+                submission.getFirstFailedIndex(),
+                isHidden,
+                showsDiff ? submission.getDiff() : null);
     }
 }

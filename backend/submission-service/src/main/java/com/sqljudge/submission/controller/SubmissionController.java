@@ -7,6 +7,7 @@ import com.sqljudge.submission.dto.response.SubmissionPageResponse;
 import com.sqljudge.submission.dto.response.SubmissionResponse;
 import com.sqljudge.submission.service.SubmissionQueryService;
 import com.sqljudge.submission.service.SubmissionService;
+import com.sqljudge.submission.service.SubmissionService.ContestProblemRef;
 import com.sqljudge.submission.service.SubmissionStreamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -53,6 +54,25 @@ public class SubmissionController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
         return ResponseEntity.accepted()
                 .body(submissionService.submit(problemId, request, idempotencyKey));
+    }
+
+    @PostMapping("/api/contests/{slug}/problems/{letter}/submissions")
+    @Operation(summary = "Nộp lời giải cho một bài trong contest đang diễn ra")
+    @ApiResponse(responseCode = "202", description = "Đã nhận bài nộp, đang chờ chấm")
+    @ApiResponse(responseCode = "400", description = "Code trống, quá 64 KB hoặc dialect sai")
+    @ApiResponse(responseCode = "403", description = "Contest chưa bắt đầu hoặc chưa đăng ký")
+    @ApiResponse(responseCode = "404", description = "Không có contest hoặc không có bài này")
+    @ApiResponse(responseCode = "422", description = "Contest đã kết thúc")
+    @ApiResponse(responseCode = "503", description = "Chưa liên lạc được dịch vụ liên quan")
+    public ResponseEntity<SubmissionAcceptedResponse> submitInContest(
+            @PathVariable String slug,
+            @PathVariable String letter,
+            @Valid @RequestBody SubmitSolutionRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+        return ResponseEntity.accepted()
+                .body(
+                        submissionService.submitInContest(
+                                new ContestProblemRef(slug, letter), request, idempotencyKey));
     }
 
     @GetMapping("/api/problems/{problemId}/submissions")

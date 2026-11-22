@@ -81,7 +81,9 @@ public class JudgeResultService {
                         submission.getId(),
                         submission.getUserId(),
                         submission.getProblemId(),
+                        submission.getContestId(),
                         submission.getVerdict(),
+                        submission.getCreatedAt(),
                         submission.getJudgedAt()));
     }
 
