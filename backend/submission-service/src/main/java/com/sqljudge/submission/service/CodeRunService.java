@@ -4,6 +4,8 @@ import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.InvalidFieldException;
 import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.security.SecurityUtils;
+import com.sqljudge.submission.client.ContestEntry;
+import com.sqljudge.submission.client.ContestServiceClient;
 import com.sqljudge.submission.client.JudgingInfo;
 import com.sqljudge.submission.client.ProblemServiceClient;
 import com.sqljudge.submission.dto.request.StartRunRequest;
@@ -12,6 +14,7 @@ import com.sqljudge.submission.dto.response.RunAcceptedResponse;
 import com.sqljudge.submission.entity.CodeRun;
 import com.sqljudge.submission.entity.CodeRun.RunCompletion;
 import com.sqljudge.submission.repository.CodeRunRepository;
+import com.sqljudge.submission.service.SubmissionService.ContestProblemRef;
 import java.time.Clock;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +28,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class CodeRunService {
 
     private final ProblemServiceClient problemServiceClient;
+    private final ContestServiceClient contestServiceClient;
     private final CodeRunRepository codeRunRepository;
     private final CodeRunWriter codeRunWriter;
     private final Clock clock;
 
     public RunAcceptedResponse start(UUID problemId, StartRunRequest request) {
         UUID userId = SecurityUtils.requireCurrentUser().id();
-        JudgingInfo info = problemServiceClient.judgingInfo(problemId);
+        return create(userId, problemServiceClient.judgingInfo(problemId), request);
+    }
+
+    public RunAcceptedResponse startInContest(ContestProblemRef problem, StartRunRequest request) {
+        UUID userId = SecurityUtils.requireCurrentUser().id();
+        ContestEntry entry = contestServiceClient.entry(problem.slug(), problem.letter(), userId);
+        return create(userId, problemServiceClient.contestJudgingInfo(entry.problemId()), request);
+    }
+
+    private RunAcceptedResponse create(UUID userId, JudgingInfo info, StartRunRequest request) {
         if (!info.dialects().contains(request.dialect())) {
             throw new InvalidFieldException("dialect", "Bài này không hỗ trợ dialect đã chọn");
         }
@@ -46,7 +59,7 @@ public class CodeRunService {
         log.info(
                 "code_run_requested runId={} problemId={} codeLength={}",
                 run.getId(),
-                problemId,
+                info.problemId(),
                 request.code().length());
         return new RunAcceptedResponse(run.getId());
     }

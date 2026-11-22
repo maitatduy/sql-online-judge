@@ -4,6 +4,7 @@ import com.sqljudge.submission.dto.request.StartRunRequest;
 import com.sqljudge.submission.dto.response.CodeRunResponse;
 import com.sqljudge.submission.dto.response.RunAcceptedResponse;
 import com.sqljudge.submission.service.CodeRunService;
+import com.sqljudge.submission.service.SubmissionService.ContestProblemRef;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -36,6 +37,22 @@ public class CodeRunController {
     public ResponseEntity<RunAcceptedResponse> start(
             @PathVariable UUID problemId, @Valid @RequestBody StartRunRequest request) {
         return ResponseEntity.accepted().body(codeRunService.start(problemId, request));
+    }
+
+    @PostMapping("/api/contests/{slug}/problems/{letter}/runs")
+    @Operation(summary = "Chạy thử code cho một bài trong contest đang diễn ra, trên dataset mẫu")
+    @ApiResponse(responseCode = "202", description = "Đã nhận yêu cầu chạy thử")
+    @ApiResponse(responseCode = "400", description = "Code trống, quá 64 KB hoặc dialect sai")
+    @ApiResponse(responseCode = "403", description = "Contest chưa bắt đầu hoặc chưa đăng ký")
+    @ApiResponse(responseCode = "404", description = "Không có contest hoặc không có bài này")
+    @ApiResponse(responseCode = "422", description = "Contest đã kết thúc")
+    @ApiResponse(responseCode = "503", description = "Chưa liên lạc được dịch vụ liên quan")
+    public ResponseEntity<RunAcceptedResponse> startInContest(
+            @PathVariable String slug,
+            @PathVariable String letter,
+            @Valid @RequestBody StartRunRequest request) {
+        return ResponseEntity.accepted()
+                .body(codeRunService.startInContest(new ContestProblemRef(slug, letter), request));
     }
 
     @GetMapping("/api/runs/{runId}")
