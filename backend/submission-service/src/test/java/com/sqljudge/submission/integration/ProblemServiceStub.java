@@ -31,6 +31,17 @@ final class ProblemServiceStub {
         String path = exchange.getRequestURI().getPath();
         if (!INTERNAL_TOKEN.equals(exchange.getRequestHeaders().getFirst("X-Internal-Token"))) {
             respond(exchange, 401, "{\"code\":\"UNAUTHORIZED\"}");
+        } else if (path.contains(PUBLISHED_ID) && path.endsWith("/contest-judging-info")) {
+            respond(
+                    exchange,
+                    200,
+                    "{\"problemId\":\""
+                            + PUBLISHED_ID
+                            + "\",\"revisionId\":\""
+                            + REVISION_ID
+                            + "\",\"dialects\":[\"POSTGRESQL\"],\"testcaseCount\":3,"
+                            + "\"timeLimitMs\":2000,\"number\":null,\"slug\":null,"
+                            + "\"title\":\"Lương cao nhất mỗi phòng ban\"}");
         } else if (path.contains(PUBLISHED_ID)) {
             respond(
                     exchange,

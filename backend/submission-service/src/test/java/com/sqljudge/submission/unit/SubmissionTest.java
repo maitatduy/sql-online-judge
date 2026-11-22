@@ -120,7 +120,8 @@ class SubmissionTest {
                         new ProblemLabel(1, "bai-1", "Bài 1"),
                         Dialect.POSTGRESQL,
                         "SELECT 1",
-                        3),
+                        3,
+                        null),
                 null);
     }
 }
