@@ -12,18 +12,20 @@ export function Countdown({ label, target }: CountdownProps) {
     const now = useNow();
 
     return (
-        <div className="flex flex-col gap-2">
-            <p className="text-contest-hero-muted">{label}</p>
-            <div role="timer" aria-label={label} className="flex gap-2">
+        <div className="flex flex-col gap-2 lg:items-end">
+            <p className="font-semibold text-contest-hero-muted">{label}</p>
+            <div role="timer" aria-label={label} className="flex gap-2.5">
                 {countdownParts(target, now).map((part) => (
                     <div
                         key={part.unit}
-                        className="min-w-[76px] rounded-lg border border-contest-hero-line bg-contest-hero-panel px-3 py-2.5 text-center"
+                        className="min-w-[88px] rounded-lg border border-contest-hero-line bg-contest-hero-panel px-3 py-3 text-center"
                     >
-                        <span className="block text-[34px] leading-tight font-extrabold tabular-nums text-contest-hero-text">
+                        <span className="block text-[40px] leading-none font-extrabold tabular-nums">
                             {part.value}
                         </span>
-                        <span className="text-sm text-contest-hero-muted">{part.unit}</span>
+                        <span className="mt-1.5 block text-sm text-contest-hero-muted">
+                            {part.unit}
+                        </span>
                     </div>
                 ))}
             </div>

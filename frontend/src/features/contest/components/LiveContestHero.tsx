@@ -16,21 +16,21 @@ export function LiveContestHero({ contest }: LiveContestHeroProps) {
     return (
         <section
             aria-label={contest.title}
-            className="flex flex-wrap items-center gap-6 rounded-xl bg-contest-hero px-6 py-7 text-contest-hero-text md:px-8"
+            className="grid items-center gap-8 rounded-xl border border-contest-hero-line bg-contest-hero p-6 text-contest-hero-text md:p-10 lg:grid-cols-[minmax(0,1fr)_auto]"
         >
-            <div className="min-w-0 flex-[1_1_340px]">
+            <div className="flex min-w-0 flex-col gap-3">
                 <ContestPhasePill phase={contest.phase} />
-                <h2 className="mt-3 text-[32px] leading-tight font-extrabold tracking-tight">
+                <h2 className="text-[36px] leading-tight font-extrabold tracking-tight">
                     {contest.title}
                 </h2>
-                <p className="mt-1 text-contest-hero-muted">
+                <p className="text-lg text-contest-hero-muted">
                     {formatMinutes(contest.durationMinutes)}
                     {contest.isRated ? ", tính rating" : ""}
                 </p>
             </div>
-            <div className="flex flex-wrap items-end gap-4">
+            <div className="flex flex-col gap-4 lg:items-end">
                 <Countdown label="Còn lại" target={contest.endAt} />
-                <Button asChild size="lg">
+                <Button asChild size="lg" className="h-12 px-8 text-base">
                     <Link href={ROUTES.contest(contest.slug)}>Vào thi</Link>
                 </Button>
             </div>

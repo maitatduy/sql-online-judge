@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { ArrowLeft } from "lucide-react";
+
 import { formatMinutes } from "@/lib/contest";
 import { formatDate, formatTime } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
@@ -27,23 +29,25 @@ export function ContestLobbyHero({ contest }: ContestLobbyHeroProps) {
     ];
 
     return (
-        <section className="flex flex-wrap items-end gap-8 rounded-xl bg-contest-hero px-6 py-8 text-contest-hero-text md:px-8">
-            <div className="min-w-0 flex-[1_1_380px]">
-                <Link href={ROUTES.contests} className="text-contest-hero-accent hover:underline">
+        <section className="grid items-center gap-8 rounded-xl border border-contest-hero-line bg-contest-hero p-6 text-contest-hero-text md:p-10 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="flex min-w-0 flex-col gap-3">
+                <Link
+                    href={ROUTES.contests}
+                    className="inline-flex w-fit items-center gap-1.5 font-semibold text-contest-hero-accent hover:underline"
+                >
+                    <ArrowLeft aria-hidden="true" className="size-4" />
                     Contest
                 </Link>
-                <div className="mt-3">
-                    <ContestPhasePill phase={contest.phase} />
-                </div>
-                <h1 className="mt-3 text-[36px] leading-tight font-extrabold tracking-tight">
+                <ContestPhasePill phase={contest.phase} />
+                <h1 className="text-[40px] leading-tight font-extrabold tracking-tight">
                     {contest.title}
                 </h1>
-                <p className="mt-1 text-contest-hero-muted">{scheduleOf(contest)}</p>
-                <ul className="mt-4 flex flex-wrap gap-2">
+                <p className="text-lg text-contest-hero-muted">{scheduleOf(contest)}</p>
+                <ul className="flex flex-wrap gap-2">
                     {tags.map((tag) => (
                         <li
                             key={tag}
-                            className="rounded-md bg-contest-hero-panel px-2.5 py-1 font-semibold text-contest-hero-muted"
+                            className="rounded-md border border-contest-hero-line bg-contest-hero-panel px-3 py-1 font-semibold"
                         >
                             {tag}
                         </li>
@@ -51,7 +55,7 @@ export function ContestLobbyHero({ contest }: ContestLobbyHeroProps) {
                 </ul>
             </div>
             {contest.phase === "FINISHED" ? null : (
-                <div className="flex flex-col items-start gap-4">
+                <div className="flex flex-col gap-4 lg:items-end">
                     <Countdown
                         label={contest.phase === "UPCOMING" ? "Bắt đầu sau" : "Còn lại"}
                         target={contest.phase === "UPCOMING" ? contest.startAt : contest.endAt}

@@ -76,13 +76,13 @@
     --diff-removed: #fca5a5;
     --diff-added: #86efac;
 
-    --contest-hero: #0b0f17;
-    --contest-hero-panel: #111827;
-    --contest-hero-line: #1f2937;
-    --contest-hero-text: #f8fafc;
-    --contest-hero-muted: #94a3b8;
-    --contest-hero-accent: #93c5fd;
-    --contest-live: #f87171;
+    --contest-hero: #eef4ff;
+    --contest-hero-panel: #ffffff;
+    --contest-hero-line: #c7d7f8;
+    --contest-hero-text: #0f172a;
+    --contest-hero-muted: #475569;
+    --contest-hero-accent: #1d4ed8;
+    --contest-live: #c81e1e;
 
     --account-active: #15803d;
     --account-banned: #c81e1e;

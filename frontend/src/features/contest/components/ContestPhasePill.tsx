@@ -15,7 +15,7 @@ export function ContestPhasePill({ phase }: ContestPhasePillProps) {
     return (
         <span
             className={cn(
-                "inline-flex h-7 items-center gap-2 rounded-full px-3 font-semibold",
+                "inline-flex h-7 w-fit items-center gap-2 rounded-full px-3 font-semibold",
                 PHASE_CLASSES[phase],
             )}
         >
