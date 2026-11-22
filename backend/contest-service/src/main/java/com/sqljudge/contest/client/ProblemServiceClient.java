@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(
         name = "problem-service",
         url = "${sqljudge.problem-service-url}",
-        configuration = ProblemServiceClientConfig.class,
+        configuration = InternalTokenClientConfig.class,
         fallbackFactory = ProblemServiceFallbackFactory.class)
 public interface ProblemServiceClient {
 
