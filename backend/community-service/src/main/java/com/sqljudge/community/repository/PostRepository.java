@@ -1,8 +1,10 @@
 package com.sqljudge.community.repository;
 
+import com.sqljudge.community.entity.HiddenReason;
 import com.sqljudge.community.entity.Post;
 import com.sqljudge.community.entity.PostCategory;
 import com.sqljudge.community.entity.PostStatus;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +41,9 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
             Pageable pageable);
 
     Optional<Post> findByIdAndDeletedAtIsNull(UUID id);
+
+    List<Post> findByProblemIdInAndHiddenReason(
+            Collection<UUID> problemIds, HiddenReason hiddenReason);
 
     @Query(
             "SELECT p.category AS category, COUNT(p) AS total FROM Post p"

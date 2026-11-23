@@ -2,6 +2,7 @@ package com.sqljudge.community.repository;
 
 import com.sqljudge.community.entity.Comment;
 import com.sqljudge.community.entity.CommentStatus;
+import com.sqljudge.community.entity.HiddenReason;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -33,4 +34,7 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
             @Param("visible") CommentStatus visible);
 
     Optional<Comment> findByIdAndDeletedAtIsNull(UUID id);
+
+    List<Comment> findByProblemIdInAndHiddenReason(
+            Collection<UUID> problemIds, HiddenReason hiddenReason);
 }

@@ -45,11 +45,13 @@ class CommentVoteApiIntegrationTest extends ContainerSupport {
     @DynamicPropertySource
     static void authService(DynamicPropertyRegistry registry) {
         registry.add("sqljudge.auth-service-url", AuthServiceStub::url);
+        registry.add("sqljudge.contest-service-url", ContestServiceStub::url);
     }
 
     @BeforeEach
     void createPost() {
         AuthServiceStub.reset();
+        ContestServiceStub.reset();
         AuthServiceStub.user(AUTHOR_ID, "trang.hoang");
         AuthServiceStub.user(READER_ID, "quang.le");
         String body =

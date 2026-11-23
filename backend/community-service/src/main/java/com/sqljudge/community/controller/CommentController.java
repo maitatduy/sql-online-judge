@@ -12,6 +12,7 @@ import com.sqljudge.community.service.CommentQueryService;
 import com.sqljudge.community.service.CommentSearch;
 import com.sqljudge.community.service.CommentSort;
 import com.sqljudge.community.service.CommentWriter;
+import com.sqljudge.community.service.CommunityWriting;
 import com.sqljudge.community.service.ContributorService;
 import com.sqljudge.community.service.VoteService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,6 +45,7 @@ public class CommentController {
 
     private final CommentQueryService commentQueryService;
     private final CommentWriter commentWriter;
+    private final CommunityWriting communityWriting;
     private final VoteService voteService;
     private final BookmarkService bookmarkService;
     private final ContributorService contributorService;
@@ -69,7 +71,7 @@ public class CommentController {
     @ApiResponse(responseCode = "404", description = "Không có bài viết hoặc bình luận gốc")
     @ApiResponse(responseCode = "422", description = "Sai chủ đề bình luận")
     public ResponseEntity<Void> write(@Valid @RequestBody WriteCommentRequest request) {
-        UUID commentId = commentWriter.write(request);
+        UUID commentId = communityWriting.writeComment(request);
         return ResponseEntity.created(URI.create("/api/community/comments/" + commentId)).build();
     }
 

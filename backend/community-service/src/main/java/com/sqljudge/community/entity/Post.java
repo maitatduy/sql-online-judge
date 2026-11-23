@@ -69,6 +69,10 @@ public class Post extends BaseEntity {
     @Column(name = "published_at")
     private Instant publishedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "hidden_reason", length = 16)
+    private HiddenReason hiddenReason;
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
@@ -103,6 +107,20 @@ public class Post extends BaseEntity {
         if (status == PostStatus.DRAFT) {
             status = PostStatus.PUBLISHED;
             publishedAt = now;
+        }
+    }
+
+    public void hide(HiddenReason reason) {
+        if (status == PostStatus.PUBLISHED) {
+            status = PostStatus.HIDDEN;
+            hiddenReason = reason;
+        }
+    }
+
+    public void unhide(HiddenReason reason) {
+        if (status == PostStatus.HIDDEN && hiddenReason == reason) {
+            status = PostStatus.PUBLISHED;
+            hiddenReason = null;
         }
     }
 

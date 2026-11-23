@@ -49,6 +49,10 @@ public class Comment extends BaseEntity {
     @Column(name = "status", nullable = false, length = 16)
     private CommentStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "hidden_reason", length = 16)
+    private HiddenReason hiddenReason;
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
@@ -81,6 +85,20 @@ public class Comment extends BaseEntity {
 
     public void edit(String newBody) {
         body = newBody;
+    }
+
+    public void hide(HiddenReason reason) {
+        if (status == CommentStatus.VISIBLE) {
+            status = CommentStatus.HIDDEN;
+            hiddenReason = reason;
+        }
+    }
+
+    public void unhide(HiddenReason reason) {
+        if (status == CommentStatus.HIDDEN && hiddenReason == reason) {
+            status = CommentStatus.VISIBLE;
+            hiddenReason = null;
+        }
     }
 
     public void delete(Instant now) {

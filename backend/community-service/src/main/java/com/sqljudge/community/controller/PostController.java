@@ -6,6 +6,7 @@ import com.sqljudge.community.dto.response.CommunityOverviewResponse;
 import com.sqljudge.community.dto.response.PostDetailResponse;
 import com.sqljudge.community.dto.response.PostSummaryResponse;
 import com.sqljudge.community.entity.PostCategory;
+import com.sqljudge.community.service.CommunityWriting;
 import com.sqljudge.community.service.PostCommandService;
 import com.sqljudge.community.service.PostQueryService;
 import com.sqljudge.community.service.PostSearch;
@@ -40,6 +41,7 @@ public class PostController {
 
     private final PostQueryService postQueryService;
     private final PostCommandService postCommandService;
+    private final CommunityWriting communityWriting;
 
     @GetMapping("/posts")
     @PreAuthorize("permitAll()")
@@ -82,7 +84,7 @@ public class PostController {
     @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ")
     @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
     public ResponseEntity<PostDetailResponse> create(@Valid @RequestBody SavePostRequest request) {
-        UUID postId = postCommandService.create(request);
+        UUID postId = communityWriting.createPost(request);
         return ResponseEntity.created(URI.create("/api/community/posts/" + postId))
                 .body(postQueryService.detail(postId));
     }
@@ -95,7 +97,7 @@ public class PostController {
     @ApiResponse(responseCode = "404", description = "Không có bài viết")
     public PostDetailResponse update(
             @PathVariable UUID postId, @Valid @RequestBody SavePostRequest request) {
-        postCommandService.update(postId, request);
+        communityWriting.updatePost(postId, request);
         return postQueryService.detail(postId);
     }
 

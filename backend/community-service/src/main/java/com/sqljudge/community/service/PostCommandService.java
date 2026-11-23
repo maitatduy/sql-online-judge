@@ -6,6 +6,7 @@ import com.sqljudge.common.security.CurrentUser;
 import com.sqljudge.common.security.Role;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.community.dto.request.SavePostRequest;
+import com.sqljudge.community.entity.HiddenReason;
 import com.sqljudge.community.entity.Post;
 import com.sqljudge.community.entity.Post.PostContent;
 import com.sqljudge.community.repository.PostRepository;
@@ -26,25 +27,30 @@ public class PostCommandService {
     private final Clock clock;
 
     @Transactional
-    public UUID create(SavePostRequest request) {
+    public UUID create(SavePostRequest request, boolean contestLocked) {
         Post post = Post.draft(SecurityUtils.requireCurrentUser().id(), contentOf(request));
-        if (request.publish()) {
-            post.publish(clock.instant());
-        }
+        publishIfAsked(post, request, contestLocked);
         UUID postId = postRepository.save(post).getId();
         log.info("post_created postId={} published={}", postId, request.publish());
         return postId;
     }
 
     @Transactional
-    public void update(UUID postId, SavePostRequest request) {
+    public void update(UUID postId, SavePostRequest request, boolean contestLocked) {
         Post post = livePost(postId);
         if (!post.isWrittenBy(SecurityUtils.requireCurrentUser().id())) {
             throw forbidden();
         }
         post.update(contentOf(request));
+        publishIfAsked(post, request, contestLocked);
+    }
+
+    private void publishIfAsked(Post post, SavePostRequest request, boolean contestLocked) {
         if (request.publish()) {
             post.publish(clock.instant());
+        }
+        if (contestLocked) {
+            post.hide(HiddenReason.CONTEST);
         }
     }
 
