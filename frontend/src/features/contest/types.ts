@@ -59,3 +59,11 @@ export interface MyStanding {
     penaltyMinutes: number;
     cells: StandingCell[];
 }
+
+export interface RatingChange {
+    username: string;
+    rank: number;
+    oldRating: number;
+    newRating: number;
+    delta: number;
+}

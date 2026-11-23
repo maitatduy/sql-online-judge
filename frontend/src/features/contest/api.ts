@@ -7,6 +7,7 @@ import type {
     ContestProblem,
     ContestRegistration,
     MyStanding,
+    RatingChange,
     StandingsPage,
 } from "./types";
 
@@ -40,6 +41,10 @@ export const contestApi = {
         }),
     myStanding: (slug: string, signal?: AbortSignal) =>
         apiClient.get<MyStanding>(`/api/contests/${encodeURIComponent(slug)}/standings/me`, {
+            signal,
+        }),
+    ratingChanges: (slug: string, signal?: AbortSignal) =>
+        apiClient.get<RatingChange[]>(`/api/contests/${encodeURIComponent(slug)}/rating-changes`, {
             signal,
         }),
 };

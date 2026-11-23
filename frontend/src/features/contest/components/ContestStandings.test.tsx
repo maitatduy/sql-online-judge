@@ -35,6 +35,16 @@ describe("bảng xếp hạng contest", () => {
         );
     });
 
+    it("contest đã áp rating thì có cột tăng giảm rating", async () => {
+        renderWithProviders(<ContestStandings slug="sql-cup-1" page={1} />);
+
+        const table = within(await screen.findByRole("table", { name: "Bảng xếp hạng" }));
+        expect(table.getByRole("columnheader", { name: "Rating" })).toBeInTheDocument();
+        expect(
+            within(table.getByRole("row", { name: /quang.le/ })).getByText("Tăng 20"),
+        ).toBeInTheDocument();
+    });
+
     it("người đã đăng ký thấy kết quả thật của mình", async () => {
         writeMockSession(DEMO_SESSION_USER);
         registerForMockContest(SLUG, DEMO_SESSION_USER.id);

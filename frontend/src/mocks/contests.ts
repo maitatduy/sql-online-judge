@@ -108,7 +108,21 @@ function cellsFor(
     );
 }
 
+const MOCK_RATING_CHANGES = [
+    { username: "quang.le", rank: 1, oldRating: 1500, newRating: 1520, delta: 20 },
+    { username: "trang.hoang", rank: 2, oldRating: 1500, newRating: 1505, delta: 5 },
+    { username: "minh.anh", rank: 3, oldRating: 1500, newRating: 1488, delta: -12 },
+];
+
 export const contestHandlers: RequestHandler[] = [
+    http.get("*/api/contests/:slug/rating-changes", async ({ params }) => {
+        await delay();
+        const contest = findContest(params.slug);
+        if (!contest) {
+            return notFound();
+        }
+        return HttpResponse.json(contest.phase === "FINISHED" ? MOCK_RATING_CHANGES : []);
+    }),
     http.get(
         "*/api/contests/:slug/standings/events",
         () =>

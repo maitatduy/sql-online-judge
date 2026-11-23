@@ -17,6 +17,7 @@ import { useContest } from "../hooks/useContests";
 import { ContestLobbyHero } from "./ContestLobbyHero";
 import { ContestProblemTable } from "./ContestProblemTable";
 import { ContestRules } from "./ContestRules";
+import { RatingChangesTable } from "./RatingChangesTable";
 
 interface ContestLobbyProps {
     slug: string;
@@ -54,6 +55,9 @@ export function ContestLobby({ slug }: ContestLobbyProps) {
                             ) : (
                                 <ContestProblemTable slug={contest.slug} />
                             )}
+                            {contest.phase === "FINISHED" ? (
+                                <RatingChangesTable slug={contest.slug} />
+                            ) : null}
                             {contest.description ? (
                                 <section className="rounded-lg border bg-card p-5">
                                     <Markdown>{contest.description}</Markdown>
