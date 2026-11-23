@@ -66,6 +66,9 @@ public class Contest extends BaseEntity {
     @Column(name = "finalized_at")
     private Instant finalizedAt;
 
+    @Column(name = "rating_applied_at")
+    private Instant ratingAppliedAt;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -114,6 +117,10 @@ public class Contest extends BaseEntity {
     public ScoringRules scoringRules() {
         return new ScoringRules(
                 startAt, endAt.minus(Duration.ofMinutes(freezeMinutes)), penaltyMinutes);
+    }
+
+    public void markRatingApplied(Instant now) {
+        ratingAppliedAt = now;
     }
 
     public boolean isFinalized() {

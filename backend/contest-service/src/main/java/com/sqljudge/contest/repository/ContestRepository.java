@@ -34,4 +34,9 @@ public interface ContestRepository extends JpaRepository<Contest, UUID> {
 
     @Query("SELECT c FROM Contest c WHERE c.finalizedAt IS NULL AND c.endAt <= :cutoff")
     List<Contest> findDueForFinalization(Instant cutoff);
+
+    @Query(
+            "SELECT c FROM Contest c WHERE c.rated = true AND c.finalizedAt IS NOT NULL"
+                    + " AND c.ratingAppliedAt IS NULL")
+    List<Contest> findDueForRating();
 }

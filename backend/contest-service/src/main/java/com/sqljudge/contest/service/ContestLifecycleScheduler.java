@@ -12,10 +12,12 @@ class ContestLifecycleScheduler {
 
     private final ContestLifecycleService lifecycleService;
     private final ContestFinalizer contestFinalizer;
+    private final ContestRatingService contestRatingService;
 
     @Scheduled(fixedDelayString = "${sqljudge.contest.lifecycle-interval}")
     void announceDue() {
         lifecycleService.announceDue();
         contestFinalizer.finalizeDue();
+        contestRatingService.applyDue();
     }
 }

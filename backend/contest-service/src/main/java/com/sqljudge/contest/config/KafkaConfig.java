@@ -39,6 +39,11 @@ public class KafkaConfig {
     }
 
     @Bean
+    NewTopic ratingUpdatedTopic() {
+        return topic(ContestTopics.RATING_UPDATED);
+    }
+
+    @Bean
     NewTopic submissionJudgedDeadLetterTopic() {
         return topic(ContestTopics.SUBMISSION_JUDGED + ContestTopics.DEAD_LETTER_SUFFIX);
     }
