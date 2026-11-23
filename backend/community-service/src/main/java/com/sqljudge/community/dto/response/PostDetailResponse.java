@@ -22,4 +22,6 @@ public record PostDetailResponse(
         long viewCount,
         @JsonProperty("isPinned") boolean isPinned,
         Instant publishedAt,
-        Instant updatedAt) {}
+        Instant updatedAt,
+        int myVote,
+        @JsonProperty("isBookmarked") boolean isBookmarked) {}

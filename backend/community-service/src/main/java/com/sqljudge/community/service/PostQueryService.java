@@ -1,21 +1,17 @@
 package com.sqljudge.community.service;
 
 import com.sqljudge.common.web.PageResponse;
-import com.sqljudge.community.client.AuthServiceClient;
-import com.sqljudge.community.client.UserName;
 import com.sqljudge.community.dto.response.CommunityOverviewResponse;
 import com.sqljudge.community.dto.response.PostDetailResponse;
 import com.sqljudge.community.dto.response.PostSummaryResponse;
 import com.sqljudge.community.entity.PostCategory;
 import com.sqljudge.community.entity.PostStatus;
 import com.sqljudge.community.repository.PostRepository;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,18 +30,19 @@ public class PostQueryService {
 
     private final PostReader postReader;
     private final PostRepository postRepository;
-    private final AuthServiceClient authServiceClient;
+    private final AuthorNames authorNames;
 
     public PageResponse<PostSummaryResponse> list(PostSearch search, int page, int size) {
         Page<PostSnapshot> posts =
                 postReader.listed(search, PageRequest.of(page - 1, size, sortOf(search.tab())));
-        Map<UUID, String> authors = authorNamesOf(posts.map(PostSnapshot::authorId).toSet());
+        Map<UUID, String> authors = authorNames.of(posts.map(PostSnapshot::authorId).toSet());
         return PageResponse.from(posts, post -> toSummary(post, authors));
     }
 
     public PostDetailResponse detail(UUID postId) {
         PostSnapshot post = postReader.readable(postId);
-        String author = authorNamesOf(Set.of(post.authorId())).get(post.authorId());
+        PostReader.ViewerState viewer = postReader.viewerState(postId);
+        String author = authorNames.of(Set.of(post.authorId())).get(post.authorId());
         return new PostDetailResponse(
                 post.id(),
                 post.category(),
@@ -61,7 +58,9 @@ public class PostQueryService {
                 post.viewCount(),
                 post.pinned(),
                 post.publishedAt(),
-                post.updatedAt());
+                post.updatedAt(),
+                viewer.myVote(),
+                viewer.isBookmarked());
     }
 
     @Transactional(readOnly = true)
@@ -72,16 +71,6 @@ public class PostQueryService {
                 .forEach(row -> counts.put(row.getCategory(), row.getTotal()));
         long total = counts.values().stream().mapToLong(Long::longValue).sum();
         return new CommunityOverviewResponse(total, counts);
-    }
-
-    private Map<UUID, String> authorNamesOf(Collection<UUID> authorIds) {
-        if (authorIds.isEmpty()) {
-            return Map.of();
-        }
-        return authServiceClient.userNames(authorIds).stream()
-                .collect(
-                        Collectors.toMap(
-                                UserName::userId, UserName::username, (first, second) -> first));
     }
 
     private static PostSummaryResponse toSummary(PostSnapshot post, Map<UUID, String> authors) {
