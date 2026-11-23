@@ -24,6 +24,7 @@
         <module>submission-service</module>
         <module>learning-service</module>
         <module>contest-service</module>
+        <module>community-service</module>
     </modules>
 
     <properties>

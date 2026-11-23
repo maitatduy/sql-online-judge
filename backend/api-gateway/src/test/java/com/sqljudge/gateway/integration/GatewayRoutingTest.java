@@ -223,6 +223,22 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName("Bài viết cộng đồng và báo cáo vi phạm được chuyển tới community-service")
+    void communityPaths_areRoutedToCommunityService() {
+        webTestClient
+                .get()
+                .uri("/api/community/posts?tab=NEW")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+        webTestClient.get().uri("/api/admin/reports").exchange().expectStatus().isNotFound();
+
+        assertThat(COMMUNITY_SERVICE.forwardedRequestLines())
+                .containsExactly("GET /api/community/posts?tab=NEW", "GET /api/admin/reports");
+        assertThat(PROBLEM_SERVICE.forwardedRequestLines()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Ghi chú và hạn chế của một tài khoản được chuyển tới auth-service")
     void adminUserNotesAndRestrictions_areRoutedToAuthService() {
         webTestClient

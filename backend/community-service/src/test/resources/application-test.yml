@@ -1,0 +1,22 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:1
+    listener:
+      auto-startup: false
+    admin:
+      auto-create: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:1/internal/jwks
+
+sqljudge:
+  outbox:
+    relay-enabled: false
+  problem-service-url: http://localhost:1
+  auth-service-url: http://localhost:1
+  contest-service-url: http://localhost:1
+  internal:
+    api-token: test-internal-token
+
