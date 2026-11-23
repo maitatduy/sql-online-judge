@@ -1,0 +1,97 @@
+server:
+  port: 8086
+  shutdown: graceful
+
+spring:
+  application:
+    name: community-service
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+      client:
+        config:
+          problem-service:
+            connect-timeout: 1000
+            read-timeout: 3000
+          contest-service:
+            connect-timeout: 1000
+            read-timeout: 3000
+          auth-service:
+            connect-timeout: 1000
+            read-timeout: 3000
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: community-service
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+      compression-type: zstd
+      properties:
+        enable.idempotence: true
+        max.block.ms: 5000
+        request.timeout.ms: 5000
+        delivery.timeout.ms: 10000
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${AUTH_SERVICE_URL}/internal/jwks
+
+management:
+  server:
+    port: 9086
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+sqljudge:
+  outbox:
+    relay-enabled: true
+    relay-interval: 500ms
+    batch-size: 100
+    send-timeout: 10s
+    claim-timeout: 60s
+  problem-service-url: ${PROBLEM_SERVICE_URL}
+  auth-service-url: ${AUTH_SERVICE_URL}
+  contest-service-url: ${CONTEST_SERVICE_URL}
+  internal:
+    api-token: ${INTERNAL_API_TOKEN}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 20
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        ignore-exceptions:
+          - feign.FeignException$NotFound
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
