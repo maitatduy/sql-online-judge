@@ -37,6 +37,10 @@ class ProblemCacheIntegrationTest extends ContainerSupport {
     private static final String TAGS_KEY = "sqljudge:problem:tags";
     private static final long DETAIL_TTL_SECONDS = 600;
     private static final long TAGS_TTL_SECONDS = 3600;
+    private static final String CONTEST_STATEMENT_KEY_PREFIX =
+            "sqljudge:problem:contest-statement:";
+    private static final String INTERNAL_TOKEN_HEADER = "X-Internal-Token";
+    private static final String INTERNAL_TOKEN = "test-internal-token";
 
     @Autowired private TestRestTemplate restTemplate;
 
@@ -128,6 +132,58 @@ class ProblemCacheIntegrationTest extends ContainerSupport {
         assertThat(redisTemplate.hasKey(DETAIL_KEY)).isFalse();
         assertThat(restTemplate.getForEntity("/api/problems/" + SLUG, String.class).getStatusCode())
                 .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("Đề contest được cache 10 phút theo id bài, lần sau đọc từ Redis")
+    void contestStatement_isCachedByProblemIdForTenMinutes() {
+        String problemId = problemId();
+        String first = contestStatement(problemId);
+        jdbcTemplate.update("UPDATE problems SET title = 'Tên đã đổi' WHERE slug = ?", SLUG);
+
+        String second = contestStatement(problemId);
+
+        assertThat(JsonPath.parse(second).read("$.title", String.class))
+                .isEqualTo("Lương cao nhất mỗi phòng ban");
+        assertThat(second).isEqualTo(first);
+        assertThat(
+                        redisTemplate.getExpire(
+                                CONTEST_STATEMENT_KEY_PREFIX + problemId, TimeUnit.SECONDS))
+                .isBetween(1L, DETAIL_TTL_SECONDS);
+    }
+
+    @Test
+    @DisplayName("ADMIN xoá bài thì cache đề contest của bài bị xoá")
+    void delete_publishedProblemByAdmin_evictsContestStatementCache() {
+        String problemId = problemId();
+        contestStatement(problemId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(TestJwts.token(UUID.randomUUID(), "ADMIN"));
+
+        restTemplate.exchange(
+                "/api/studio/problems/" + problemId,
+                HttpMethod.DELETE,
+                new HttpEntity<>(headers),
+                Void.class);
+
+        assertThat(redisTemplate.hasKey(CONTEST_STATEMENT_KEY_PREFIX + problemId)).isFalse();
+    }
+
+    private String problemId() {
+        return jdbcTemplate.queryForObject(
+                "SELECT BIN_TO_UUID(id) FROM problems WHERE slug = ?", String.class, SLUG);
+    }
+
+    private String contestStatement(String problemId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(INTERNAL_TOKEN_HEADER, INTERNAL_TOKEN);
+        return restTemplate
+                .exchange(
+                        "/internal/problems/" + problemId + "/contest-statement",
+                        HttpMethod.GET,
+                        new HttpEntity<>(headers),
+                        String.class)
+                .getBody();
     }
 
     private void flushCache() {

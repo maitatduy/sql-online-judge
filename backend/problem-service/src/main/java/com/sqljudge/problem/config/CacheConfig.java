@@ -1,6 +1,7 @@
 package com.sqljudge.problem.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sqljudge.problem.dto.response.InternalContestStatementResponse;
 import com.sqljudge.problem.dto.response.ProblemDetailResponse;
 import com.sqljudge.problem.dto.response.TagsResponse;
 import java.time.Duration;
@@ -23,6 +24,7 @@ public class CacheConfig implements CachingConfigurer {
 
     public static final String PROBLEM_DETAIL = "problem-detail";
     public static final String PROBLEM_TAGS = "problem-tags";
+    public static final String CONTEST_STATEMENT = "problem-contest-statement";
     public static final String TAGS_KEY = "'tags'";
 
     private static final Duration PROBLEM_DETAIL_TTL = Duration.ofMinutes(10);
@@ -44,7 +46,15 @@ public class CacheConfig implements CachingConfigurer {
                                         "sqljudge:problem:",
                                         PROBLEM_TAGS_TTL,
                                         new Jackson2JsonRedisSerializer<>(
-                                                objectMapper, TagsResponse.class)));
+                                                objectMapper, TagsResponse.class)))
+                        .withCacheConfiguration(
+                                CONTEST_STATEMENT,
+                                cacheOf(
+                                        "sqljudge:problem:contest-statement:",
+                                        PROBLEM_DETAIL_TTL,
+                                        new Jackson2JsonRedisSerializer<>(
+                                                objectMapper,
+                                                InternalContestStatementResponse.class)));
     }
 
     @Override

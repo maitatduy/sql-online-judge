@@ -82,15 +82,15 @@ public class StudioProblemEditService {
         }
         problem.setDeletedAt(clock.instant());
         problemRepository.saveAndFlush(problem);
-        evictDetailAfterCommit(problem.getSlug());
+        evictDetailAfterCommit(problem.getSlug(), problem.getId());
     }
 
-    private void evictDetailAfterCommit(String slug) {
+    private void evictDetailAfterCommit(String slug, UUID problemId) {
         TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        problemDetailCache.evict(slug);
+                        problemDetailCache.evict(slug, problemId);
                     }
                 });
     }
