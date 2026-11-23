@@ -94,3 +94,9 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+
+resilience4j:
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
