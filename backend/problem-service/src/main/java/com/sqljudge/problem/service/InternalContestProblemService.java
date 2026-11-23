@@ -2,6 +2,7 @@ package com.sqljudge.problem.service;
 
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.NotFoundException;
+import com.sqljudge.problem.config.CacheConfig;
 import com.sqljudge.problem.dto.response.InternalContestProblemResponse;
 import com.sqljudge.problem.dto.response.InternalContestStatementResponse;
 import com.sqljudge.problem.entity.Dialect;
@@ -13,6 +14,7 @@ import com.sqljudge.problem.repository.ProblemRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,7 @@ public class InternalContestProblemService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CacheConfig.CONTEST_STATEMENT, key = "#problemId")
     public InternalContestStatementResponse statement(UUID problemId) {
         Problem problem =
                 problemRepository

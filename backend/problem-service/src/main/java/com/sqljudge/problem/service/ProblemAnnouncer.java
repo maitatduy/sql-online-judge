@@ -6,6 +6,7 @@ import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.event.ProblemPublishedEvent;
 import com.sqljudge.problem.event.ProblemTopics;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -37,11 +38,12 @@ class ProblemAnnouncer {
                         problem.getDifficulty(),
                         problem.getAuthorId()));
         String slug = problem.getSlug();
+        UUID problemId = problem.getId();
         TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        problemDetailCache.evict(slug);
+                        problemDetailCache.evict(slug, problemId);
                     }
                 });
         log.info("problem_published problemId={} number={}", problem.getId(), problem.getNumber());
