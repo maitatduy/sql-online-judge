@@ -53,3 +53,21 @@ export function useCommunityMutation<TVariables, TResult = unknown>(
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["community"] }),
     });
 }
+
+export function useLinkedProblem(slug: string | null) {
+    return useQuery({
+        queryKey: ["community", "problem", slug],
+        queryFn: ({ signal }) => communityApi.problem(slug ?? "", signal),
+        enabled: slug !== null,
+        staleTime: 5 * 60_000,
+        retry: false,
+    });
+}
+
+export function useProblemOptions(query: string) {
+    return useQuery({
+        queryKey: ["community", "problem-options", query],
+        queryFn: ({ signal }) => communityApi.searchProblems(query, signal),
+        placeholderData: keepPreviousData,
+    });
+}

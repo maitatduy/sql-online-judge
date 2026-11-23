@@ -50,6 +50,12 @@ public class Post extends BaseEntity {
     @Column(name = "problem_id", columnDefinition = "BINARY(16)")
     private UUID problemId;
 
+    @Column(name = "problem_slug", length = 160)
+    private String problemSlug;
+
+    @Column(name = "problem_title", length = 200)
+    private String problemTitle;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 16)
     private PostStatus status;
@@ -98,7 +104,9 @@ public class Post extends BaseEntity {
         category = content.category();
         title = content.title();
         bodyMarkdown = content.bodyMarkdown();
-        problemId = content.problemId();
+        problemId = content.problem() == null ? null : content.problem().id();
+        problemSlug = content.problem() == null ? null : content.problem().slug();
+        problemTitle = content.problem() == null ? null : content.problem().title();
         tags.clear();
         tags.addAll(content.tags());
     }
@@ -152,6 +160,6 @@ public class Post extends BaseEntity {
             PostCategory category,
             String title,
             String bodyMarkdown,
-            UUID problemId,
+            LinkedProblem problem,
             Set<String> tags) {}
 }

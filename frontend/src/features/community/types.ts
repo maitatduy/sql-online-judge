@@ -1,4 +1,6 @@
+import type { Dialect } from "@/lib/dialect";
 import type { Page } from "@/lib/pagination";
+import type { ResultSet } from "@/lib/result-set";
 
 export type PostCategory = "QUESTION" | "SOLUTION" | "INTERVIEW" | "BLOG" | "FEEDBACK";
 export type PostTab = "HOT" | "NEW" | "UNANSWERED" | "SAVED";
@@ -32,6 +34,8 @@ export interface PostDetail {
     bodyMarkdown: string;
     tags: string[];
     problemId: string | null;
+    problemSlug: string | null;
+    problemTitle: string | null;
     authorId: string;
     authorUsername: string | null;
     voteScore: number;
@@ -75,6 +79,38 @@ export type CommentPage = Page<CommentItem>;
 export interface CommentThread {
     postId?: string;
     problemId?: string;
+}
+
+export interface SavePostInput {
+    category: PostCategory;
+    title: string;
+    bodyMarkdown: string;
+    problemId: string | null;
+    tags: string[];
+    publish: boolean;
+}
+
+export interface PickedProblem {
+    id: string;
+    slug: string;
+    title: string;
+}
+
+export interface ProblemOption extends PickedProblem {
+    number: number;
+}
+
+export interface LinkedProblem extends ProblemOption {
+    dialects: Dialect[];
+}
+
+export interface CodeRun {
+    id: string;
+    status: "PENDING" | "COMPLETED";
+    outcome: "OK" | "RE" | "TLE" | "FS" | "SE" | null;
+    result: ResultSet | null;
+    errorMessage: string | null;
+    runtimeMs: number | null;
 }
 
 export interface VoteResult {

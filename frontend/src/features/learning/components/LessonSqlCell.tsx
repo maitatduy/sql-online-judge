@@ -3,12 +3,12 @@
 import { Play, RotateCcw } from "lucide-react";
 
 import { LazySqlEditor } from "@/components/shared/LazySqlEditor";
+import { SqlRunResult } from "@/components/shared/SqlRunResult";
 import { Button } from "@/components/ui/button";
 
 import { useCellDraft } from "../hooks/useCellDraft";
 import { useLessonRun } from "../hooks/useLessonRun";
 import type { LessonCell } from "../types";
-import { LessonRunResult } from "./LessonRunResult";
 
 const DIALECT_LABELS: Record<LessonCell["dialect"], string> = {
     POSTGRESQL: "PostgreSQL",
@@ -52,7 +52,7 @@ export function LessonSqlCell({ cell }: LessonSqlCellProps) {
             <LazySqlEditor value={sql} onChange={changeSql} ariaLabel="Câu SQL" className="h-36" />
             {hasOutput ? (
                 <div className="border-t px-4 py-3">
-                    <LessonRunResult run={run} isRunning={isRunning} error={error} />
+                    <SqlRunResult run={run} isRunning={isRunning} error={error} />
                 </div>
             ) : null}
         </section>

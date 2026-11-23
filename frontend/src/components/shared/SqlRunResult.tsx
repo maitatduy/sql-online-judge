@@ -2,16 +2,22 @@ import { ResultTable } from "@/components/shared/ResultTable";
 import { VerdictBadge } from "@/components/shared/VerdictBadge";
 import { ApiRequestError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
+import type { ResultSet } from "@/lib/result-set";
 import { VERDICT_LABELS } from "@/lib/verdict";
 
-import type { LessonRun } from "../types";
+export interface SqlRun {
+    outcome: "OK" | "RE" | "TLE" | "FS" | "SE" | null;
+    result: ResultSet | null;
+    errorMessage: string | null;
+    runtimeMs: number | null;
+}
 
 const SYSTEM_ERROR_MESSAGE = "Máy chấm đang bận, thử lại sau ít phút.";
 const TIMED_OUT_MESSAGE = "Câu lệnh chạy quá thời gian cho phép.";
 const DEFAULT_RETRY_SECONDS = 60;
 
-interface LessonRunResultProps {
-    run: LessonRun | null;
+interface SqlRunResultProps {
+    run: SqlRun | null;
     isRunning: boolean;
     error: Error | null;
 }
@@ -30,7 +36,7 @@ function errorMessageOf(error: Error): string {
     return error.message;
 }
 
-export function LessonRunResult({ run, isRunning, error }: LessonRunResultProps) {
+export function SqlRunResult({ run, isRunning, error }: SqlRunResultProps) {
     if (isRunning) {
         return (
             <p role="status" className="text-[13px] text-muted-foreground">

@@ -51,6 +51,8 @@ public class PostQueryService {
                 post.bodyMarkdown(),
                 post.tags(),
                 post.problemId(),
+                post.problemSlug(),
+                post.problemTitle(),
                 post.authorId(),
                 author,
                 post.voteScore(),
