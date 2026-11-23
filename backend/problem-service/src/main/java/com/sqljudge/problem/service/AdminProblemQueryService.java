@@ -1,6 +1,8 @@
 package com.sqljudge.problem.service;
 
 import com.sqljudge.common.web.PageResponse;
+import com.sqljudge.problem.client.AuthServiceClient;
+import com.sqljudge.problem.client.UserName;
 import com.sqljudge.problem.dto.response.AdminProblemBankSummaryResponse;
 import com.sqljudge.problem.dto.response.AdminProblemSummaryResponse;
 import com.sqljudge.problem.dto.response.TagResponse;
@@ -12,6 +14,7 @@ import com.sqljudge.problem.repository.ProblemTagRow;
 import com.sqljudge.problem.repository.VisibilityCountRow;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,8 +37,8 @@ public class AdminProblemQueryService {
     private static final long LOW_ACCEPTANCE_MAX_PERCENT = 10;
 
     private final ProblemRepository problemRepository;
+    private final AuthServiceClient authServiceClient;
 
-    @Transactional(readOnly = true)
     public PageResponse<AdminProblemSummaryResponse> list(
             AdminProblemSearch search, int page, int size) {
         String keyword = search.keyword() == null ? "" : search.keyword().trim();
@@ -50,11 +53,26 @@ public class AdminProblemQueryService {
                         PROBLEM_NUMBER.matcher(keyword).matches() ? Integer.valueOf(keyword) : null,
                         PageRequest.of(page - 1, size, sort));
         Map<UUID, List<TagResponse>> tags = tagsOf(rows.getContent());
+        Map<UUID, String> authors = authorNamesOf(rows.getContent());
         return PageResponse.from(
                 rows,
                 row ->
                         AdminProblemSummaryResponse.from(
-                                row, tags.getOrDefault(row.id(), List.of())));
+                                row,
+                                tags.getOrDefault(row.id(), List.of()),
+                                authors.get(row.authorId())));
+    }
+
+    private Map<UUID, String> authorNamesOf(List<AdminProblemRow> rows) {
+        Set<UUID> authorIds =
+                rows.stream().map(AdminProblemRow::authorId).collect(Collectors.toSet());
+        if (authorIds.isEmpty()) {
+            return Map.of();
+        }
+        return authServiceClient.userNames(authorIds).stream()
+                .collect(
+                        Collectors.toMap(
+                                UserName::userId, UserName::username, (first, second) -> first));
     }
 
     @Transactional(readOnly = true)
