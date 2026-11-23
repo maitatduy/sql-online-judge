@@ -66,6 +66,7 @@ class ContestStandingsApiIntegrationTest extends ContainerSupport {
     static void redis(DynamicPropertyRegistry registry) {
         registry.add("spring.data.redis.host", REDIS::getHost);
         registry.add("spring.data.redis.port", () -> REDIS.getMappedPort(REDIS_PORT));
+        registry.add("spring.data.redis.timeout", () -> "1s");
     }
 
     @BeforeEach
@@ -190,6 +191,28 @@ class ContestStandingsApiIntegrationTest extends ContainerSupport {
         assertThat(standings.get("totalItems").asInt()).isEqualTo(4);
         assertThat(standings.get("items").get(2).get("username").asText()).isEqualTo("alice");
         assertThat(redisTemplate.getExpire("sqljudge:contest:standings:" + contestId)).isPositive();
+    }
+
+    @Test
+    @DisplayName("Redis không phản hồi thì bảng vẫn được tính từ MySQL, không trả lỗi")
+    void standings_fallBackToDatabaseWhenRedisIsDown() throws Exception {
+        playContest();
+        REDIS.getDockerClient().pauseContainerCmd(REDIS.getContainerId()).exec();
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(STANDINGS, String.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            JsonNode standings = body(response);
+            assertThat(standings.get("totalItems").asInt()).isEqualTo(4);
+            JsonNode items = standings.get("items");
+            assertThat(items.get(0).get("rank").asInt()).isEqualTo(1);
+            assertThat(items.get(1).get("rank").asInt()).isEqualTo(1);
+            assertThat(items.get(2).get("username").asText()).isEqualTo("alice");
+            assertThat(items.get(2).get("rank").asInt()).isEqualTo(3);
+            assertThat(items.get(2).get("penaltyMinutes").asInt()).isEqualTo(70);
+        } finally {
+            REDIS.getDockerClient().unpauseContainerCmd(REDIS.getContainerId()).exec();
+        }
     }
 
     private void playContest() {
