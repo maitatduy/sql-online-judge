@@ -40,6 +40,7 @@ class ContestLifecycleIntegrationTest extends ContainerSupport {
     @BeforeEach
     void clear() {
         jdbcTemplate.update("DELETE FROM outbox_events");
+        jdbcTemplate.update("DELETE FROM contest_rating_changes");
         jdbcTemplate.update("DELETE FROM contest_standings");
         jdbcTemplate.update("DELETE FROM contest_cells");
         jdbcTemplate.update("DELETE FROM contest_attempts");
