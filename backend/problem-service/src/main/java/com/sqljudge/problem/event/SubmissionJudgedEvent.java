@@ -1,5 +1,6 @@
 package com.sqljudge.problem.event;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -11,7 +12,8 @@ public record SubmissionJudgedEvent(
         UUID userId,
         UUID problemId,
         String verdict,
-        Instant judgedAt) {
+        Instant judgedAt,
+        @JsonProperty("isRejudge") boolean isRejudge) {
 
     private static final String ACCEPTED = "AC";
     private static final String SYSTEM_ERROR = "SE";

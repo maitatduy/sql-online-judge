@@ -1,10 +1,10 @@
-import { Eye, EyeOff, Pencil, Trash2, UserRoundPen } from "lucide-react";
+import { Eye, EyeOff, Pencil, RotateCw, Trash2, UserRoundPen } from "lucide-react";
 
 import { IconAction } from "@/components/shared/IconAction";
 
 import type { BankProblem } from "../../problem-bank/types";
 
-export type ProblemRowAction = "edit" | "hide" | "restore" | "transfer" | "delete";
+export type ProblemRowAction = "edit" | "hide" | "restore" | "transfer" | "rejudge" | "delete";
 
 interface ProblemRowActionsProps {
     problem: BankProblem;
@@ -34,6 +34,12 @@ export function ProblemRowActions({ problem, onAction }: ProblemRowActionsProps)
                 tooltip="Chuyển chủ sở hữu"
                 icon={UserRoundPen}
                 onClick={() => onAction("transfer", problem)}
+            />
+            <IconAction
+                label={`Chấm lại ${name}`}
+                tooltip="Chấm lại"
+                icon={RotateCw}
+                onClick={() => onAction("rejudge", problem)}
             />
             <IconAction
                 label={`Xoá ${name}`}

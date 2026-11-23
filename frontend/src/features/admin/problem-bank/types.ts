@@ -41,3 +41,10 @@ export interface BulkUpdateResult {
     succeeded: string[];
     failed: { problemId: string; code: string; message: string }[];
 }
+
+export interface RejudgeBatch {
+    batchId: string;
+    status: "RUNNING" | "FINISHED";
+    totalCount: number;
+    remainingCount: number;
+}

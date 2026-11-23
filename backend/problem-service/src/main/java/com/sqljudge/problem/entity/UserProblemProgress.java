@@ -51,6 +51,14 @@ public class UserProblemProgress extends BaseEntity {
         return new UserProblemProgress(userId, problemId, ProblemProgressStatus.ATTEMPTED);
     }
 
+    public void resetTo(Instant firstAcceptedAt) {
+        status =
+                firstAcceptedAt == null
+                        ? ProblemProgressStatus.ATTEMPTED
+                        : ProblemProgressStatus.SOLVED;
+        firstSolvedAt = firstAcceptedAt;
+    }
+
     public boolean recordJudgement(boolean accepted, Instant judgedAt) {
         if (!accepted) {
             return false;

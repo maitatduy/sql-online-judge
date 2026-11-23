@@ -206,6 +206,23 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName(
+            "Chấm lại bài của admin được chuyển tới submission-service, không tới problem-service")
+    void adminRejudgePath_isRoutedToSubmissionService() {
+        webTestClient
+                .post()
+                .uri("/api/admin/problems/0192f3d0-0000-7000-8000-000000000004/rejudge")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        assertThat(SUBMISSION_SERVICE.forwardedRequestLines())
+                .containsExactly(
+                        "POST /api/admin/problems/0192f3d0-0000-7000-8000-000000000004/rejudge");
+        assertThat(PROBLEM_SERVICE.forwardedRequestLines()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Ghi chú và hạn chế của một tài khoản được chuyển tới auth-service")
     void adminUserNotesAndRestrictions_areRoutedToAuthService() {
         webTestClient

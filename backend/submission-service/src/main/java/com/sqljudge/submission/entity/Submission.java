@@ -23,10 +23,14 @@ import org.hibernate.type.SqlTypes;
                 @UniqueConstraint(
                         name = "uk_submissions_user_id_idempotency_key",
                         columnNames = {"user_id", "idempotency_key"}),
-        indexes =
-                @Index(
-                        name = "idx_submissions_user_id_problem_id_id",
-                        columnList = "user_id, problem_id, id"))
+        indexes = {
+            @Index(
+                    name = "idx_submissions_user_id_problem_id_id",
+                    columnList = "user_id, problem_id, id"),
+            @Index(
+                    name = "idx_submissions_problem_id_contest_id",
+                    columnList = "problem_id, contest_id")
+        })
 @Getter
 @NoArgsConstructor
 public class Submission extends BaseEntity {
@@ -98,6 +102,12 @@ public class Submission extends BaseEntity {
     @Column(name = "contest_id", columnDefinition = "BINARY(16)")
     private UUID contestId;
 
+    @Column(name = "rejudge_batch_id", columnDefinition = "BINARY(16)")
+    private UUID rejudgeBatchId;
+
+    @Column(name = "round_start_attempt", nullable = false)
+    private int roundStartAttempt = FIRST_ATTEMPT;
+
     @Column(name = "judged_at")
     private Instant judgedAt;
 
@@ -144,7 +154,7 @@ public class Submission extends BaseEntity {
         if (!isCurrent(result.attempt())) {
             return JudgeOutcome.IGNORED;
         }
-        if (result.verdict() == Verdict.SE && attempts < MAX_ATTEMPTS) {
+        if (result.verdict() == Verdict.SE && attempts - roundStartAttempt + 1 < MAX_ATTEMPTS) {
             attempts++;
             status = SubmissionStatus.PENDING;
             judgedTestcases = 0;
@@ -160,6 +170,29 @@ public class Submission extends BaseEntity {
         judgedTestcases = result.judgedTestcases();
         judgedAt = now;
         return JudgeOutcome.COMPLETED;
+    }
+
+    public void rejudge(UUID revisionId, int testcaseCount, UUID batchId) {
+        attempts++;
+        roundStartAttempt = attempts;
+        problemRevisionId = revisionId;
+        totalTestcases = testcaseCount;
+        rejudgeBatchId = batchId;
+        status = SubmissionStatus.PENDING;
+        verdict = null;
+        runtimeMs = null;
+        errorMessage = null;
+        firstFailedIndex = null;
+        firstFailedIsHidden = null;
+        diff = null;
+        judgedTestcases = 0;
+        judgedAt = null;
+    }
+
+    public UUID finishRejudge() {
+        UUID batchId = rejudgeBatchId;
+        rejudgeBatchId = null;
+        return batchId;
     }
 
     private boolean isCurrent(int attempt) {

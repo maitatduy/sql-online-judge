@@ -4,6 +4,7 @@ public final class ProblemTopics {
 
     public static final String PROBLEM_PUBLISHED = "sqljudge.problem.published";
     public static final String SUBMISSION_JUDGED = "sqljudge.submission.judged";
+    public static final String REJUDGE_FINISHED = "sqljudge.submission.rejudge-finished";
     public static final String CONTEST_FINISHED = "sqljudge.contest.finished";
 
     private ProblemTopics() {}

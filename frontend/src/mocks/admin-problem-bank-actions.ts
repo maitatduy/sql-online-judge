@@ -2,6 +2,7 @@ import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import type { QuickEditValues } from "@/features/admin/problem-bank/schemas";
 
+import { toBankProblem } from "./admin-problem-bank";
 import { validationFailed } from "./admin-user-errors";
 import { apiError } from "./api-error";
 import { ADMIN_SESSION_USER, DEMO_SESSION_USER, SETTER_SESSION_USER } from "./session";
@@ -105,6 +106,24 @@ export const adminProblemBankActionHandlers: RequestHandler[] = [
             }
             return { ...problem, authorId: SETTER_SESSION_USER.id };
         });
+    }),
+
+    http.post("*/api/admin/problems/:problemId/rejudge", async ({ params }) => {
+        await delay();
+        const problem = publishedProblem(String(params.problemId));
+        if (!problem) {
+            return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
+        }
+        const totalCount = toBankProblem(problem).submissionCount;
+        return HttpResponse.json(
+            {
+                batchId: crypto.randomUUID(),
+                status: "RUNNING",
+                totalCount,
+                remainingCount: totalCount,
+            },
+            { status: 202 },
+        );
     }),
 
     http.delete("*/api/admin/problems/:problemId", async ({ params }) => {

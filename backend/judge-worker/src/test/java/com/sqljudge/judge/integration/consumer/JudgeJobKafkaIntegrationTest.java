@@ -68,6 +68,7 @@ class JudgeJobKafkaIntegrationTest {
             """
                     .formatted(VERSION_ID, VARIANT_ID);
     private static final String SUBMISSION_CREATED = "sqljudge.submission.created";
+    private static final String REJUDGE_REQUESTED = "sqljudge.submission.rejudge-requested";
     private static final String JUDGE_PROGRESS = "sqljudge.judge.progress";
     private static final String JUDGE_COMPLETED = "sqljudge.judge.completed";
     private static final String RUN_REQUESTED = "sqljudge.run.requested";
@@ -273,10 +274,28 @@ class JudgeJobKafkaIntegrationTest {
         return runId;
     }
 
+    @Test
+    @DisplayName("Job chấm lại đi qua cùng máy chấm và gửi kết quả về topic hoàn tất")
+    void rejudgeRequested_correctSolution_publishesAccepted() {
+        String submissionId =
+                submitTo(
+                        REJUDGE_REQUESTED,
+                        ACCEPTING_REVISION,
+                        "SELECT name FROM departments ORDER BY id");
+
+        DocumentContext completed =
+                JsonPath.parse(firstRecordOf(JUDGE_COMPLETED, submissionId).value());
+        assertThat(completed.read("$.verdict", String.class)).isEqualTo("AC");
+    }
+
     private static String submit(UUID revisionId, String code) {
+        return submitTo(SUBMISSION_CREATED, revisionId, code);
+    }
+
+    private static String submitTo(String topic, UUID revisionId, String code) {
         String submissionId = UUID.randomUUID().toString();
         send(
-                SUBMISSION_CREATED,
+                topic,
                 submissionId,
                 """
                 {"eventId": "%s", "occurredAt": "2026-11-11T08:00:00Z", "version": 1,

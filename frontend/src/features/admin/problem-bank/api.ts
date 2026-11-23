@@ -8,6 +8,7 @@ import type {
     BulkUpdateRequest,
     BulkUpdateResult,
     ProblemBankSummary,
+    RejudgeBatch,
 } from "./types";
 
 export const BANK_PAGE_SIZE = 20;
@@ -31,6 +32,19 @@ export const problemBankApi = {
     summary: (signal?: AbortSignal) =>
         apiClient.get<ProblemBankSummary>("/api/admin/problems/summary", { signal }),
     tags: (signal?: AbortSignal) => apiClient.get<AdminTag[]>(TAGS_PATH, { signal }),
+    rejudge: (problemId: string) =>
+        apiClient.post<RejudgeBatch>(`${problemPath(problemId)}/rejudge`),
+    rejudgeMany: async (problemIds: string[]): Promise<BulkUpdateResult> => {
+        const outcomes = await Promise.allSettled(
+            problemIds.map((problemId) => problemBankApi.rejudge(problemId)),
+        );
+        return {
+            succeeded: problemIds.filter((_, index) => outcomes[index].status === "fulfilled"),
+            failed: problemIds
+                .filter((_, index) => outcomes[index].status === "rejected")
+                .map((problemId) => ({ problemId, code: "REJUDGE_FAILED", message: "" })),
+        };
+    },
     bulkUpdate: (request: BulkUpdateRequest) =>
         apiClient.post<BulkUpdateResult>("/api/admin/problems/bulk-update", request),
     quickEdit: ({ problemId, values }: { problemId: string; values: QuickEditValues }) =>

@@ -49,6 +49,12 @@ public class ProblemStats extends BaseEntity {
         this.solvedUserCount = solvedUserCount;
     }
 
+    public void replace(long submissions, long accepted, long solvedUsers) {
+        submissionCount = submissions;
+        acceptedCount = accepted;
+        solvedUserCount = solvedUsers;
+    }
+
     public double acceptanceRate() {
         return acceptanceRate(submissionCount, acceptedCount);
     }

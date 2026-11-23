@@ -1,5 +1,6 @@
 package com.sqljudge.submission.event;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sqljudge.common.outbox.DomainEvent;
 import com.sqljudge.submission.entity.Verdict;
 import java.time.Instant;
@@ -15,5 +16,6 @@ public record SubmissionJudgedEvent(
         UUID contestId,
         Verdict verdict,
         Instant submittedAt,
-        Instant judgedAt)
+        Instant judgedAt,
+        @JsonProperty("isRejudge") boolean isRejudge)
         implements DomainEvent {}

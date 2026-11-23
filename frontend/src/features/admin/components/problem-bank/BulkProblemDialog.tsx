@@ -13,12 +13,13 @@ import { problemBankApi } from "../../problem-bank/api";
 import type { BulkUpdateRequest, BulkUpdateResult } from "../../problem-bank/types";
 import { ActionDialog } from "../users/ActionDialog";
 
-export type BulkAction = "tag" | "difficulty" | "hide";
+export type BulkAction = "tag" | "difficulty" | "hide" | "rejudge";
 
 const TITLES: Record<BulkAction, string> = {
     tag: "Gắn chủ đề",
     difficulty: "Đổi độ khó",
     hide: "Ẩn các bài đã chọn?",
+    rejudge: "Chấm lại các bài đã chọn?",
 };
 
 function resultMessage({ succeeded, failed }: BulkUpdateResult): string {
@@ -37,6 +38,8 @@ export function BulkProblemDialog({ action, problemIds, onClose, onDone }: BulkP
     const showToast = useToast();
     const { data: tags } = useBankTags();
     const bulkUpdate = useProblemBankMutation(problemBankApi.bulkUpdate);
+    const rejudgeMany = useProblemBankMutation(problemBankApi.rejudgeMany);
+    const isPending = bulkUpdate.isPending || rejudgeMany.isPending;
     const [value, setValue] = useState(action === "difficulty" ? DIFFICULTIES[0] : "");
 
     function requestOf(): BulkUpdateRequest {
@@ -49,8 +52,10 @@ export function BulkProblemDialog({ action, problemIds, onClose, onDone }: BulkP
     }
 
     const submit = () =>
-        bulkUpdate
-            .mutateAsync(requestOf())
+        (action === "rejudge"
+            ? rejudgeMany.mutateAsync(problemIds)
+            : bulkUpdate.mutateAsync(requestOf())
+        )
             .then((result) => {
                 showToast(resultMessage(result), result.failed.length > 0 ? "error" : undefined);
                 onDone();
@@ -99,10 +104,10 @@ export function BulkProblemDialog({ action, problemIds, onClose, onDone }: BulkP
                 <Button
                     type="button"
                     variant={action === "hide" ? "destructive" : "default"}
-                    disabled={bulkUpdate.isPending || (action === "tag" && !value)}
+                    disabled={isPending || (action === "tag" && !value)}
                     onClick={() => void submit()}
                 >
-                    {action === "hide" ? "Ẩn bài" : "Áp dụng"}
+                    {action === "hide" ? "Ẩn bài" : action === "rejudge" ? "Chấm lại" : "Áp dụng"}
                 </Button>
             </div>
         </ActionDialog>
