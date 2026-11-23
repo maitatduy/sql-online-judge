@@ -1,15 +1,19 @@
 package com.sqljudge.problem.controller;
 
 import com.sqljudge.common.web.PageResponse;
+import com.sqljudge.problem.dto.request.BulkUpdateProblemsRequest;
 import com.sqljudge.problem.dto.response.AdminProblemBankSummaryResponse;
 import com.sqljudge.problem.dto.response.AdminProblemSummaryResponse;
+import com.sqljudge.problem.dto.response.BulkUpdateProblemsResponse;
 import com.sqljudge.problem.entity.Difficulty;
 import com.sqljudge.problem.entity.ProblemStatus;
 import com.sqljudge.problem.entity.ProblemVisibility;
+import com.sqljudge.problem.service.AdminProblemBulkService;
 import com.sqljudge.problem.service.AdminProblemQueryService;
 import com.sqljudge.problem.service.AdminProblemSearch;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
@@ -17,6 +21,8 @@ import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,6 +37,7 @@ public class AdminProblemController {
     private static final int MAX_KEYWORD_LENGTH = 200;
 
     private final AdminProblemQueryService adminProblemQueryService;
+    private final AdminProblemBulkService adminProblemBulkService;
 
     @GetMapping
     @Operation(
@@ -65,5 +72,14 @@ public class AdminProblemController {
     @ApiResponse(responseCode = "403", description = "Không phải ADMIN")
     public AdminProblemBankSummaryResponse summary() {
         return adminProblemQueryService.bankSummary();
+    }
+
+    @PostMapping("/bulk-update")
+    @Operation(summary = "Gắn chủ đề, đổi độ khó hoặc ẩn nhiều bài một lần")
+    @ApiResponse(responseCode = "200", description = "Kết quả từng bài: thành công hoặc lỗi")
+    @ApiResponse(responseCode = "400", description = "Không chọn bài hoặc không chọn thao tác")
+    public BulkUpdateProblemsResponse bulkUpdate(
+            @Valid @RequestBody BulkUpdateProblemsRequest request) {
+        return adminProblemBulkService.update(request);
     }
 }

@@ -23,3 +23,21 @@ export interface ProblemBankSummary {
     hiddenCount: number;
     lowAcceptanceCount: number;
 }
+
+export interface AdminTag {
+    slug: string;
+    name: string;
+    problemCount: number;
+}
+
+export interface BulkUpdateRequest {
+    problemIds: string[];
+    addTagSlugs?: string[];
+    difficulty?: string;
+    hide?: boolean;
+}
+
+export interface BulkUpdateResult {
+    succeeded: string[];
+    failed: { problemId: string; code: string; message: string }[];
+}

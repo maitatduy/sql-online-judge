@@ -67,7 +67,7 @@ export function ProblemBankFiltersBar({ filters, onChange, onClear }: ProblemBan
                 onChange={(event) => onChange({ tag: event.target.value || null })}
             >
                 <option value="">Mọi chủ đề</option>
-                {(tags?.items ?? []).map((tag) => (
+                {(tags ?? []).map((tag) => (
                     <option key={tag.slug} value={tag.slug}>
                         {tag.name}
                     </option>

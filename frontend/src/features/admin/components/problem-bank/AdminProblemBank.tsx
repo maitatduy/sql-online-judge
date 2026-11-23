@@ -19,6 +19,7 @@ import type { BankProblem } from "../../problem-bank/types";
 import { StaleDataNotice } from "../StaleDataNotice";
 import { BlockLoading } from "../users/BlockStates";
 import { ProblemActionConfirmDialog } from "./ProblemActionConfirmDialog";
+import { ProblemBankBulkBar } from "./ProblemBankBulkBar";
 import { ProblemBankFiltersBar } from "./ProblemBankFilters";
 import { ProblemBankStats } from "./ProblemBankStats";
 import { ProblemBankTable } from "./ProblemBankTable";
@@ -39,6 +40,15 @@ export function AdminProblemBank() {
     const isFiltered = hasActiveBankFilter(filters);
     const [rowDialog, setRowDialog] = useState<RowDialog | null>(null);
     const closeRowDialog = () => setRowDialog(null);
+    const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set());
+    const toggleSelected = (problemIds: string[]) =>
+        setSelectedIds((current) => {
+            const next = new Set(current);
+            problemIds.forEach((problemId) =>
+                next.has(problemId) ? next.delete(problemId) : next.add(problemId),
+            );
+            return next;
+        });
 
     return (
         <main id={MAIN_CONTENT_ID} className="flex flex-col gap-4 px-4 pt-6 pb-10 md:px-7">
@@ -62,6 +72,12 @@ export function AdminProblemBank() {
                     onChange={changeFilters}
                     onClear={clearFilters}
                 />
+                {selectedIds.size > 0 ? (
+                    <ProblemBankBulkBar
+                        selectedIds={[...selectedIds]}
+                        onClear={() => setSelectedIds(new Set())}
+                    />
+                ) : null}
                 {isPending ? (
                     <div className="p-4">
                         <BlockLoading label="Đang tải kho bài tập" rows={8} />
@@ -81,6 +97,8 @@ export function AdminProblemBank() {
                         <ProblemBankTable
                             problems={data.items}
                             onAction={(action, problem) => setRowDialog({ action, problem })}
+                            selectedIds={selectedIds}
+                            onToggle={toggleSelected}
                         />
                         <Pagination
                             result={data}

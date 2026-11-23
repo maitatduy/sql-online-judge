@@ -22,8 +22,7 @@ export function useProblemBankSummary() {
 
 export function useBankTags() {
     return useQuery({
-        queryKey: ["tags"],
+        queryKey: ["admin", "problems", "tags"],
         queryFn: ({ signal }) => problemBankApi.tags(signal),
-        staleTime: 60 * 60 * 1000,
     });
 }

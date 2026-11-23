@@ -1,6 +1,10 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
-import type { BankProblem, ProblemBankSummary } from "@/features/admin/problem-bank/types";
+import type {
+    AdminTag,
+    BankProblem,
+    ProblemBankSummary,
+} from "@/features/admin/problem-bank/types";
 
 import { PRACTICE_TAGS } from "./practice-fixtures";
 import { SETTER_SESSION_USER } from "./session";
@@ -36,9 +40,16 @@ function visibilityOf(problem: StoredProblem) {
     return problem.status === "PUBLISHED" ? (problem.visibility ?? "PUBLIC") : null;
 }
 
-function toBankProblem(problem: StoredProblem): BankProblem {
-    const tagSlugs =
-        problem.tagSlugs.length > 0 ? problem.tagSlugs : (SEEDED_TAGS[problem.slug] ?? []);
+export function readAdminTags(): Omit<AdminTag, "problemCount">[] {
+    return PRACTICE_TAGS;
+}
+
+export function tagSlugsOf(problem: StoredProblem): string[] {
+    return problem.tagSlugs.length > 0 ? problem.tagSlugs : (SEEDED_TAGS[problem.slug] ?? []);
+}
+
+export function toBankProblem(problem: StoredProblem): BankProblem {
+    const tagSlugs = tagSlugsOf(problem);
     const [submissionCount, acceptedCount] = SEEDED_STATS[problem.slug] ?? [0, 0];
     return {
         id: problem.id,
@@ -52,7 +63,7 @@ function toBankProblem(problem: StoredProblem): BankProblem {
         authorUsername:
             problem.authorId === SETTER_SESSION_USER.id ? SETTER_SESSION_USER.username : null,
         updatedAt: problem.updatedAt,
-        tags: PRACTICE_TAGS.filter((tag) => tagSlugs.includes(tag.slug)),
+        tags: readAdminTags().filter((tag) => tagSlugs.includes(tag.slug)),
         submissionCount,
         acceptedCount,
         acceptanceRate: acceptanceRate(submissionCount, acceptedCount),

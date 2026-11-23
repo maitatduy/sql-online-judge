@@ -2,9 +2,16 @@ import { apiClient } from "@/lib/api-client";
 
 import type { QuickEditValues } from "./schemas";
 import type { ProblemBankFilters } from "./search-params";
-import type { BankProblemPage, BankTag, ProblemBankSummary } from "./types";
+import type {
+    AdminTag,
+    BankProblemPage,
+    BulkUpdateRequest,
+    BulkUpdateResult,
+    ProblemBankSummary,
+} from "./types";
 
 export const BANK_PAGE_SIZE = 20;
+const TAGS_PATH = "/api/admin/tags";
 
 export const problemBankApi = {
     list: (filters: ProblemBankFilters, signal?: AbortSignal) =>
@@ -23,7 +30,9 @@ export const problemBankApi = {
         }),
     summary: (signal?: AbortSignal) =>
         apiClient.get<ProblemBankSummary>("/api/admin/problems/summary", { signal }),
-    tags: (signal?: AbortSignal) => apiClient.get<{ items: BankTag[] }>("/api/tags", { signal }),
+    tags: (signal?: AbortSignal) => apiClient.get<AdminTag[]>(TAGS_PATH, { signal }),
+    bulkUpdate: (request: BulkUpdateRequest) =>
+        apiClient.post<BulkUpdateResult>("/api/admin/problems/bulk-update", request),
     quickEdit: ({ problemId, values }: { problemId: string; values: QuickEditValues }) =>
         apiClient.patch<void>(problemPath(problemId), values),
     hide: (problemId: string) => apiClient.post<void>(`${problemPath(problemId)}/hide`),
