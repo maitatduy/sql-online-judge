@@ -12,6 +12,7 @@ import type { CurrentUser } from "@/lib/current-user";
 
 import { adminHandlers } from "./admin-handlers";
 import { adminProblemBankHandlers } from "./admin-problem-bank";
+import { adminProblemBankActionHandlers } from "./admin-problem-bank-actions";
 import { adminProblemReviewHandlers } from "./admin-problem-reviews";
 import { apiError } from "./api-error";
 import { invitationHandlers } from "./invitation-handlers";
@@ -205,6 +206,7 @@ export const handlers: RequestHandler[] = [
     ...contestHandlers,
     ...adminHandlers,
     ...adminProblemBankHandlers,
+    ...adminProblemBankActionHandlers,
     ...adminProblemReviewHandlers,
     ...invitationHandlers,
     ...learningProgressHandlers,

@@ -1,5 +1,6 @@
 package com.sqljudge.auth.controller;
 
+import com.sqljudge.auth.dto.response.InternalUserAccountResponse;
 import com.sqljudge.auth.dto.response.InternalUserNameResponse;
 import com.sqljudge.auth.dto.response.InternalUserResponse;
 import com.sqljudge.auth.service.InternalUserService;
@@ -43,5 +44,14 @@ public class InternalUserController {
     public List<InternalUserNameResponse> findNames(
             @RequestParam @Size(max = MAX_IDS, message = "Tối đa 100 người dùng") List<UUID> ids) {
         return internalUserService.findNames(ids);
+    }
+
+    @GetMapping("/by-username/{username}")
+    @Operation(summary = "Vai trò và trạng thái hoạt động của một tài khoản theo username")
+    @ApiResponse(responseCode = "200", description = "Tài khoản chưa bị xoá")
+    @ApiResponse(responseCode = "401", description = "Thiếu hoặc sai token nội bộ")
+    @ApiResponse(responseCode = "404", description = "Không có tài khoản hoặc đã xoá")
+    public InternalUserAccountResponse findByUsername(@PathVariable String username) {
+        return internalUserService.findByUsername(username);
     }
 }
