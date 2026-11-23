@@ -13,9 +13,11 @@ import com.sqljudge.contest.entity.ContestProblem;
 import com.sqljudge.contest.repository.ContestCellRepository;
 import com.sqljudge.contest.repository.ContestRegistrationRepository;
 import com.sqljudge.contest.repository.ContestRepository;
+import com.sqljudge.contest.standings.StandingRanks;
 import com.sqljudge.contest.standings.StandingRow;
 import com.sqljudge.contest.standings.StandingRows;
 import com.sqljudge.contest.standings.StandingsStore;
+import com.sqljudge.contest.standings.StandingsStore.RankedRow;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
@@ -70,13 +72,11 @@ public class StandingsService {
     @Transactional(readOnly = true)
     public StandingsResponse standings(String slug, int page, int size) {
         Contest contest = contestBySlug(slug);
-        if (standingsStore.size(contest.getId()) == 0) {
-            rebuild(contest);
-        }
-        long total = standingsStore.size(contest.getId());
+        RankedPage standingsPage = rankedPage(contest, (long) (page - 1) * size, size);
+        long total = standingsPage.total();
         Map<UUID, String> letters = lettersOf(contest);
         List<StandingItem> items =
-                standingsStore.page(contest.getId(), (long) (page - 1) * size, size).stream()
+                standingsPage.rows().stream()
                         .map(
                                 ranked ->
                                         new StandingItem(
@@ -119,11 +119,32 @@ public class StandingsService {
         return new MyStanding(row.solved(), row.penaltyMinutes(), cellsOf(row, lettersOf(contest)));
     }
 
+    private RankedPage rankedPage(Contest contest, long offset, int size) {
+        UUID contestId = contest.getId();
+        try {
+            if (standingsStore.size(contestId) == 0) {
+                rebuild(contest);
+            }
+            return new RankedPage(
+                    standingsStore.size(contestId), standingsStore.page(contestId, offset, size));
+        } catch (DataAccessException unavailable) {
+            log.warn("standings_cache_read_failed contestId={}", contestId, unavailable);
+            standingsStore.discardQuietly(contestId);
+            List<RankedRow> all = StandingRanks.rank(publicRowsOf(contest));
+            return new RankedPage(all.size(), all.stream().skip(offset).limit(size).toList());
+        }
+    }
+
     private void rebuild(Contest contest) {
-        cellRepository.findUserIdsByContestId(contest.getId()).stream()
+        publicRowsOf(contest)
+                .forEach(row -> standingsStore.put(contest.getId(), contest.getEndAt(), row));
+    }
+
+    private List<StandingRow> publicRowsOf(Contest contest) {
+        return cellRepository.findUserIdsByContestId(contest.getId()).stream()
                 .map(userId -> publicRowOf(contest, userId))
                 .filter(row -> row != null)
-                .forEach(row -> standingsStore.put(contest.getId(), contest.getEndAt(), row));
+                .toList();
     }
 
     private StandingRow publicRowOf(Contest contest, UUID userId) {
@@ -162,4 +183,6 @@ public class StandingsService {
                                         cell.pendingAttempts()))
                 .toList();
     }
+
+    private record RankedPage(long total, List<RankedRow> rows) {}
 }
