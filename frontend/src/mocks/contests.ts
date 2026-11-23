@@ -68,7 +68,95 @@ function enteredProblem(slug: unknown, letter: unknown, userId: string) {
         : apiError(404, "PROBLEM_NOT_FOUND", "Contest không có bài này");
 }
 
+const MOCK_STANDINGS = [
+    {
+        username: "quang.le",
+        displayName: "Lê Quang",
+        acceptedMinute: 12,
+        wrongAttempts: 0,
+        pendingAttempts: 0,
+    },
+    {
+        username: "trang.hoang",
+        displayName: "Hoàng Trang",
+        acceptedMinute: 31,
+        wrongAttempts: 1,
+        pendingAttempts: 0,
+    },
+    {
+        username: "minh.anh",
+        displayName: "Minh Anh",
+        acceptedMinute: null,
+        wrongAttempts: 2,
+        pendingAttempts: 1,
+    },
+];
+
+function cellsFor(
+    contest: AdminContest,
+    first: Omit<(typeof MOCK_STANDINGS)[number], "username" | "displayName">,
+) {
+    return contest.problems.map((problem, index) =>
+        index === 0
+            ? { letter: problem.letter, ...first }
+            : {
+                  letter: problem.letter,
+                  acceptedMinute: null,
+                  wrongAttempts: 0,
+                  pendingAttempts: 0,
+              },
+    );
+}
+
 export const contestHandlers: RequestHandler[] = [
+    http.get(
+        "*/api/contests/:slug/standings/events",
+        () =>
+            new HttpResponse(new ReadableStream({ start() {} }), {
+                headers: { "Content-Type": "text/event-stream" },
+            }),
+    ),
+    http.get("*/api/contests/:slug/standings/me", async ({ params }) => {
+        await delay();
+        const user = readMockSession();
+        const contest = findContest(params.slug);
+        if (!user) {
+            return unauthenticated();
+        }
+        if (!contest || !registrantsOf(contest.id).has(user.id)) {
+            return apiError(404, "CONTEST_NOT_REGISTERED", "Bạn chưa đăng ký contest này");
+        }
+        return HttpResponse.json({
+            solved: 1,
+            penaltyMinutes: 65,
+            cells: cellsFor(contest, { acceptedMinute: 65, wrongAttempts: 0, pendingAttempts: 0 }),
+        });
+    }),
+    http.get("*/api/contests/:slug/standings", async ({ params }) => {
+        await delay();
+        const contest = findContest(params.slug);
+        if (!contest) {
+            return notFound();
+        }
+        const items = MOCK_STANDINGS.map(({ username, displayName, ...first }, index) => ({
+            rank: index + 1,
+            username,
+            displayName,
+            solved: first.acceptedMinute === null ? 0 : 1,
+            penaltyMinutes:
+                first.acceptedMinute === null ? 0 : first.acceptedMinute + first.wrongAttempts * 20,
+            cells: cellsFor(contest, first),
+        }));
+        return HttpResponse.json({
+            problems: contest.problems.map((problem) => problem.letter),
+            isFrozen: contest.phase !== "UPCOMING",
+            items,
+            page: 1,
+            size: 50,
+            totalItems: items.length,
+            totalPages: 1,
+        });
+    }),
     http.get("*/api/contests/:slug/problems/:letter", async ({ params }) => {
         await delay();
         const user = readMockSession();

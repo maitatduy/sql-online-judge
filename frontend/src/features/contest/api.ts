@@ -1,9 +1,17 @@
 import { apiClient } from "@/lib/api-client";
 import type { ContestPhase } from "@/lib/contest";
 
-import type { ContestDetail, ContestPage, ContestProblem, ContestRegistration } from "./types";
+import type {
+    ContestDetail,
+    ContestPage,
+    ContestProblem,
+    ContestRegistration,
+    MyStanding,
+    StandingsPage,
+} from "./types";
 
 const CONTEST_PAGE_SIZE = 20;
+const STANDINGS_PAGE_SIZE = 50;
 
 function registrationPath(slug: string): string {
     return `/api/contests/${encodeURIComponent(slug)}/registration`;
@@ -25,4 +33,13 @@ export const contestApi = {
         apiClient.get<ContestRegistration>(registrationPath(slug), { signal }),
     register: (slug: string) => apiClient.post<ContestRegistration>(registrationPath(slug)),
     unregister: (slug: string) => apiClient.delete<void>(registrationPath(slug)),
+    standings: (slug: string, page: number, signal?: AbortSignal) =>
+        apiClient.get<StandingsPage>(`/api/contests/${encodeURIComponent(slug)}/standings`, {
+            params: { page, size: STANDINGS_PAGE_SIZE },
+            signal,
+        }),
+    myStanding: (slug: string, signal?: AbortSignal) =>
+        apiClient.get<MyStanding>(`/api/contests/${encodeURIComponent(slug)}/standings/me`, {
+            signal,
+        }),
 };

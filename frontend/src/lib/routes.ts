@@ -34,6 +34,7 @@ export const ROUTES = {
     problem: (slug: string) => `/problems/${encodeURIComponent(slug)}`,
     course: (slug: string) => `/learn/${encodeURIComponent(slug)}`,
     contest: (slug: string) => `/contests/${encodeURIComponent(slug)}`,
+    contestStandings: (slug: string) => `/contests/${encodeURIComponent(slug)}/standings`,
     contestProblem: (slug: string, letter: string) =>
         `/contests/${encodeURIComponent(slug)}/problems/${encodeURIComponent(letter)}`,
     lesson: (courseSlug: string, lessonSlug: string) =>

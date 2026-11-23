@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { ArrowLeft, Timer } from "lucide-react";
+import { ArrowLeft, Timer, Trophy } from "lucide-react";
 
 import { formatRemaining } from "@/lib/contest";
 import { ROUTES } from "@/lib/routes";
@@ -62,6 +62,13 @@ export function ContestWorkspaceBar({ slug, letter }: ContestWorkspaceBarProps) 
                 ))}
             </nav>
             <span className="flex-1" />
+            <Link
+                href={ROUTES.contestStandings(slug)}
+                className="inline-flex min-h-9 items-center gap-1.5 font-semibold hover:text-brand"
+            >
+                <Trophy aria-hidden="true" className="size-4" />
+                Bảng xếp hạng
+            </Link>
             {contest ? <RemainingTime endAt={contest.endAt} /> : null}
         </div>
     );
