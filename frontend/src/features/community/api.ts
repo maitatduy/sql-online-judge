@@ -1,22 +1,29 @@
 import { apiClient } from "@/lib/api-client";
+import type { Dialect } from "@/lib/dialect";
+import type { Page } from "@/lib/pagination";
 
 import type { PostFilters } from "./search-params";
 import type {
     CommentPage,
     CommentSort,
     CommentThread,
+    CodeRun,
     CommunityOverview,
     Contributor,
+    LinkedProblem,
     PostDetail,
     PostPage,
+    ProblemOption,
     ReportReason,
     ReportTarget,
+    SavePostInput,
     VoteResult,
     VoteTarget,
 } from "./types";
 
 export const POST_PAGE_SIZE = 20;
 const COMMENT_PAGE_SIZE = 50;
+const PROBLEM_OPTION_COUNT = 8;
 
 function postPath(postId: string): string {
     return `/api/community/posts/${encodeURIComponent(postId)}`;
@@ -48,6 +55,32 @@ export const communityApi = {
         }),
     post: (postId: string, signal?: AbortSignal) =>
         apiClient.get<PostDetail>(postPath(postId), { signal }),
+    createPost: (post: SavePostInput) => apiClient.post<PostDetail>("/api/community/posts", post),
+    updatePost: ({ postId, post }: { postId: string; post: SavePostInput }) =>
+        apiClient.put<PostDetail>(postPath(postId), post),
+    deletePost: (postId: string) => apiClient.delete<void>(postPath(postId)),
+    searchProblems: (q: string, signal?: AbortSignal) =>
+        apiClient.get<Page<ProblemOption>>("/api/problems", {
+            params: { q: q || undefined, size: PROBLEM_OPTION_COUNT },
+            signal,
+        }),
+    problem: (slug: string, signal?: AbortSignal) =>
+        apiClient.get<LinkedProblem>(`/api/problems/${encodeURIComponent(slug)}`, { signal }),
+    startRun: ({
+        problemId,
+        dialect,
+        code,
+    }: {
+        problemId: string;
+        dialect: Dialect;
+        code: string;
+    }) =>
+        apiClient.post<{ runId: string }>(`/api/problems/${encodeURIComponent(problemId)}/runs`, {
+            dialect,
+            code,
+        }),
+    run: (runId: string, signal?: AbortSignal) =>
+        apiClient.get<CodeRun>(`/api/runs/${encodeURIComponent(runId)}`, { signal }),
     overview: (signal?: AbortSignal) =>
         apiClient.get<CommunityOverview>("/api/community/overview", { signal }),
     contributors: (signal?: AbortSignal) =>

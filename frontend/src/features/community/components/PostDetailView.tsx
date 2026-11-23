@@ -7,7 +7,6 @@ import { useState } from "react";
 import { Avatar } from "@/components/shared/Avatar";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { Markdown } from "@/components/shared/Markdown";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/ToastProvider";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,8 @@ import { POST_CATEGORY_LABELS } from "../labels";
 import type { PostDetail } from "../types";
 import { CategoryPill } from "./CategoryPill";
 import { CommentSection } from "./CommentSection";
+import { PostAuthorActions } from "./PostAuthorActions";
+import { PostBody } from "./PostBody";
 import { ReportDialog } from "./ReportDialog";
 import { VoteControls } from "./VoteControls";
 
@@ -138,6 +139,19 @@ function PostArticle({ post }: { post: PostDetail }) {
                 <div className="flex min-w-0 flex-1 flex-col gap-4">
                     <div className="flex flex-wrap items-center gap-2">
                         <CategoryPill category={post.category} />
+                        {post.status !== "PUBLISHED" ? (
+                            <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-sm font-semibold">
+                                {post.status === "DRAFT" ? "Bản nháp" : "Đang ẩn"}
+                            </span>
+                        ) : null}
+                        {post.problemSlug ? (
+                            <Link
+                                href={ROUTES.problem(post.problemSlug)}
+                                className="rounded-full bg-brand-soft px-2.5 py-0.5 text-sm font-semibold text-brand hover:underline"
+                            >
+                                {post.problemTitle}
+                            </Link>
+                        ) : null}
                         {post.tags.map((tag) => (
                             <span
                                 key={tag}
@@ -148,17 +162,18 @@ function PostArticle({ post }: { post: PostDetail }) {
                         ))}
                     </div>
                     <h1 className="text-[28px] leading-tight font-extrabold">{post.title}</h1>
-                    <div className="flex items-center gap-2.5 text-[15px] text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-2.5 text-[15px] text-muted-foreground">
                         <Avatar name={author} />
-                        <span>
+                        <span className="flex-1">
                             <strong className="text-foreground">{author}</strong>
                             {post.publishedAt
                                 ? ` - ${formatRelativeTime(post.publishedAt, now)}`
                                 : null}
                             {` - ${formatNumber(post.viewCount)} lượt xem`}
                         </span>
+                        {isAuthor ? <PostAuthorActions postId={post.id} /> : null}
                     </div>
-                    <Markdown className="text-base">{post.bodyMarkdown}</Markdown>
+                    <PostBody markdown={post.bodyMarkdown} problemSlug={post.problemSlug} />
                 </div>
             </article>
             <CommentSection thread={{ postId: post.id }} />

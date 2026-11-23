@@ -7,6 +7,7 @@ import com.sqljudge.common.security.Role;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.community.dto.request.SavePostRequest;
 import com.sqljudge.community.entity.HiddenReason;
+import com.sqljudge.community.entity.LinkedProblem;
 import com.sqljudge.community.entity.Post;
 import com.sqljudge.community.entity.Post.PostContent;
 import com.sqljudge.community.repository.PostRepository;
@@ -27,8 +28,9 @@ public class PostCommandService {
     private final Clock clock;
 
     @Transactional
-    public UUID create(SavePostRequest request, boolean contestLocked) {
-        Post post = Post.draft(SecurityUtils.requireCurrentUser().id(), contentOf(request));
+    public UUID create(SavePostRequest request, LinkedProblem problem, boolean contestLocked) {
+        Post post =
+                Post.draft(SecurityUtils.requireCurrentUser().id(), contentOf(request, problem));
         publishIfAsked(post, request, contestLocked);
         UUID postId = postRepository.save(post).getId();
         log.info("post_created postId={} published={}", postId, request.publish());
@@ -36,12 +38,13 @@ public class PostCommandService {
     }
 
     @Transactional
-    public void update(UUID postId, SavePostRequest request, boolean contestLocked) {
+    public void update(
+            UUID postId, SavePostRequest request, LinkedProblem problem, boolean contestLocked) {
         Post post = livePost(postId);
         if (!post.isWrittenBy(SecurityUtils.requireCurrentUser().id())) {
             throw forbidden();
         }
-        post.update(contentOf(request));
+        post.update(contentOf(request, problem));
         publishIfAsked(post, request, contestLocked);
     }
 
@@ -70,12 +73,12 @@ public class PostCommandService {
         return postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(PostErrors::notFound);
     }
 
-    private static PostContent contentOf(SavePostRequest request) {
+    private static PostContent contentOf(SavePostRequest request, LinkedProblem problem) {
         return new PostContent(
                 request.category(),
                 request.title().trim(),
                 request.bodyMarkdown(),
-                request.problemId(),
+                problem,
                 new LinkedHashSet<>(request.tags()));
     }
 

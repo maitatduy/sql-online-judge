@@ -5,10 +5,12 @@ import type {
     PostCategory,
     PostDetail,
     PostSummary,
+    SavePostInput,
     VoteTarget,
 } from "@/features/community/types";
 
 import { apiError } from "./api-error";
+import { findProblem } from "./practice-sql";
 import { readMockSession } from "./session";
 
 const AUTHOR_ID = "0192f3a0-0000-7000-8000-0000000000c1";
@@ -41,6 +43,8 @@ function mockPost(
         bodyMarkdown,
         tags,
         problemId: null,
+        problemSlug: null,
+        problemTitle: null,
         authorId: AUTHOR_ID,
         authorUsername: "an.bui",
         voteScore: 12 - index * 2,
@@ -130,6 +134,7 @@ function visiblePosts(url: URL, userId: string | null): MockPost[] {
     const query = (url.searchParams.get("q") ?? "").toLowerCase();
     const matching = posts.filter(
         (post) =>
+            post.status === "PUBLISHED" &&
             (!category || post.category === category) &&
             (!query || post.title.toLowerCase().includes(query)) &&
             (tab !== "UNANSWERED" || post.commentCount === 0) &&
@@ -161,6 +166,19 @@ function voteOn(targetType: VoteTarget, targetId: string, userId: string, value:
     }
     target.voteScore += applyVote(target.votes, userId, value);
     return { voteScore: target.voteScore, myVote: value };
+}
+
+function contentOf(input: SavePostInput) {
+    const problem = input.problemId ? findProblem(input.problemId) : null;
+    return {
+        category: input.category,
+        title: input.title.trim(),
+        bodyMarkdown: input.bodyMarkdown,
+        tags: input.tags,
+        problemId: problem?.id ?? null,
+        problemSlug: problem?.slug ?? null,
+        problemTitle: problem?.title ?? null,
+    };
 }
 
 function unauthenticated() {
@@ -200,6 +218,54 @@ export const communityHandlers: RequestHandler[] = [
         return post
             ? HttpResponse.json(detailOf(post, viewerId()))
             : apiError(404, "POST_NOT_FOUND", "Không tìm thấy bài viết");
+    }),
+    http.post("*/api/community/posts", async ({ request }) => {
+        const session = readMockSession();
+        if (!session) {
+            return unauthenticated();
+        }
+        const input = (await request.json()) as SavePostInput;
+        const now = new Date().toISOString();
+        const post: MockPost = {
+            ...contentOf(input),
+            id: crypto.randomUUID(),
+            status: input.publish ? "PUBLISHED" : "DRAFT",
+            authorId: session.id,
+            authorUsername: session.username,
+            voteScore: 0,
+            commentCount: 0,
+            viewCount: 0,
+            isPinned: false,
+            publishedAt: input.publish ? now : null,
+            updatedAt: now,
+            votes: new Map(),
+            savedBy: new Set(),
+        };
+        posts.push(post);
+        return HttpResponse.json(detailOf(post, session.id), { status: 201 });
+    }),
+    http.put("*/api/community/posts/:postId", async ({ params, request }) => {
+        const userId = viewerId();
+        const post = posts.find((candidate) => candidate.id === params.postId);
+        if (!post || post.authorId !== userId) {
+            return apiError(404, "POST_NOT_FOUND", "Không tìm thấy bài viết");
+        }
+        const input = (await request.json()) as SavePostInput;
+        Object.assign(post, contentOf(input), { updatedAt: new Date().toISOString() });
+        if (input.publish && post.status === "DRAFT") {
+            post.status = "PUBLISHED";
+            post.publishedAt = post.updatedAt;
+        }
+        return HttpResponse.json(detailOf(post, userId));
+    }),
+    http.delete("*/api/community/posts/:postId", ({ params }) => {
+        const userId = viewerId();
+        const post = posts.find((candidate) => candidate.id === params.postId);
+        if (!post || post.authorId !== userId) {
+            return apiError(404, "POST_NOT_FOUND", "Không tìm thấy bài viết");
+        }
+        posts = posts.filter((candidate) => candidate.id !== post.id);
+        return new HttpResponse(null, { status: 204 });
     }),
     http.put("*/api/community/posts/:postId/bookmark", ({ params }) => {
         const userId = viewerId();

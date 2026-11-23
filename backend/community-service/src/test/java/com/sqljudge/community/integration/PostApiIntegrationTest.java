@@ -42,11 +42,15 @@ class PostApiIntegrationTest extends ContainerSupport {
     @DynamicPropertySource
     static void authService(DynamicPropertyRegistry registry) {
         registry.add("sqljudge.auth-service-url", AuthServiceStub::url);
+        registry.add("sqljudge.contest-service-url", ContestServiceStub::url);
+        registry.add("sqljudge.problem-service-url", ProblemServiceStub::url);
     }
 
     @BeforeEach
     void stubAuthors() {
         AuthServiceStub.reset();
+        ContestServiceStub.reset();
+        ProblemServiceStub.reset();
         AuthServiceStub.user(AUTHOR_ID, "trang.hoang");
     }
 
@@ -141,6 +145,27 @@ class PostApiIntegrationTest extends ContainerSupport {
                         send(HttpMethod.POST, POSTS, body("Tiêu đề", "BLOG", true), null)
                                 .getStatusCode())
                 .isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    @DisplayName("Gắn bài tập thì lưu slug và tên bài; bài không tồn tại thì báo 404")
+    void linkProblem_storesSnapshot() {
+        UUID problemId = UUID.randomUUID();
+        String body =
+                "{\"category\": \"SOLUTION\", \"title\": \"Lời giải bài lương\", \"bodyMarkdown\":"
+                        + " \"SELECT 1\", \"problemId\": \"%s\", \"tags\": [], \"publish\": true}";
+
+        ResponseEntity<String> created =
+                send(HttpMethod.POST, POSTS, body.formatted(problemId), AUTHOR);
+
+        assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        DocumentContext post = JsonPath.parse(created.getBody());
+        assertThat(post.read("$.problemSlug", String.class)).isEqualTo("second-highest-salary");
+        assertThat(post.read("$.problemTitle", String.class)).isEqualTo("Lương cao thứ hai");
+        UUID missing = UUID.randomUUID();
+        ProblemServiceStub.missing(missing);
+        assertThat(send(HttpMethod.POST, POSTS, body.formatted(missing), AUTHOR).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     private String create(String title, String category, boolean publish) {

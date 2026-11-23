@@ -15,6 +15,8 @@ public record PostDetailResponse(
         String bodyMarkdown,
         List<String> tags,
         UUID problemId,
+        String problemSlug,
+        String problemTitle,
         UUID authorId,
         String authorUsername,
         int voteScore,

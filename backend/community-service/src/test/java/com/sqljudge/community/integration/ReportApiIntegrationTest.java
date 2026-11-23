@@ -44,6 +44,7 @@ class ReportApiIntegrationTest extends ContainerSupport {
     static void services(DynamicPropertyRegistry registry) {
         registry.add("sqljudge.auth-service-url", AuthServiceStub::url);
         registry.add("sqljudge.contest-service-url", ContestServiceStub::url);
+        registry.add("sqljudge.problem-service-url", ProblemServiceStub::url);
     }
 
     @BeforeEach
