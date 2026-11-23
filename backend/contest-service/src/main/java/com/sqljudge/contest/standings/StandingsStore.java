@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class StandingsStore {
 
+    public static final String CHANGED_CHANNEL = "sqljudge:contest:standings-changed";
     private static final Duration RETENTION_AFTER_END = Duration.ofDays(7);
 
     private final StringRedisTemplate redisTemplate;
@@ -47,6 +48,7 @@ public class StandingsStore {
         Instant expiresAt = endAt.plus(RETENTION_AFTER_END);
         redisTemplate.expireAt(standingsKey(contestId), expiresAt);
         redisTemplate.expireAt(cellsKey(contestId), expiresAt);
+        redisTemplate.convertAndSend(CHANGED_CHANNEL, contestId.toString());
     }
 
     public void discardQuietly(UUID contestId) {

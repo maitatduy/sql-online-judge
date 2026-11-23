@@ -21,6 +21,7 @@ sqljudge:
     relay-enabled: false
   contest:
     lifecycle-enabled: false
+    standings-listener-enabled: false
   problem-service-url: http://localhost:1
   auth-service-url: http://localhost:1
   internal:
