@@ -195,11 +195,13 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
                 .exchange()
                 .expectStatus()
                 .isNotFound();
+        webTestClient.get().uri("/api/admin/tags").exchange().expectStatus().isNotFound();
 
         assertThat(PROBLEM_SERVICE.forwardedRequestLines())
                 .containsExactly(
                         "GET /api/admin/problems?status=PENDING_REVIEW&page=1",
-                        "POST /api/admin/problems/0192f3d0-0000-7000-8000-000000000004/approve");
+                        "POST /api/admin/problems/0192f3d0-0000-7000-8000-000000000004/approve",
+                        "GET /api/admin/tags");
         assertThat(AUTH_SERVICE.forwardedRequestLines()).isEmpty();
     }
 

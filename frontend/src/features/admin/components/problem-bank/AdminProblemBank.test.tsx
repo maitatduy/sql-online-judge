@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ToastProvider } from "@/components/shared/ToastProvider";
 import { server } from "@/mocks/server";
 import { ADMIN_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
@@ -16,7 +17,11 @@ vi.mock("next/navigation", async () => ({
 function renderBank(search = "") {
     visit(search ? `/admin/problems?${search}` : "/admin/problems");
     writeMockSession(ADMIN_SESSION_USER);
-    return renderWithProviders(<AdminProblemBank />);
+    return renderWithProviders(
+        <ToastProvider>
+            <AdminProblemBank />
+        </ToastProvider>,
+    );
 }
 
 async function findTable() {

@@ -4,6 +4,7 @@ import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.problem.dto.request.QuickEditProblemRequest;
+import com.sqljudge.problem.entity.Difficulty;
 import com.sqljudge.problem.entity.Problem;
 import com.sqljudge.problem.entity.ProblemStatus;
 import com.sqljudge.problem.entity.Tag;
@@ -31,16 +32,34 @@ public class AdminProblemCommandService {
     @Transactional
     public void quickEdit(UUID problemId, QuickEditProblemRequest request) {
         Problem problem = published(problemId);
-        List<String> slugs = request.tagSlugs().stream().distinct().toList();
+        problem.setTitle(request.title().trim());
+        problem.setDifficulty(request.difficulty());
+        problem.setTags(new HashSet<>(existingTags(request.tagSlugs())));
+        evictAfterCommit(problem);
+        log.info("admin_problem_edited problemId={}", problemId);
+    }
+
+    @Transactional
+    public void addTags(UUID problemId, List<String> tagSlugs) {
+        Problem problem = published(problemId);
+        problem.getTags().addAll(existingTags(tagSlugs));
+        evictAfterCommit(problem);
+    }
+
+    @Transactional
+    public void changeDifficulty(UUID problemId, Difficulty difficulty) {
+        Problem problem = published(problemId);
+        problem.setDifficulty(difficulty);
+        evictAfterCommit(problem);
+    }
+
+    private List<Tag> existingTags(List<String> tagSlugs) {
+        List<String> slugs = tagSlugs.stream().distinct().toList();
         List<Tag> tags = tagRepository.findAllBySlugIn(slugs);
         if (tags.size() != slugs.size()) {
             throw new BusinessRuleException(ErrorCode.TAG_NOT_FOUND, "Có chủ đề không tồn tại");
         }
-        problem.setTitle(request.title().trim());
-        problem.setDifficulty(request.difficulty());
-        problem.setTags(new HashSet<>(tags));
-        evictAfterCommit(problem);
-        log.info("admin_problem_edited problemId={}", problemId);
+        return tags;
     }
 
     @Transactional

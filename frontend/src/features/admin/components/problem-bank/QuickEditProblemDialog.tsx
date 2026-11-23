@@ -79,7 +79,7 @@ export function QuickEditProblemDialog({ problem, onClose }: QuickEditProblemDia
                 <fieldset className="flex flex-col gap-1.5">
                     <legend className="mb-1.5 text-[13px] font-semibold">Chủ đề</legend>
                     <div className="flex flex-wrap gap-x-4 gap-y-2">
-                        {(tags?.items ?? []).map((tag) => (
+                        {(tags ?? []).map((tag) => (
                             <label key={tag.slug} className="flex items-center gap-2 text-sm">
                                 <input
                                     type="checkbox"
