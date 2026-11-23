@@ -14,7 +14,7 @@ import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-import { useContest } from "../hooks/useContests";
+import { useContest, useRatingChanges } from "../hooks/useContests";
 import { useMyStanding, useStandings, useStandingsEvents } from "../hooks/useStandings";
 import { StandingsTable } from "./StandingsTable";
 
@@ -28,6 +28,10 @@ export function ContestStandings({ slug, page }: ContestStandingsProps) {
     const { data: currentUser } = useCurrentUser();
     const { data: standings, error, isPending, refetch } = useStandings(slug, page);
     const { data: mine } = useMyStanding(slug, currentUser !== undefined);
+    const { data: ratingChanges } = useRatingChanges(slug);
+    const ratingDeltas = new Map(
+        (ratingChanges ?? []).map((change) => [change.username, change.delta]),
+    );
     useStandingsEvents(slug);
 
     return (
@@ -81,7 +85,7 @@ export function ContestStandings({ slug, page }: ContestStandingsProps) {
             ) : null}
             {standings && standings.items.length > 0 ? (
                 <>
-                    <StandingsTable standings={standings} />
+                    <StandingsTable standings={standings} ratingDeltas={ratingDeltas} />
                     <Pagination
                         result={standings}
                         hrefOf={(target) => `${ROUTES.contestStandings(slug)}?page=${target}`}

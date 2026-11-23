@@ -89,6 +89,24 @@ describe("sảnh chờ contest", () => {
         expect(problems.getAllByRole("row")).toHaveLength(3);
     });
 
+    it("contest đã kết thúc hiện thay đổi rating của từng người", async () => {
+        renderLobby("sql-cup-1");
+
+        const ratings = within(await screen.findByRole("table", { name: "Thay đổi rating" }));
+        const quang = within(ratings.getByRole("row", { name: /quang.le/ }));
+        expect(quang.getByText("1500 → 1520")).toBeInTheDocument();
+        expect(quang.getByText("Tăng 20")).toBeInTheDocument();
+        const minh = within(ratings.getByRole("row", { name: /minh.anh/ }));
+        expect(minh.getByText("Giảm 12")).toBeInTheDocument();
+    });
+
+    it("contest chưa có thay đổi rating thì không hiện bảng rating", async () => {
+        renderLobby("sql-cup-live");
+
+        await screen.findByRole("heading", { name: "SQL Cup đang thi" });
+        expect(screen.queryByRole("table", { name: "Thay đổi rating" })).toBeNull();
+    });
+
     it("tài khoản bị cấm thi contest tính rating thấy lý do", async () => {
         writeMockSession(DEMO_SESSION_USER);
         server.use(

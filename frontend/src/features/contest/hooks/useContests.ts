@@ -32,6 +32,13 @@ export function useContestProblems(slug: string, isSignedIn: boolean) {
     });
 }
 
+export function useRatingChanges(slug: string) {
+    return useQuery({
+        queryKey: ["contest-rating-changes", slug],
+        queryFn: ({ signal }) => contestApi.ratingChanges(slug, signal),
+    });
+}
+
 export function useContestRegistration(slug: string, isSignedIn: boolean) {
     return useQuery({
         queryKey: [REGISTRATION_KEY, slug],
