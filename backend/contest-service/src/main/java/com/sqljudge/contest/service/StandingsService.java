@@ -8,6 +8,7 @@ import com.sqljudge.contest.dto.response.StandingsResponse.MyStanding;
 import com.sqljudge.contest.dto.response.StandingsResponse.StandingCellResponse;
 import com.sqljudge.contest.dto.response.StandingsResponse.StandingItem;
 import com.sqljudge.contest.entity.Contest;
+import com.sqljudge.contest.entity.ContestCell;
 import com.sqljudge.contest.entity.ContestProblem;
 import com.sqljudge.contest.repository.ContestCellRepository;
 import com.sqljudge.contest.repository.ContestRegistrationRepository;
@@ -88,7 +89,7 @@ public class StandingsService {
                         .toList();
         return new StandingsResponse(
                 contest.getProblems().stream().map(ContestProblem::letter).toList(),
-                !clock.instant().isBefore(contest.scoringRules().freezeAt()),
+                contest.isFrozenAt(clock.instant()),
                 items,
                 page,
                 size,
@@ -129,12 +130,14 @@ public class StandingsService {
         return registrationRepository
                 .findByContestIdAndUserId(contest.getId(), userId)
                 .map(
-                        registration ->
-                                StandingRows.publicRow(
-                                        contest,
-                                        registration,
-                                        cellRepository.findByContestIdAndUserId(
-                                                contest.getId(), userId)))
+                        registration -> {
+                            List<ContestCell> cells =
+                                    cellRepository.findByContestIdAndUserId(
+                                            contest.getId(), userId);
+                            return contest.isFinalized()
+                                    ? StandingRows.actualRow(contest, registration, cells)
+                                    : StandingRows.publicRow(contest, registration, cells);
+                        })
                 .orElse(null);
     }
 

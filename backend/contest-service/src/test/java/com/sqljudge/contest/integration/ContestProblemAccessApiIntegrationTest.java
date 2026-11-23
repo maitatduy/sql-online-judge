@@ -50,6 +50,7 @@ class ContestProblemAccessApiIntegrationTest extends ContainerSupport {
 
     @BeforeEach
     void createContestWithProblems() throws Exception {
+        jdbcTemplate.update("DELETE FROM contest_standings");
         jdbcTemplate.update("DELETE FROM contest_cells");
         jdbcTemplate.update("DELETE FROM contest_attempts");
         jdbcTemplate.update("DELETE FROM contest_registrations");

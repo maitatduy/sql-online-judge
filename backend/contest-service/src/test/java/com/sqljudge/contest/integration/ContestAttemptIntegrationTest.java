@@ -43,6 +43,7 @@ class ContestAttemptIntegrationTest extends ContainerSupport {
 
     @BeforeEach
     void createRunningContest() throws Exception {
+        jdbcTemplate.update("DELETE FROM contest_standings");
         jdbcTemplate.update("DELETE FROM contest_cells");
         jdbcTemplate.update("DELETE FROM contest_attempts");
         jdbcTemplate.update("DELETE FROM contest_registrations");
