@@ -10,6 +10,7 @@ export const ROUTES = {
     problems: "/problems",
     contests: "/contests",
     community: "/community",
+    communityNew: "/community/new",
     leaderboard: "/leaderboard",
     ai: "/ai",
     settings: "/settings",
@@ -33,6 +34,7 @@ export const ROUTES = {
     studioLesson: (courseId: string, lessonId: string) =>
         `/studio/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}`,
     problem: (slug: string) => `/problems/${encodeURIComponent(slug)}`,
+    communityPost: (postId: string) => `/community/${encodeURIComponent(postId)}`,
     course: (slug: string) => `/learn/${encodeURIComponent(slug)}`,
     contest: (slug: string) => `/contests/${encodeURIComponent(slug)}`,
     contestStandings: (slug: string) => `/contests/${encodeURIComponent(slug)}/standings`,
