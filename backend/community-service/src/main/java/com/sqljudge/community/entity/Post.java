@@ -110,6 +110,18 @@ public class Post extends BaseEntity {
         deletedAt = now;
     }
 
+    public void addVotes(int delta) {
+        voteScore += delta;
+    }
+
+    public void commentAdded() {
+        commentCount++;
+    }
+
+    public void commentRemoved() {
+        commentCount = Math.max(0, commentCount - 1);
+    }
+
     public boolean isWrittenBy(UUID userId) {
         return authorId.equals(userId);
     }

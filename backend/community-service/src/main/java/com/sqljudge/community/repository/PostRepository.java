@@ -23,6 +23,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
               AND (:unansweredOnly = FALSE OR p.commentCount = 0)
               AND (:tag IS NULL OR :tag MEMBER OF p.tags)
               AND (:titlePattern IS NULL OR LOWER(p.title) LIKE :titlePattern ESCAPE '!')
+              AND (:savedBy IS NULL OR EXISTS (
+                    SELECT 1 FROM Bookmark b WHERE b.postId = p.id AND b.userId = :savedBy))
             """;
 
     @Query(value = "SELECT p " + LISTED_POSTS, countQuery = "SELECT COUNT(p) " + LISTED_POSTS)
@@ -33,6 +35,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
             @Param("unansweredOnly") boolean unansweredOnly,
             @Param("tag") String tag,
             @Param("titlePattern") String titlePattern,
+            @Param("savedBy") UUID savedBy,
             Pageable pageable);
 
     Optional<Post> findByIdAndDeletedAtIsNull(UUID id);

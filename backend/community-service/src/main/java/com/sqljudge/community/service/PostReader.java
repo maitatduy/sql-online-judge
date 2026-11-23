@@ -5,7 +5,11 @@ import com.sqljudge.common.security.Role;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.community.entity.Post;
 import com.sqljudge.community.entity.PostStatus;
+import com.sqljudge.community.entity.Vote;
+import com.sqljudge.community.entity.VoteTarget;
+import com.sqljudge.community.repository.BookmarkRepository;
 import com.sqljudge.community.repository.PostRepository;
+import com.sqljudge.community.repository.VoteRepository;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostReader {
 
     private final PostRepository postRepository;
+    private final VoteRepository voteRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     @Transactional(readOnly = true)
     public Page<PostSnapshot> listed(PostSearch search, Pageable pageable) {
@@ -30,6 +36,7 @@ public class PostReader {
                         search.tab() == PostTab.UNANSWERED,
                         search.tag(),
                         LikePatterns.containingIgnoreCase(search.keyword()),
+                        savedByOf(search.tab()),
                         pageable)
                 .map(PostSnapshot::of);
     }
@@ -44,6 +51,28 @@ public class PostReader {
         throw PostErrors.notFound();
     }
 
+    @Transactional(readOnly = true)
+    public ViewerState viewerState(UUID postId) {
+        return SecurityUtils.currentUserId()
+                .map(
+                        userId ->
+                                new ViewerState(
+                                        voteRepository
+                                                .findByTargetTypeAndTargetIdAndUserId(
+                                                        VoteTarget.POST, postId, userId)
+                                                .map(Vote::getValue)
+                                                .orElse(0),
+                                        bookmarkRepository.existsByUserIdAndPostId(userId, postId)))
+                .orElse(new ViewerState(0, false));
+    }
+
+    private static UUID savedByOf(PostTab tab) {
+        if (tab != PostTab.SAVED) {
+            return null;
+        }
+        return SecurityUtils.currentUserId().orElseGet(UUID::randomUUID);
+    }
+
     private static boolean canSeeUnlisted(Post post) {
         Optional<CurrentUser> viewer = SecurityUtils.currentUser();
         if (viewer.isEmpty()) {
@@ -55,4 +84,6 @@ public class PostReader {
         return post.getStatus() == PostStatus.HIDDEN
                 && (viewer.get().hasRole(Role.MODERATOR) || viewer.get().hasRole(Role.ADMIN));
     }
+
+    public record ViewerState(int myVote, boolean isBookmarked) {}
 }
