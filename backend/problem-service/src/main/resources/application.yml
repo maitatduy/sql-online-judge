@@ -13,6 +13,15 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+      client:
+        config:
+          auth-service:
+            connect-timeout: 1000
+            read-timeout: 3000
   flyway:
     locations: classpath:db/migration
   data:
@@ -63,6 +72,7 @@ sqljudge:
     batch-size: 100
     send-timeout: 10s
     claim-timeout: 60s
+  auth-service-url: ${AUTH_SERVICE_URL}
   internal:
     api-token: ${INTERNAL_API_TOKEN}
   judge:

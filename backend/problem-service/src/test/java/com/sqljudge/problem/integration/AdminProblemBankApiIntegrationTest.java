@@ -31,6 +31,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -53,8 +55,15 @@ class AdminProblemBankApiIntegrationTest extends ContainerSupport {
 
     @Autowired private JdbcTemplate jdbcTemplate;
 
+    @DynamicPropertySource
+    static void authService(DynamicPropertyRegistry registry) {
+        registry.add("sqljudge.auth-service-url", AuthServiceStub::url);
+    }
+
     @BeforeEach
     void seedProblems() {
+        AuthServiceStub.reset();
+        AuthServiceStub.user(AUTHOR_ID, "quang.le");
         Tag join = tag("join", "JOIN");
         Tag cte = tag("cte", "CTE");
         Problem neverOrdered =
@@ -113,6 +122,29 @@ class AdminProblemBankApiIntegrationTest extends ContainerSupport {
         assertThat(page.read("$.items[3].submissionCount", Integer.class)).isZero();
         assertThat(page.read("$.items[3].acceptanceRate", Double.class)).isZero();
         assertThat(page.read("$.totalItems", Integer.class)).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("Mỗi bài kèm username người ra đề lấy từ auth-service")
+    void bank_includesAuthorUsername() {
+        DocumentContext page = JsonPath.parse(get(BANK, ADMIN).getBody());
+
+        assertThat(page.read("$.items[*].authorUsername", List.class))
+                .containsOnly("quang.le")
+                .hasSize(4);
+    }
+
+    @Test
+    @DisplayName("auth-service lỗi thì vẫn trả danh sách, chỉ để trống username người ra đề")
+    void bank_authServiceDown_leavesAuthorUsernameEmpty() {
+        AuthServiceStub.failWith(503);
+
+        ResponseEntity<String> response = get(BANK, ADMIN);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        DocumentContext page = JsonPath.parse(response.getBody());
+        assertThat(page.read("$.items[0].authorId", String.class)).isEqualTo(AUTHOR_ID.toString());
+        assertThat(page.read("$.items[0].authorUsername", String.class)).isNull();
     }
 
     @Test

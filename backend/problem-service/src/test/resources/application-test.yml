@@ -21,5 +21,6 @@ spring:
 sqljudge:
   outbox:
     relay-enabled: false
+  auth-service-url: http://localhost:1
   internal:
     api-token: test-internal-token

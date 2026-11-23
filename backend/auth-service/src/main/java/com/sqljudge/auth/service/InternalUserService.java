@@ -1,5 +1,6 @@
 package com.sqljudge.auth.service;
 
+import com.sqljudge.auth.dto.response.InternalUserNameResponse;
 import com.sqljudge.auth.dto.response.InternalUserResponse;
 import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.entity.UserRestriction;
@@ -7,6 +8,7 @@ import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserRestrictionRepository;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.NotFoundException;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,5 +39,16 @@ public class InternalUserService {
                         .orElse(false);
         return new InternalUserResponse(
                 user.getId(), user.getUsername(), user.getDisplayName(), isBannedFromRatedContests);
+    }
+
+    @Transactional(readOnly = true)
+    public List<InternalUserNameResponse> findNames(List<UUID> userIds) {
+        return userRepository.findAllById(userIds).stream()
+                .filter(user -> !user.isDeleted())
+                .map(
+                        user ->
+                                new InternalUserNameResponse(
+                                        user.getId(), user.getUsername(), user.getDisplayName()))
+                .toList();
     }
 }

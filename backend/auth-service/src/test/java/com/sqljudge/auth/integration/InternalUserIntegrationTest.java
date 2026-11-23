@@ -9,13 +9,16 @@ import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserRestrictionRepository;
 import com.sqljudge.common.security.Role;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -79,6 +82,59 @@ class InternalUserIntegrationTest extends ContainerSupport {
                 .isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(restTemplate.getForEntity("/internal/jwks", String.class).getStatusCode())
                 .isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    @DisplayName("Tra tên nhiều người dùng một lần, bỏ qua người không tồn tại hoặc đã xoá")
+    void internalUsers_byIds_returnsNamesOfActiveUsers() {
+        User first = saveUser("noibo.nguoira1");
+        User second = saveUser("noibo.nguoira2");
+        User deleted = saveUser("noibo.nguoixoa");
+        deleted.setDeletedAt(Instant.now());
+        userRepository.save(deleted);
+        String ids =
+                String.join(",", first.getId() + "", second.getId() + "", deleted.getId() + "");
+
+        ResponseEntity<List<Map<String, Object>>> response =
+                internalGetList("/internal/users?ids=" + ids + "," + UUID.randomUUID());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody())
+                .extracting(user -> user.get("username"))
+                .containsExactlyInAnyOrder("noibo.nguoira1", "noibo.nguoira2");
+        assertThat(response.getBody().get(0)).doesNotContainKey("email");
+    }
+
+    @Test
+    @DisplayName("Tra quá 100 người dùng một lần trả 400")
+    void internalUsers_tooManyIds_isRejected() {
+        String ids =
+                String.join(
+                        ",",
+                        Stream.generate(() -> UUID.randomUUID().toString()).limit(101).toList());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Internal-Token", INTERNAL_TOKEN);
+
+        assertThat(
+                        restTemplate
+                                .exchange(
+                                        "/internal/users?ids=" + ids,
+                                        HttpMethod.GET,
+                                        new HttpEntity<>(headers),
+                                        String.class)
+                                .getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    private ResponseEntity<List<Map<String, Object>>> internalGetList(String path) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Internal-Token", INTERNAL_TOKEN);
+        return restTemplate.exchange(
+                path,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                new ParameterizedTypeReference<List<Map<String, Object>>>() {});
     }
 
     private ResponseEntity<Map> internalGet(UUID userId, String token) {

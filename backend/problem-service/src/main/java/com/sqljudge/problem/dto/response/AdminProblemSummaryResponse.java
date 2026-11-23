@@ -18,13 +18,15 @@ public record AdminProblemSummaryResponse(
         ProblemVisibility visibility,
         Difficulty difficulty,
         UUID authorId,
+        String authorUsername,
         Instant updatedAt,
         List<TagResponse> tags,
         long submissionCount,
         long acceptedCount,
         double acceptanceRate) {
 
-    public static AdminProblemSummaryResponse from(AdminProblemRow row, List<TagResponse> tags) {
+    public static AdminProblemSummaryResponse from(
+            AdminProblemRow row, List<TagResponse> tags, String authorUsername) {
         long submissions = row.submissionCount() == null ? 0 : row.submissionCount();
         long accepted = row.acceptedCount() == null ? 0 : row.acceptedCount();
         return new AdminProblemSummaryResponse(
@@ -36,6 +38,7 @@ public record AdminProblemSummaryResponse(
                 row.visibility(),
                 row.difficulty(),
                 row.authorId(),
+                authorUsername,
                 row.updatedAt(),
                 tags,
                 submissions,
