@@ -29,7 +29,7 @@ describe("bảng xếp hạng contest", () => {
             third.getByRole("cell", { name: "A: sai 2 lần, 1 lượt đang chờ" }),
         ).toBeInTheDocument();
         expect(screen.getByText("Đóng băng")).toBeInTheDocument();
-        expect(screen.getByRole("link", { name: "SQL Cup đang thi" })).toHaveAttribute(
+        expect(await screen.findByRole("link", { name: "SQL Cup đang thi" })).toHaveAttribute(
             "href",
             "/contests/sql-cup-live",
         );
