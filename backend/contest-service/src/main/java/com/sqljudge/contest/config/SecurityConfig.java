@@ -57,7 +57,8 @@ public class SecurityConfig {
                                                 HttpMethod.GET,
                                                 "/api/contests",
                                                 "/api/contests/*",
-                                                "/api/contests/*/standings")
+                                                "/api/contests/*/standings",
+                                                "/api/contests/*/standings/events")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

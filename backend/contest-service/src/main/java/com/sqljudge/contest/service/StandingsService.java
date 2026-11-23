@@ -62,6 +62,11 @@ public class StandingsService {
     }
 
     @Transactional(readOnly = true)
+    public UUID contestIdOf(String slug) {
+        return contestBySlug(slug).getId();
+    }
+
+    @Transactional(readOnly = true)
     public StandingsResponse standings(String slug, int page, int size) {
         Contest contest = contestBySlug(slug);
         if (standingsStore.size(contest.getId()) == 0) {
