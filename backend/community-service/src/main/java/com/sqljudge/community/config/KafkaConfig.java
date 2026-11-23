@@ -48,6 +48,16 @@ public class KafkaConfig {
         return topic(CommunityTopics.COMMENTED);
     }
 
+    @Bean
+    NewTopic reportResolvedTopic() {
+        return topic(CommunityTopics.REPORT_RESOLVED);
+    }
+
+    @Bean
+    NewTopic contestFinishedDeadLetterTopic() {
+        return topic(CommunityTopics.CONTEST_FINISHED + CommunityTopics.DEAD_LETTER_SUFFIX);
+    }
+
     private static NewTopic topic(String name) {
         return TopicBuilder.name(name).partitions(PARTITIONS).replicas(REPLICAS).build();
     }

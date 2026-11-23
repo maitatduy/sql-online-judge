@@ -12,6 +12,7 @@ import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.community.dto.request.WriteCommentRequest;
 import com.sqljudge.community.entity.Comment;
 import com.sqljudge.community.entity.Comment.CommentThread;
+import com.sqljudge.community.entity.HiddenReason;
 import com.sqljudge.community.entity.Post;
 import com.sqljudge.community.event.CommentedEvent;
 import com.sqljudge.community.event.CommunityTopics;
@@ -37,7 +38,7 @@ public class CommentWriter {
     private final Clock clock;
 
     @Transactional
-    public UUID write(WriteCommentRequest request) {
+    public UUID write(WriteCommentRequest request, boolean contestLocked) {
         CommentThread thread = new CommentThread(request.postId(), request.problemId());
         if (!thread.isValid()) {
             throw invalidTarget("Bình luận phải gắn với một bài viết hoặc một bài tập");
@@ -55,6 +56,9 @@ public class CommentWriter {
         Comment comment =
                 commentRepository.save(
                         Comment.write(thread, request.parentId(), authorId, request.body().trim()));
+        if (contestLocked) {
+            comment.hide(HiddenReason.CONTEST);
+        }
         if (post != null) {
             post.commentAdded();
         }
