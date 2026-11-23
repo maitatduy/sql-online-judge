@@ -1,4 +1,9 @@
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 1
+      password: ""
   kafka:
     bootstrap-servers: localhost:1
     listener:
@@ -20,3 +25,8 @@ sqljudge:
   auth-service-url: http://localhost:1
   internal:
     api-token: test-internal-token
+
+management:
+  health:
+    redis:
+      enabled: false
