@@ -11,11 +11,13 @@ import org.springframework.stereotype.Component;
 class ContestLifecycleScheduler {
 
     private final ContestLifecycleService lifecycleService;
+    private final ContestStatementWarmer statementWarmer;
     private final ContestFinalizer contestFinalizer;
     private final ContestRatingService contestRatingService;
 
     @Scheduled(fixedDelayString = "${sqljudge.contest.lifecycle-interval}")
     void announceDue() {
+        statementWarmer.warmDue();
         lifecycleService.announceDue();
         contestFinalizer.finalizeDue();
         contestRatingService.applyDue();

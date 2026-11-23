@@ -32,6 +32,12 @@ public interface ContestRepository extends JpaRepository<Contest, UUID> {
                     + " OR (c.finishedAnnouncedAt IS NULL AND c.endAt <= :now) ORDER BY c.startAt")
     List<Contest> findDueForAnnouncement(Instant now);
 
+    @Query(
+            "SELECT new com.sqljudge.contest.repository.StatementWarmupTarget(c.id, p.problemId)"
+                    + " FROM Contest c JOIN c.problems p WHERE c.statementsWarmedAt IS NULL"
+                    + " AND c.startAt <= :cutoff AND c.endAt > :now ORDER BY c.startAt, p.position")
+    List<StatementWarmupTarget> findDueForStatementWarmup(Instant now, Instant cutoff);
+
     @Query("SELECT c FROM Contest c WHERE c.finalizedAt IS NULL AND c.endAt <= :cutoff")
     List<Contest> findDueForFinalization(Instant cutoff);
 
