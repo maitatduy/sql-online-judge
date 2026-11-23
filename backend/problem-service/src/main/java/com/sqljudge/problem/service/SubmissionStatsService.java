@@ -33,7 +33,7 @@ public class SubmissionStatsService {
         }
         processedEventRepository.saveAndFlush(
                 new ProcessedEvent(event.eventId(), ProblemTopics.SUBMISSION_JUDGED));
-        if (event.isSystemError()) {
+        if (event.isSystemError() || event.isRejudge()) {
             return;
         }
         if (!problemRepository.existsById(event.problemId())) {

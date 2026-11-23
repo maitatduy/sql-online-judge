@@ -23,5 +23,6 @@ sqljudge:
     relay-enabled: false
   auth-service-url: http://localhost:1
   contest-service-url: http://localhost:1
+  submission-service-url: http://localhost:1
   internal:
     api-token: test-internal-token

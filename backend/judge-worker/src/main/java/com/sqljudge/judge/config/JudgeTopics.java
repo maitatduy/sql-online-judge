@@ -7,6 +7,7 @@ public final class JudgeTopics {
     public static final String ANSWER_CHECK_REQUESTED = "sqljudge.studio.answer-check-requested";
     public static final String ANSWER_TESTCASE_CHECKED = "sqljudge.studio.answer-testcase-checked";
     public static final String SUBMISSION_CREATED = "sqljudge.submission.created";
+    public static final String REJUDGE_REQUESTED = "sqljudge.submission.rejudge-requested";
     public static final String JUDGE_PROGRESS = "sqljudge.judge.progress";
     public static final String JUDGE_COMPLETED = "sqljudge.judge.completed";
     public static final String RUN_REQUESTED = "sqljudge.run.requested";

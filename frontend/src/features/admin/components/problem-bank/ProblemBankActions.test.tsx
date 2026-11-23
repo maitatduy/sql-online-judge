@@ -93,4 +93,15 @@ describe("thao tác trên từng bài trong kho", () => {
             await dialog.findByText("Người nhận phải là người ra đề đang hoạt động"),
         ).toBeInTheDocument();
     });
+
+    it("chấm lại một bài thì báo số bài nộp được đưa vào hàng đợi", async () => {
+        await renderBank();
+
+        fireEvent.click(screen.getByRole("button", { name: "Chấm lại bài 41" }));
+        fireEvent.click(
+            within(await screen.findByRole("dialog")).getByRole("button", { name: "Chấm lại" }),
+        );
+
+        expect(await screen.findByText("Đang chấm lại 21.385 bài nộp.")).toBeInTheDocument();
+    });
 });

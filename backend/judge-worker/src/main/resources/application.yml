@@ -56,6 +56,7 @@ management:
 sqljudge:
   judge:
     consumer-concurrency: 2
+    rejudge-concurrency: 1
     publish-timeout: 10s
   problem-service-url: ${PROBLEM_SERVICE_URL}
   internal:

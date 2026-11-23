@@ -35,6 +35,9 @@ export function ProblemBankBulkBar({ selectedIds, onClear }: ProblemBankBulkBarP
             >
                 Đổi độ khó
             </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => setAction("rejudge")}>
+                Chấm lại
+            </Button>
             <Button
                 type="button"
                 size="sm"

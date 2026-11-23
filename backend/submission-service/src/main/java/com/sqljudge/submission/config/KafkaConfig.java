@@ -49,6 +49,16 @@ public class KafkaConfig {
     }
 
     @Bean
+    NewTopic rejudgeRequestedTopic() {
+        return topic(SubmissionTopics.REJUDGE_REQUESTED);
+    }
+
+    @Bean
+    NewTopic rejudgeFinishedTopic() {
+        return topic(SubmissionTopics.REJUDGE_FINISHED);
+    }
+
+    @Bean
     NewTopic judgeProgressDeadLetterTopic() {
         return topic(SubmissionTopics.JUDGE_PROGRESS + SubmissionTopics.DEAD_LETTER_SUFFIX);
     }

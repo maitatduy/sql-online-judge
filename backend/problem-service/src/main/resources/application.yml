@@ -19,6 +19,9 @@ spring:
         enabled: true
       client:
         config:
+          submission-service:
+            connect-timeout: 1000
+            read-timeout: 3000
           contest-service:
             connect-timeout: 1000
             read-timeout: 3000
@@ -77,6 +80,7 @@ sqljudge:
     claim-timeout: 60s
   auth-service-url: ${AUTH_SERVICE_URL}
   contest-service-url: ${CONTEST_SERVICE_URL}
+  submission-service-url: ${SUBMISSION_SERVICE_URL}
   internal:
     api-token: ${INTERNAL_API_TOKEN}
   judge:

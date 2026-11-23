@@ -30,6 +30,7 @@ public class JudgeResultService {
     private final OutboxWriter outboxWriter;
     private final Clock clock;
     private final ApplicationEventPublisher eventPublisher;
+    private final RejudgeWriter rejudgeWriter;
 
     @Transactional
     public void recordProgress(UUID submissionId, int attempt, int judgedTestcases) {
@@ -66,11 +67,15 @@ public class JudgeResultService {
         }
         if (outcome == JudgeOutcome.COMPLETED) {
             logCompleted(submission);
-            queueJudgedEvent(submission);
+            UUID rejudgeBatchId = submission.finishRejudge();
+            queueJudgedEvent(submission, rejudgeBatchId != null);
+            if (rejudgeBatchId != null) {
+                rejudgeWriter.countDown(rejudgeBatchId);
+            }
         }
     }
 
-    private void queueJudgedEvent(Submission submission) {
+    private void queueJudgedEvent(Submission submission, boolean isRejudge) {
         outboxWriter.append(
                 SubmissionTopics.SUBMISSION_JUDGED,
                 submission.getId().toString(),
@@ -84,7 +89,8 @@ public class JudgeResultService {
                         submission.getContestId(),
                         submission.getVerdict(),
                         submission.getCreatedAt(),
-                        submission.getJudgedAt()));
+                        submission.getJudgedAt(),
+                        isRejudge));
     }
 
     private static void logCompleted(Submission submission) {

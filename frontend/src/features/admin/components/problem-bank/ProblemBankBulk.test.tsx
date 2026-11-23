@@ -61,4 +61,17 @@ describe("thao tác hàng loạt trong kho", () => {
 
         expect(await screen.findByText("Đã cập nhật 1 bài, 1 bài lỗi.")).toBeInTheDocument();
     });
+
+    it("chấm lại hàng loạt báo số bài đã đưa vào hàng đợi", async () => {
+        await renderBank();
+
+        fireEvent.click(screen.getByRole("checkbox", { name: "Chọn bài 41" }));
+        fireEvent.click(screen.getByRole("checkbox", { name: "Chọn bài 18" }));
+        fireEvent.click(screen.getByRole("button", { name: "Chấm lại" }));
+        fireEvent.click(
+            within(await screen.findByRole("dialog")).getByRole("button", { name: "Chấm lại" }),
+        );
+
+        expect(await screen.findByText("Đã cập nhật 2 bài.")).toBeInTheDocument();
+    });
 });

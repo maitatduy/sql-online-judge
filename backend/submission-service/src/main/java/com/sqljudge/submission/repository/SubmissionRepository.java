@@ -3,6 +3,8 @@ package com.sqljudge.submission.repository;
 import com.sqljudge.submission.dto.response.RecentSubmissionResponse;
 import com.sqljudge.submission.dto.response.SubmissionSummaryResponse;
 import com.sqljudge.submission.entity.Submission;
+import com.sqljudge.submission.entity.SubmissionStatus;
+import com.sqljudge.submission.entity.Verdict;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +15,40 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
+
+    String JUDGED_OF_PROBLEM =
+            " FROM Submission s WHERE s.problemId = :problemId AND s.status = :completed"
+                    + " AND s.verdict <> :systemError AND s.deletedAt IS NULL";
+
+    @Query(
+            "SELECT s FROM Submission s WHERE s.problemId = :problemId AND s.contestId IS NULL"
+                    + " AND s.status = :completed AND s.deletedAt IS NULL")
+    List<Submission> findPracticeToRejudge(
+            @Param("problemId") UUID problemId, @Param("completed") SubmissionStatus completed);
+
+    @Query("SELECT COUNT(s)" + JUDGED_OF_PROBLEM)
+    long countJudged(
+            @Param("problemId") UUID problemId,
+            @Param("completed") SubmissionStatus completed,
+            @Param("systemError") Verdict systemError);
+
+    @Query("SELECT COUNT(s)" + JUDGED_OF_PROBLEM + " AND s.verdict = :accepted")
+    long countAccepted(
+            @Param("problemId") UUID problemId,
+            @Param("completed") SubmissionStatus completed,
+            @Param("systemError") Verdict systemError,
+            @Param("accepted") Verdict accepted);
+
+    @Query(
+            "SELECT new com.sqljudge.submission.repository.UserJudgingRow(s.userId,"
+                    + " MIN(CASE WHEN s.verdict = :accepted THEN s.judgedAt ELSE NULL END))"
+                    + JUDGED_OF_PROBLEM
+                    + " GROUP BY s.userId")
+    List<UserJudgingRow> findUserJudgings(
+            @Param("problemId") UUID problemId,
+            @Param("completed") SubmissionStatus completed,
+            @Param("systemError") Verdict systemError,
+            @Param("accepted") Verdict accepted);
 
     Optional<Submission> findByUserIdAndIdempotencyKey(UUID userId, String idempotencyKey);
 

@@ -60,6 +60,13 @@ public class SubmissionCreatedConsumer {
                 event.code().length());
     }
 
+    @KafkaListener(
+            topics = JudgeTopics.REJUDGE_REQUESTED,
+            concurrency = "${sqljudge.judge.rejudge-concurrency}")
+    public void onRejudgeRequested(String payload) throws JsonProcessingException {
+        onSubmissionCreated(payload);
+    }
+
     private SubmissionJudgement judge(SubmissionCreatedEvent event) {
         JudgePackage judgePackage;
         try {
