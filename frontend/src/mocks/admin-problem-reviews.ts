@@ -4,7 +4,6 @@ import type {
     ProblemVisibility,
     ReviewDecision,
     ReviewProblemStatus,
-    ReviewProblemSummary,
 } from "@/features/admin/problem-reviews/types";
 
 import { validationFailed } from "./admin-user-errors";
@@ -15,8 +14,6 @@ import {
     toStudioProblemDetail,
     writeStudioProblems,
 } from "./studio-problems";
-
-const DEFAULT_PAGE_SIZE = 20;
 
 interface Decision {
     decision: ReviewDecision;
@@ -35,20 +32,6 @@ const DECISIONS: Record<string, Decision> = {
     reject: { decision: "REJECTED", status: "REJECTED" },
 };
 
-function toSummary(problem: StoredProblem): ReviewProblemSummary {
-    return {
-        id: problem.id,
-        number: problem.number,
-        slug: problem.slug,
-        title: problem.title,
-        status: problem.status,
-        visibility: problem.status === "PUBLISHED" ? (problem.visibility ?? "PUBLIC") : null,
-        difficulty: problem.difficulty,
-        authorId: problem.authorId,
-        updatedAt: problem.updatedAt,
-    };
-}
-
 function nextNumber(problems: StoredProblem[]): number {
     return Math.max(0, ...problems.map((problem) => problem.number ?? 0)) + 1;
 }
@@ -59,26 +42,6 @@ async function reasonOf(request: Request): Promise<string> {
 }
 
 export const adminProblemReviewHandlers: RequestHandler[] = [
-    http.get("*/api/admin/problems", async ({ request }) => {
-        await delay();
-        const params = new URL(request.url).searchParams;
-        const status = params.get("status") ?? "PENDING_REVIEW";
-        const visibility = params.get("visibility");
-        const page = Number(params.get("page") ?? 1);
-        const size = Number(params.get("size") ?? DEFAULT_PAGE_SIZE);
-        const matching = readStudioProblems()
-            .filter((problem) => !problem.deletedAt && problem.status === status)
-            .filter((problem) => !visibility || toSummary(problem).visibility === visibility)
-            .sort((first, second) => first.updatedAt.localeCompare(second.updatedAt));
-        return HttpResponse.json({
-            items: matching.slice((page - 1) * size, page * size).map(toSummary),
-            page,
-            size,
-            totalItems: matching.length,
-            totalPages: Math.ceil(matching.length / size),
-        });
-    }),
-
     http.post("*/api/admin/problems/:problemId/:action", async ({ params, request }) => {
         await delay();
         const outcome = DECISIONS[String(params.action)];

@@ -36,6 +36,7 @@ Trong component chỉ dùng class token (`bg-brand`, `text-verdict-wa`) hoặc `
 | Khối thay đổi | `diff-surface`, `diff-border`, `diff-removed`, `diff-added` | Khối so sánh giá trị cũ và mới dạng code: nền, viền, dòng bị bỏ, dòng thêm vào. Luôn tối ở cả nền sáng lẫn nền tối; nền mỗi dòng dùng độ mờ `/12` của token dòng đó |
 | Khối contest | `contest-hero`, `contest-hero-panel`, `contest-hero-line`, `contest-hero-text`, `contest-hero-muted`, `contest-hero-accent`, `contest-live` | **Chỉ** khối tối nổi bật của contest (danh sách và sảnh chờ): nền, ô đồng hồ, viền, chữ chính, chữ phụ, nhãn sắp diễn ra, chấm và nhãn đang diễn ra. Nền xanh nhạt ở nền sáng, tối ở nền tối |
 | Trạng thái tài khoản | `account-active`, `account-banned`, `account-unverified` | **Chỉ** trạng thái của tài khoản người dùng: hoạt động, bị khoá, chưa xác minh email |
+| Phạm vi hiển thị của bài | `visibility-public`, `visibility-contest`, `visibility-hidden` | **Chỉ** nhãn phạm vi hiển thị của bài đã xuất bản trong Admin Console: công khai, chỉ trong contest, đang ẩn. Chữ dùng token, nền dùng độ mờ `/12` của chính token |
 | Vi phạm của tài khoản | `violation-severe`, `violation-minor` | **Chỉ** lịch sử vi phạm của một tài khoản: chấm mức nghiêm trọng, mức nhẹ; ô đếm vi phạm dùng `violation-severe` |
 | Trạng thái xử lý vi phạm | `case-open`, `case-resolved` | **Chỉ** nhãn trạng thái xử lý của một vi phạm hoặc báo cáo: chờ xử lý, đã xử lý |
 | Nền avatar | `avatar-1` … `avatar-8` | Nền avatar chữ cái, chọn theo username, chữ trắng. Giống nhau ở nền sáng và nền tối |
