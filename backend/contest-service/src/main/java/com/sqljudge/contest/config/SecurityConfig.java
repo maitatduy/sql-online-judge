@@ -54,7 +54,10 @@ public class SecurityConfig {
                                         .requestMatchers(PUBLIC_PATHS)
                                         .permitAll()
                                         .requestMatchers(
-                                                HttpMethod.GET, "/api/contests", "/api/contests/*")
+                                                HttpMethod.GET,
+                                                "/api/contests",
+                                                "/api/contests/*",
+                                                "/api/contests/*/standings")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

@@ -27,6 +27,7 @@ public class ContestAttemptService {
     private final ContestRepository contestRepository;
     private final ContestAttemptRepository attemptRepository;
     private final ContestCellRepository cellRepository;
+    private final StandingsService standingsService;
 
     @Transactional
     public void record(SubmissionJudgedEvent event) {
@@ -50,6 +51,7 @@ public class ContestAttemptService {
                         event.submissionId(),
                         new Attempt(event.submittedAt(), JudgeVerdict.valueOf(event.verdict()))));
         rescore(key, contest.scoringRules());
+        standingsService.refreshAfterCommit(contest, event.userId());
     }
 
     private void rescore(ContestCellKey key, ScoringRules rules) {
