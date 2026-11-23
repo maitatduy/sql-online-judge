@@ -1,0 +1,83 @@
+import type { Page } from "@/lib/pagination";
+
+export type PostCategory = "QUESTION" | "SOLUTION" | "INTERVIEW" | "BLOG" | "FEEDBACK";
+export type PostTab = "HOT" | "NEW" | "UNANSWERED" | "SAVED";
+export type CommentSort = "TOP" | "NEW";
+export type ReportReason = "SPAM" | "OFFENSIVE" | "CONTEST_SPOILER" | "PLAGIARISM" | "OTHER";
+export type ReportTarget = "POST" | "COMMENT" | "USER";
+export type VoteTarget = "POST" | "COMMENT";
+
+export interface PostSummary {
+    id: string;
+    category: PostCategory;
+    title: string;
+    excerpt: string;
+    tags: string[];
+    problemId: string | null;
+    authorId: string;
+    authorUsername: string | null;
+    voteScore: number;
+    commentCount: number;
+    isPinned: boolean;
+    publishedAt: string;
+}
+
+export type PostPage = Page<PostSummary>;
+
+export interface PostDetail {
+    id: string;
+    category: PostCategory;
+    status: "DRAFT" | "PUBLISHED" | "HIDDEN";
+    title: string;
+    bodyMarkdown: string;
+    tags: string[];
+    problemId: string | null;
+    authorId: string;
+    authorUsername: string | null;
+    voteScore: number;
+    commentCount: number;
+    viewCount: number;
+    isPinned: boolean;
+    publishedAt: string | null;
+    updatedAt: string;
+    myVote: number;
+    isBookmarked: boolean;
+}
+
+export interface CommunityOverview {
+    totalPosts: number;
+    categoryCounts: Partial<Record<PostCategory, number>>;
+}
+
+export interface Contributor {
+    userId: string;
+    username: string | null;
+    points: number;
+}
+
+export interface CommentItem {
+    id: string;
+    postId: string | null;
+    problemId: string | null;
+    parentId: string | null;
+    authorId: string;
+    authorUsername: string | null;
+    body: string;
+    voteScore: number;
+    myVote: number;
+    createdAt: string;
+    updatedAt: string;
+    replies: CommentItem[];
+}
+
+export type CommentPage = Page<CommentItem>;
+
+export interface CommentThread {
+    postId?: string;
+    problemId?: string;
+}
+
+export interface VoteResult {
+    voteScore: number;
+    myVote: number;
+}

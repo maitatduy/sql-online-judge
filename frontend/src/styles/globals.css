@@ -90,6 +90,11 @@
     --visibility-public: #15803d;
     --visibility-contest: #1d4ed8;
     --visibility-hidden: #475569;
+    --post-question: #1d4ed8;
+    --post-solution: #15803d;
+    --post-interview: #c2410c;
+    --post-blog: #6d28d9;
+    --post-feedback: #475569;
 
     --avatar-1: #b45309;
     --avatar-2: #0f766e;
@@ -194,6 +199,11 @@
     --visibility-public: #4ade80;
     --visibility-contest: #60a5fa;
     --visibility-hidden: #94a3b8;
+    --post-question: #60a5fa;
+    --post-solution: #4ade80;
+    --post-interview: #fb923c;
+    --post-blog: #a78bfa;
+    --post-feedback: #94a3b8;
 
     --avatar-1: #b45309;
     --avatar-2: #0f766e;
@@ -325,6 +335,11 @@
     --color-visibility-public: var(--visibility-public);
     --color-visibility-contest: var(--visibility-contest);
     --color-visibility-hidden: var(--visibility-hidden);
+    --color-post-question: var(--post-question);
+    --color-post-solution: var(--post-solution);
+    --color-post-interview: var(--post-interview);
+    --color-post-blog: var(--post-blog);
+    --color-post-feedback: var(--post-feedback);
 
     --color-avatar-1: var(--avatar-1);
     --color-avatar-2: var(--avatar-2);
