@@ -106,6 +106,39 @@ class InternalUserIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Tra theo username trả vai trò và trạng thái hoạt động, đã xoá thì 404")
+    void internalUserByUsername_returnsRoleAndActivity() {
+        User setter = saveUser("noibo.setter");
+        setter.setRole(Role.SETTER);
+        userRepository.save(setter);
+        User banned = saveUser("noibo.bikhoa");
+        banned.ban(Instant.now(), null, "Spam");
+        userRepository.save(banned);
+        User deleted = saveUser("noibo.xoaroi");
+        deleted.setDeletedAt(Instant.now());
+        userRepository.save(deleted);
+
+        ResponseEntity<Map> setterResponse =
+                internalGetPath("/internal/users/by-username/noibo.setter");
+        ResponseEntity<Map> bannedResponse =
+                internalGetPath("/internal/users/by-username/noibo.bikhoa");
+
+        assertThat(setterResponse.getBody())
+                .containsEntry("userId", setter.getId().toString())
+                .containsEntry("role", "SETTER")
+                .containsEntry("isActive", true);
+        assertThat(bannedResponse.getBody()).containsEntry("isActive", false);
+        assertThat(internalGetPath("/internal/users/by-username/noibo.xoaroi").getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<Map> internalGetPath(String path) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Internal-Token", INTERNAL_TOKEN);
+        return restTemplate.exchange(path, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
+    }
+
+    @Test
     @DisplayName("Tra quá 100 người dùng một lần trả 400")
     void internalUsers_tooManyIds_isRejected() {
         String ids =

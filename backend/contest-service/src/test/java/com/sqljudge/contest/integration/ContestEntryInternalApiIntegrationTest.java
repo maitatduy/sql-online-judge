@@ -130,6 +130,30 @@ class ContestEntryInternalApiIntegrationTest extends ContainerSupport {
                 .isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
+    @Test
+    @DisplayName("Bài thuộc contest chưa kết thúc thì báo đang dùng, kết thúc rồi thì không")
+    void problemUsage_reportsUnfinishedContestsOnly() throws Exception {
+        assertThat(isInUnfinishedContest(PROBLEM_ID)).isTrue();
+        assertThat(isInUnfinishedContest(UUID.randomUUID())).isFalse();
+
+        moveStartToPast(Duration.ofDays(1));
+
+        assertThat(isInUnfinishedContest(PROBLEM_ID)).isFalse();
+    }
+
+    private boolean isInUnfinishedContest(UUID problemId) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Internal-Token", INTERNAL_TOKEN);
+        ResponseEntity<String> response =
+                restTemplate.exchange(
+                        "/internal/contests/problem-usage/" + problemId,
+                        HttpMethod.GET,
+                        new HttpEntity<>(headers),
+                        String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        return objectMapper.readTree(response.getBody()).get("isInUnfinishedContest").asBoolean();
+    }
+
     private ResponseEntity<String> entry(String letter, UUID userId, String token) {
         HttpHeaders headers = new HttpHeaders();
         if (token != null) {

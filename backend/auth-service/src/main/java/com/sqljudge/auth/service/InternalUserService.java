@@ -1,5 +1,6 @@
 package com.sqljudge.auth.service;
 
+import com.sqljudge.auth.dto.response.InternalUserAccountResponse;
 import com.sqljudge.auth.dto.response.InternalUserNameResponse;
 import com.sqljudge.auth.dto.response.InternalUserResponse;
 import com.sqljudge.auth.entity.User;
@@ -8,6 +9,7 @@ import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserRestrictionRepository;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.NotFoundException;
+import java.time.Clock;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class InternalUserService {
 
     private final UserRepository userRepository;
     private final UserRestrictionRepository userRestrictionRepository;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     public InternalUserResponse find(UUID userId) {
@@ -50,5 +53,23 @@ public class InternalUserService {
                                 new InternalUserNameResponse(
                                         user.getId(), user.getUsername(), user.getDisplayName()))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public InternalUserAccountResponse findByUsername(String username) {
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .filter(candidate -> !candidate.isDeleted())
+                        .orElseThrow(
+                                () ->
+                                        new NotFoundException(
+                                                ErrorCode.USER_NOT_FOUND,
+                                                "Không tìm thấy người dùng"));
+        return new InternalUserAccountResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getRole(),
+                !user.isBannedAt(clock.instant()));
     }
 }

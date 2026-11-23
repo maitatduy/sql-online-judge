@@ -1,7 +1,9 @@
 package com.sqljudge.contest.controller;
 
 import com.sqljudge.contest.dto.response.ContestEntryResponse;
+import com.sqljudge.contest.dto.response.ProblemUsageResponse;
 import com.sqljudge.contest.service.ContestEntryService;
+import com.sqljudge.contest.service.ContestProblemUsageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.util.UUID;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InternalContestController {
 
     private final ContestEntryService contestEntryService;
+    private final ContestProblemUsageService contestProblemUsageService;
 
     @GetMapping("/{slug}/problems/{letter}/entry")
     @Operation(summary = "Người dùng có được nộp bài này trong contest lúc này không")
@@ -31,5 +34,13 @@ public class InternalContestController {
     public ContestEntryResponse entry(
             @PathVariable String slug, @PathVariable String letter, @RequestParam UUID userId) {
         return contestEntryService.entry(slug, letter, userId);
+    }
+
+    @GetMapping("/problem-usage/{problemId}")
+    @Operation(summary = "Bài có đang thuộc một contest chưa kết thúc không")
+    @ApiResponse(responseCode = "200", description = "Trạng thái sử dụng của bài")
+    @ApiResponse(responseCode = "401", description = "Thiếu hoặc sai token nội bộ")
+    public ProblemUsageResponse problemUsage(@PathVariable UUID problemId) {
+        return contestProblemUsageService.usageOf(problemId);
     }
 }

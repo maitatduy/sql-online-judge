@@ -69,6 +69,10 @@ public class Problem extends BaseEntity {
     @Column(name = "visibility", length = 20)
     private ProblemVisibility visibility;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "hidden_from_visibility", length = 20)
+    private ProblemVisibility hiddenFromVisibility;
+
     @Column(name = "author_id", nullable = false, columnDefinition = "BINARY(16)")
     private UUID authorId;
 
@@ -163,6 +167,24 @@ public class Problem extends BaseEntity {
     public void publishForContest(UUID reviewerId, String checksum, Instant now) {
         approveDraft(reviewerId, checksum, now);
         visibility = ProblemVisibility.CONTEST_ONLY;
+    }
+
+    public boolean hide() {
+        if (visibility == ProblemVisibility.HIDDEN) {
+            return false;
+        }
+        hiddenFromVisibility = visibility;
+        visibility = ProblemVisibility.HIDDEN;
+        return true;
+    }
+
+    public boolean restoreVisibility() {
+        if (visibility != ProblemVisibility.HIDDEN) {
+            return false;
+        }
+        visibility = hiddenFromVisibility == null ? ProblemVisibility.PUBLIC : hiddenFromVisibility;
+        hiddenFromVisibility = null;
+        return true;
     }
 
     public boolean isContestOnly() {

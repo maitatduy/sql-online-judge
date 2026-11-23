@@ -2,6 +2,7 @@
 
 import { Plus, Search } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -14,11 +15,21 @@ import { ROUTES } from "@/lib/routes";
 import { useProblemBank } from "../../hooks/useProblemBank";
 import { useProblemBankFilters } from "../../hooks/useProblemBankFilters";
 import { bankHref, hasActiveBankFilter } from "../../problem-bank/search-params";
+import type { BankProblem } from "../../problem-bank/types";
 import { StaleDataNotice } from "../StaleDataNotice";
 import { BlockLoading } from "../users/BlockStates";
+import { ProblemActionConfirmDialog } from "./ProblemActionConfirmDialog";
 import { ProblemBankFiltersBar } from "./ProblemBankFilters";
 import { ProblemBankStats } from "./ProblemBankStats";
 import { ProblemBankTable } from "./ProblemBankTable";
+import type { ProblemRowAction } from "./ProblemRowActions";
+import { QuickEditProblemDialog } from "./QuickEditProblemDialog";
+import { TransferOwnershipDialog } from "./TransferOwnershipDialog";
+
+interface RowDialog {
+    action: ProblemRowAction;
+    problem: BankProblem;
+}
 
 export function AdminProblemBank() {
     const { filters, changeFilters, clearFilters } = useProblemBankFilters();
@@ -26,6 +37,8 @@ export function AdminProblemBank() {
         useProblemBank(filters);
     const hasProblems = data ? data.items.length > 0 : false;
     const isFiltered = hasActiveBankFilter(filters);
+    const [rowDialog, setRowDialog] = useState<RowDialog | null>(null);
+    const closeRowDialog = () => setRowDialog(null);
 
     return (
         <main id={MAIN_CONTENT_ID} className="flex flex-col gap-4 px-4 pt-6 pb-10 md:px-7">
@@ -65,7 +78,10 @@ export function AdminProblemBank() {
                 ) : null}
                 {data && hasProblems ? (
                     <>
-                        <ProblemBankTable problems={data.items} />
+                        <ProblemBankTable
+                            problems={data.items}
+                            onAction={(action, problem) => setRowDialog({ action, problem })}
+                        />
                         <Pagination
                             result={data}
                             hrefOf={(page) => bankHref({ ...filters, page })}
@@ -102,6 +118,20 @@ export function AdminProblemBank() {
                     />
                 ) : null}
             </section>
+            {rowDialog?.action === "edit" ? (
+                <QuickEditProblemDialog problem={rowDialog.problem} onClose={closeRowDialog} />
+            ) : null}
+            {rowDialog?.action === "transfer" ? (
+                <TransferOwnershipDialog problem={rowDialog.problem} onClose={closeRowDialog} />
+            ) : null}
+            {rowDialog && rowDialog.action !== "edit" && rowDialog.action !== "transfer" ? (
+                <ProblemActionConfirmDialog
+                    key={rowDialog.problem.id + rowDialog.action}
+                    action={rowDialog.action}
+                    problem={rowDialog.problem}
+                    onClose={closeRowDialog}
+                />
+            ) : null}
         </main>
     );
 }

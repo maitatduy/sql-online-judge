@@ -35,6 +35,7 @@ export interface StoredProblem extends StudioProblemSummary {
     answer?: SaveProblemAnswerRequest;
     latestReview?: ProblemReview;
     visibility?: ProblemVisibility;
+    hiddenFromVisibility?: ProblemVisibility;
 }
 
 const COMPANY_DATASET_ID = "0192f3e0-0000-7000-8000-000000000001";

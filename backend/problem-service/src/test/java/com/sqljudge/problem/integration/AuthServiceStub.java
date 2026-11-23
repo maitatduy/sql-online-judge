@@ -17,6 +17,8 @@ final class AuthServiceStub {
 
     private static final String USERS_PATH = "/internal/users";
     private static final Map<String, String> USERS = new ConcurrentHashMap<>();
+    private static final String ACCOUNT_PATH = "/internal/users/by-username/";
+    private static final Map<String, String> ACCOUNTS = new ConcurrentHashMap<>();
     private static final AtomicInteger FAILURE_STATUS = new AtomicInteger();
     private static final HttpServer SERVER = start();
 
@@ -28,6 +30,7 @@ final class AuthServiceStub {
 
     static void reset() {
         USERS.clear();
+        ACCOUNTS.clear();
         FAILURE_STATUS.set(0);
     }
 
@@ -40,6 +43,15 @@ final class AuthServiceStub {
                         .formatted(userId, username, username));
     }
 
+    static void account(UUID userId, String username, String role, boolean isActive) {
+        ACCOUNTS.put(
+                username,
+                """
+                {"userId": "%s", "username": "%s", "role": "%s", "isActive": %s}
+                """
+                        .formatted(userId, username, role, isActive));
+    }
+
     static void failWith(int status) {
         FAILURE_STATUS.set(status);
     }
@@ -50,12 +62,20 @@ final class AuthServiceStub {
             server.createContext(
                     USERS_PATH,
                     exchange -> {
+                        String path = exchange.getRequestURI().getPath();
+                        String account =
+                                path.startsWith(ACCOUNT_PATH)
+                                        ? ACCOUNTS.get(path.substring(ACCOUNT_PATH.length()))
+                                        : null;
                         int failure = FAILURE_STATUS.get();
-                        int status = failure != 0 ? failure : 200;
+                        boolean isMissingAccount = path.startsWith(ACCOUNT_PATH) && account == null;
+                        int status = failure != 0 ? failure : isMissingAccount ? 404 : 200;
                         String body =
-                                status == 200
-                                        ? usersOf(exchange.getRequestURI().getRawQuery())
-                                        : "{}";
+                                status != 200
+                                        ? "{}"
+                                        : account != null
+                                                ? account
+                                                : usersOf(exchange.getRequestURI().getRawQuery());
                         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
                         exchange.getResponseHeaders().add("Content-Type", "application/json");
                         exchange.sendResponseHeaders(status, bytes.length);

@@ -9,10 +9,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ContestRepository extends JpaRepository<Contest, UUID> {
 
     boolean existsBySlug(String slug);
+
+    @Query(
+            "SELECT COUNT(p) > 0 FROM ContestProblem p"
+                    + " WHERE p.problemId = :problemId AND p.contest.endAt > :now")
+    boolean isProblemInUnfinishedContest(
+            @Param("problemId") UUID problemId, @Param("now") Instant now);
 
     Optional<Contest> findBySlug(String slug);
 
