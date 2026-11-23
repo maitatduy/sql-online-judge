@@ -1,10 +1,12 @@
 package com.sqljudge.problem.dto.response;
 
 import com.sqljudge.problem.entity.Difficulty;
-import com.sqljudge.problem.entity.Problem;
+import com.sqljudge.problem.entity.ProblemStats;
 import com.sqljudge.problem.entity.ProblemStatus;
 import com.sqljudge.problem.entity.ProblemVisibility;
+import com.sqljudge.problem.repository.AdminProblemRow;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record AdminProblemSummaryResponse(
@@ -16,18 +18,28 @@ public record AdminProblemSummaryResponse(
         ProblemVisibility visibility,
         Difficulty difficulty,
         UUID authorId,
-        Instant updatedAt) {
+        Instant updatedAt,
+        List<TagResponse> tags,
+        long submissionCount,
+        long acceptedCount,
+        double acceptanceRate) {
 
-    public static AdminProblemSummaryResponse from(Problem problem) {
+    public static AdminProblemSummaryResponse from(AdminProblemRow row, List<TagResponse> tags) {
+        long submissions = row.submissionCount() == null ? 0 : row.submissionCount();
+        long accepted = row.acceptedCount() == null ? 0 : row.acceptedCount();
         return new AdminProblemSummaryResponse(
-                problem.getId(),
-                problem.getNumber(),
-                problem.getSlug(),
-                problem.getTitle(),
-                problem.getStatus(),
-                problem.getVisibility(),
-                problem.getDifficulty(),
-                problem.getAuthorId(),
-                problem.getUpdatedAt());
+                row.id(),
+                row.number(),
+                row.slug(),
+                row.title(),
+                row.status(),
+                row.visibility(),
+                row.difficulty(),
+                row.authorId(),
+                row.updatedAt(),
+                tags,
+                submissions,
+                accepted,
+                ProblemStats.acceptanceRate(submissions, accepted));
     }
 }
