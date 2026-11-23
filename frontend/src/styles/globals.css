@@ -87,6 +87,9 @@
     --account-active: #15803d;
     --account-banned: #c81e1e;
     --account-unverified: #9a5b05;
+    --visibility-public: #15803d;
+    --visibility-contest: #1d4ed8;
+    --visibility-hidden: #475569;
 
     --avatar-1: #b45309;
     --avatar-2: #0f766e;
@@ -188,6 +191,9 @@
     --account-active: #4ade80;
     --account-banned: #f87171;
     --account-unverified: #fbbf24;
+    --visibility-public: #4ade80;
+    --visibility-contest: #60a5fa;
+    --visibility-hidden: #94a3b8;
 
     --avatar-1: #b45309;
     --avatar-2: #0f766e;
@@ -316,6 +322,9 @@
     --color-account-active: var(--account-active);
     --color-account-banned: var(--account-banned);
     --color-account-unverified: var(--account-unverified);
+    --color-visibility-public: var(--visibility-public);
+    --color-visibility-contest: var(--visibility-contest);
+    --color-visibility-hidden: var(--visibility-hidden);
 
     --color-avatar-1: var(--avatar-1);
     --color-avatar-2: var(--avatar-2);
