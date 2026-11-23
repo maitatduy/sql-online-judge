@@ -82,6 +82,7 @@ sqljudge:
     lifecycle-enabled: true
     lifecycle-interval: 5s
     standings-push-interval: 2s
+    finalize-grace: 2m
   problem-service-url: ${PROBLEM_SERVICE_URL}
   auth-service-url: ${AUTH_SERVICE_URL}
   internal:

@@ -31,4 +31,7 @@ public interface ContestRepository extends JpaRepository<Contest, UUID> {
             "SELECT c FROM Contest c WHERE (c.startedAnnouncedAt IS NULL AND c.startAt <= :now)"
                     + " OR (c.finishedAnnouncedAt IS NULL AND c.endAt <= :now) ORDER BY c.startAt")
     List<Contest> findDueForAnnouncement(Instant now);
+
+    @Query("SELECT c FROM Contest c WHERE c.finalizedAt IS NULL AND c.endAt <= :cutoff")
+    List<Contest> findDueForFinalization(Instant cutoff);
 }

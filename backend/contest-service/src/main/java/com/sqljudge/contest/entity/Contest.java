@@ -63,6 +63,9 @@ public class Contest extends BaseEntity {
     @Column(name = "finished_announced_at")
     private Instant finishedAnnouncedAt;
 
+    @Column(name = "finalized_at")
+    private Instant finalizedAt;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -111,6 +114,18 @@ public class Contest extends BaseEntity {
     public ScoringRules scoringRules() {
         return new ScoringRules(
                 startAt, endAt.minus(Duration.ofMinutes(freezeMinutes)), penaltyMinutes);
+    }
+
+    public boolean isFinalized() {
+        return finalizedAt != null;
+    }
+
+    public boolean isFrozenAt(Instant now) {
+        return !isFinalized() && !now.isBefore(scoringRules().freezeAt());
+    }
+
+    public void markFinalized(Instant now) {
+        finalizedAt = now;
     }
 
     public boolean hasStartedAt(Instant now) {

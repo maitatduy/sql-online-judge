@@ -51,6 +51,10 @@ public class StandingsStore {
         redisTemplate.convertAndSend(CHANGED_CHANNEL, contestId.toString());
     }
 
+    public void announceChanged(UUID contestId) {
+        redisTemplate.convertAndSend(CHANGED_CHANNEL, contestId.toString());
+    }
+
     public void discardQuietly(UUID contestId) {
         try {
             redisTemplate.delete(List.of(standingsKey(contestId), cellsKey(contestId)));
