@@ -1,13 +1,17 @@
 "use client";
 
-import { Users } from "lucide-react";
+import Link from "next/link";
+
+import { Trophy, Users } from "lucide-react";
 
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Markdown } from "@/components/shared/Markdown";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
+import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
+import { ROUTES } from "@/lib/routes";
 
 import { useContest } from "../hooks/useContests";
 import { ContestLobbyHero } from "./ContestLobbyHero";
@@ -57,6 +61,14 @@ export function ContestLobby({ slug }: ContestLobbyProps) {
                             ) : null}
                         </div>
                         <aside className="flex min-w-0 flex-[1_1_260px] flex-col gap-4">
+                            {contest.phase === "UPCOMING" ? null : (
+                                <Button asChild variant="outline" size="lg">
+                                    <Link href={ROUTES.contestStandings(contest.slug)}>
+                                        <Trophy aria-hidden="true" />
+                                        Bảng xếp hạng
+                                    </Link>
+                                </Button>
+                            )}
                             <section
                                 aria-label="Người tham gia"
                                 className="flex items-center justify-between rounded-lg border bg-card p-5"

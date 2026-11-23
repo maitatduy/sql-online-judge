@@ -32,3 +32,30 @@ export interface ContestProblem {
     title: string;
     difficulty: Difficulty;
 }
+
+export interface StandingCell {
+    letter: string;
+    acceptedMinute: number | null;
+    wrongAttempts: number;
+    pendingAttempts: number;
+}
+
+export interface StandingItem {
+    rank: number;
+    username: string;
+    displayName: string | null;
+    solved: number;
+    penaltyMinutes: number;
+    cells: StandingCell[];
+}
+
+export interface StandingsPage extends Page<StandingItem> {
+    problems: string[];
+    isFrozen: boolean;
+}
+
+export interface MyStanding {
+    solved: number;
+    penaltyMinutes: number;
+    cells: StandingCell[];
+}
