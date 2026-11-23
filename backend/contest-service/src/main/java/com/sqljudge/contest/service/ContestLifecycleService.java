@@ -10,6 +10,7 @@ import com.sqljudge.contest.event.ContestTopics;
 import com.sqljudge.contest.repository.ContestRepository;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,14 @@ public class ContestLifecycleService {
                 announceFinish(contest, now);
             }
         }
+    }
+
+    @Transactional
+    public void markStatementsWarmed(UUID contestId, Instant now) {
+        contestRepository
+                .findById(contestId)
+                .ifPresent(contest -> contest.markStatementsWarmed(now));
+        log.info("contest_statements_warmed contestId={}", contestId);
     }
 
     private void announceStart(Contest contest, Instant now) {

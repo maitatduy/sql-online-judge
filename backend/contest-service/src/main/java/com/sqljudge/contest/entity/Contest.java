@@ -66,6 +66,9 @@ public class Contest extends BaseEntity {
     @Column(name = "finalized_at")
     private Instant finalizedAt;
 
+    @Column(name = "statements_warmed_at")
+    private Instant statementsWarmedAt;
+
     @Column(name = "rating_applied_at")
     private Instant ratingAppliedAt;
 
@@ -117,6 +120,10 @@ public class Contest extends BaseEntity {
     public ScoringRules scoringRules() {
         return new ScoringRules(
                 startAt, endAt.minus(Duration.ofMinutes(freezeMinutes)), penaltyMinutes);
+    }
+
+    public void markStatementsWarmed(Instant now) {
+        statementsWarmedAt = now;
     }
 
     public void markRatingApplied(Instant now) {

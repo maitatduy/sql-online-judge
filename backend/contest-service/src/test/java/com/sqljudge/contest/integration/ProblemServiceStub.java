@@ -19,6 +19,7 @@ final class ProblemServiceStub {
     private static final String STATEMENT_SUFFIX = "/contest-statement";
     private static final Map<String, String> STATEMENTS = new ConcurrentHashMap<>();
     private static final Map<String, String> READY_PROBLEMS = new ConcurrentHashMap<>();
+    private static final Map<String, AtomicInteger> STATEMENT_REQUESTS = new ConcurrentHashMap<>();
     private static final AtomicInteger FAILURE_STATUS = new AtomicInteger();
     private static final AtomicReference<String> RECEIVED_TOKEN = new AtomicReference<>();
     private static final HttpServer SERVER = start();
@@ -32,6 +33,7 @@ final class ProblemServiceStub {
     static void reset() {
         READY_PROBLEMS.clear();
         STATEMENTS.clear();
+        STATEMENT_REQUESTS.clear();
         FAILURE_STATUS.set(0);
         RECEIVED_TOKEN.set(null);
     }
@@ -59,6 +61,11 @@ final class ProblemServiceStub {
 
     static void failWith(int status) {
         FAILURE_STATUS.set(status);
+    }
+
+    static int statementRequests(UUID problemId) {
+        AtomicInteger requests = STATEMENT_REQUESTS.get(problemId.toString());
+        return requests == null ? 0 : requests.get();
     }
 
     static String receivedToken() {
@@ -92,6 +99,9 @@ final class ProblemServiceStub {
                                 path.substring(
                                         PROBLEMS_PATH.length(),
                                         path.length() - STATEMENT_SUFFIX.length());
+                        STATEMENT_REQUESTS
+                                .computeIfAbsent(problemId, key -> new AtomicInteger())
+                                .incrementAndGet();
                         String statement = STATEMENTS.get(problemId);
                         byte[] body =
                                 (statement == null ? "{}" : statement)
