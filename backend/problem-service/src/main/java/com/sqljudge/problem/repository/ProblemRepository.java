@@ -17,6 +17,20 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProblemRepository extends JpaRepository<Problem, UUID> {
 
+    String ADMIN_PROBLEMS =
+            """
+            FROM Problem p
+            LEFT JOIN ProblemStats s ON s.problemId = p.id
+            WHERE p.status = :status AND p.deletedAt IS NULL
+              AND (:visibility IS NULL OR p.visibility = :visibility)
+              AND (:difficulty IS NULL OR p.difficulty = :difficulty)
+              AND (:tag IS NULL OR EXISTS (
+                    SELECT 1 FROM Problem tagged JOIN tagged.tags t
+                    WHERE tagged = p AND t.slug = :tag))
+              AND (:titlePattern IS NULL OR LOWER(p.title) LIKE :titlePattern ESCAPE '!'
+                    OR p.number = :number)
+            """;
+
     String LISTED_PROBLEMS =
             """
             FROM Problem p
@@ -103,6 +117,37 @@ public interface ProblemRepository extends JpaRepository<Problem, UUID> {
             @Param("notStarted") boolean notStarted,
             @Param("progress") ProblemProgressStatus progress,
             Pageable pageable);
+
+    @Query(
+            value =
+                    "SELECT new com.sqljudge.problem.repository.AdminProblemRow(p.id, p.number,"
+                            + " p.slug, p.title, p.status, p.visibility, p.difficulty, p.authorId,"
+                            + " p.updatedAt, s.submissionCount, s.acceptedCount) "
+                            + ADMIN_PROBLEMS,
+            countQuery = "SELECT COUNT(p) " + ADMIN_PROBLEMS)
+    Page<AdminProblemRow> findForAdmin(
+            @Param("status") ProblemStatus status,
+            @Param("visibility") ProblemVisibility visibility,
+            @Param("difficulty") Difficulty difficulty,
+            @Param("tag") String tag,
+            @Param("titlePattern") String titlePattern,
+            @Param("number") Integer number,
+            Pageable pageable);
+
+    @Query(
+            "SELECT p.visibility AS visibility, COUNT(p) AS total FROM Problem p"
+                    + " WHERE p.status = :status AND p.deletedAt IS NULL GROUP BY p.visibility")
+    List<VisibilityCountRow> countByVisibility(@Param("status") ProblemStatus status);
+
+    @Query(
+            "SELECT COUNT(p) FROM Problem p JOIN ProblemStats s ON s.problemId = p.id"
+                    + " WHERE p.status = :status AND p.deletedAt IS NULL"
+                    + " AND s.submissionCount >= :minSubmissions"
+                    + " AND s.acceptedCount * 100 < s.submissionCount * :maxPercent")
+    long countLowAcceptance(
+            @Param("status") ProblemStatus status,
+            @Param("minSubmissions") long minSubmissions,
+            @Param("maxPercent") long maxPercent);
 
     @Query(
             "SELECT new com.sqljudge.problem.repository.ProblemTagRow(p.id, t.slug, t.name)"
