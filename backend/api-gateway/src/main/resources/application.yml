@@ -44,7 +44,7 @@ spring:
             - id: ai-service
               uri: ${AI_SERVICE_URL}
               predicates:
-                - Path=/api/ai/**
+                - Path=/api/ai/**,/api/admin/ai/**
             - id: problem-service
               uri: ${PROBLEM_SERVICE_URL}
               predicates:

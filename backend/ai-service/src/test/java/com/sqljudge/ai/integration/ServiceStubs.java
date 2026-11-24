@@ -5,9 +5,11 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 final class ServiceStubs {
 
@@ -42,11 +44,21 @@ final class ServiceStubs {
             HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
             server.createContext(PROBLEMS_PATH, ServiceStubs::problem);
             server.createContext(CONTESTS_PATH, ServiceStubs::participation);
+            server.createContext("/internal/users", ServiceStubs::userNames);
             server.start();
             return server;
         } catch (IOException error) {
             throw new IllegalStateException(error);
         }
+    }
+
+    private static void userNames(HttpExchange exchange) throws IOException {
+        String ids = exchange.getRequestURI().getQuery().replace("ids=", "");
+        String body =
+                Arrays.stream(ids.split("[,&]"))
+                        .map(id -> "{\"userId\": \"%s\", \"username\": \"hoc.vien\"}".formatted(id))
+                        .collect(Collectors.joining(",", "[", "]"));
+        respond(exchange, 200, body);
     }
 
     private static void problem(HttpExchange exchange) throws IOException {

@@ -242,8 +242,10 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     @DisplayName("Trợ lý AI được chuyển tới ai-service")
     void aiPaths_areRoutedToAiService() {
         webTestClient.get().uri("/api/ai/quota").exchange().expectStatus().isNotFound();
+        webTestClient.get().uri("/api/admin/ai/flags").exchange().expectStatus().isNotFound();
 
-        assertThat(AI_SERVICE.forwardedRequestLines()).containsExactly("GET /api/ai/quota");
+        assertThat(AI_SERVICE.forwardedRequestLines())
+                .containsExactly("GET /api/ai/quota", "GET /api/admin/ai/flags");
     }
 
     @Test

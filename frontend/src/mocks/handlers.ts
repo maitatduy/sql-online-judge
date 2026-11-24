@@ -10,6 +10,7 @@ import type {
 } from "@/features/auth/types";
 import type { CurrentUser } from "@/lib/current-user";
 
+import { adminAiHandlers } from "./admin-ai";
 import { adminHandlers } from "./admin-handlers";
 import { adminProblemBankHandlers } from "./admin-problem-bank";
 import { adminProblemBankActionHandlers } from "./admin-problem-bank-actions";
@@ -216,6 +217,7 @@ export const handlers: RequestHandler[] = [
     ...adminProblemBankActionHandlers,
     ...adminProblemReviewHandlers,
     ...adminReportHandlers,
+    ...adminAiHandlers,
     ...invitationHandlers,
     ...learningProgressHandlers,
     ...learningRunHandlers,
