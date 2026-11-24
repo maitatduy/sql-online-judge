@@ -33,12 +33,10 @@ const EXPECTED_LINKS = [
     ["Duyệt khoá học", "/admin/course-reviews"],
     ["Khoá học", "/admin/courses"],
     ["Contest", "/admin/contests"],
-    ["Trang nội dung", "/admin/pages"],
     ["Bài nộp", "/admin/submissions"],
     ["Máy chấm", "/admin/judge"],
     ["Trợ lý AI", "/admin/ai"],
     ["Nhật ký thao tác", "/admin/audit-log"],
-    ["Cấu hình", "/admin/settings"],
 ];
 
 function renderSidebar(activePath = "/admin", counts?: AdminNavigationCounts) {
@@ -67,10 +65,10 @@ describe("AdminSidebar", () => {
         ).toHaveLength(3);
         expect(
             within(within(navigation).getByRole("list", { name: "Nội dung" })).getAllByRole("link"),
-        ).toHaveLength(7);
+        ).toHaveLength(6);
         expect(
             within(within(navigation).getByRole("list", { name: "Hệ thống" })).getAllByRole("link"),
-        ).toHaveLength(5);
+        ).toHaveLength(4);
     });
 
     it("chỉ đánh dấu Tổng quan khi đang ở trang gốc", () => {
@@ -207,7 +205,7 @@ describe("AdminSidebar thu gọn", () => {
         expect(reportsLink).toHaveAttribute("href", "/admin/reports");
         expect(reportsLink).toHaveAttribute("aria-current", "page");
         expect(reportsLink).toHaveAttribute("title", "Báo cáo vi phạm");
-        expect(within(navigation).getAllByRole("link")).toHaveLength(18);
+        expect(within(navigation).getAllByRole("link")).toHaveLength(16);
     });
 
     it("làm mờ tên mục thay vì gỡ khỏi bố cục để chuyển động không giật", () => {
