@@ -116,6 +116,20 @@ class ContestSubmissionApiIntegrationTest extends ContainerSupport {
                 .isEqualTo(ContestServiceStub.CONTEST_ID);
         assertThat(submission.read("$.firstFailedTestcase.index", Integer.class)).isEqualTo(1);
         assertThat(submission.read("$.firstFailedTestcase.diff", Object.class)).isNull();
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT diff_json FROM submissions WHERE id = UUID_TO_BIN(?)",
+                                String.class,
+                                submissionId))
+                .isNull();
+        assertThat(
+                        JsonPath.parse(
+                                        jdbcTemplate.queryForObject(
+                                                "SELECT payload FROM outbox_events WHERE topic = ?",
+                                                String.class,
+                                                "sqljudge.submission.created"))
+                                .read("$.showsDiff", Boolean.class))
+                .isFalse();
         DocumentContext event =
                 JsonPath.parse(
                         jdbcTemplate.queryForObject(

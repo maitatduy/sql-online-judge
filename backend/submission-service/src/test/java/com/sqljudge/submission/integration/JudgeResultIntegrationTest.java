@@ -148,6 +148,7 @@ class JudgeResultIntegrationTest extends ContainerSupport {
         DocumentContext requeued = JsonPath.parse(outboxPayload("sqljudge.submission.created", id));
         assertThat(requeued.read("$.attempt", Integer.class)).isEqualTo(2);
         assertThat(requeued.read("$.code", String.class)).isEqualTo("SELECT name FROM departments");
+        assertThat(requeued.read("$.showsDiff", Boolean.class)).isTrue();
 
         send(COMPLETED, id, completed(id, 1, "AC", "\"failedIndex\": null"));
         send(COMPLETED, id, completed(id, 2, "AC", "\"failedIndex\": null"));

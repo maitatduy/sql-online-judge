@@ -101,6 +101,7 @@ public class RejudgeWriter {
                         submission.getProblemRevisionId(),
                         submission.getDialect(),
                         submission.getCode(),
-                        submission.getAttempts()));
+                        submission.getAttempts(),
+                        !submission.isInContest()));
     }
 }

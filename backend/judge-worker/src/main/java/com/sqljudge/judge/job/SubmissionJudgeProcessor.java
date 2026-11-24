@@ -80,8 +80,7 @@ public class SubmissionJudgeProcessor {
                                             limits));
             tally = tally.judged(outcome.runtimeMs());
             progress.accept(tally.progress());
-            Optional<SubmissionJudgement> failure =
-                    failureOf(tally, testcase, outcome, judgePackage);
+            Optional<SubmissionJudgement> failure = failureOf(tally, testcase, outcome, request);
             if (failure.isPresent()) {
                 return failure.get();
             }
@@ -90,7 +89,10 @@ public class SubmissionJudgeProcessor {
     }
 
     private Optional<SubmissionJudgement> failureOf(
-            Tally tally, JudgeCase testcase, ExecutionOutcome outcome, JudgePackage judgePackage) {
+            Tally tally,
+            JudgeCase testcase,
+            ExecutionOutcome outcome,
+            SubmissionJudgeRequest request) {
         if (outcome instanceof Failed failed) {
             String message = testcase.isPublic() ? failed.message().text() : null;
             return Optional.of(tally.failed(testcase, Verdict.RE, message));
@@ -108,12 +110,15 @@ public class SubmissionJudgeProcessor {
             return Optional.of(tally.failed(testcase, Verdict.RE, UNSUPPORTED_COLUMN_TYPE));
         }
         ComparisonResult comparison =
-                comparator.compare(testcase.expected(), actual, judgePackage.compareOptions());
+                comparator.compare(
+                        testcase.expected(), actual, request.judgePackage().compareOptions());
         if (comparison.isAccepted()) {
             return Optional.empty();
         }
         ResultDiff diff =
-                testcase.isPublic() ? ResultDiff.of(testcase.expected(), actual, comparison) : null;
+                testcase.isPublic() && request.showsDiff()
+                        ? ResultDiff.of(testcase.expected(), actual, comparison)
+                        : null;
         return Optional.of(tally.mismatched(testcase, comparison.verdict(), diff));
     }
 

@@ -164,6 +164,17 @@ class SubmissionJudgeProcessorTest {
     }
 
     @Test
+    @DisplayName("Bài nộp trong contest sai ở testcase công khai vẫn không kèm diff")
+    void judge_contestSubmission_neverRevealsDiff() {
+        SubmissionJudgement judgement =
+                judge(returning(outcome(4, row(1, "A"), row(3, "C"))), request(CODE, false, false));
+
+        assertThat(judgement.verdict()).isEqualTo(Verdict.WA);
+        assertThat(judgement.failedIndex()).isEqualTo(1);
+        assertThat(judgement.diff()).isNull();
+    }
+
+    @Test
     @DisplayName("Lỗi SQL hay quá giờ ở testcase công khai thì không có diff")
     void judge_errorOnPublicTestcase_hasNoDiff() {
         assertThat(judge(run -> new ExecutionOutcome.TimedOut(2000), CODE, false).diff()).isNull();
@@ -249,6 +260,10 @@ class SubmissionJudgeProcessorTest {
     }
 
     private SubmissionJudgement judge(Sandbox sandbox, String code, boolean ordered) {
+        return judge(sandbox, request(code, ordered, true));
+    }
+
+    private SubmissionJudgement judge(Sandbox sandbox, SubmissionJudgeRequest request) {
         runs.clear();
         progress.clear();
         Sandbox recording =
@@ -261,10 +276,14 @@ class SubmissionJudgeProcessorTest {
                         new StatementGuard(),
                         (versionId, checksum) -> SNAPSHOT,
                         new SandboxRegistry(Map.of(Dialect.POSTGRESQL, recording)));
-        return processor.judge(request(code, ordered), progress::add);
+        return processor.judge(request, progress::add);
     }
 
     private static SubmissionJudgeRequest request(String code, boolean ordered) {
+        return request(code, ordered, true);
+    }
+
+    private static SubmissionJudgeRequest request(String code, boolean ordered, boolean showsDiff) {
         JudgePackage judgePackage =
                 new JudgePackage(
                         VERSION_ID,
@@ -276,7 +295,8 @@ class SubmissionJudgeProcessorTest {
                                 new JudgeCase(1, SAMPLE_VARIANT, true, TWO_ROWS),
                                 new JudgeCase(2, HIDDEN_VARIANT, false, TWO_ROWS),
                                 new JudgeCase(3, OTHER_HIDDEN_VARIANT, false, TWO_ROWS)));
-        return new SubmissionJudgeRequest(SUBMISSION_ID, 1, Dialect.POSTGRESQL, code, judgePackage);
+        return new SubmissionJudgeRequest(
+                SUBMISSION_ID, 1, Dialect.POSTGRESQL, code, judgePackage, showsDiff);
     }
 
     private static Sandbox returning(ExecutionOutcome... outcomes) {

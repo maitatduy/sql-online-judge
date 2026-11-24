@@ -13,5 +13,6 @@ public record SubmissionCreatedEvent(
         UUID revisionId,
         Dialect dialect,
         String code,
-        int attempt)
+        int attempt,
+        boolean showsDiff)
         implements DomainEvent {}

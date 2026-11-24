@@ -173,7 +173,7 @@ class SubmissionJudgeAttackIntegrationTest {
                                 new JudgeCase(2, HIDDEN_VARIANT, false, names("Bí mật"))));
         return processor.judge(
                 new SubmissionJudgeRequest(
-                        UUID.randomUUID(), 1, Dialect.POSTGRESQL, code, judgePackage),
+                        UUID.randomUUID(), 1, Dialect.POSTGRESQL, code, judgePackage, true),
                 progress -> {});
     }
 

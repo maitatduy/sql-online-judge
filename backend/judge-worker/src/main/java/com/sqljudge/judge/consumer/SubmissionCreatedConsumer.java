@@ -86,7 +86,8 @@ public class SubmissionCreatedConsumer {
                             event.attempt(),
                             event.dialect(),
                             event.code(),
-                            judgePackage),
+                            judgePackage,
+                            event.showsDiff()),
                     publisher::progress);
         } catch (RuntimeException exception) {
             log.error(
