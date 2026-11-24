@@ -44,7 +44,7 @@ spring:
             - id: notification-service
               uri: ${NOTIFICATION_SERVICE_URL}
               predicates:
-                - Path=/api/notifications,/api/notifications/**
+                - Path=/api/notifications,/api/notifications/**,/api/admin/announcements,/api/admin/announcements/**
             - id: ai-service
               uri: ${AI_SERVICE_URL}
               predicates:

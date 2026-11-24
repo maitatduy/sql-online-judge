@@ -11,6 +11,7 @@ import type {
 import type { CurrentUser } from "@/lib/current-user";
 
 import { adminAiHandlers } from "./admin-ai";
+import { adminAnnouncementHandlers } from "./admin-announcements";
 import { adminHandlers } from "./admin-handlers";
 import { adminProblemBankHandlers } from "./admin-problem-bank";
 import { adminProblemBankActionHandlers } from "./admin-problem-bank-actions";
@@ -220,6 +221,7 @@ export const handlers: RequestHandler[] = [
     ...adminProblemReviewHandlers,
     ...adminReportHandlers,
     ...adminAiHandlers,
+    ...adminAnnouncementHandlers,
     ...invitationHandlers,
     ...learningProgressHandlers,
     ...learningRunHandlers,

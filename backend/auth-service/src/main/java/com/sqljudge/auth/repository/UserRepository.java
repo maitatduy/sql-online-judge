@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
@@ -24,6 +25,12 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     Optional<User> findByUsername(String username);
 
     List<User> findAllByUsernameIn(Collection<String> usernames);
+
+    @Query("SELECT u.id FROM User u WHERE u.deletedAt IS NULL ORDER BY u.id")
+    List<UUID> findActiveIds(Pageable pageable);
+
+    @Query("SELECT u.id FROM User u WHERE u.deletedAt IS NULL AND u.id > :afterId ORDER BY u.id")
+    List<UUID> findActiveIdsAfter(@Param("afterId") UUID afterId, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT u FROM User u WHERE u.username = :username")

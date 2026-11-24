@@ -1,4 +1,7 @@
 spring:
+  mail:
+    host: localhost
+    port: 1
   kafka:
     bootstrap-servers: localhost:1
     listener:
@@ -10,3 +13,11 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: http://localhost:1/internal/jwks
+
+sqljudge:
+  auth-service-url: http://localhost:1
+  internal:
+    api-token: test-internal-token
+  email:
+    from: no-reply@sqljudge.dev
+    frontend-url: http://localhost:3000

@@ -15,6 +15,22 @@ spring:
           time_zone: UTC
   flyway:
     locations: classpath:db/migration
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+      client:
+        config:
+          auth-service:
+            connect-timeout: 1000
+            read-timeout: 3000
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    properties:
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
@@ -35,6 +51,9 @@ spring:
           jwk-set-uri: ${AUTH_SERVICE_URL}/internal/jwks
 
 management:
+  health:
+    mail:
+      enabled: false
   server:
     port: 9088
   endpoints:
@@ -53,3 +72,25 @@ springdoc:
   swagger-ui:
     enabled: false
 
+sqljudge:
+  auth-service-url: ${AUTH_SERVICE_URL}
+  internal:
+    api-token: ${INTERNAL_API_TOKEN}
+  email:
+    from: ${MAIL_FROM}
+    frontend-url: ${FRONTEND_URL}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 20
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        ignore-exceptions:
+          - feign.FeignException$NotFound
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
