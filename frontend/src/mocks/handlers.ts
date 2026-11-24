@@ -21,6 +21,7 @@ import { aiHandlers } from "./ai";
 import { apiError } from "./api-error";
 import { communityHandlers } from "./community";
 import { invitationHandlers } from "./invitation-handlers";
+import { notificationHandlers } from "./notifications";
 import { learningDashboardHandlers } from "./learning-dashboard";
 import { learningHandlers } from "./learning-handlers";
 import { learningProgressHandlers } from "./learning-progress";
@@ -211,6 +212,7 @@ export const handlers: RequestHandler[] = [
     ...contestHandlers,
     ...communityHandlers,
     ...aiHandlers,
+    ...notificationHandlers,
     ...adminHandlers,
     ...adminProblemTagHandlers,
     ...adminProblemBankHandlers,

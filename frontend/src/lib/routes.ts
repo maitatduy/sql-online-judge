@@ -13,6 +13,7 @@ export const ROUTES = {
     communityNew: "/community/new",
     leaderboard: "/leaderboard",
     ai: "/ai",
+    notifications: "/notifications",
     settings: "/settings",
     admin: "/admin",
     studioProblems: "/studio/problems",
