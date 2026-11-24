@@ -9,6 +9,7 @@ import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserRestrictionRepository;
 import com.sqljudge.common.security.Role;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -130,6 +131,50 @@ class InternalUserIntegrationTest extends ContainerSupport {
         assertThat(bannedResponse.getBody()).containsEntry("isActive", false);
         assertThat(internalGetPath("/internal/users/by-username/noibo.xoaroi").getStatusCode())
                 .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("Trả email để gửi thông báo và id người dùng chưa xoá theo từng trang tăng dần")
+    void contactAndActiveIds_skipDeletedUsers() {
+        User active = saveUser("noibo.lienhe");
+        User deleted = saveUser("noibo.lienhexoa");
+        deleted.setDeletedAt(Instant.now());
+        userRepository.save(deleted);
+
+        ResponseEntity<Map> contact =
+                internalGetPath("/internal/users/" + active.getId() + "/contact");
+        assertThat(contact.getBody())
+                .containsEntry("email", "noibo.lienhe@gmail.com")
+                .containsEntry("isEmailVerified", true);
+        assertThat(
+                        internalGetPath("/internal/users/" + deleted.getId() + "/contact")
+                                .getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+
+        List<String> ids = new ArrayList<>();
+        String afterId = null;
+        while (true) {
+            ResponseEntity<List> page =
+                    internalGetIds(
+                            "/internal/users/active-ids?size=2"
+                                    + (afterId == null ? "" : "&afterId=" + afterId));
+            List<String> batch = page.getBody();
+            ids.addAll(batch);
+            if (batch.size() < 2) {
+                break;
+            }
+            afterId = batch.get(batch.size() - 1);
+        }
+        assertThat(ids)
+                .contains(active.getId().toString())
+                .doesNotContain(deleted.getId().toString());
+        assertThat(ids).doesNotHaveDuplicates();
+    }
+
+    private ResponseEntity<List> internalGetIds(String path) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Internal-Token", INTERNAL_TOKEN);
+        return restTemplate.exchange(path, HttpMethod.GET, new HttpEntity<>(headers), List.class);
     }
 
     private ResponseEntity<Map> internalGetPath(String path) {

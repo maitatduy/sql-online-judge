@@ -13,7 +13,7 @@ const FEED_PAGE_SIZE = 20;
 const NOTIFICATIONS_KEY = ["notifications"] as const;
 
 export type NotificationType =
-    "COMMENT_REPLY" | "CONTENT_REMOVED" | "PROBLEM_PUBLISHED" | "RATING_CHANGED";
+    "COMMENT_REPLY" | "CONTENT_REMOVED" | "PROBLEM_PUBLISHED" | "RATING_CHANGED" | "ANNOUNCEMENT";
 
 export interface AppNotification {
     id: string;
@@ -40,7 +40,31 @@ export const notificationApi = {
     markRead: (notificationId: string) =>
         apiClient.post<void>(`/api/notifications/${encodeURIComponent(notificationId)}/read`),
     markAllRead: () => apiClient.post<void>("/api/notifications/read-all"),
+    preferences: (signal?: AbortSignal) =>
+        apiClient.get<NotificationPreferences>("/api/notifications/preferences", { signal }),
+    updatePreferences: (preferences: NotificationPreferences) =>
+        apiClient.put<NotificationPreferences>("/api/notifications/preferences", preferences),
 };
+
+export interface NotificationPreferences {
+    isEmailEnabled: boolean;
+}
+
+export function useNotificationPreferences(isEnabled: boolean) {
+    const queryClient = useQueryClient();
+    const key = [...NOTIFICATIONS_KEY, "preferences"];
+    const query = useQuery({
+        queryKey: key,
+        queryFn: ({ signal }) => notificationApi.preferences(signal),
+        enabled: isEnabled,
+        retry: false,
+    });
+    const update = useMutation({
+        mutationFn: notificationApi.updatePreferences,
+        onSuccess: (saved) => queryClient.setQueryData(key, saved),
+    });
+    return { query, update };
+}
 
 export function useUnreadNotificationCount(isEnabled: boolean) {
     return useQuery({

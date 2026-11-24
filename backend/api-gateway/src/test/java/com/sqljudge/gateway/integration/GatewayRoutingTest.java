@@ -249,8 +249,13 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
                 .expectStatus()
                 .isNotFound();
 
+        webTestClient.get().uri("/api/admin/announcements").exchange().expectStatus().isNotFound();
+
         assertThat(NOTIFICATION_SERVICE.forwardedRequestLines())
-                .containsExactly("GET /api/notifications", "GET /api/notifications/unread-count");
+                .containsExactly(
+                        "GET /api/notifications",
+                        "GET /api/notifications/unread-count",
+                        "GET /api/admin/announcements");
     }
 
     @Test

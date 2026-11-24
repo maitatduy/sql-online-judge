@@ -28,6 +28,18 @@ describe("trang thông báo", () => {
         expect(screen.getAllByRole("listitem")).toHaveLength(3);
     });
 
+    it("bật tắt email cho thông báo quan trọng", async () => {
+        writeMockSession(DEMO_SESSION_USER);
+        renderWithProviders(<NotificationsPage />);
+
+        const toggle = await screen.findByRole("switch", { name: /Gửi email khi bài được duyệt/ });
+        expect(toggle).toBeChecked();
+
+        fireEvent.click(toggle);
+
+        await waitFor(() => expect(toggle).not.toBeChecked());
+    });
+
     it("khách được mời đăng nhập", async () => {
         renderWithProviders(<NotificationsPage />);
 

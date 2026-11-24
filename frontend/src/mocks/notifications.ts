@@ -6,12 +6,14 @@ import { apiError } from "./api-error";
 import { readMockSession } from "./session";
 
 let notifications: AppNotification[] = [];
+let isEmailEnabled = true;
 
 function minutesAgo(minutes: number): string {
     return new Date(Date.now() - minutes * 60_000).toISOString();
 }
 
 export function resetNotifications() {
+    isEmailEnabled = true;
     notifications = [
         {
             id: "0192f3a0-0000-7000-f000-000000000005",
@@ -47,6 +49,16 @@ function unauthenticated() {
 }
 
 export const notificationHandlers: RequestHandler[] = [
+    http.get("*/api/notifications/preferences", () =>
+        readMockSession() ? HttpResponse.json({ isEmailEnabled }) : unauthenticated(),
+    ),
+    http.put("*/api/notifications/preferences", async ({ request }) => {
+        if (!readMockSession()) {
+            return unauthenticated();
+        }
+        isEmailEnabled = ((await request.json()) as { isEmailEnabled: boolean }).isEmailEnabled;
+        return HttpResponse.json({ isEmailEnabled });
+    }),
     http.get("*/api/notifications", async ({ request }) => {
         await delay(100);
         if (!readMockSession()) {

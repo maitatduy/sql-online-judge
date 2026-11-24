@@ -1,6 +1,7 @@
 package com.sqljudge.auth.service;
 
 import com.sqljudge.auth.dto.response.InternalUserAccountResponse;
+import com.sqljudge.auth.dto.response.InternalUserContactResponse;
 import com.sqljudge.auth.dto.response.InternalUserNameResponse;
 import com.sqljudge.auth.dto.response.InternalUserResponse;
 import com.sqljudge.auth.entity.User;
@@ -13,6 +14,7 @@ import java.time.Clock;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +44,29 @@ public class InternalUserService {
                         .orElse(false);
         return new InternalUserResponse(
                 user.getId(), user.getUsername(), user.getDisplayName(), isBannedFromRatedContests);
+    }
+
+    @Transactional(readOnly = true)
+    public InternalUserContactResponse contact(UUID userId) {
+        User user =
+                userRepository
+                        .findById(userId)
+                        .filter(candidate -> !candidate.isDeleted())
+                        .orElseThrow(
+                                () ->
+                                        new NotFoundException(
+                                                ErrorCode.USER_NOT_FOUND,
+                                                "Không tìm thấy người dùng"));
+        return new InternalUserContactResponse(
+                user.getId(), user.getUsername(), user.getEmail(), user.isEmailVerified());
+    }
+
+    @Transactional(readOnly = true)
+    public List<UUID> activeIds(UUID afterId, int size) {
+        PageRequest page = PageRequest.of(0, size);
+        return afterId == null
+                ? userRepository.findActiveIds(page)
+                : userRepository.findActiveIdsAfter(afterId, page);
     }
 
     @Transactional(readOnly = true)

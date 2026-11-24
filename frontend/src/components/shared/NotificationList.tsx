@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, CheckCircle2, MessageSquare, ShieldAlert } from "lucide-react";
+import { Award, CheckCircle2, Megaphone, MessageSquare, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 import { formatRelativeTime } from "@/lib/format";
@@ -12,6 +12,7 @@ const ICONS: Record<NotificationType, typeof MessageSquare> = {
     CONTENT_REMOVED: ShieldAlert,
     PROBLEM_PUBLISHED: CheckCircle2,
     RATING_CHANGED: Award,
+    ANNOUNCEMENT: Megaphone,
 };
 
 interface NotificationListProps {

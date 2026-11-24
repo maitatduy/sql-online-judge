@@ -21,6 +21,8 @@ import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useNow } from "@/lib/useNow";
 
+import { EmailPreferenceToggle } from "./EmailPreferenceToggle";
+
 export function NotificationsPage() {
     const pathname = usePathname();
     const now = useNow();
@@ -54,6 +56,7 @@ export function NotificationsPage() {
                     </Button>
                 ) : null}
             </div>
+            {isSignedIn ? <EmailPreferenceToggle /> : null}
             {!isSignedIn ? (
                 <EmptyState
                     title="Đăng nhập để xem thông báo"
