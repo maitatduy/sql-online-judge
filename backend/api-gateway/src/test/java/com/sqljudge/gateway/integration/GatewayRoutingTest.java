@@ -239,6 +239,22 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName("Hồ sơ, tài khoản, rating và số bài đã giải tới đúng service")
+    void profilePaths_areRoutedToOwningServices() {
+        webTestClient.get().uri("/api/users/minh.anh").exchange();
+        webTestClient.get().uri("/api/account/profile").exchange();
+        webTestClient.get().uri("/api/leaderboard/abc").exchange();
+        webTestClient.get().uri("/api/solved-summaries/abc").exchange();
+
+        assertThat(AUTH_SERVICE.forwardedRequestLines())
+                .containsExactly("GET /api/users/minh.anh", "GET /api/account/profile");
+        assertThat(CONTEST_SERVICE.forwardedRequestLines())
+                .containsExactly("GET /api/leaderboard/abc");
+        assertThat(PROBLEM_SERVICE.forwardedRequestLines())
+                .containsExactly("GET /api/solved-summaries/abc");
+    }
+
+    @Test
     @DisplayName("Thông báo được chuyển tới notification-service")
     void notificationPaths_areRoutedToNotificationService() {
         webTestClient.get().uri("/api/notifications").exchange().expectStatus().isNotFound();

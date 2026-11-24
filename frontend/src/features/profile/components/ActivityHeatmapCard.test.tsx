@@ -26,9 +26,7 @@ function respondWithActivity() {
 describe("ActivityHeatmapCard", () => {
     it("báo đang tải rồi hiện tổng số bài nộp và chuỗi dài nhất", async () => {
         respondWithActivity();
-        renderWithProviders(
-            <ActivityHeatmapCard username="minh.anh" longestStreakDays={31} now={NOW} />,
-        );
+        renderWithProviders(<ActivityHeatmapCard username="minh.anh" now={NOW} />);
 
         expect(screen.getByRole("status", { name: "Đang tải hoạt động" })).toHaveAttribute(
             "aria-busy",
@@ -38,14 +36,12 @@ describe("ActivityHeatmapCard", () => {
         expect(
             await screen.findByRole("heading", { level: 2, name: "1.214 bài nộp trong năm qua" }),
         ).toBeInTheDocument();
-        expect(screen.getByText("Chuỗi dài nhất 31 ngày")).toBeInTheDocument();
+        expect(screen.getByText("Chuỗi dài nhất 2 ngày")).toBeInTheDocument();
     });
 
     it("mỗi ô ghi ngày và số bài nộp, lưới có mô tả cho trình đọc màn hình", async () => {
         respondWithActivity();
-        renderWithProviders(
-            <ActivityHeatmapCard username="minh.anh" longestStreakDays={31} now={NOW} />,
-        );
+        renderWithProviders(<ActivityHeatmapCard username="minh.anh" now={NOW} />);
 
         const grid = await screen.findByRole("img", {
             name: "Lịch hoạt động 52 tuần gần nhất, 1.214 bài nộp",
@@ -59,9 +55,7 @@ describe("ActivityHeatmapCard", () => {
 
     it("vùng cuộn ngang của lưới tới được bằng bàn phím", async () => {
         respondWithActivity();
-        renderWithProviders(
-            <ActivityHeatmapCard username="minh.anh" longestStreakDays={31} now={NOW} />,
-        );
+        renderWithProviders(<ActivityHeatmapCard username="minh.anh" now={NOW} />);
 
         expect(
             await screen.findByRole("region", { name: "Lịch hoạt động, cuộn ngang để xem hết" }),
@@ -69,9 +63,7 @@ describe("ActivityHeatmapCard", () => {
     });
 
     it("người mới vẫn thấy lưới rỗng với tổng 0", async () => {
-        renderWithProviders(
-            <ActivityHeatmapCard username="newbie" longestStreakDays={0} now={NOW} />,
-        );
+        renderWithProviders(<ActivityHeatmapCard username="newbie" now={NOW} />);
 
         expect(
             await screen.findByRole("heading", { level: 2, name: "0 bài nộp trong năm qua" }),
@@ -96,9 +88,7 @@ describe("ActivityHeatmapCard", () => {
                 { once: true },
             ),
         );
-        renderWithProviders(
-            <ActivityHeatmapCard username="newbie" longestStreakDays={0} now={NOW} />,
-        );
+        renderWithProviders(<ActivityHeatmapCard username="newbie" now={NOW} />);
 
         const alert = await screen.findByRole("alert");
         expect(alert).toHaveTextContent("Không tải được hoạt động");

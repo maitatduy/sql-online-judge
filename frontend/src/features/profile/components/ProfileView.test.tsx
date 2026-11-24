@@ -46,7 +46,9 @@ describe("ProfileView", () => {
         renderWithProviders(<ProfileView username="minh.anh" />);
 
         expect(await screen.findByText("Bài đã AC")).toBeInTheDocument();
-        expect(screen.getByRole("img", { name: "Đã giải 63 trên 330 bài" })).toBeInTheDocument();
+        expect(
+            await screen.findByRole("img", { name: "Đã giải 63 trên 330 bài" }),
+        ).toBeInTheDocument();
     });
 
     it("chỉ có một h1 và các khối đều là h2, không nhảy cấp tiêu đề", async () => {
@@ -93,7 +95,7 @@ describe("ProfileView", () => {
                 { once: true },
             ),
         );
-        renderWithProviders(<ProfileView username={MINH_ANH_PROFILE.username} />);
+        renderWithProviders(<ProfileView username={MINH_ANH_PROFILE.profile.username} />);
 
         fireEvent.click(await screen.findByRole("button", { name: "Thử lại" }));
 

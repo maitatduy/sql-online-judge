@@ -21,7 +21,7 @@ import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useNow } from "@/lib/useNow";
 
-import { EmailPreferenceToggle } from "./EmailPreferenceToggle";
+import { EmailPreferenceToggle } from "@/components/shared/EmailPreferenceToggle";
 
 export function NotificationsPage() {
     const pathname = usePathname();

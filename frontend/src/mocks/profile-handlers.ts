@@ -1,7 +1,7 @@
 import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 import { buildActiveYear, EMPTY_ACTIVITY } from "./activity-fixtures";
-import { adminUserProfile } from "./admin-user-profiles";
+import { adminUserProfile, adminUserProfileById } from "./admin-user-profiles";
 import { apiError } from "./api-error";
 import {
     BROKEN_PROFILE_USERNAME,
@@ -16,7 +16,13 @@ const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
 function findPublicProfile(username: string) {
-    return PROFILES.find((profile) => profile.username === username) ?? adminUserProfile(username);
+    return (
+        PROFILES.find((mock) => mock.profile.username === username) ?? adminUserProfile(username)
+    );
+}
+
+function findByUserId(userId: string) {
+    return PROFILES.find((mock) => mock.profile.userId === userId) ?? adminUserProfileById(userId);
 }
 
 function unavailableProfileResponse(username: string) {
@@ -32,11 +38,41 @@ function unavailableProfileResponse(username: string) {
 }
 
 export const profileHandlers: RequestHandler[] = [
+    http.get("*/api/leaderboard/:userId", async ({ params }) => {
+        await delay();
+        const userId = String(params.userId);
+        return HttpResponse.json(
+            findByUserId(userId)?.rating ?? {
+                userId,
+                rating: null,
+                rank: null,
+                contestsPlayed: 0,
+            },
+        );
+    }),
+
+    http.get("*/api/solved-summaries/:userId", async ({ params }) => {
+        await delay();
+        const userId = String(params.userId);
+        return HttpResponse.json(
+            findByUserId(userId)?.solved ?? {
+                userId,
+                solvedCount: 0,
+                byDifficulty: {
+                    EASY: { solved: 0, total: 0 },
+                    MEDIUM: { solved: 0, total: 0 },
+                    HARD: { solved: 0, total: 0 },
+                },
+            },
+        );
+    }),
+
     http.get("*/api/users/:username", async ({ params }) => {
         await delay();
         const username = String(params.username);
         return (
-            unavailableProfileResponse(username) ?? HttpResponse.json(findPublicProfile(username))
+            unavailableProfileResponse(username) ??
+            HttpResponse.json(findPublicProfile(username)?.profile)
         );
     }),
 
@@ -60,7 +96,9 @@ export const profileHandlers: RequestHandler[] = [
         const startIndex = Number(query.get("cursor") ?? 0);
         const pageSize = Math.min(Number(query.get("size") ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
         const submissions =
-            username === MINH_ANH_PROFILE.username ? buildRecentSubmissions(new Date()) : [];
+            username === MINH_ANH_PROFILE.profile.username
+                ? buildRecentSubmissions(new Date())
+                : [];
         const endIndex = startIndex + pageSize;
         return HttpResponse.json({
             items: submissions.slice(startIndex, endIndex),
@@ -74,7 +112,7 @@ export const profileHandlers: RequestHandler[] = [
         return (
             unavailableProfileResponse(username) ??
             HttpResponse.json(
-                username === MINH_ANH_PROFILE.username
+                username === MINH_ANH_PROFILE.profile.username
                     ? buildActiveYear(new Date())
                     : EMPTY_ACTIVITY,
             )

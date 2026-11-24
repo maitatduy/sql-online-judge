@@ -18,18 +18,19 @@ describe("ProfileStatTiles", () => {
         ["Bài đã AC", "63"],
         ["Rating", "1.487"],
         ["Hạng toàn cục", "#2.341"],
-        ["Chuỗi ngày", "12"],
+        ["Contest đã thi", "8"],
     ])("thẻ %s hiện %s theo định dạng số tiếng Việt", (label, value) => {
         render(
-            <ProfileStatTiles rating={MINH_ANH_PROFILE.rating} stats={MINH_ANH_PROFILE.stats} />,
+            <ProfileStatTiles rating={MINH_ANH_PROFILE.rating} solved={MINH_ANH_PROFILE.solved} />,
         );
 
         expect(tile(label)).toHaveTextContent(`${label}${value}`);
     });
 
-    it("hiện gạch ngang khi chưa có hạng toàn cục", () => {
-        render(<ProfileStatTiles rating={NEWBIE_PROFILE.rating} stats={NEWBIE_PROFILE.stats} />);
+    it("hiện gạch ngang khi chưa có rating và hạng", () => {
+        render(<ProfileStatTiles rating={NEWBIE_PROFILE.rating} solved={NEWBIE_PROFILE.solved} />);
 
+        expect(tile("Rating")).toHaveTextContent("Rating-");
         expect(tile("Hạng toàn cục")).toHaveTextContent("Hạng toàn cục-");
     });
 });

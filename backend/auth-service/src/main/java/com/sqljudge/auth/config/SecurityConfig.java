@@ -64,6 +64,7 @@ public class SecurityConfig {
                                         .requestMatchers(
                                                 HttpMethod.GET,
                                                 "/api/users/availability",
+                                                "/api/users/*",
                                                 "/api/role-invitations/*")
                                         .permitAll()
                                         .requestMatchers(

@@ -1,13 +1,12 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 import { ErrorState } from "@/components/shared/ErrorState";
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { ApiRequestError } from "@/lib/api-client";
 
-import { useProfile } from "../hooks/useProfile";
+import { useProfile, useRatingSummary, useSolvedSummary } from "../hooks/useProfile";
 
 import { ActivityHeatmapCard } from "./ActivityHeatmapCard";
 import { ProfileActions } from "./ProfileActions";
@@ -15,7 +14,7 @@ import { ProfileIdentityCard } from "./ProfileIdentityCard";
 import { ProfileSkeleton } from "./ProfileSkeleton";
 import { RatingHistoryCard } from "./RatingHistoryCard";
 import { ProfileStatTiles } from "./ProfileStatTiles";
-import { ProfileTabs } from "./ProfileTabs";
+import { RecentSubmissionsTable } from "./RecentSubmissionsTable";
 import { SolvedDonut } from "./SolvedDonut";
 
 const USER_NOT_FOUND_CODE = "USER_NOT_FOUND";
@@ -30,6 +29,8 @@ function isUserNotFound(error: unknown): boolean {
 
 export function ProfileView({ username }: ProfileViewProps) {
     const { data: profile, error, isPending, refetch } = useProfile(username);
+    const { data: rating } = useRatingSummary(profile?.userId);
+    const { data: solved } = useSolvedSummary(profile?.userId);
 
     if (isUserNotFound(error)) {
         notFound();
@@ -45,24 +46,25 @@ export function ProfileView({ username }: ProfileViewProps) {
                 <>
                     <ProfileIdentityCard
                         profile={profile}
+                        rating={rating}
                         actions={<ProfileActions username={profile.username} />}
                     />
                     <div className="flex min-w-0 flex-[999_1_600px] flex-col gap-5">
-                        <ProfileStatTiles rating={profile.rating} stats={profile.stats} />
+                        <ProfileStatTiles rating={rating} solved={solved} />
                         <div className="flex flex-wrap gap-5">
-                            <SolvedDonut stats={profile.stats} />
+                            {solved ? <SolvedDonut solved={solved} /> : null}
                             <RatingHistoryCard username={profile.username} />
                         </div>
-                        <ActivityHeatmapCard
-                            username={profile.username}
-                            longestStreakDays={profile.stats.longestStreakDays}
-                        />
-                        <Suspense fallback={null}>
-                            <ProfileTabs
-                                username={profile.username}
-                                tabCounts={profile.tabCounts}
-                            />
-                        </Suspense>
+                        <ActivityHeatmapCard username={profile.username} />
+                        <section
+                            aria-labelledby="recent-submissions"
+                            className="min-w-0 overflow-hidden rounded-lg border bg-card"
+                        >
+                            <h2 id="recent-submissions" className="border-b px-5 py-3 font-bold">
+                                Bài nộp gần đây
+                            </h2>
+                            <RecentSubmissionsTable username={profile.username} />
+                        </section>
                     </div>
                 </>
             ) : null}

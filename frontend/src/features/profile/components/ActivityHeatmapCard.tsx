@@ -7,22 +7,17 @@ import { Skeleton } from "@/components/shared/Skeleton";
 import { ApiRequestError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
 
-import { buildHeatmapWeeks } from "@/lib/activity-calendar";
+import { buildHeatmapWeeks, longestStreakDays } from "@/lib/activity-calendar";
 import { useActivity } from "../hooks/useActivity";
 
 import { ActivityHeatmap } from "@/components/shared/ActivityHeatmap";
 
 interface ActivityHeatmapCardProps {
     username: string;
-    longestStreakDays: number;
     now?: Date;
 }
 
-export function ActivityHeatmapCard({
-    username,
-    longestStreakDays,
-    now,
-}: ActivityHeatmapCardProps) {
+export function ActivityHeatmapCard({ username, now }: ActivityHeatmapCardProps) {
     const [mountedAt] = useState(() => new Date());
     const { data: activity, error, isPending, refetch } = useActivity(username);
 
@@ -50,7 +45,7 @@ export function ActivityHeatmapCard({
                             {formatNumber(activity.totalSubmissions)} bài nộp trong năm qua
                         </h2>
                         <span className="text-xs text-muted-foreground">
-                            Chuỗi dài nhất {formatNumber(longestStreakDays)} ngày
+                            Chuỗi dài nhất {formatNumber(longestStreakDays(activity.days))} ngày
                         </span>
                     </div>
                     <ActivityHeatmap

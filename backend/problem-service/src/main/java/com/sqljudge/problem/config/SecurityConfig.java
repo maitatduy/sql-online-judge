@@ -54,7 +54,8 @@ public class SecurityConfig {
                                                 "/api/tags",
                                                 "/api/problems",
                                                 "/api/problems/*",
-                                                "/api/problems/*/editorial")
+                                                "/api/problems/*/editorial",
+                                                "/api/solved-summaries/*")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

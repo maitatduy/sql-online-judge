@@ -7,13 +7,13 @@ import { SolvedDonut } from "./SolvedDonut";
 
 describe("SolvedDonut", () => {
     it("mô tả tổng số bài đã giải cho trình đọc màn hình", () => {
-        render(<SolvedDonut stats={MINH_ANH_PROFILE.stats} />);
+        render(<SolvedDonut solved={MINH_ANH_PROFILE.solved} />);
 
         expect(screen.getByRole("img", { name: "Đã giải 63 trên 330 bài" })).toBeInTheDocument();
     });
 
     it("có tiêu đề để thẻ không vô danh với trình đọc màn hình", () => {
-        render(<SolvedDonut stats={MINH_ANH_PROFILE.stats} />);
+        render(<SolvedDonut solved={MINH_ANH_PROFILE.solved} />);
 
         expect(
             screen.getByRole("heading", { level: 2, name: "Tiến độ theo độ khó" }),
@@ -25,7 +25,7 @@ describe("SolvedDonut", () => {
         ["Trung bình", "18/150"],
         ["Khó", "3/60"],
     ])("độ khó %s hiện %s", (label, progress) => {
-        render(<SolvedDonut stats={MINH_ANH_PROFILE.stats} />);
+        render(<SolvedDonut solved={MINH_ANH_PROFILE.solved} />);
 
         const row = screen.getByText(label).closest("li");
 
@@ -34,7 +34,7 @@ describe("SolvedDonut", () => {
     });
 
     it("vẫn hiện vòng rỗng và 0 bài cho người chưa giải bài nào", () => {
-        render(<SolvedDonut stats={NEWBIE_PROFILE.stats} />);
+        render(<SolvedDonut solved={NEWBIE_PROFILE.solved} />);
 
         expect(screen.getByRole("img", { name: "Đã giải 0 trên 330 bài" })).toBeInTheDocument();
         expect(screen.getByText("0/120")).toBeInTheDocument();

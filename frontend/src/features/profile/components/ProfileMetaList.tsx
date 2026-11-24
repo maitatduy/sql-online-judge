@@ -3,9 +3,9 @@ import { GraduationCap, Link2, MapPin } from "lucide-react";
 import { displayUrl, safeExternalUrl } from "@/lib/safe-external-url";
 
 interface ProfileMetaListProps {
-    school?: string;
-    location?: string;
-    websiteUrl?: string;
+    school: string | null;
+    location: string | null;
+    websiteUrl: string | null;
 }
 
 const ITEM_CLASS_NAME = "flex items-center gap-2";
