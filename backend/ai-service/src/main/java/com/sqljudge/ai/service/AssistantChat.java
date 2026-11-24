@@ -1,6 +1,5 @@
 package com.sqljudge.ai.service;
 
-import com.sqljudge.ai.client.ContestServiceClient;
 import com.sqljudge.ai.client.ProblemContext;
 import com.sqljudge.ai.client.ProblemServiceClient;
 import com.sqljudge.ai.dto.request.SendMessageRequest;
@@ -11,8 +10,6 @@ import com.sqljudge.ai.entity.BlockReason;
 import com.sqljudge.ai.entity.MessageRole;
 import com.sqljudge.ai.service.ConversationStore.ConversationSnapshot;
 import com.sqljudge.ai.service.ConversationStore.Exchange;
-import com.sqljudge.common.error.ErrorCode;
-import com.sqljudge.common.exception.ForbiddenException;
 import com.sqljudge.common.security.SecurityUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +30,11 @@ public class AssistantChat {
     private final AiQuotaService quotaService;
     private final AssistantModel assistantModel;
     private final ProblemServiceClient problemServiceClient;
-    private final ContestServiceClient contestServiceClient;
+    private final ContestLock contestLock;
 
     public ConversationSummaryResponse start(UUID problemId) {
         UUID userId = SecurityUtils.requireCurrentUser().id();
-        ensureNotInRatedContest(userId);
+        contestLock.ensureNotInRatedContest(userId);
         ProblemRef problem = null;
         if (problemId != null) {
             ProblemContext context = problemServiceClient.assistantContext(problemId, userId);
@@ -48,7 +45,7 @@ public class AssistantChat {
 
     public MessageExchangeResponse send(UUID conversationId, SendMessageRequest request) {
         UUID userId = SecurityUtils.requireCurrentUser().id();
-        ensureNotInRatedContest(userId);
+        contestLock.ensureNotInRatedContest(userId);
         ConversationSnapshot snapshot = conversationStore.snapshot(conversationId, userId);
         ProblemContext problem =
                 snapshot.problemId() == null
@@ -90,14 +87,6 @@ public class AssistantChat {
         } catch (RuntimeException error) {
             quotaService.refund(userId);
             throw error;
-        }
-    }
-
-    private void ensureNotInRatedContest(UUID userId) {
-        if (contestServiceClient.ratedParticipation(userId).isInRatedContest()) {
-            throw new ForbiddenException(
-                    ErrorCode.AI_DISABLED_DURING_CONTEST,
-                    "Trợ lý AI tạm khoá khi bạn đang thi contest tính rating");
         }
     }
 }

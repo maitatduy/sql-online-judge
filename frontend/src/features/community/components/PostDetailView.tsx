@@ -23,6 +23,7 @@ import { POST_CATEGORY_LABELS } from "../labels";
 import type { PostDetail } from "../types";
 import { CategoryPill } from "./CategoryPill";
 import { CommentSection } from "./CommentSection";
+import { DiscussionSummary } from "./DiscussionSummary";
 import { PostAuthorActions } from "./PostAuthorActions";
 import { PostBody } from "./PostBody";
 import { ReportDialog } from "./ReportDialog";
@@ -176,6 +177,7 @@ function PostArticle({ post }: { post: PostDetail }) {
                     <PostBody markdown={post.bodyMarkdown} problemSlug={post.problemSlug} />
                 </div>
             </article>
+            {isSignedIn && post.commentCount > 0 ? <DiscussionSummary postId={post.id} /> : null}
             <CommentSection thread={{ postId: post.id }} />
             {isReporting ? (
                 <ReportDialog
