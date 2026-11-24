@@ -2,7 +2,6 @@ import {
     BookOpen,
     ClipboardCheck,
     Code,
-    FileText,
     Flag,
     History,
     LayoutDashboard,
@@ -11,7 +10,6 @@ import {
     type LucideIcon,
     Mail,
     Server,
-    Settings,
     Sparkles,
     Trophy,
     Users,
@@ -110,7 +108,6 @@ export const ADMIN_NAVIGATION_GROUPS: AdminNavigationGroup[] = [
                 icon: Trophy,
                 indicator: "liveContest",
             },
-            { label: "Trang nội dung", href: `${ROUTES.admin}/pages`, icon: FileText },
         ],
     },
     {
@@ -125,7 +122,6 @@ export const ADMIN_NAVIGATION_GROUPS: AdminNavigationGroup[] = [
             },
             { label: "Trợ lý AI", href: ADMIN_ROUTES.ai, icon: Sparkles },
             { label: "Nhật ký thao tác", href: `${ROUTES.admin}/audit-log`, icon: History },
-            { label: "Cấu hình", href: `${ROUTES.admin}/settings`, icon: Settings },
         ],
     },
 ];

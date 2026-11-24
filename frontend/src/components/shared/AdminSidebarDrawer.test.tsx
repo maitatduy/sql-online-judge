@@ -40,7 +40,9 @@ describe("AdminSidebarDrawer", () => {
             "aria-current",
             "page",
         );
-        expect(within(navigation).getByRole("link", { name: /^Cấu hình/ })).toBeInTheDocument();
+        expect(
+            within(navigation).getByRole("link", { name: /^Nhật ký thao tác/ }),
+        ).toBeInTheDocument();
     });
 
     it("đóng bằng phím Esc và trả focus về nút mở", async () => {
