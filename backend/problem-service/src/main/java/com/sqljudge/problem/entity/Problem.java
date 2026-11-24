@@ -79,6 +79,9 @@ public class Problem extends BaseEntity {
     @Column(name = "statement_markdown", nullable = false, columnDefinition = "MEDIUMTEXT")
     private String statementMarkdown;
 
+    @Column(name = "editorial_markdown", columnDefinition = "MEDIUMTEXT")
+    private String editorialMarkdown;
+
     @Column(name = "starter_code", nullable = false, columnDefinition = "TEXT")
     private String starterCode;
 

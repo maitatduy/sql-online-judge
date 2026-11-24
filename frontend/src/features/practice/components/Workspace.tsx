@@ -10,13 +10,14 @@ import { ROUTES } from "@/lib/routes";
 import { practiceApi } from "../api";
 import { isProblemNotFound, useProblemDetail } from "../hooks/useProblemDetail";
 import type { ProblemDetail } from "../types";
-import type { WorkspaceTarget } from "../workspace-target";
+import type { WorkspaceExtraTab, WorkspaceTarget } from "../workspace-target";
 import { ProblemStatementMeta } from "./ProblemStatementMeta";
 import { ProblemWorkspace } from "./ProblemWorkspace";
 import { WorkspaceHeader } from "./WorkspaceHeader";
 
 interface WorkspaceProps {
     slug: string;
+    extraTabs?: WorkspaceExtraTab[];
 }
 
 function WorkspaceSkeleton() {
@@ -30,20 +31,24 @@ function WorkspaceSkeleton() {
     );
 }
 
-function practiceTarget(problem: ProblemDetail): WorkspaceTarget {
+function practiceTarget(
+    problem: ProblemDetail,
+    extraTabs: WorkspaceExtraTab[] | undefined,
+): WorkspaceTarget {
     return {
         storageKey: problem.id,
         heading: `#${problem.number}. ${problem.title}`,
         loginPath: ROUTES.problem(problem.slug),
         historyProblemId: problem.id,
         statementMeta: <ProblemStatementMeta problem={problem} />,
+        extraTabs,
         startRun: (request) => practiceApi.startRun(problem.id, request),
         submit: (request, idempotencyKey) =>
             practiceApi.submitSolution(problem.id, request, idempotencyKey),
     };
 }
 
-export function Workspace({ slug }: WorkspaceProps) {
+export function Workspace({ slug, extraTabs }: WorkspaceProps) {
     const { data: problem, error, isPending, refetch } = useProblemDetail(slug);
 
     if (isProblemNotFound(error)) {
@@ -57,7 +62,7 @@ export function Workspace({ slug }: WorkspaceProps) {
                     <ProblemWorkspace
                         key={problem.id}
                         problem={problem}
-                        target={practiceTarget(problem)}
+                        target={practiceTarget(problem, extraTabs)}
                     />
                 </ToastProvider>
             ) : null}

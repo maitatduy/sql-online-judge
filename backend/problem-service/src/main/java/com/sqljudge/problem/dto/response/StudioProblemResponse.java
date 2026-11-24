@@ -20,6 +20,7 @@ public record StudioProblemResponse(
         Difficulty difficulty,
         List<TagResponse> tags,
         String statementMarkdown,
+        String editorialMarkdown,
         ProblemDatasetResponse dataset,
         ProblemReviewResponse latestReview,
         Instant updatedAt) {
@@ -42,6 +43,7 @@ public record StudioProblemResponse(
                         .sorted(Comparator.comparing(TagResponse::slug))
                         .toList(),
                 problem.getStatementMarkdown(),
+                problem.getEditorialMarkdown(),
                 datasetOf(problem.getDraftRevision()),
                 problem.latestReview().map(ProblemReviewResponse::from).orElse(null),
                 problem.getUpdatedAt());

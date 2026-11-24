@@ -2,10 +2,12 @@ package com.sqljudge.problem.controller;
 
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.problem.dto.response.ProblemDetailResponse;
+import com.sqljudge.problem.dto.response.ProblemEditorialResponse;
 import com.sqljudge.problem.dto.response.ProblemProgress;
 import com.sqljudge.problem.dto.response.ProblemSummaryResponse;
 import com.sqljudge.problem.entity.Difficulty;
 import com.sqljudge.problem.service.ProblemDetailService;
+import com.sqljudge.problem.service.ProblemEditorialService;
 import com.sqljudge.problem.service.ProblemQueryService;
 import com.sqljudge.problem.service.ProblemSearch;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +33,7 @@ public class ProblemController {
 
     private final ProblemQueryService problemQueryService;
     private final ProblemDetailService problemDetailService;
+    private final ProblemEditorialService problemEditorialService;
 
     @GetMapping
     @PreAuthorize("permitAll()")
@@ -61,5 +64,17 @@ public class ProblemController {
     @ApiResponse(responseCode = "404", description = "Không có bài, bài đang ẩn hoặc chưa xuất bản")
     public ProblemDetailResponse getProblem(@PathVariable String slug) {
         return problemDetailService.getPublished(slug);
+    }
+
+    @GetMapping("/{slug}/editorial")
+    @PreAuthorize("permitAll()")
+    @Operation(
+            summary =
+                    "Lời giải chính thức: chỉ trả nội dung cho người đã AC, tác giả, kiểm duyệt"
+                            + " viên, admin")
+    @ApiResponse(responseCode = "200", description = "Trạng thái lời giải và nội dung nếu được xem")
+    @ApiResponse(responseCode = "404", description = "Không có bài hoặc bài chưa công khai")
+    public ProblemEditorialResponse getEditorial(@PathVariable String slug) {
+        return problemEditorialService.editorial(slug);
     }
 }

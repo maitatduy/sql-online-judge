@@ -13,6 +13,7 @@ import type {
     LinkedProblem,
     PostDetail,
     PostPage,
+    ProblemEditorial,
     ProblemOption,
     ReportReason,
     ReportTarget,
@@ -55,6 +56,15 @@ export const communityApi = {
         }),
     post: (postId: string, signal?: AbortSignal) =>
         apiClient.get<PostDetail>(postPath(postId), { signal }),
+    problemSolutions: (problemId: string, signal?: AbortSignal) =>
+        apiClient.get<PostPage>("/api/community/posts", {
+            params: { problemId, category: "SOLUTION", tab: "HOT", size: POST_PAGE_SIZE },
+            signal,
+        }),
+    editorial: (slug: string, signal?: AbortSignal) =>
+        apiClient.get<ProblemEditorial>(`/api/problems/${encodeURIComponent(slug)}/editorial`, {
+            signal,
+        }),
     createPost: (post: SavePostInput) => apiClient.post<PostDetail>("/api/community/posts", post),
     updatePost: ({ postId, post }: { postId: string; post: SavePostInput }) =>
         apiClient.put<PostDetail>(postPath(postId), post),

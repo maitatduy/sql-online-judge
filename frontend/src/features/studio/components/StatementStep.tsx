@@ -30,9 +30,12 @@ function serverErrorOf(error: Error | null): string | undefined {
 
 export function StatementStep({ problem, disabled, save }: StatementStepProps) {
     const [statement, setStatement] = useState(problem.statementMarkdown);
-    const isTooLong = statement.length > MAX_STATEMENT_LENGTH;
+    const [editorial, setEditorial] = useState(problem.editorialMarkdown ?? "");
+    const isTooLong =
+        statement.length > MAX_STATEMENT_LENGTH || editorial.length > MAX_STATEMENT_LENGTH;
     const error = isTooLong ? TOO_LONG_MESSAGE : serverErrorOf(save.error);
-    const hasChanges = statement !== problem.statementMarkdown;
+    const hasChanges =
+        statement !== problem.statementMarkdown || editorial !== (problem.editorialMarkdown ?? "");
     useUnsavedChangesWarning(hasChanges);
 
     return (
@@ -80,6 +83,22 @@ export function StatementStep({ problem, disabled, save }: StatementStepProps) {
                     {formatNumber(statement.length)} / {formatNumber(MAX_STATEMENT_LENGTH)} ký tự
                 </p>
             </div>
+            <div className="mt-6 flex flex-col gap-2">
+                <label htmlFor="editorial-markdown" className="text-base font-bold">
+                    Lời giải chính thức
+                </label>
+                <p className="text-[13px] text-muted-foreground">
+                    Không bắt buộc. Chỉ người đã AC bài mới xem được.
+                </p>
+                <textarea
+                    id="editorial-markdown"
+                    value={editorial}
+                    disabled={disabled}
+                    spellCheck={false}
+                    onChange={(event) => setEditorial(event.target.value)}
+                    className="block min-h-[200px] w-full resize-y rounded-md border bg-transparent p-4 text-[13px] leading-relaxed outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                />
+            </div>
             {disabled ? null : (
                 <div className="mt-5 border-t pt-4">
                     <SaveBar
@@ -87,7 +106,12 @@ export function StatementStep({ problem, disabled, save }: StatementStepProps) {
                         canSave={hasChanges && !isTooLong}
                         isSaving={save.isSaving}
                         savedAt={save.savedAt}
-                        onSave={() => save.save({ statementMarkdown: statement })}
+                        onSave={() =>
+                            save.save({
+                                statementMarkdown: statement,
+                                editorialMarkdown: editorial,
+                            })
+                        }
                     />
                 </div>
             )}
