@@ -41,6 +41,10 @@ spring:
               uri: ${COMMUNITY_SERVICE_URL}
               predicates:
                 - Path=/api/community/**,/api/admin/reports,/api/admin/reports/**
+            - id: ai-service
+              uri: ${AI_SERVICE_URL}
+              predicates:
+                - Path=/api/ai/**
             - id: problem-service
               uri: ${PROBLEM_SERVICE_URL}
               predicates:

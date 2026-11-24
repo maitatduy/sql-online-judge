@@ -1,0 +1,12 @@
+package com.sqljudge.ai.repository;
+
+import com.sqljudge.ai.entity.AiConversation;
+import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AiConversationRepository extends JpaRepository<AiConversation, UUID> {
+
+    Page<AiConversation> findByUserIdOrderByLastMessageAtDesc(UUID userId, Pageable pageable);
+}

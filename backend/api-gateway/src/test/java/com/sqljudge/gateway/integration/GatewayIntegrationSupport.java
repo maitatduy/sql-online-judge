@@ -32,6 +32,7 @@ abstract class GatewayIntegrationSupport {
     static final AuthServiceStub LEARNING_SERVICE = AuthServiceStub.start("{\"keys\":[]}", 404);
     static final AuthServiceStub CONTEST_SERVICE = AuthServiceStub.start("{\"keys\":[]}", 404);
     static final AuthServiceStub COMMUNITY_SERVICE = AuthServiceStub.start("{\"keys\":[]}", 404);
+    static final AuthServiceStub AI_SERVICE = AuthServiceStub.start("{\"keys\":[]}", 404);
 
     static {
         REDIS.start();
@@ -49,6 +50,7 @@ abstract class GatewayIntegrationSupport {
         registry.add("LEARNING_SERVICE_URL", LEARNING_SERVICE::baseUrl);
         registry.add("CONTEST_SERVICE_URL", CONTEST_SERVICE::baseUrl);
         registry.add("COMMUNITY_SERVICE_URL", COMMUNITY_SERVICE::baseUrl);
+        registry.add("AI_SERVICE_URL", AI_SERVICE::baseUrl);
     }
 
     @BeforeEach
@@ -58,6 +60,7 @@ abstract class GatewayIntegrationSupport {
         LEARNING_SERVICE.clear();
         CONTEST_SERVICE.clear();
         COMMUNITY_SERVICE.clear();
+        AI_SERVICE.clear();
     }
 
     @Autowired

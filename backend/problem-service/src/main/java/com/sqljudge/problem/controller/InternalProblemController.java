@@ -1,8 +1,10 @@
 package com.sqljudge.problem.controller;
 
+import com.sqljudge.problem.dto.response.InternalAssistantContextResponse;
 import com.sqljudge.problem.dto.response.InternalContestProblemResponse;
 import com.sqljudge.problem.dto.response.InternalContestStatementResponse;
 import com.sqljudge.problem.dto.response.InternalJudgingInfoResponse;
+import com.sqljudge.problem.service.InternalAssistantContextService;
 import com.sqljudge.problem.service.InternalContestProblemService;
 import com.sqljudge.problem.service.InternalJudgingInfoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +30,7 @@ public class InternalProblemController {
 
     private final InternalJudgingInfoService internalJudgingInfoService;
     private final InternalContestProblemService internalContestProblemService;
+    private final InternalAssistantContextService internalAssistantContextService;
 
     @GetMapping("/contest-ready")
     @Operation(summary = "Bài đã duyệt cho contest trong danh sách id, bỏ qua id không hợp lệ")
@@ -64,5 +67,18 @@ public class InternalProblemController {
     @ApiResponse(responseCode = "404", description = "Không có bài hoặc bài chưa xuất bản")
     public InternalContestStatementResponse contestStatement(@PathVariable UUID problemId) {
         return internalContestProblemService.statement(problemId);
+    }
+
+    @GetMapping("/{problemId}/assistant-context")
+    @Operation(
+            summary =
+                    "Đề, schema và trạng thái AC của người dùng cho trợ lý AI; không kèm testcase"
+                            + " ẩn hay đáp án chuẩn")
+    @ApiResponse(responseCode = "200", description = "Ngữ cảnh của bài")
+    @ApiResponse(responseCode = "401", description = "Thiếu hoặc sai token nội bộ")
+    @ApiResponse(responseCode = "404", description = "Không có bài hoặc bài chưa công khai")
+    public InternalAssistantContextResponse assistantContext(
+            @PathVariable UUID problemId, @RequestParam UUID userId) {
+        return internalAssistantContextService.context(problemId, userId);
     }
 }
