@@ -29,6 +29,7 @@ public class AdminUserBanService {
 
     private final UserRepository userRepository;
     private final UserSessionRepository userSessionRepository;
+    private final AccessRevocations accessRevocations;
     private final AdminActionRepository adminActionRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
@@ -52,6 +53,7 @@ public class AdminUserBanService {
         Instant until = request.duration().bannedUntilFrom(now);
         user.ban(now, until, reason);
         userSessionRepository.revokeAllActiveSessions(user, now);
+        accessRevocations.revokeUser(user.getId(), now);
         adminActionRepository.save(AdminAction.ban(actorId, user, reason));
         if (request.notifyByEmail()) {
             eventPublisher.publishEvent(

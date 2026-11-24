@@ -21,6 +21,7 @@ public class SessionService {
     static final Duration CONCURRENT_REFRESH_GRACE = Duration.ofSeconds(10);
 
     private final UserSessionRepository userSessionRepository;
+    private final AccessRevocations accessRevocations;
     private final AccessTokenIssuer accessTokenIssuer;
     private final Clock clock;
 
@@ -50,7 +51,11 @@ public class SessionService {
         Instant now = clock.instant();
         userSessionRepository
                 .findByTokenHash(SecureTokens.sha256(refreshToken))
-                .ifPresent(session -> session.revoke(now));
+                .ifPresent(
+                        session -> {
+                            session.revoke(now);
+                            accessRevocations.revokeSession(session.getId());
+                        });
     }
 
     private SignInResult rotate(UserSession session, Instant now) {
@@ -59,7 +64,7 @@ public class SessionService {
         session.rotateTo(SecureTokens.sha256(newRefreshToken), now);
         user.setLastActiveAt(now);
         return new SignInResult(
-                AuthResponses.of(user, accessTokenIssuer.issue(user)),
+                AuthResponses.of(user, accessTokenIssuer.issue(user, session.getId())),
                 newRefreshToken,
                 session.isPersistent());
     }
@@ -67,12 +72,13 @@ public class SessionService {
     private SignInResult handlePreviousToken(UserSession session, Instant now) {
         if (!session.wasRotatedWithin(CONCURRENT_REFRESH_GRACE, now)) {
             session.revoke(now);
+            accessRevocations.revokeSession(session.getId());
             log.warn("refresh_token_reuse_detected sessionId={}", session.getId());
             throw invalidRefreshToken();
         }
         User user = requireUsableSession(session, now);
         return new SignInResult(
-                AuthResponses.of(user, accessTokenIssuer.issue(user)),
+                AuthResponses.of(user, accessTokenIssuer.issue(user, session.getId())),
                 null,
                 session.isPersistent());
     }

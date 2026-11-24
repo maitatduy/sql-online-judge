@@ -3,6 +3,7 @@ package com.sqljudge.auth.unit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -15,6 +16,7 @@ import com.sqljudge.auth.event.PasswordResetEmailRequestedEvent;
 import com.sqljudge.auth.repository.EmailTokenRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
+import com.sqljudge.auth.service.AccessRevocations;
 import com.sqljudge.auth.service.PasswordResetService;
 import com.sqljudge.auth.service.SecureTokens;
 import com.sqljudge.common.error.ErrorCode;
@@ -39,6 +41,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class PasswordResetServiceTest {
 
+    private final AccessRevocations accessRevocations = mock(AccessRevocations.class);
+
     private static final Instant NOW = Instant.parse("2026-10-15T05:00:00Z");
     private static final String EMAIL = "minh.anh@gmail.com";
     private static final String TOKEN = "reset-link-token";
@@ -59,6 +63,7 @@ class PasswordResetServiceTest {
                         userRepository,
                         emailTokenRepository,
                         userSessionRepository,
+                        accessRevocations,
                         passwordEncoder,
                         eventPublisher,
                         Clock.fixed(NOW, ZoneOffset.UTC));

@@ -1,13 +1,17 @@
 package com.sqljudge.gateway.config;
 
 import com.sqljudge.gateway.security.ApiErrorAuthenticationEntryPoint;
+import com.sqljudge.gateway.security.RevokedAccessCheck;
 import java.time.Clock;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
@@ -21,6 +25,15 @@ public class SecurityConfig {
     @Bean
     Clock clock() {
         return Clock.systemUTC();
+    }
+
+    @Bean
+    ReactiveJwtDecoder jwtDecoder(
+            @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}") String jwkSetUri,
+            RevokedAccessCheck revokedAccessCheck) {
+        NimbusReactiveJwtDecoder delegate =
+                NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        return token -> delegate.decode(token).flatMap(revokedAccessCheck::verify);
     }
 
     @Bean

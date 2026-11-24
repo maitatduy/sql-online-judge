@@ -2,11 +2,14 @@ package com.sqljudge.auth.unit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.entity.UserSession;
 import com.sqljudge.auth.repository.UserSessionRepository;
+import com.sqljudge.auth.service.AccessRevocations;
 import com.sqljudge.auth.service.AccessTokenIssuer;
 import com.sqljudge.auth.service.SecureTokens;
 import com.sqljudge.auth.service.SessionService;
@@ -31,6 +34,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class SessionServiceTest {
 
+    private final AccessRevocations accessRevocations = mock(AccessRevocations.class);
+
     private static final Instant NOW = Instant.parse("2026-10-15T05:00:00Z");
     private static final String CURRENT_TOKEN = "current-refresh-token";
     private static final String PREVIOUS_TOKEN = "previous-refresh-token";
@@ -47,6 +52,7 @@ class SessionServiceTest {
         sessionService =
                 new SessionService(
                         userSessionRepository,
+                        accessRevocations,
                         new AccessTokenIssuer(TestJwts.newKey(), clock),
                         clock);
         user = new User();
@@ -56,6 +62,7 @@ class SessionServiceTest {
         user.setRole(Role.LEARNER);
         user.setEmailVerifiedAt(NOW.minus(Duration.ofDays(1)));
         session = new UserSession();
+        ReflectionTestUtils.setField(session, "id", UUID.randomUUID());
         session.setUser(user);
         session.setTokenHash(SecureTokens.sha256(CURRENT_TOKEN));
         session.setPersistent(true);
@@ -132,6 +139,7 @@ class SessionServiceTest {
         assertInvalid(PREVIOUS_TOKEN);
 
         assertThat(session.getRevokedAt()).isEqualTo(NOW);
+        verify(accessRevocations).revokeSession(session.getId());
     }
 
     @Test
@@ -158,6 +166,7 @@ class SessionServiceTest {
         sessionService.revoke(null);
 
         assertThat(session.getRevokedAt()).isEqualTo(NOW);
+        verify(accessRevocations).revokeSession(session.getId());
     }
 
     private void rotatedSecondsAgo(long seconds) {

@@ -3,6 +3,7 @@ package com.sqljudge.auth.unit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -22,6 +23,7 @@ import com.sqljudge.auth.event.UnbanNotificationEmailRequestedEvent;
 import com.sqljudge.auth.repository.AdminActionRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
+import com.sqljudge.auth.service.AccessRevocations;
 import com.sqljudge.auth.service.AdminUserBanService;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.AppException;
@@ -45,6 +47,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class AdminUserBanServiceTest {
 
+    private final AccessRevocations accessRevocations = mock(AccessRevocations.class);
+
     private static final Instant NOW = Instant.parse("2026-10-18T05:00:00Z");
     private static final UUID ADMIN_ID = UUID.fromString("0192f3a0-0000-7000-8000-00000000000a");
     private static final UUID TARGET_ID = UUID.fromString("0192f3a0-0000-7000-8000-00000000000b");
@@ -65,6 +69,7 @@ class AdminUserBanServiceTest {
                 new AdminUserBanService(
                         userRepository,
                         userSessionRepository,
+                        accessRevocations,
                         adminActionRepository,
                         eventPublisher,
                         Clock.fixed(NOW, ZoneOffset.UTC));
@@ -89,6 +94,7 @@ class AdminUserBanServiceTest {
         assertThat(target.getBannedAt()).isEqualTo(NOW);
         assertThat(target.getBanReason()).isEqualTo("Spam bình luận");
         verify(userSessionRepository).revokeAllActiveSessions(target, NOW);
+        verify(accessRevocations).revokeUser(TARGET_ID, NOW);
         AdminAction action = recordedAction();
         assertThat(action.getActorId()).isEqualTo(ADMIN_ID);
         assertThat(action.getTargetUserId()).isEqualTo(TARGET_ID);

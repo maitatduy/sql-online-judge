@@ -72,6 +72,8 @@ Khoá: `sqljudge:<service>:<thực-thể>:<id>[:<thuộc-tính>]` - chữ thư�
 | Hạn mức AI | `sqljudge:ai:quota:{userId}:{yyyyMMdd}` | 26 giờ |
 | Khoá chống chấm trùng | `sqljudge:judge:lock:{submissionId}` | 2 phút |
 | Refresh token bị thu hồi | `sqljudge:auth:revoked:{jti}` | bằng thời hạn token |
+| Phiên bị thu hồi (gateway chặn access token có `sid` này) | `sqljudge:auth:revoked-session:{sessionId}` | 15 phút (thời hạn access token) |
+| Mọi phiên của người dùng bị thu hồi (gateway chặn token cấp trước thời điểm lưu) | `sqljudge:auth:revoked-user:{userId}` | 15 phút |
 
 Mọi khoá cache phải có TTL. Không lưu dữ liệu chỉ tồn tại trong Redis mà không có nguồn gốc ở MySQL (trừ bộ đếm tạm).
 

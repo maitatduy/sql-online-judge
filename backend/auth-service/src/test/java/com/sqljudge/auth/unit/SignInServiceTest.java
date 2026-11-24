@@ -38,6 +38,7 @@ class SignInServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-10-15T05:00:00Z");
     private static final UUID USER_ID = UUID.fromString("0192f3a0-0000-7000-8000-000000000001");
+    private static final UUID SESSION_ID = UUID.randomUUID();
 
     @Mock private UserRepository userRepository;
     @Mock private UserSessionRepository userSessionRepository;
@@ -62,7 +63,12 @@ class SignInServiceTest {
         user.setRole(Role.SETTER);
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
         when(userSessionRepository.save(any(UserSession.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+                .thenAnswer(
+                        invocation -> {
+                            UserSession saved = invocation.getArgument(0);
+                            ReflectionTestUtils.setField(saved, "id", SESSION_ID);
+                            return saved;
+                        });
     }
 
     @Test
@@ -75,6 +81,7 @@ class SignInServiceTest {
         assertThat(jwt.getSubject()).isEqualTo(USER_ID.toString());
         assertThat(jwt.getClaimAsString("username")).isEqualTo("minh.anh");
         assertThat(jwt.getClaimAsString("role")).isEqualTo("SETTER");
+        assertThat(jwt.getClaimAsString("sid")).isEqualTo(SESSION_ID.toString());
         assertThat(jwt.getId()).isNotBlank();
         assertThat(jwt.getIssuedAt()).isEqualTo(NOW);
         assertThat(jwt.getExpiresAt()).isEqualTo(NOW.plus(Duration.ofMinutes(15)));

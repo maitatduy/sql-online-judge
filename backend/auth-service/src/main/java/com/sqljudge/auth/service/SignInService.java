@@ -40,8 +40,11 @@ public class SignInService {
                                                 "Bạn cần đăng nhập để tiếp tục"));
         user.setLastActiveAt(now);
         String refreshToken = SecureTokens.newToken();
-        userSessionRepository.save(newSession(user, refreshToken, isPersistent, userAgent, now));
-        AuthResponse response = AuthResponses.of(user, accessTokenIssuer.issue(user));
+        UserSession session =
+                userSessionRepository.save(
+                        newSession(user, refreshToken, isPersistent, userAgent, now));
+        AuthResponse response =
+                AuthResponses.of(user, accessTokenIssuer.issue(user, session.getId()));
         return new SignInResult(response, refreshToken, isPersistent);
     }
 

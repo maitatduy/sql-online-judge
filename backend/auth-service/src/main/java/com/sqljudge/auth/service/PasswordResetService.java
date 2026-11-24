@@ -29,6 +29,7 @@ public class PasswordResetService {
     private final UserRepository userRepository;
     private final EmailTokenRepository emailTokenRepository;
     private final UserSessionRepository userSessionRepository;
+    private final AccessRevocations accessRevocations;
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
@@ -68,6 +69,7 @@ public class PasswordResetService {
         emailTokenRepository.invalidateUnusedTokens(user, PURPOSE, now);
         emailTokenRepository.invalidateUnusedTokens(user, EmailTokenPurpose.INVITE, now);
         userSessionRepository.revokeAllActiveSessions(user, now);
+        accessRevocations.revokeUser(user.getId(), now);
     }
 
     private void issueResetLink(User user, Instant now) {

@@ -40,6 +40,19 @@ final class TestJwts {
         return sign(key, userId, "LEARNER", Instant.now().plus(ACCESS_TOKEN_TTL));
     }
 
+    static String sessionToken(RSAKey key, String userId, String sessionId, Instant issuedAt) {
+        JWTClaimsSet claims =
+                new JWTClaimsSet.Builder()
+                        .subject(userId)
+                        .claim("username", "minh.anh")
+                        .claim("role", "LEARNER")
+                        .claim("sid", sessionId)
+                        .issueTime(Date.from(issuedAt))
+                        .expirationTime(Date.from(issuedAt.plus(ACCESS_TOKEN_TTL)))
+                        .build();
+        return signClaims(key, claims);
+    }
+
     static String expiredToken(RSAKey key) {
         return sign(key, USER_ID, "LEARNER", Instant.now().minus(Duration.ofMinutes(5)));
     }
@@ -53,6 +66,10 @@ final class TestJwts {
                         .issueTime(Date.from(expiresAt.minus(ACCESS_TOKEN_TTL)))
                         .expirationTime(Date.from(expiresAt))
                         .build();
+        return signClaims(key, claims);
+    }
+
+    private static String signClaims(RSAKey key, JWTClaimsSet claims) {
         SignedJWT jwt =
                 new SignedJWT(
                         new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(key.getKeyID()).build(),
