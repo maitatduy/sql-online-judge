@@ -19,6 +19,7 @@ import { parseTags, postSchema, type PostValues } from "../schemas";
 import type { PickedProblem, PostDetail, SavePostInput } from "../types";
 import { PostBody } from "./PostBody";
 import { ProblemPicker } from "./ProblemPicker";
+import { ProofreadButton } from "./ProofreadButton";
 
 type PostField = keyof PostValues;
 
@@ -49,6 +50,7 @@ export function PostEditor({ post, initialProblem = null }: PostEditorProps) {
         register,
         handleSubmit,
         watch,
+        getValues,
         setValue,
         setError,
         formState: { errors },
@@ -177,27 +179,35 @@ export function PostEditor({ post, initialProblem = null }: PostEditorProps) {
                     <label htmlFor="post-body" className={LABEL_CLASS}>
                         Nội dung
                     </label>
-                    <div
-                        role="group"
-                        aria-label="Chế độ soạn"
-                        className="flex rounded-md border p-0.5"
-                    >
-                        {[false, true].map((preview) => (
-                            <button
-                                key={String(preview)}
-                                type="button"
-                                aria-pressed={isPreview === preview}
-                                onClick={() => setIsPreview(preview)}
-                                className={cn(
-                                    "rounded-sm px-3 py-1 text-sm font-semibold",
-                                    isPreview === preview
-                                        ? "bg-surface-2"
-                                        : "text-muted-foreground",
-                                )}
-                            >
-                                {preview ? "Xem trước" : "Viết"}
-                            </button>
-                        ))}
+                    <div className="flex items-center gap-2">
+                        <ProofreadButton
+                            readText={() => getValues("bodyMarkdown")}
+                            onReplace={(text) =>
+                                setValue("bodyMarkdown", text, { shouldDirty: true })
+                            }
+                        />
+                        <div
+                            role="group"
+                            aria-label="Chế độ soạn"
+                            className="flex rounded-md border p-0.5"
+                        >
+                            {[false, true].map((preview) => (
+                                <button
+                                    key={String(preview)}
+                                    type="button"
+                                    aria-pressed={isPreview === preview}
+                                    onClick={() => setIsPreview(preview)}
+                                    className={cn(
+                                        "rounded-sm px-3 py-1 text-sm font-semibold",
+                                        isPreview === preview
+                                            ? "bg-surface-2"
+                                            : "text-muted-foreground",
+                                    )}
+                                >
+                                    {preview ? "Xem trước" : "Viết"}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
                 <textarea

@@ -118,6 +118,10 @@ export interface ProblemEditorial {
     editorialMarkdown: string | null;
 }
 
+export interface AiText {
+    text: string;
+}
+
 export interface VoteResult {
     voteScore: number;
     myVote: number;

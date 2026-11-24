@@ -12,6 +12,7 @@ import type {
     Contributor,
     LinkedProblem,
     PostDetail,
+    AiText,
     PostPage,
     ProblemEditorial,
     ProblemOption,
@@ -65,6 +66,9 @@ export const communityApi = {
         apiClient.get<ProblemEditorial>(`/api/problems/${encodeURIComponent(slug)}/editorial`, {
             signal,
         }),
+    summarizeDiscussion: (postId: string) =>
+        apiClient.post<AiText>("/api/ai/discussion-summaries", { postId }),
+    proofread: (text: string) => apiClient.post<AiText>("/api/ai/proofreads", { text }),
     createPost: (post: SavePostInput) => apiClient.post<PostDetail>("/api/community/posts", post),
     updatePost: ({ postId, post }: { postId: string; post: SavePostInput }) =>
         apiClient.put<PostDetail>(postPath(postId), post),

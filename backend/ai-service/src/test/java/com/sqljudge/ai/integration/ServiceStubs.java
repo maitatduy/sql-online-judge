@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 final class ServiceStubs {
 
     static final UUID PROBLEM_ID = UUID.fromString("0192f3b0-0000-7000-8000-000000000184");
+    static final UUID POST_ID = UUID.fromString("0192f3a0-0000-7000-9000-000000000002");
     private static final String PROBLEMS_PATH = "/internal/problems/";
     private static final String CONTESTS_PATH = "/internal/contests/rated-participation/";
     private static final Set<String> SOLVERS = ConcurrentHashMap.newKeySet();
@@ -45,11 +46,35 @@ final class ServiceStubs {
             server.createContext(PROBLEMS_PATH, ServiceStubs::problem);
             server.createContext(CONTESTS_PATH, ServiceStubs::participation);
             server.createContext("/internal/users", ServiceStubs::userNames);
+            server.createContext("/api/community/posts/", ServiceStubs::communityPost);
+            server.createContext("/api/community/comments", ServiceStubs::communityComments);
             server.start();
             return server;
         } catch (IOException error) {
             throw new IllegalStateException(error);
         }
+    }
+
+    private static void communityPost(HttpExchange exchange) throws IOException {
+        if (!exchange.getRequestURI().getPath().endsWith(POST_ID.toString())) {
+            respond(exchange, 404, "{\"code\":\"POST_NOT_FOUND\"}");
+            return;
+        }
+        respond(
+                exchange,
+                200,
+                "{\"title\": \"COUNT(*) hay COUNT(cột)?\", \"bodyMarkdown\": \"Khác nhau chỗ"
+                        + " nào?\"}");
+    }
+
+    private static void communityComments(HttpExchange exchange) throws IOException {
+        respond(
+                exchange,
+                200,
+                """
+                {"items": [{"authorUsername": "an.bui", "body": "COUNT(cột) bỏ qua NULL.",
+                  "replies": [{"authorUsername": "minh.anh", "body": "Cảm ơn!", "replies": []}]}]}
+                """);
     }
 
     private static void userNames(HttpExchange exchange) throws IOException {

@@ -61,6 +61,26 @@ function unauthenticated() {
 }
 
 export const aiHandlers: RequestHandler[] = [
+    http.post("*/api/ai/discussion-summaries", async () => {
+        await delay(200);
+        if (!readMockSession()) {
+            return unauthenticated();
+        }
+        used += 1;
+        return HttpResponse.json({
+            text: "- Câu hỏi: vì sao đếm sai sau LEFT JOIN.\n- Hướng giải: dùng COUNT(cột) thay cho COUNT(*).",
+            quota: quota(),
+        });
+    }),
+    http.post("*/api/ai/proofreads", async ({ request }) => {
+        await delay(200);
+        if (!readMockSession()) {
+            return unauthenticated();
+        }
+        used += 1;
+        const { text } = (await request.json()) as { text: string };
+        return HttpResponse.json({ text: text.replace(/khong/g, "không"), quota: quota() });
+    }),
     http.get("*/api/ai/quota", () =>
         readMockSession() ? HttpResponse.json(quota()) : unauthenticated(),
     ),
