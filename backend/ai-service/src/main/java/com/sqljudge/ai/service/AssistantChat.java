@@ -7,6 +7,7 @@ import com.sqljudge.ai.dto.request.SendMessageRequest;
 import com.sqljudge.ai.dto.response.ConversationSummaryResponse;
 import com.sqljudge.ai.dto.response.MessageExchangeResponse;
 import com.sqljudge.ai.entity.AiConversation.ProblemRef;
+import com.sqljudge.ai.entity.BlockReason;
 import com.sqljudge.ai.entity.MessageRole;
 import com.sqljudge.ai.service.ConversationStore.ConversationSnapshot;
 import com.sqljudge.ai.service.ConversationStore.Exchange;
@@ -60,18 +61,22 @@ public class AssistantChat {
                 problem != null
                         && !problem.isSolved()
                         && SolutionGuard.revealsSolution(reply.text());
-        String answer =
+        BlockReason blockReason =
                 reply.isRefused()
+                        ? BlockReason.MODEL_REFUSAL
+                        : revealsSolution ? BlockReason.SOLUTION_REVEAL : null;
+        String answer =
+                blockReason == BlockReason.MODEL_REFUSAL
                         ? REFUSED_REPLY
-                        : revealsSolution ? SolutionGuard.BLOCKED_REPLY : reply.text();
-        boolean blocked = reply.isRefused() || revealsSolution;
+                        : blockReason == BlockReason.SOLUTION_REVEAL
+                                ? SolutionGuard.BLOCKED_REPLY
+                                : reply.text();
         Exchange exchange =
-                conversationStore.append(conversationId, userId, question, answer, blocked);
+                conversationStore.append(conversationId, userId, question, answer, blockReason);
         log.info(
-                "ai_message_answered conversationId={} blocked={} refused={}",
+                "ai_message_answered conversationId={} blockReason={}",
                 conversationId,
-                blocked,
-                reply.isRefused());
+                blockReason);
         return new MessageExchangeResponse(
                 exchange.question(), exchange.answer(), quotaService.usage(userId));
     }

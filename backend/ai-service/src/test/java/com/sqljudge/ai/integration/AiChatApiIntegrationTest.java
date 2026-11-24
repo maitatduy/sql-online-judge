@@ -48,6 +48,7 @@ class AiChatApiIntegrationTest extends ContainerSupport {
     static void services(DynamicPropertyRegistry registry) {
         registry.add("sqljudge.problem-service-url", ServiceStubs::url);
         registry.add("sqljudge.contest-service-url", ServiceStubs::url);
+        registry.add("sqljudge.auth-service-url", ServiceStubs::url);
     }
 
     @BeforeEach

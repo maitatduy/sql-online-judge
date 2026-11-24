@@ -7,7 +7,7 @@ import com.sqljudge.ai.dto.response.MessageResponse;
 import com.sqljudge.ai.entity.AiConversation;
 import com.sqljudge.ai.entity.AiConversation.ProblemRef;
 import com.sqljudge.ai.entity.AiMessage;
-import com.sqljudge.ai.entity.MessageRole;
+import com.sqljudge.ai.entity.BlockReason;
 import com.sqljudge.ai.repository.AiConversationRepository;
 import com.sqljudge.ai.repository.AiMessageRepository;
 import com.sqljudge.common.error.ErrorCode;
@@ -52,7 +52,9 @@ public class ConversationStore {
         AiConversation conversation = owned(conversationId, userId);
         return new ConversationDetailResponse(
                 ConversationSummaryResponse.from(conversation),
-                messageRepository.findByConversationIdOrderByCreatedAtAsc(conversationId).stream()
+                messageRepository
+                        .findByConversationIdOrderByCreatedAtAscRoleDesc(conversationId)
+                        .stream()
                         .map(MessageResponse::from)
                         .toList());
     }
@@ -63,7 +65,7 @@ public class ConversationStore {
         List<ChatTurn> history =
                 new ArrayList<>(
                         messageRepository
-                                .findByConversationIdOrderByCreatedAtDesc(
+                                .findByConversationIdOrderByCreatedAtDescRoleAsc(
                                         conversationId,
                                         PageRequest.of(0, properties.historyMessages()))
                                 .stream()
@@ -78,15 +80,16 @@ public class ConversationStore {
 
     @Transactional
     public Exchange append(
-            UUID conversationId, UUID userId, String question, String answer, boolean blocked) {
+            UUID conversationId,
+            UUID userId,
+            String question,
+            String answer,
+            BlockReason blockReason) {
         AiConversation conversation = owned(conversationId, userId);
         boolean isFirstMessage = !messageRepository.existsByConversationId(conversationId);
-        AiMessage asked =
-                messageRepository.save(
-                        AiMessage.of(conversation, MessageRole.USER, question, false));
+        AiMessage asked = messageRepository.save(AiMessage.question(conversation, question));
         AiMessage answered =
-                messageRepository.save(
-                        AiMessage.of(conversation, MessageRole.ASSISTANT, answer, blocked));
+                messageRepository.save(AiMessage.answer(conversation, asked, answer, blockReason));
         conversation.messageAdded(question, isFirstMessage, clock.instant());
         messageRepository.flush();
         return new Exchange(MessageResponse.from(asked), MessageResponse.from(answered));

@@ -33,6 +33,9 @@ spring:
           contest-service:
             connect-timeout: 1000
             read-timeout: 3000
+          auth-service:
+            connect-timeout: 1000
+            read-timeout: 3000
   security:
     oauth2:
       resourceserver:
@@ -61,6 +64,7 @@ springdoc:
 sqljudge:
   problem-service-url: ${PROBLEM_SERVICE_URL}
   contest-service-url: ${CONTEST_SERVICE_URL}
+  auth-service-url: ${AUTH_SERVICE_URL}
   internal:
     api-token: ${INTERNAL_API_TOKEN}
   ai:
