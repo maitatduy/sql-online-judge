@@ -26,6 +26,7 @@
         <module>contest-service</module>
         <module>community-service</module>
         <module>ai-service</module>
+        <module>notification-service</module>
     </modules>
 
     <properties>

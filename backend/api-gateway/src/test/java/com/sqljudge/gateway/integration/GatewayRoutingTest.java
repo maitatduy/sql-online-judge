@@ -239,6 +239,21 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
+    @DisplayName("Thông báo được chuyển tới notification-service")
+    void notificationPaths_areRoutedToNotificationService() {
+        webTestClient.get().uri("/api/notifications").exchange().expectStatus().isNotFound();
+        webTestClient
+                .get()
+                .uri("/api/notifications/unread-count")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        assertThat(NOTIFICATION_SERVICE.forwardedRequestLines())
+                .containsExactly("GET /api/notifications", "GET /api/notifications/unread-count");
+    }
+
+    @Test
     @DisplayName("Trợ lý AI được chuyển tới ai-service")
     void aiPaths_areRoutedToAiService() {
         webTestClient.get().uri("/api/ai/quota").exchange().expectStatus().isNotFound();

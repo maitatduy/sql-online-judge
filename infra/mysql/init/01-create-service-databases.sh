@@ -20,5 +20,6 @@ create_service_database learning "${MYSQL_LEARNING_PASSWORD}"
 create_service_database contest "${MYSQL_CONTEST_PASSWORD}"
 create_service_database community "${MYSQL_COMMUNITY_PASSWORD}"
 create_service_database ai "${MYSQL_AI_PASSWORD}"
+create_service_database notification "${MYSQL_NOTIFICATION_PASSWORD}"
 
 mysql --protocol=socket -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "FLUSH PRIVILEGES;"
