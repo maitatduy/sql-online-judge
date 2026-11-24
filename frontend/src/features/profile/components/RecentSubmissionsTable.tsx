@@ -21,11 +21,12 @@ const SKELETON_ROW_COUNT = 5;
 const CELL_CLASS_NAME = "border-b px-3 py-2.5 align-middle";
 
 interface RecentSubmissionsTableProps {
+    userId: string;
     username: string;
     now?: Date;
 }
 
-export function RecentSubmissionsTable({ username, now }: RecentSubmissionsTableProps) {
+export function RecentSubmissionsTable({ userId, username, now }: RecentSubmissionsTableProps) {
     const [mountedAt] = useState(() => new Date());
     const isOwner = useIsProfileOwner(username);
     const {
@@ -38,7 +39,7 @@ export function RecentSubmissionsTable({ username, now }: RecentSubmissionsTable
         isFetchingNextPage,
         fetchNextPage,
         refetch,
-    } = useRecentSubmissions(username);
+    } = useRecentSubmissions(userId);
 
     if (isPending) {
         return (

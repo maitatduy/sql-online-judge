@@ -15,6 +15,10 @@ function userPath(username: string): string {
     return `/api/users/${encodeURIComponent(username)}`;
 }
 
+function submissionsPath(userId: string): string {
+    return `/api/submissions/users/${encodeURIComponent(userId)}`;
+}
+
 export const profileApi = {
     getProfile: (username: string, signal?: AbortSignal) =>
         apiClient.get<PublicProfile>(userPath(username), { signal }),
@@ -24,12 +28,15 @@ export const profileApi = {
         apiClient.get<SolvedSummary>(`/api/solved-summaries/${encodeURIComponent(userId)}`, {
             signal,
         }),
-    getRatingHistory: (username: string, signal?: AbortSignal) =>
-        apiClient.get<RatingHistoryResponse>(`${userPath(username)}/rating-history`, { signal }),
-    getActivity: (username: string, signal?: AbortSignal) =>
-        apiClient.get<ActivityResponse>(`${userPath(username)}/activity`, { signal }),
-    getRecentSubmissions: (username: string, cursor?: string, signal?: AbortSignal) =>
-        apiClient.get<RecentSubmissionsResponse>(`${userPath(username)}/submissions`, {
+    getRatingHistory: (userId: string, signal?: AbortSignal) =>
+        apiClient.get<RatingHistoryResponse>(
+            `/api/leaderboard/${encodeURIComponent(userId)}/history`,
+            { signal },
+        ),
+    getActivity: (userId: string, signal?: AbortSignal) =>
+        apiClient.get<ActivityResponse>(`${submissionsPath(userId)}/activity`, { signal }),
+    getRecentSubmissions: (userId: string, cursor?: string, signal?: AbortSignal) =>
+        apiClient.get<RecentSubmissionsResponse>(submissionsPath(userId), {
             params: { cursor, size: RECENT_SUBMISSIONS_PAGE_SIZE },
             signal,
         }),

@@ -2,6 +2,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
 
+import { BROKEN_PROFILE_USER_ID, MINH_ANH_PROFILE, NEWBIE_PROFILE } from "@/mocks/profile-fixtures";
 import { server } from "@/mocks/server";
 import { DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
@@ -12,7 +13,7 @@ const NOW = new Date("2026-10-13T05:00:00Z");
 
 function respondWithOneSubmission() {
     server.use(
-        http.get("*/api/users/:username/submissions", () =>
+        http.get("*/api/submissions/users/:userId", () =>
             HttpResponse.json({
                 items: [
                     {
@@ -34,7 +35,13 @@ function respondWithOneSubmission() {
 describe("RecentSubmissionsTable", () => {
     it("báo đang tải rồi hiện verdict, bài, dialect và thời gian tương đối", async () => {
         respondWithOneSubmission();
-        renderWithProviders(<RecentSubmissionsTable username="minh.anh" now={NOW} />);
+        renderWithProviders(
+            <RecentSubmissionsTable
+                userId={MINH_ANH_PROFILE.profile.userId}
+                username="minh.anh"
+                now={NOW}
+            />,
+        );
 
         expect(screen.getByRole("status", { name: "Đang tải bài nộp" })).toHaveAttribute(
             "aria-busy",
@@ -56,7 +63,13 @@ describe("RecentSubmissionsTable", () => {
 
     it("không dẫn tới chi tiết bài nộp của người khác", async () => {
         respondWithOneSubmission();
-        renderWithProviders(<RecentSubmissionsTable username="minh.anh" now={NOW} />);
+        renderWithProviders(
+            <RecentSubmissionsTable
+                userId={MINH_ANH_PROFILE.profile.userId}
+                username="minh.anh"
+                now={NOW}
+            />,
+        );
 
         await screen.findByRole("table", { name: "Bài nộp gần đây" });
 
@@ -64,7 +77,13 @@ describe("RecentSubmissionsTable", () => {
     });
 
     it("nút xem thêm tải trang kế và biến mất khi hết", async () => {
-        renderWithProviders(<RecentSubmissionsTable username="minh.anh" now={NOW} />);
+        renderWithProviders(
+            <RecentSubmissionsTable
+                userId={MINH_ANH_PROFILE.profile.userId}
+                username="minh.anh"
+                now={NOW}
+            />,
+        );
         const table = await screen.findByRole("table", { name: "Bài nộp gần đây" });
         expect(within(table).getAllByRole("row")).toHaveLength(6);
 
@@ -78,7 +97,13 @@ describe("RecentSubmissionsTable", () => {
     });
 
     it("người mới thấy trạng thái trống, khách không được mời giải bài", async () => {
-        renderWithProviders(<RecentSubmissionsTable username="newbie" now={NOW} />);
+        renderWithProviders(
+            <RecentSubmissionsTable
+                userId={NEWBIE_PROFILE.profile.userId}
+                username="newbie"
+                now={NOW}
+            />,
+        );
 
         expect(await screen.findByText("Chưa có bài nộp nào")).toBeInTheDocument();
         expect(screen.queryByRole("table")).not.toBeInTheDocument();
@@ -87,7 +112,13 @@ describe("RecentSubmissionsTable", () => {
 
     it("chủ hồ sơ chưa nộp bài được mời giải bài đầu tiên", async () => {
         writeMockSession({ ...DEMO_SESSION_USER, username: "newbie" });
-        renderWithProviders(<RecentSubmissionsTable username="newbie" now={NOW} />);
+        renderWithProviders(
+            <RecentSubmissionsTable
+                userId={NEWBIE_PROFILE.profile.userId}
+                username="newbie"
+                now={NOW}
+            />,
+        );
 
         expect(await screen.findByRole("link", { name: "Giải bài đầu tiên" })).toHaveAttribute(
             "href",
@@ -96,7 +127,9 @@ describe("RecentSubmissionsTable", () => {
     });
 
     it("lỗi thì báo riêng trong thẻ kèm mã lỗi", async () => {
-        renderWithProviders(<RecentSubmissionsTable username="error" now={NOW} />);
+        renderWithProviders(
+            <RecentSubmissionsTable userId={BROKEN_PROFILE_USER_ID} username="error" now={NOW} />,
+        );
 
         const alert = await screen.findByRole("alert");
 

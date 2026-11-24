@@ -3,8 +3,11 @@ package com.sqljudge.submission.service;
 import com.sqljudge.common.exception.InvalidFieldException;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.submission.dto.response.ActivityDayResponse;
+import com.sqljudge.submission.dto.response.PublicSubmissionPageResponse;
+import com.sqljudge.submission.dto.response.PublicSubmissionResponse;
 import com.sqljudge.submission.dto.response.RecentSubmissionResponse;
 import com.sqljudge.submission.dto.response.SubmissionStatsResponse;
+import com.sqljudge.submission.dto.response.UserActivityResponse;
 import com.sqljudge.submission.repository.FirstSolveRow;
 import com.sqljudge.submission.repository.SubmissionRepository;
 import java.time.Clock;
@@ -59,7 +62,40 @@ public class SubmissionStatsService {
             throw new InvalidFieldException(
                     "from", "Chỉ xem được hoạt động trong một năm gần nhất");
         }
+        return countByDay(SecurityUtils.requireCurrentUser().id(), start);
+    }
+
+    @Transactional(readOnly = true)
+    public UserActivityResponse userActivity(UUID userId) {
+        LocalDate today = LocalDate.now(clock.withZone(VIETNAM));
+        List<ActivityDayResponse> days = countByDay(userId, today.minusDays(DEFAULT_ACTIVITY_DAYS));
+        return new UserActivityResponse(
+                days.stream().mapToLong(ActivityDayResponse::count).sum(), days);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecentSubmissionResponse> recent(int size) {
         UUID userId = SecurityUtils.requireCurrentUser().id();
+        return submissionRepository.findRecent(userId, Limit.of(size));
+    }
+
+    @Transactional(readOnly = true)
+    public PublicSubmissionPageResponse userSubmissions(UUID userId, String cursor, int size) {
+        Limit limit = Limit.of(size + 1);
+        List<PublicSubmissionResponse> rows =
+                cursor == null
+                        ? submissionRepository.findPublic(userId, limit)
+                        : submissionRepository.findPublicBefore(
+                                userId, SubmissionCursor.decode(cursor), limit);
+        if (rows.size() <= size) {
+            return new PublicSubmissionPageResponse(rows, null);
+        }
+        List<PublicSubmissionResponse> items = rows.subList(0, size);
+        return new PublicSubmissionPageResponse(
+                items, SubmissionCursor.encode(items.get(size - 1).id()));
+    }
+
+    private List<ActivityDayResponse> countByDay(UUID userId, LocalDate start) {
         Map<LocalDate, Long> counts =
                 submissionRepository
                         .findCreatedAtSince(userId, start.atStartOfDay(VIETNAM).toInstant())
@@ -71,11 +107,5 @@ public class SubmissionStatsService {
         return counts.entrySet().stream()
                 .map(day -> new ActivityDayResponse(day.getKey(), day.getValue()))
                 .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<RecentSubmissionResponse> recent(int size) {
-        UUID userId = SecurityUtils.requireCurrentUser().id();
-        return submissionRepository.findRecent(userId, Limit.of(size));
     }
 }

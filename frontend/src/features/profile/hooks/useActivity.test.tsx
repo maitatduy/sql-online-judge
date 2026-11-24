@@ -2,11 +2,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { BROKEN_PROFILE_USER_ID, MINH_ANH_PROFILE, NEWBIE_PROFILE } from "@/mocks/profile-fixtures";
+
 import { useActivity } from "./useActivity";
 
-function renderActivity(username: string) {
+function renderActivity(userId: string) {
     const queryClient = new QueryClient();
-    return renderHook(() => useActivity(username), {
+    return renderHook(() => useActivity(userId), {
         wrapper: ({ children }: { children: React.ReactNode }) => (
             <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
         ),
@@ -15,7 +17,7 @@ function renderActivity(username: string) {
 
 describe("useActivity", () => {
     it("trả số bài nộp theo ngày, tổng khớp với từng ngày cộng lại", async () => {
-        const { result } = renderActivity("minh.anh");
+        const { result } = renderActivity(MINH_ANH_PROFILE.profile.userId);
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -28,7 +30,7 @@ describe("useActivity", () => {
     });
 
     it("trả hoạt động rỗng cho người mới", async () => {
-        const { result } = renderActivity("newbie");
+        const { result } = renderActivity(NEWBIE_PROFILE.profile.userId);
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -36,7 +38,7 @@ describe("useActivity", () => {
     });
 
     it("báo lỗi máy chủ kèm traceId", async () => {
-        const { result } = renderActivity("error");
+        const { result } = renderActivity(BROKEN_PROFILE_USER_ID);
 
         await waitFor(() => expect(result.current.isError).toBe(true));
 

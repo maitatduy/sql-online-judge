@@ -32,7 +32,9 @@ function failEveryProfileRequest() {
         );
     server.use(
         http.get("*/api/users/:username", serverError),
-        http.get("*/api/users/:username/:resource", serverError),
+        http.get("*/api/leaderboard/:userId/history", serverError),
+        http.get("*/api/submissions/users/:userId", serverError),
+        http.get("*/api/submissions/users/:userId/activity", serverError),
     );
 }
 

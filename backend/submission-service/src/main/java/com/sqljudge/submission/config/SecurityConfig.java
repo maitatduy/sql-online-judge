@@ -6,6 +6,7 @@ import com.sqljudge.common.web.RestAuthenticationEntryPoint;
 import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -51,6 +52,11 @@ public class SecurityConfig {
                                                 DispatcherType.ASYNC, DispatcherType.ERROR)
                                         .permitAll()
                                         .requestMatchers(PUBLIC_PATHS)
+                                        .permitAll()
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/api/submissions/users/*",
+                                                "/api/submissions/users/*/activity")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

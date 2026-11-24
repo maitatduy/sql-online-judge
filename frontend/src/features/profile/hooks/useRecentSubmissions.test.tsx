@@ -2,11 +2,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { BROKEN_PROFILE_USER_ID, MINH_ANH_PROFILE, NEWBIE_PROFILE } from "@/mocks/profile-fixtures";
+
 import { useRecentSubmissions } from "./useRecentSubmissions";
 
-function renderRecentSubmissions(username: string) {
+function renderRecentSubmissions(userId: string) {
     const queryClient = new QueryClient();
-    return renderHook(() => useRecentSubmissions(username), {
+    return renderHook(() => useRecentSubmissions(userId), {
         wrapper: ({ children }: { children: React.ReactNode }) => (
             <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
         ),
@@ -15,7 +17,7 @@ function renderRecentSubmissions(username: string) {
 
 describe("useRecentSubmissions", () => {
     it("tải trang đầu gồm 5 bài nộp mới nhất, không kèm code", async () => {
-        const { result } = renderRecentSubmissions("minh.anh");
+        const { result } = renderRecentSubmissions(MINH_ANH_PROFILE.profile.userId);
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -31,7 +33,7 @@ describe("useRecentSubmissions", () => {
     });
 
     it("tải tiếp bằng cursor cho tới khi hết", async () => {
-        const { result } = renderRecentSubmissions("minh.anh");
+        const { result } = renderRecentSubmissions(MINH_ANH_PROFILE.profile.userId);
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
         await act(() => result.current.fetchNextPage());
@@ -47,7 +49,7 @@ describe("useRecentSubmissions", () => {
     });
 
     it("trả danh sách rỗng cho người mới", async () => {
-        const { result } = renderRecentSubmissions("newbie");
+        const { result } = renderRecentSubmissions(NEWBIE_PROFILE.profile.userId);
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -56,7 +58,7 @@ describe("useRecentSubmissions", () => {
     });
 
     it("báo lỗi máy chủ kèm traceId", async () => {
-        const { result } = renderRecentSubmissions("error");
+        const { result } = renderRecentSubmissions(BROKEN_PROFILE_USER_ID);
 
         await waitFor(() => expect(result.current.isError).toBe(true));
 

@@ -4,6 +4,7 @@ import { buildActiveYear, EMPTY_ACTIVITY } from "./activity-fixtures";
 import { adminUserProfile, adminUserProfileById } from "./admin-user-profiles";
 import { apiError } from "./api-error";
 import {
+    BROKEN_PROFILE_USER_ID,
     BROKEN_PROFILE_USERNAME,
     MINH_ANH_PROFILE,
     MOCK_TRACE_ID,
@@ -23,6 +24,18 @@ function findPublicProfile(username: string) {
 
 function findByUserId(userId: string) {
     return PROFILES.find((mock) => mock.profile.userId === userId) ?? adminUserProfileById(userId);
+}
+
+function brokenUserResponse(userId: string) {
+    return userId === BROKEN_PROFILE_USER_ID
+        ? apiError(500, "INTERNAL_ERROR", "Đã có lỗi xảy ra, vui lòng thử lại sau", {
+              traceId: MOCK_TRACE_ID,
+          })
+        : null;
+}
+
+function isMinhAnh(userId: string): boolean {
+    return userId === MINH_ANH_PROFILE.profile.userId;
 }
 
 function unavailableProfileResponse(username: string) {
@@ -76,46 +89,45 @@ export const profileHandlers: RequestHandler[] = [
         );
     }),
 
-    http.get("*/api/users/:username/rating-history", async ({ params }) => {
+    http.get("*/api/leaderboard/:userId/history", async ({ params }) => {
         await delay();
-        const username = String(params.username);
-        return (
-            unavailableProfileResponse(username) ??
-            HttpResponse.json({ items: RATING_HISTORY_BY_USERNAME[username] ?? [] })
+        const broken = brokenUserResponse(String(params.userId));
+        if (broken) {
+            return broken;
+        }
+        const username = findByUserId(String(params.userId))?.profile.username;
+        return HttpResponse.json({
+            items: username ? (RATING_HISTORY_BY_USERNAME[username] ?? []) : [],
+        });
+    }),
+
+    http.get("*/api/submissions/users/:userId/activity", async ({ params }) => {
+        await delay();
+        const broken = brokenUserResponse(String(params.userId));
+        if (broken) {
+            return broken;
+        }
+        return HttpResponse.json(
+            isMinhAnh(String(params.userId)) ? buildActiveYear(new Date()) : EMPTY_ACTIVITY,
         );
     }),
 
-    http.get("*/api/users/:username/submissions", async ({ params, request }) => {
+    http.get("*/api/submissions/users/:userId", async ({ params, request }) => {
         await delay();
-        const username = String(params.username);
-        const unavailableResponse = unavailableProfileResponse(username);
-        if (unavailableResponse) {
-            return unavailableResponse;
+        const broken = brokenUserResponse(String(params.userId));
+        if (broken) {
+            return broken;
         }
         const query = new URL(request.url).searchParams;
         const startIndex = Number(query.get("cursor") ?? 0);
         const pageSize = Math.min(Number(query.get("size") ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
-        const submissions =
-            username === MINH_ANH_PROFILE.profile.username
-                ? buildRecentSubmissions(new Date())
-                : [];
+        const submissions = isMinhAnh(String(params.userId))
+            ? buildRecentSubmissions(new Date())
+            : [];
         const endIndex = startIndex + pageSize;
         return HttpResponse.json({
             items: submissions.slice(startIndex, endIndex),
             nextCursor: endIndex < submissions.length ? String(endIndex) : null,
         });
-    }),
-
-    http.get("*/api/users/:username/activity", async ({ params }) => {
-        await delay();
-        const username = String(params.username);
-        return (
-            unavailableProfileResponse(username) ??
-            HttpResponse.json(
-                username === MINH_ANH_PROFILE.profile.username
-                    ? buildActiveYear(new Date())
-                    : EMPTY_ACTIVITY,
-            )
-        );
     }),
 ];

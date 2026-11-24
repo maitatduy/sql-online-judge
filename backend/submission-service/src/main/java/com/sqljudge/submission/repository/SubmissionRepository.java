@@ -1,5 +1,6 @@
 package com.sqljudge.submission.repository;
 
+import com.sqljudge.submission.dto.response.PublicSubmissionResponse;
 import com.sqljudge.submission.dto.response.RecentSubmissionResponse;
 import com.sqljudge.submission.dto.response.SubmissionSummaryResponse;
 import com.sqljudge.submission.entity.Submission;
@@ -104,4 +105,19 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
             "SELECT new com.sqljudge.submission.dto.response.SubmissionSummaryResponse("
                     + "s.id, s.status, s.verdict, s.dialect, s.runtimeMs, s.createdAt)"
                     + " FROM Submission s";
+
+    String PUBLIC_SELECT =
+            "SELECT new com.sqljudge.submission.dto.response.PublicSubmissionResponse(s.id,"
+                    + " s.verdict, s.problemNumber, s.problemSlug, s.problemTitle, s.dialect,"
+                    + " s.createdAt) FROM Submission s WHERE s.userId = :userId"
+                    + " AND s.contestId IS NULL AND s.deletedAt IS NULL"
+                    + " AND s.status = com.sqljudge.submission.entity.SubmissionStatus.COMPLETED"
+                    + " AND s.verdict <> com.sqljudge.submission.entity.Verdict.SE";
+
+    @Query(PUBLIC_SELECT + " ORDER BY s.id DESC")
+    List<PublicSubmissionResponse> findPublic(@Param("userId") UUID userId, Limit limit);
+
+    @Query(PUBLIC_SELECT + " AND s.id < :beforeId ORDER BY s.id DESC")
+    List<PublicSubmissionResponse> findPublicBefore(
+            @Param("userId") UUID userId, @Param("beforeId") UUID beforeId, Limit limit);
 }

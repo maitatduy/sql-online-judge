@@ -2,6 +2,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeAll, describe, expect, it } from "vitest";
 
+import { MINH_ANH_PROFILE, NEWBIE_PROFILE } from "@/mocks/profile-fixtures";
 import { server } from "@/mocks/server";
 import { DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
@@ -16,7 +17,9 @@ describe("RatingHistoryCard", () => {
     beforeAll(preloadChartModule);
 
     it("báo đang tải rồi hiện rating của contest mới nhất", async () => {
-        renderWithProviders(<RatingHistoryCard username="minh.anh" />);
+        renderWithProviders(
+            <RatingHistoryCard userId={MINH_ANH_PROFILE.profile.userId} username="minh.anh" />,
+        );
 
         expect(screen.getByRole("status", { name: "Đang tải lịch sử rating" })).toHaveAttribute(
             "aria-busy",
@@ -30,7 +33,9 @@ describe("RatingHistoryCard", () => {
     });
 
     it("có bảng số liệu thay cho biểu đồ với trình đọc màn hình", async () => {
-        renderWithProviders(<RatingHistoryCard username="minh.anh" />);
+        renderWithProviders(
+            <RatingHistoryCard userId={MINH_ANH_PROFILE.profile.userId} username="minh.anh" />,
+        );
 
         const table = await screen.findByRole("table", { name: "Rating sau từng contest" });
         const rows = within(table).getAllByRole("row");
@@ -43,7 +48,9 @@ describe("RatingHistoryCard", () => {
     });
 
     it("người chưa thi thấy trạng thái trống, khách không được mời vào contest", async () => {
-        renderWithProviders(<RatingHistoryCard username="newbie" />);
+        renderWithProviders(
+            <RatingHistoryCard userId={NEWBIE_PROFILE.profile.userId} username="newbie" />,
+        );
 
         expect(await screen.findByText("Chưa thi contest nào")).toBeInTheDocument();
         expect(screen.queryByRole("table")).not.toBeInTheDocument();
@@ -52,7 +59,9 @@ describe("RatingHistoryCard", () => {
 
     it("chủ hồ sơ chưa thi được mời xem contest", async () => {
         writeMockSession({ ...DEMO_SESSION_USER, username: "newbie" });
-        renderWithProviders(<RatingHistoryCard username="newbie" />);
+        renderWithProviders(
+            <RatingHistoryCard userId={NEWBIE_PROFILE.profile.userId} username="newbie" />,
+        );
 
         expect(await screen.findByRole("link", { name: "Xem contest" })).toHaveAttribute(
             "href",
@@ -63,7 +72,7 @@ describe("RatingHistoryCard", () => {
     it("lỗi thì báo riêng trong thẻ và thử lại được", async () => {
         server.use(
             http.get(
-                "*/api/users/:username/rating-history",
+                "*/api/leaderboard/:userId/history",
                 () =>
                     HttpResponse.json(
                         {
@@ -77,7 +86,9 @@ describe("RatingHistoryCard", () => {
                 { once: true },
             ),
         );
-        renderWithProviders(<RatingHistoryCard username="minh.anh" />);
+        renderWithProviders(
+            <RatingHistoryCard userId={MINH_ANH_PROFILE.profile.userId} username="minh.anh" />,
+        );
 
         const alert = await screen.findByRole("alert");
         expect(alert).toHaveTextContent("Không tải được lịch sử rating");

@@ -13,13 +13,13 @@ import { useActivity } from "../hooks/useActivity";
 import { ActivityHeatmap } from "@/components/shared/ActivityHeatmap";
 
 interface ActivityHeatmapCardProps {
-    username: string;
+    userId: string;
     now?: Date;
 }
 
-export function ActivityHeatmapCard({ username, now }: ActivityHeatmapCardProps) {
+export function ActivityHeatmapCard({ userId, now }: ActivityHeatmapCardProps) {
     const [mountedAt] = useState(() => new Date());
-    const { data: activity, error, isPending, refetch } = useActivity(username);
+    const { data: activity, error, isPending, refetch } = useActivity(userId);
 
     return (
         <section className="min-w-0 rounded-lg border bg-card p-5">
