@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { ProblemAssistantTab } from "@/features/ai/components/ProblemAssistantTab";
 import { ProblemDiscussionTab } from "@/features/community/components/ProblemDiscussionTab";
 import { ProblemSolutionsTab } from "@/features/community/components/ProblemSolutionsTab";
 import { Workspace } from "@/features/practice/components/Workspace";
@@ -19,6 +20,11 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
         <Workspace
             slug={slug}
             extraTabs={[
+                {
+                    value: "assistant",
+                    label: "Trợ lý AI",
+                    content: <ProblemAssistantTab problemSlug={problemSlug} />,
+                },
                 {
                     value: "solutions",
                     label: "Lời giải",

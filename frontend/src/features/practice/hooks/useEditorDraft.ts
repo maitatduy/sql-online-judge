@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { Dialect } from "@/lib/dialect";
+import { draftKeyOf } from "@/lib/workspace-storage";
 
 export const DRAFT_SAVE_DELAY_MS = 500;
 
@@ -14,10 +15,6 @@ interface PendingSave {
     key: string;
     code: string;
     timer: ReturnType<typeof setTimeout>;
-}
-
-function draftKeyOf(problemId: string, dialect: Dialect): string {
-    return `draft:${problemId}:${dialect}`;
 }
 
 function readDraft(key: string): string | null {

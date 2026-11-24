@@ -1,10 +1,7 @@
 import { useState } from "react";
 
 import type { Dialect } from "@/lib/dialect";
-
-function choiceKeyOf(problemId: string): string {
-    return `dialect:${problemId}`;
-}
+import { dialectChoiceKeyOf as choiceKeyOf } from "@/lib/workspace-storage";
 
 function readChoice(problemId: string, dialects: Dialect[]): Dialect | null {
     try {
