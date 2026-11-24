@@ -21,6 +21,12 @@ public interface ContestRepository extends JpaRepository<Contest, UUID> {
     boolean isProblemInUnfinishedContest(
             @Param("problemId") UUID problemId, @Param("now") Instant now);
 
+    @Query(
+            "SELECT COUNT(r) > 0 FROM ContestRegistration r WHERE r.userId = :userId"
+                    + " AND r.contest.rated = true AND r.contest.startAt <= :now"
+                    + " AND r.contest.endAt > :now")
+    boolean isUserInRunningRatedContest(@Param("userId") UUID userId, @Param("now") Instant now);
+
     Optional<Contest> findBySlug(String slug);
 
     Page<Contest> findByStartAtAfterOrderByStartAtAsc(Instant now, Pageable pageable);

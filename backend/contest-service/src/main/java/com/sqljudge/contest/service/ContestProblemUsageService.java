@@ -1,6 +1,7 @@
 package com.sqljudge.contest.service;
 
 import com.sqljudge.contest.dto.response.ProblemUsageResponse;
+import com.sqljudge.contest.dto.response.RatedParticipationResponse;
 import com.sqljudge.contest.repository.ContestRepository;
 import java.time.Clock;
 import java.util.UUID;
@@ -19,5 +20,11 @@ public class ContestProblemUsageService {
     public ProblemUsageResponse usageOf(UUID problemId) {
         return new ProblemUsageResponse(
                 contestRepository.isProblemInUnfinishedContest(problemId, clock.instant()));
+    }
+
+    @Transactional(readOnly = true)
+    public RatedParticipationResponse participationOf(UUID userId) {
+        return new RatedParticipationResponse(
+                contestRepository.isUserInRunningRatedContest(userId, clock.instant()));
     }
 }

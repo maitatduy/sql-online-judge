@@ -141,6 +141,32 @@ class ContestEntryInternalApiIntegrationTest extends ContainerSupport {
         assertThat(isInUnfinishedContest(PROBLEM_ID)).isFalse();
     }
 
+    @Test
+    @DisplayName("Chỉ người đã đăng ký contest tính rating đang diễn ra mới bị coi là đang thi")
+    void ratedParticipation_onlyDuringRunningRatedContest() throws Exception {
+        assertThat(isInRatedContest(CONTESTANT_ID)).isFalse();
+
+        moveStartToPast(Duration.ofMinutes(10));
+        assertThat(isInRatedContest(CONTESTANT_ID)).isTrue();
+        assertThat(isInRatedContest(UUID.randomUUID())).isFalse();
+
+        jdbcTemplate.update("UPDATE contests SET is_rated = FALSE");
+        assertThat(isInRatedContest(CONTESTANT_ID)).isFalse();
+    }
+
+    private boolean isInRatedContest(UUID userId) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Internal-Token", INTERNAL_TOKEN);
+        ResponseEntity<String> response =
+                restTemplate.exchange(
+                        "/internal/contests/rated-participation/" + userId,
+                        HttpMethod.GET,
+                        new HttpEntity<>(headers),
+                        String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        return objectMapper.readTree(response.getBody()).get("isInRatedContest").asBoolean();
+    }
+
     private boolean isInUnfinishedContest(UUID problemId) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Internal-Token", INTERNAL_TOKEN);

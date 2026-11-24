@@ -2,6 +2,7 @@ package com.sqljudge.contest.controller;
 
 import com.sqljudge.contest.dto.response.ContestEntryResponse;
 import com.sqljudge.contest.dto.response.ProblemUsageResponse;
+import com.sqljudge.contest.dto.response.RatedParticipationResponse;
 import com.sqljudge.contest.service.ContestEntryService;
 import com.sqljudge.contest.service.ContestProblemUsageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,5 +43,13 @@ public class InternalContestController {
     @ApiResponse(responseCode = "401", description = "Thiếu hoặc sai token nội bộ")
     public ProblemUsageResponse problemUsage(@PathVariable UUID problemId) {
         return contestProblemUsageService.usageOf(problemId);
+    }
+
+    @GetMapping("/rated-participation/{userId}")
+    @Operation(summary = "Người dùng có đang thi một contest tính rating đang diễn ra không")
+    @ApiResponse(responseCode = "200", description = "Trạng thái tham gia")
+    @ApiResponse(responseCode = "401", description = "Thiếu hoặc sai token nội bộ")
+    public RatedParticipationResponse ratedParticipation(@PathVariable UUID userId) {
+        return contestProblemUsageService.participationOf(userId);
     }
 }

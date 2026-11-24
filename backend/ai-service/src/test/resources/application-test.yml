@@ -1,0 +1,21 @@
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:1/internal/jwks
+
+sqljudge:
+  problem-service-url: http://localhost:1
+  contest-service-url: http://localhost:1
+  internal:
+    api-token: test-internal-token
+  ai:
+    api-key: test-key
+    model: test-model
+    daily-message-limit: 3
