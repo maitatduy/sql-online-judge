@@ -1,7 +1,8 @@
-import { Bell, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import { Logo } from "@/components/shared/Logo";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { TopBarAccount } from "@/components/shared/TopBarAccount";
 import { TopBarNav } from "@/components/shared/TopBarNav";
 import { TopBarSearch } from "@/components/shared/TopBarSearch";
@@ -17,9 +18,7 @@ export function TopBar() {
             <TopBarNav />
             <div className="ml-auto flex shrink-0 items-center gap-2">
                 <TopBarSearch />
-                <Button type="button" variant="ghost" size="icon" aria-label="Thông báo">
-                    <Bell aria-hidden="true" />
-                </Button>
+                <NotificationBell />
                 <Button asChild size="sm" className="bg-ai-soft text-ai hover:bg-ai-soft/80">
                     <Link href={ROUTES.ai}>
                         <Sparkles aria-hidden="true" />

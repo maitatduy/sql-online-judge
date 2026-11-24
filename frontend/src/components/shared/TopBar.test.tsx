@@ -1,6 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import { DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
 
 import { TopBar } from "./TopBar";
@@ -40,10 +41,11 @@ describe("TopBar", () => {
         );
     });
 
-    it("có nút thông báo và lối vào trợ lý AI", () => {
+    it("có nút thông báo khi đã đăng nhập và lối vào trợ lý AI", async () => {
+        writeMockSession(DEMO_SESSION_USER);
         renderWithProviders(<TopBar />);
 
-        expect(screen.getByRole("button", { name: "Thông báo" })).toBeInTheDocument();
+        expect(await screen.findByRole("button", { name: /^Thông báo/ })).toBeInTheDocument();
         expect(screen.getByRole("link", { name: "Trợ lý AI" })).toHaveAttribute("href", "/ai");
     });
 });
