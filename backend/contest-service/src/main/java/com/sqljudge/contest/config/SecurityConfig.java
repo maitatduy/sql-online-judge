@@ -59,7 +59,8 @@ public class SecurityConfig {
                                                 "/api/contests/*",
                                                 "/api/contests/*/standings",
                                                 "/api/contests/*/standings/events",
-                                                "/api/contests/*/rating-changes")
+                                                "/api/contests/*/rating-changes",
+                                                "/api/leaderboard")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

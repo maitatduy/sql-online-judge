@@ -4,10 +4,13 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 final class AuthServiceStub {
 
@@ -57,6 +60,21 @@ final class AuthServiceStub {
                         exchange.getResponseHeaders().add("Content-Type", "application/json");
                         exchange.sendResponseHeaders(status, body.length);
                         exchange.getResponseBody().write(body);
+                        exchange.close();
+                    });
+            server.createContext(
+                    "/internal/users",
+                    exchange -> {
+                        String query = exchange.getRequestURI().getQuery();
+                        String body =
+                                Arrays.stream(query.replace("ids=", "").split("[,&]"))
+                                        .map(USERS::get)
+                                        .filter(Objects::nonNull)
+                                        .collect(Collectors.joining(",", "[", "]"));
+                        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+                        exchange.getResponseHeaders().add("Content-Type", "application/json");
+                        exchange.sendResponseHeaders(200, bytes.length);
+                        exchange.getResponseBody().write(bytes);
                         exchange.close();
                     });
             server.start();
