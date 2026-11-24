@@ -41,6 +41,10 @@ spring:
               uri: ${COMMUNITY_SERVICE_URL}
               predicates:
                 - Path=/api/community/**,/api/admin/reports,/api/admin/reports/**
+            - id: notification-service
+              uri: ${NOTIFICATION_SERVICE_URL}
+              predicates:
+                - Path=/api/notifications,/api/notifications/**
             - id: ai-service
               uri: ${AI_SERVICE_URL}
               predicates:
