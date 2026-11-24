@@ -47,7 +47,8 @@ class AuthServiceApplicationTest extends ContainerSupport {
     @Test
     @DisplayName("Endpoint cần đăng nhập trả 401 dạng ApiError")
     void protectedEndpoint_anonymous_returnsUnauthorized() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/users/me", String.class);
+        ResponseEntity<String> response =
+                restTemplate.getForEntity("/api/account/profile", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody()).contains("\"code\":\"UNAUTHORIZED\"");

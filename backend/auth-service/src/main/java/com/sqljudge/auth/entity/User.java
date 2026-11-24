@@ -75,6 +75,18 @@ public class User extends BaseEntity {
     @Column(name = "avatar_public_id", length = 100)
     private String avatarPublicId;
 
+    @Column(name = "bio", length = 300)
+    private String bio;
+
+    @Column(name = "school", length = 120)
+    private String school;
+
+    @Column(name = "location", length = 120)
+    private String location;
+
+    @Column(name = "website_url", length = 200)
+    private String websiteUrl;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -122,6 +134,14 @@ public class User extends BaseEntity {
         avatarPublicId = publicId;
     }
 
+    public void updateProfile(ProfileDetails details) {
+        displayName = details.displayName();
+        bio = details.bio();
+        school = details.school();
+        location = details.location();
+        websiteUrl = details.websiteUrl();
+    }
+
     public boolean hasAvatar() {
         return avatarPublicId != null;
     }
@@ -140,4 +160,7 @@ public class User extends BaseEntity {
             emailVerifiedAt = now;
         }
     }
+
+    public record ProfileDetails(
+            String displayName, String bio, String school, String location, String websiteUrl) {}
 }

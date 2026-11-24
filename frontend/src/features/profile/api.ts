@@ -2,9 +2,11 @@ import { apiClient } from "@/lib/api-client";
 
 import type {
     ActivityResponse,
-    ProfileResponse,
+    PublicProfile,
     RatingHistoryResponse,
+    RatingSummary,
     RecentSubmissionsResponse,
+    SolvedSummary,
 } from "./types";
 
 const RECENT_SUBMISSIONS_PAGE_SIZE = 5;
@@ -15,7 +17,13 @@ function userPath(username: string): string {
 
 export const profileApi = {
     getProfile: (username: string, signal?: AbortSignal) =>
-        apiClient.get<ProfileResponse>(userPath(username), { signal }),
+        apiClient.get<PublicProfile>(userPath(username), { signal }),
+    getRatingSummary: (userId: string, signal?: AbortSignal) =>
+        apiClient.get<RatingSummary>(`/api/leaderboard/${encodeURIComponent(userId)}`, { signal }),
+    getSolvedSummary: (userId: string, signal?: AbortSignal) =>
+        apiClient.get<SolvedSummary>(`/api/solved-summaries/${encodeURIComponent(userId)}`, {
+            signal,
+        }),
     getRatingHistory: (username: string, signal?: AbortSignal) =>
         apiClient.get<RatingHistoryResponse>(`${userPath(username)}/rating-history`, { signal }),
     getActivity: (username: string, signal?: AbortSignal) =>

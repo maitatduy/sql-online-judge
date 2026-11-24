@@ -5,7 +5,7 @@ import { MINH_ANH_PROFILE, RATING_HISTORY_BY_USERNAME } from "@/mocks/profile-fi
 
 import { RatingSummary } from "./RatingSummary";
 
-const POINTS = RATING_HISTORY_BY_USERNAME[MINH_ANH_PROFILE.username];
+const POINTS = RATING_HISTORY_BY_USERNAME[MINH_ANH_PROFILE.profile.username];
 
 function stat(label: string): HTMLElement {
     const group = screen.getByText(label).parentElement;

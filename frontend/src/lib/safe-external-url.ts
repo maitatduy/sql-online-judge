@@ -1,6 +1,6 @@
 const ALLOWED_PROTOCOLS = ["http:", "https:"];
 
-export function safeExternalUrl(url: string | undefined): string | null {
+export function safeExternalUrl(url: string | null | undefined): string | null {
     if (!url || !URL.canParse(url)) {
         return null;
     }

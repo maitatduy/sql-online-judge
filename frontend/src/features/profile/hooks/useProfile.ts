@@ -9,3 +9,21 @@ export function useProfile(username: string) {
         retry: false,
     });
 }
+
+export function useRatingSummary(userId: string | undefined) {
+    return useQuery({
+        queryKey: ["profile", "rating", userId],
+        queryFn: ({ signal }) => profileApi.getRatingSummary(userId ?? "", signal),
+        enabled: userId !== undefined,
+        retry: false,
+    });
+}
+
+export function useSolvedSummary(userId: string | undefined) {
+    return useQuery({
+        queryKey: ["profile", "solved", userId],
+        queryFn: ({ signal }) => profileApi.getSolvedSummary(userId ?? "", signal),
+        enabled: userId !== undefined,
+        retry: false,
+    });
+}

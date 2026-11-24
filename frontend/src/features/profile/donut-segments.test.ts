@@ -6,7 +6,7 @@ import { donutSegments } from "./donut-segments";
 
 describe("donutSegments", () => {
     it("chia vòng theo tỉ lệ số bài đã giải trên tổng số bài, nối tiếp nhau", () => {
-        const segments = donutSegments(MINH_ANH_PROFILE.stats.solvedByDifficulty);
+        const segments = donutSegments(MINH_ANH_PROFILE.solved.byDifficulty);
 
         expect(segments.map((segment) => segment.difficulty)).toEqual(["EASY", "MEDIUM", "HARD"]);
         expect(segments[0].percent).toBeCloseTo((42 / 330) * 100);
@@ -29,7 +29,7 @@ describe("donutSegments", () => {
     });
 
     it("không có đoạn nào khi chưa giải bài nào", () => {
-        expect(donutSegments(NEWBIE_PROFILE.stats.solvedByDifficulty)).toEqual([]);
+        expect(donutSegments(NEWBIE_PROFILE.solved.byDifficulty)).toEqual([]);
     });
 
     it("không chia cho 0 khi hệ thống chưa có bài", () => {

@@ -33,6 +33,7 @@ import { practiceRunHandlers } from "./practice-run-handlers";
 import { practiceSubmissionHandlers } from "./practice-submission-handlers";
 import { practiceSubmissionHistoryHandlers } from "./practice-submission-history";
 import { profileHandlers } from "./profile-handlers";
+import { accountHandlers } from "./account";
 import {
     ADMIN_SESSION_USER,
     clearMockSession,
@@ -194,6 +195,7 @@ export const handlers: RequestHandler[] = [
     }),
 
     ...profileHandlers,
+    ...accountHandlers,
     ...learningDashboardHandlers,
     ...practiceHandlers,
     ...practiceRunHandlers,

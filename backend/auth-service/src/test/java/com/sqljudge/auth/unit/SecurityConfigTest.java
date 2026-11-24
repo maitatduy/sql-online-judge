@@ -38,7 +38,7 @@ class SecurityConfigTest {
     @Test
     @DisplayName("Gọi API khi chưa đăng nhập trả 401 dạng ApiError")
     void protectedPath_anonymous_returnsUnauthorizedApiError() throws Exception {
-        mockMvc.perform(get("/api/users/me"))
+        mockMvc.perform(get("/api/account/missing"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
                 .andExpect(jsonPath("$.message").value("Bạn cần đăng nhập để tiếp tục"));
@@ -48,7 +48,7 @@ class SecurityConfigTest {
     @DisplayName("Đã đăng nhập thì đi qua lớp bảo mật tới tầng MVC")
     @WithMockUser
     void protectedPath_authenticated_passesSecurity() throws Exception {
-        mockMvc.perform(get("/api/users/me"))
+        mockMvc.perform(get("/api/account/missing"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
     }
@@ -57,7 +57,7 @@ class SecurityConfigTest {
     @DisplayName("JWT do chính auth-service ký và còn hạn thì đi qua lớp bảo mật")
     void protectedPath_validJwt_passesSecurity() throws Exception {
         mockMvc.perform(
-                        get("/api/users/me")
+                        get("/api/account/missing")
                                 .header(
                                         HttpHeaders.AUTHORIZATION,
                                         bearer(TestJwts.validToken(signingKey, "LEARNER"))))
@@ -69,7 +69,9 @@ class SecurityConfigTest {
     void protectedPath_jwtSignedByOtherKey_returnsUnauthorized() throws Exception {
         String forged = TestJwts.validToken(TestJwts.newKey(), "ADMIN");
 
-        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, bearer(forged)))
+        mockMvc.perform(
+                        get("/api/account/missing")
+                                .header(HttpHeaders.AUTHORIZATION, bearer(forged)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
     }
@@ -78,7 +80,7 @@ class SecurityConfigTest {
     @DisplayName("JWT hết hạn trả 401 dạng ApiError")
     void protectedPath_expiredJwt_returnsUnauthorized() throws Exception {
         mockMvc.perform(
-                        get("/api/users/me")
+                        get("/api/account/missing")
                                 .header(
                                         HttpHeaders.AUTHORIZATION,
                                         bearer(TestJwts.expiredToken(signingKey))))
@@ -90,7 +92,7 @@ class SecurityConfigTest {
     @DisplayName("Header X-User-* do client tự gửi không thay được JWT")
     void protectedPath_userHeadersWithoutJwt_returnsUnauthorized() throws Exception {
         mockMvc.perform(
-                        get("/api/users/me")
+                        get("/api/account/missing")
                                 .header("X-User-Id", TestJwts.USER_ID.toString())
                                 .header("X-User-Role", "ADMIN"))
                 .andExpect(status().isUnauthorized());

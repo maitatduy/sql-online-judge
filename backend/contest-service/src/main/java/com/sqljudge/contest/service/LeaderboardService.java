@@ -4,6 +4,7 @@ import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.contest.client.AuthServiceClient;
 import com.sqljudge.contest.client.UserName;
 import com.sqljudge.contest.dto.response.LeaderboardEntryResponse;
+import com.sqljudge.contest.dto.response.RatingSummaryResponse;
 import com.sqljudge.contest.entity.UserRating;
 import com.sqljudge.contest.repository.UserRatingRepository;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +47,25 @@ public class LeaderboardService {
         return PageResponse.from(
                 new PageImpl<>(entries, pageRequest, ratings.getTotalElements()),
                 Function.identity());
+    }
+
+    @Transactional(readOnly = true)
+    public RatingSummaryResponse summary(UUID userId) {
+        return userRatingRepository
+                .findByUserId(userId)
+                .filter(rating -> rating.getContestsPlayed() > 0)
+                .map(
+                        rating ->
+                                new RatingSummaryResponse(
+                                        userId,
+                                        rating.getRating(),
+                                        (int)
+                                                        userRatingRepository
+                                                                .countByContestsPlayedGreaterThanAndRatingGreaterThan(
+                                                                        0, rating.getRating())
+                                                + 1,
+                                        rating.getContestsPlayed()))
+                .orElseGet(() -> RatingSummaryResponse.unrated(userId));
     }
 
     private Map<UUID, UserName> namesOf(List<UserRating> ratings) {

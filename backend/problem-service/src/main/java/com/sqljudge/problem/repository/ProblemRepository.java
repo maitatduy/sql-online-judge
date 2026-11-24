@@ -17,6 +17,22 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProblemRepository extends JpaRepository<Problem, UUID> {
 
+    @Query(
+            "SELECT p.difficulty AS difficulty, COUNT(p) AS total FROM Problem p"
+                    + " WHERE p.status = :status AND p.visibility = :visibility"
+                    + " AND p.deletedAt IS NULL GROUP BY p.difficulty")
+    List<DifficultyCount> countPublishedByDifficulty(
+            @Param("status") ProblemStatus status,
+            @Param("visibility") ProblemVisibility visibility);
+
+    @Query(
+            "SELECT p.difficulty AS difficulty, COUNT(p) AS total"
+                    + " FROM UserProblemProgress g JOIN Problem p ON p.id = g.problemId"
+                    + " WHERE g.userId = :userId AND g.status = :solved AND p.deletedAt IS NULL"
+                    + " GROUP BY p.difficulty")
+    List<DifficultyCount> countSolvedByDifficulty(
+            @Param("userId") UUID userId, @Param("solved") ProblemProgressStatus solved);
+
     String ADMIN_PROBLEMS =
             """
             FROM Problem p

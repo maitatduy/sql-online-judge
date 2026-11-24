@@ -75,6 +75,23 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Rating của một người: hạng tính theo người có rating cao hơn; chưa thi thì rỗng")
+    void summary_ranksOneUser() {
+        DocumentContext second = getOk("/api/leaderboard/" + SECOND);
+        DocumentContext newcomer = getOk("/api/leaderboard/" + NEWCOMER);
+
+        assertThat(second.read("$.rating", Integer.class)).isEqualTo(1640);
+        assertThat(second.read("$.rank", Integer.class)).isEqualTo(2);
+        assertThat(second.read("$.contestsPlayed", Integer.class)).isEqualTo(3);
+        assertThat(newcomer.read("$.rating", Integer.class)).isNull();
+        assertThat(newcomer.read("$.rank", Integer.class)).isNull();
+        assertThat(
+                        getOk("/api/leaderboard/" + UUID.randomUUID())
+                                .read("$.contestsPlayed", Integer.class))
+                .isZero();
+    }
+
+    @Test
     @DisplayName("Khách xem được; kích thước trang quá lớn thì 400")
     void leaderboard_isPublicAndValidated() {
         assertThat(

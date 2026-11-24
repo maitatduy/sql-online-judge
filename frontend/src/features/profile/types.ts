@@ -3,45 +3,34 @@ import type { Dialect } from "@/lib/dialect";
 import type { Difficulty } from "@/lib/difficulty";
 import type { Verdict } from "@/lib/verdict";
 
-export interface ProfileBadge {
-    code: string;
-    name: string;
-    earnedAt: string;
-}
-
 export interface SolvedProgress {
     solved: number;
     total: number;
 }
 
-export interface ProfileStats {
-    solvedCount: number;
-    globalRank: number | null;
-    currentStreakDays: number;
-    longestStreakDays: number;
-    solvedByDifficulty: Record<Difficulty, SolvedProgress>;
-}
-
-export interface ProfileTabCounts {
-    sharedSolutions: number;
-    posts: number;
-    contests: number;
-}
-
-export interface ProfileResponse {
+export interface PublicProfile {
+    userId: string;
     username: string;
-    displayName: string;
-    bio?: string;
-    school?: string;
-    location?: string;
-    websiteUrl?: string;
-    rating: number;
-    rankTitle: string;
-    followerCount: number;
-    followingCount: number;
-    badges: ProfileBadge[];
-    stats: ProfileStats;
-    tabCounts: ProfileTabCounts;
+    displayName: string | null;
+    avatarUrl: string | null;
+    bio: string | null;
+    school: string | null;
+    location: string | null;
+    websiteUrl: string | null;
+    joinedAt: string;
+}
+
+export interface RatingSummary {
+    userId: string;
+    rating: number | null;
+    rank: number | null;
+    contestsPlayed: number;
+}
+
+export interface SolvedSummary {
+    userId: string;
+    solvedCount: number;
+    byDifficulty: Record<Difficulty, SolvedProgress>;
 }
 
 export interface RatingPoint {

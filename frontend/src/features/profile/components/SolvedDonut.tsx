@@ -3,17 +3,17 @@ import { DIFFICULTIES, DIFFICULTY_STROKE_CLASSES } from "@/lib/difficulty";
 import { formatNumber } from "@/lib/format";
 
 import { donutSegments, totalProblemCount } from "../donut-segments";
-import type { ProfileStats } from "../types";
+import type { SolvedSummary } from "../types";
 
 const FULL_CIRCLE_PERCENT = 100;
 
 interface SolvedDonutProps {
-    stats: ProfileStats;
+    solved: SolvedSummary;
 }
 
-export function SolvedDonut({ stats }: SolvedDonutProps) {
-    const solvedCount = formatNumber(stats.solvedCount);
-    const problemCount = formatNumber(totalProblemCount(stats.solvedByDifficulty));
+export function SolvedDonut({ solved }: SolvedDonutProps) {
+    const solvedCount = formatNumber(solved.solvedCount);
+    const problemCount = formatNumber(totalProblemCount(solved.byDifficulty));
 
     return (
         <section className="flex min-w-0 flex-[1_1_260px] items-center gap-4.5 rounded-lg border bg-card p-5">
@@ -32,7 +32,7 @@ export function SolvedDonut({ stats }: SolvedDonutProps) {
                     strokeWidth="12"
                     className="stroke-surface-2"
                 />
-                {donutSegments(stats.solvedByDifficulty).map((segment) => (
+                {donutSegments(solved.byDifficulty).map((segment) => (
                     <circle
                         key={segment.difficulty}
                         cx="70"
@@ -61,8 +61,8 @@ export function SolvedDonut({ stats }: SolvedDonutProps) {
                     <li key={difficulty} className="flex justify-between gap-3">
                         <DifficultyLabel difficulty={difficulty} />
                         <span>
-                            {formatNumber(stats.solvedByDifficulty[difficulty].solved)}/
-                            {formatNumber(stats.solvedByDifficulty[difficulty].total)}
+                            {formatNumber(solved.byDifficulty[difficulty].solved)}/
+                            {formatNumber(solved.byDifficulty[difficulty].total)}
                         </span>
                     </li>
                 ))}

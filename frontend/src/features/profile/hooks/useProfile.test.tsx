@@ -2,11 +2,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { useProfile } from "./useProfile";
+import { MINH_ANH_PROFILE } from "@/mocks/profile-fixtures";
 
-function renderProfile(username: string) {
+import { useProfile, useRatingSummary, useSolvedSummary } from "./useProfile";
+
+function renderWithClient<T>(hook: () => T) {
     const queryClient = new QueryClient();
-    return renderHook(() => useProfile(username), {
+    return renderHook(hook, {
         wrapper: ({ children }: { children: React.ReactNode }) => (
             <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
         ),
@@ -15,33 +17,29 @@ function renderProfile(username: string) {
 
 describe("useProfile", () => {
     it("trả về hồ sơ công khai, không kèm email", async () => {
-        const { result } = renderProfile("minh.anh");
+        const { result } = renderWithClient(() => useProfile("minh.anh"));
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
         expect(result.current.data).toMatchObject({
             username: "minh.anh",
             displayName: "Nguyễn Minh Anh",
-            rating: 1487,
-            rankTitle: "Chuyên viên",
-            followerCount: 128,
-            followingCount: 41,
+            school: "ĐH Bách khoa Hà Nội",
         });
         expect(result.current.data).not.toHaveProperty("email");
     });
 
     it("trả hồ sơ trống cho người mới", async () => {
-        const { result } = renderProfile("newbie");
+        const { result } = renderWithClient(() => useProfile("newbie"));
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-        expect(result.current.data?.bio).toBeUndefined();
-        expect(result.current.data?.badges).toEqual([]);
-        expect(result.current.data?.stats.globalRank).toBeNull();
+        expect(result.current.data?.bio).toBeNull();
+        expect(result.current.data?.websiteUrl).toBeNull();
     });
 
     it("báo USER_NOT_FOUND khi không có người dùng", async () => {
-        const { result } = renderProfile("khong-co");
+        const { result } = renderWithClient(() => useProfile("khong-co"));
 
         await waitFor(() => expect(result.current.isError).toBe(true));
 
@@ -49,7 +47,7 @@ describe("useProfile", () => {
     });
 
     it("báo lỗi máy chủ kèm traceId", async () => {
-        const { result } = renderProfile("error");
+        const { result } = renderWithClient(() => useProfile("error"));
 
         await waitFor(() => expect(result.current.isError).toBe(true));
 
@@ -57,5 +55,27 @@ describe("useProfile", () => {
             status: 500,
             traceId: "4bf92f3577b34da6",
         });
+    });
+});
+
+describe("useRatingSummary và useSolvedSummary", () => {
+    it("chờ có userId rồi mới tải", () => {
+        const { result } = renderWithClient(() => useRatingSummary(undefined));
+
+        expect(result.current.fetchStatus).toBe("idle");
+    });
+
+    it("trả rating, hạng và số bài đã giải theo userId", async () => {
+        const userId = MINH_ANH_PROFILE.profile.userId;
+        const { result } = renderWithClient(() => ({
+            rating: useRatingSummary(userId),
+            solved: useSolvedSummary(userId),
+        }));
+
+        await waitFor(() => expect(result.current.solved.isSuccess).toBe(true));
+        await waitFor(() => expect(result.current.rating.isSuccess).toBe(true));
+
+        expect(result.current.rating.data).toMatchObject({ rating: 1487, rank: 2341 });
+        expect(result.current.solved.data?.solvedCount).toBe(63);
     });
 });
