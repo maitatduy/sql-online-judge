@@ -12,6 +12,7 @@ import com.sqljudge.auth.config.JwtKeyConfig;
 import com.sqljudge.auth.config.SecurityConfig;
 import com.sqljudge.auth.controller.UserController;
 import com.sqljudge.auth.dto.response.UsernameAvailabilityResponse;
+import com.sqljudge.auth.service.PublicProfileService;
 import com.sqljudge.auth.service.UserService;
 import com.sqljudge.common.config.CommonAutoConfiguration;
 import org.junit.jupiter.api.DisplayName;
@@ -37,6 +38,7 @@ class UserControllerTest {
     @Autowired private MockMvc mockMvc;
 
     @MockitoBean private UserService userService;
+    @MockitoBean private PublicProfileService publicProfileService;
 
     @Test
     @DisplayName("Khách chưa đăng nhập kiểm tra được username còn trống")
