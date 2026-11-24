@@ -245,13 +245,20 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
         webTestClient.get().uri("/api/account/profile").exchange();
         webTestClient.get().uri("/api/leaderboard/abc").exchange();
         webTestClient.get().uri("/api/solved-summaries/abc").exchange();
+        webTestClient.get().uri("/api/leaderboard/abc/history").exchange();
+        webTestClient.get().uri("/api/submissions/users/abc").exchange();
+        webTestClient.get().uri("/api/submissions/users/abc/activity").exchange();
 
         assertThat(AUTH_SERVICE.forwardedRequestLines())
                 .containsExactly("GET /api/users/minh.anh", "GET /api/account/profile");
         assertThat(CONTEST_SERVICE.forwardedRequestLines())
-                .containsExactly("GET /api/leaderboard/abc");
+                .containsExactly("GET /api/leaderboard/abc", "GET /api/leaderboard/abc/history");
         assertThat(PROBLEM_SERVICE.forwardedRequestLines())
                 .containsExactly("GET /api/solved-summaries/abc");
+        assertThat(SUBMISSION_SERVICE.forwardedRequestLines())
+                .containsExactly(
+                        "GET /api/submissions/users/abc",
+                        "GET /api/submissions/users/abc/activity");
     }
 
     @Test

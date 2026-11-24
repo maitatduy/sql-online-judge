@@ -4,8 +4,10 @@ import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.contest.client.AuthServiceClient;
 import com.sqljudge.contest.client.UserName;
 import com.sqljudge.contest.dto.response.LeaderboardEntryResponse;
+import com.sqljudge.contest.dto.response.RatingHistoryResponse;
 import com.sqljudge.contest.dto.response.RatingSummaryResponse;
 import com.sqljudge.contest.entity.UserRating;
+import com.sqljudge.contest.repository.ContestRatingChangeRepository;
 import com.sqljudge.contest.repository.UserRatingRepository;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class LeaderboardService {
 
     private final UserRatingRepository userRatingRepository;
+    private final ContestRatingChangeRepository ratingChangeRepository;
     private final AuthServiceClient authServiceClient;
+
+    @Transactional(readOnly = true)
+    public RatingHistoryResponse history(UUID userId) {
+        return new RatingHistoryResponse(ratingChangeRepository.findHistory(userId));
+    }
 
     public PageResponse<LeaderboardEntryResponse> leaderboard(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page - 1, size);

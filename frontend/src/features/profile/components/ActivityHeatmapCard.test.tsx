@@ -2,6 +2,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
+import { MINH_ANH_PROFILE, NEWBIE_PROFILE } from "@/mocks/profile-fixtures";
 import { server } from "@/mocks/server";
 import { renderWithProviders } from "@/test/render";
 
@@ -11,7 +12,7 @@ const NOW = new Date("2026-10-13T05:00:00Z");
 
 function respondWithActivity() {
     server.use(
-        http.get("*/api/users/:username/activity", () =>
+        http.get("*/api/submissions/users/:userId/activity", () =>
             HttpResponse.json({
                 totalSubmissions: 1214,
                 days: [
@@ -26,7 +27,9 @@ function respondWithActivity() {
 describe("ActivityHeatmapCard", () => {
     it("báo đang tải rồi hiện tổng số bài nộp và chuỗi dài nhất", async () => {
         respondWithActivity();
-        renderWithProviders(<ActivityHeatmapCard username="minh.anh" now={NOW} />);
+        renderWithProviders(
+            <ActivityHeatmapCard userId={MINH_ANH_PROFILE.profile.userId} now={NOW} />,
+        );
 
         expect(screen.getByRole("status", { name: "Đang tải hoạt động" })).toHaveAttribute(
             "aria-busy",
@@ -41,7 +44,9 @@ describe("ActivityHeatmapCard", () => {
 
     it("mỗi ô ghi ngày và số bài nộp, lưới có mô tả cho trình đọc màn hình", async () => {
         respondWithActivity();
-        renderWithProviders(<ActivityHeatmapCard username="minh.anh" now={NOW} />);
+        renderWithProviders(
+            <ActivityHeatmapCard userId={MINH_ANH_PROFILE.profile.userId} now={NOW} />,
+        );
 
         const grid = await screen.findByRole("img", {
             name: "Lịch hoạt động 52 tuần gần nhất, 1.214 bài nộp",
@@ -55,7 +60,9 @@ describe("ActivityHeatmapCard", () => {
 
     it("vùng cuộn ngang của lưới tới được bằng bàn phím", async () => {
         respondWithActivity();
-        renderWithProviders(<ActivityHeatmapCard username="minh.anh" now={NOW} />);
+        renderWithProviders(
+            <ActivityHeatmapCard userId={MINH_ANH_PROFILE.profile.userId} now={NOW} />,
+        );
 
         expect(
             await screen.findByRole("region", { name: "Lịch hoạt động, cuộn ngang để xem hết" }),
@@ -63,7 +70,9 @@ describe("ActivityHeatmapCard", () => {
     });
 
     it("người mới vẫn thấy lưới rỗng với tổng 0", async () => {
-        renderWithProviders(<ActivityHeatmapCard username="newbie" now={NOW} />);
+        renderWithProviders(
+            <ActivityHeatmapCard userId={NEWBIE_PROFILE.profile.userId} now={NOW} />,
+        );
 
         expect(
             await screen.findByRole("heading", { level: 2, name: "0 bài nộp trong năm qua" }),
@@ -74,7 +83,7 @@ describe("ActivityHeatmapCard", () => {
     it("lỗi thì báo riêng trong thẻ và thử lại được", async () => {
         server.use(
             http.get(
-                "*/api/users/:username/activity",
+                "*/api/submissions/users/:userId/activity",
                 () =>
                     HttpResponse.json(
                         {
@@ -88,7 +97,9 @@ describe("ActivityHeatmapCard", () => {
                 { once: true },
             ),
         );
-        renderWithProviders(<ActivityHeatmapCard username="newbie" now={NOW} />);
+        renderWithProviders(
+            <ActivityHeatmapCard userId={NEWBIE_PROFILE.profile.userId} now={NOW} />,
+        );
 
         const alert = await screen.findByRole("alert");
         expect(alert).toHaveTextContent("Không tải được hoạt động");

@@ -28,6 +28,7 @@ const RatingChart = dynamic(
 );
 
 interface RatingHistoryCardProps {
+    userId: string;
     username: string;
 }
 
@@ -63,8 +64,8 @@ function RatingHistory({ points }: { points: RatingPoint[] }) {
     );
 }
 
-export function RatingHistoryCard({ username }: RatingHistoryCardProps) {
-    const { data: points, error, isPending, refetch } = useRatingHistory(username);
+export function RatingHistoryCard({ userId, username }: RatingHistoryCardProps) {
+    const { data: points, error, isPending, refetch } = useRatingHistory(userId);
     const isOwner = useIsProfileOwner(username);
 
     return (

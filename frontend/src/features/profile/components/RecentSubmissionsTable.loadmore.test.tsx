@@ -2,6 +2,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
 
+import { MINH_ANH_PROFILE } from "@/mocks/profile-fixtures";
 import { server } from "@/mocks/server";
 import { renderWithProviders } from "@/test/render";
 
@@ -12,7 +13,7 @@ const NOW = new Date("2026-10-13T05:00:00Z");
 function failNextRequestOnce() {
     server.use(
         http.get(
-            "*/api/users/:username/submissions",
+            "*/api/submissions/users/:userId",
             () =>
                 HttpResponse.json(
                     { status: 500, code: "INTERNAL_ERROR", message: "Đã có lỗi xảy ra" },
@@ -25,7 +26,13 @@ function failNextRequestOnce() {
 
 describe("RecentSubmissionsTable - xem thêm bị lỗi", () => {
     it("giữ các dòng đã tải và báo lỗi cạnh nút, không thay bảng bằng khối lỗi", async () => {
-        renderWithProviders(<RecentSubmissionsTable username="minh.anh" now={NOW} />);
+        renderWithProviders(
+            <RecentSubmissionsTable
+                userId={MINH_ANH_PROFILE.profile.userId}
+                username="minh.anh"
+                now={NOW}
+            />,
+        );
         const table = await screen.findByRole("table", { name: "Bài nộp gần đây" });
         failNextRequestOnce();
 
@@ -42,11 +49,17 @@ describe("RecentSubmissionsTable - xem thêm bị lỗi", () => {
         const requestedCursors: (string | null)[] = [];
         server.events.on("request:start", ({ request }) => {
             const url = new URL(request.url);
-            if (url.pathname.endsWith("/submissions")) {
+            if (url.pathname.includes("/api/submissions/users/")) {
                 requestedCursors.push(url.searchParams.get("cursor"));
             }
         });
-        renderWithProviders(<RecentSubmissionsTable username="minh.anh" now={NOW} />);
+        renderWithProviders(
+            <RecentSubmissionsTable
+                userId={MINH_ANH_PROFILE.profile.userId}
+                username="minh.anh"
+                now={NOW}
+            />,
+        );
         const table = await screen.findByRole("table", { name: "Bài nộp gần đây" });
         failNextRequestOnce();
         fireEvent.click(screen.getByRole("button", { name: "Xem thêm" }));

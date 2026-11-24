@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { profileApi } from "../api";
 
-export function useActivity(username: string) {
+export function useActivity(userId: string) {
     return useQuery({
-        queryKey: ["profile", username, "activity"],
-        queryFn: ({ signal }) => profileApi.getActivity(username, signal),
+        queryKey: ["profile", userId, "activity"],
+        queryFn: ({ signal }) => profileApi.getActivity(userId, signal),
         retry: false,
     });
 }

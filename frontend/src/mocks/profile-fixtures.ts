@@ -89,6 +89,7 @@ export const RATING_HISTORY_BY_USERNAME: Record<string, RatingPoint[]> = {
 };
 
 export const BROKEN_PROFILE_USERNAME = "error";
+export const BROKEN_PROFILE_USER_ID = "0192f3a0-0000-7000-8000-0000000000ee";
 export const MOCK_TRACE_ID = "4bf92f3577b34da6";
 
 export const PROFILES: MockProfile[] = [MINH_ANH_PROFILE, NEWBIE_PROFILE];

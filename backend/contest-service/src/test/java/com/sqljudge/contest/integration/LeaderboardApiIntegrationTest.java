@@ -4,6 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.sqljudge.contest.entity.Contest;
+import com.sqljudge.contest.entity.ContestRatingChange;
+import com.sqljudge.contest.entity.ContestSchedule;
+import com.sqljudge.contest.repository.ContestRatingChangeRepository;
+import com.sqljudge.contest.repository.ContestRepository;
+import com.sqljudge.contest.scoring.EloRating.Change;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -33,6 +40,8 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
 
     @Autowired private TestRestTemplate restTemplate;
     @Autowired private JdbcTemplate jdbcTemplate;
+    @Autowired private ContestRepository contestRepository;
+    @Autowired private ContestRatingChangeRepository ratingChangeRepository;
 
     @DynamicPropertySource
     static void authService(DynamicPropertyRegistry registry) {
@@ -41,6 +50,8 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
 
     @BeforeEach
     void seedRatings() {
+        jdbcTemplate.update("DELETE FROM contest_rating_changes");
+        jdbcTemplate.update("DELETE FROM contests");
         jdbcTemplate.update("DELETE FROM user_ratings");
         AuthServiceStub.reset();
         AuthServiceStub.user(TOP, "an.bui", false);
@@ -54,6 +65,8 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
 
     @AfterEach
     void deleteRatings() {
+        jdbcTemplate.update("DELETE FROM contest_rating_changes");
+        jdbcTemplate.update("DELETE FROM contests");
         jdbcTemplate.update("DELETE FROM user_ratings");
     }
 
@@ -92,6 +105,34 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Lịch sử rating: mỗi contest đã thi một mốc, contest kết thúc trước đứng trước")
+    void history_listsRatingAfterEachContest() {
+        Contest later = contest("sql-cup-2", "SQL Cup 2", Instant.parse("2026-10-04T13:00:00Z"));
+        Contest earlier = contest("sql-cup-1", "SQL Cup 1", Instant.parse("2026-09-06T13:00:00Z"));
+        ratingChangeRepository.save(
+                ContestRatingChange.of(
+                        later.getId(), "minh.anh", new Change(SECOND, 4, 1560, 1640, 80)));
+        ratingChangeRepository.save(
+                ContestRatingChange.of(
+                        earlier.getId(), "minh.anh", new Change(SECOND, 12, 1500, 1560, 60)));
+        ratingChangeRepository.save(
+                ContestRatingChange.of(
+                        earlier.getId(), "an.bui", new Change(TOP, 1, 1500, 1620, 120)));
+
+        DocumentContext history = getOk("/api/leaderboard/" + SECOND + "/history");
+
+        assertThat(history.read("$.items[*].contestSlug", List.class))
+                .containsExactly("sql-cup-1", "sql-cup-2");
+        assertThat(history.read("$.items[*].rating", List.class)).containsExactly(1560, 1640);
+        assertThat(history.read("$.items[*].rank", List.class)).containsExactly(12, 4);
+        assertThat(history.read("$.items[1].contestTitle", String.class)).isEqualTo("SQL Cup 2");
+        assertThat(history.read("$.items[1].finishedAt", String.class))
+                .isEqualTo("2026-10-04T14:30:00Z");
+        assertThat(getOk("/api/leaderboard/" + NEWCOMER + "/history").read("$.items", List.class))
+                .isEmpty();
+    }
+
+    @Test
     @DisplayName("Khách xem được; kích thước trang quá lớn thì 400")
     void leaderboard_isPublicAndValidated() {
         assertThat(
@@ -99,6 +140,12 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
                                 .getForEntity("/api/leaderboard?size=101", String.class)
                                 .getStatusCode())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    private Contest contest(String slug, String title, Instant startAt) {
+        return contestRepository.save(
+                Contest.schedule(
+                        new ContestSchedule(slug, title, "Mô tả", startAt, 90, 0, 20, true)));
     }
 
     private void rating(UUID userId, int rating, int contestsPlayed) {

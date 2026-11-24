@@ -33,11 +33,17 @@ describe("hồ sơ công khai của tài khoản trong trang quản trị", () =
     });
 
     it("trả danh sách rỗng cho bài nộp, lịch sử rating và hoạt động", async () => {
+        const { userId } = await apiClient.get<PublicProfile>("/api/users/viet.luu");
+
         await expect(
-            apiClient.get("/api/users/viet.luu/submissions", { params: { size: 5 } }),
+            apiClient.get(`/api/submissions/users/${userId}`, { params: { size: 5 } }),
         ).resolves.toEqual({ items: [], nextCursor: null });
-        await expect(apiClient.get("/api/users/viet.luu/rating-history")).resolves.toEqual({
+        await expect(apiClient.get(`/api/leaderboard/${userId}/history`)).resolves.toEqual({
             items: [],
+        });
+        await expect(apiClient.get(`/api/submissions/users/${userId}/activity`)).resolves.toEqual({
+            totalSubmissions: 0,
+            days: [],
         });
     });
 

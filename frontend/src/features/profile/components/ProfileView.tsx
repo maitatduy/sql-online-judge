@@ -53,9 +53,12 @@ export function ProfileView({ username }: ProfileViewProps) {
                         <ProfileStatTiles rating={rating} solved={solved} />
                         <div className="flex flex-wrap gap-5">
                             {solved ? <SolvedDonut solved={solved} /> : null}
-                            <RatingHistoryCard username={profile.username} />
+                            <RatingHistoryCard
+                                userId={profile.userId}
+                                username={profile.username}
+                            />
                         </div>
-                        <ActivityHeatmapCard username={profile.username} />
+                        <ActivityHeatmapCard userId={profile.userId} />
                         <section
                             aria-labelledby="recent-submissions"
                             className="min-w-0 overflow-hidden rounded-lg border bg-card"
@@ -63,7 +66,10 @@ export function ProfileView({ username }: ProfileViewProps) {
                             <h2 id="recent-submissions" className="border-b px-5 py-3 font-bold">
                                 Bài nộp gần đây
                             </h2>
-                            <RecentSubmissionsTable username={profile.username} />
+                            <RecentSubmissionsTable
+                                userId={profile.userId}
+                                username={profile.username}
+                            />
                         </section>
                     </div>
                 </>

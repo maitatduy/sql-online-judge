@@ -2,6 +2,7 @@ package com.sqljudge.contest.controller;
 
 import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.contest.dto.response.LeaderboardEntryResponse;
+import com.sqljudge.contest.dto.response.RatingHistoryResponse;
 import com.sqljudge.contest.dto.response.RatingSummaryResponse;
 import com.sqljudge.contest.service.LeaderboardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,5 +47,13 @@ public class LeaderboardController {
             description = "Rating; chưa thi contest tính rating thì rating rỗng")
     public RatingSummaryResponse summary(@PathVariable UUID userId) {
         return leaderboardService.summary(userId);
+    }
+
+    @GetMapping("/{userId}/history")
+    @PreAuthorize("permitAll()")
+    @Operation(summary = "Rating sau từng contest tính rating của một người dùng, cũ trước")
+    @ApiResponse(responseCode = "200", description = "Các mốc rating; chưa thi thì rỗng")
+    public RatingHistoryResponse history(@PathVariable UUID userId) {
+        return leaderboardService.history(userId);
     }
 }
