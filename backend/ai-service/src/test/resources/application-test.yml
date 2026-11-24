@@ -18,4 +18,5 @@ sqljudge:
   ai:
     api-key: test-key
     model: test-model
+    base-url: http://localhost:1
     daily-message-limit: 3

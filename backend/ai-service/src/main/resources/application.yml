@@ -67,8 +67,9 @@ sqljudge:
     api-key: ${LLM_API_KEY}
     model: ${LLM_MODEL}
     daily-message-limit: ${LLM_DAILY_MESSAGE_LIMIT}
-    effort: low
-    max-tokens: 16000
+    base-url: https://generativelanguage.googleapis.com
+    max-output-tokens: 8192
+    timeout: 60s
     history-messages: 20
 
 resilience4j:
