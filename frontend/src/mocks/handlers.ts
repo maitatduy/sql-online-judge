@@ -15,6 +15,7 @@ import { adminProblemBankHandlers } from "./admin-problem-bank";
 import { adminProblemBankActionHandlers } from "./admin-problem-bank-actions";
 import { adminProblemTagHandlers } from "./admin-problem-tags";
 import { adminProblemReviewHandlers } from "./admin-problem-reviews";
+import { adminReportHandlers } from "./admin-reports";
 import { apiError } from "./api-error";
 import { communityHandlers } from "./community";
 import { invitationHandlers } from "./invitation-handlers";
@@ -212,6 +213,7 @@ export const handlers: RequestHandler[] = [
     ...adminProblemBankHandlers,
     ...adminProblemBankActionHandlers,
     ...adminProblemReviewHandlers,
+    ...adminReportHandlers,
     ...invitationHandlers,
     ...learningProgressHandlers,
     ...learningRunHandlers,
