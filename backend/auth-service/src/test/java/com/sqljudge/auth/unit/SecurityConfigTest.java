@@ -69,7 +69,9 @@ class SecurityConfigTest {
     void protectedPath_jwtSignedByOtherKey_returnsUnauthorized() throws Exception {
         String forged = TestJwts.validToken(TestJwts.newKey(), "ADMIN");
 
-        mockMvc.perform(get("/api/account/missing").header(HttpHeaders.AUTHORIZATION, bearer(forged)))
+        mockMvc.perform(
+                        get("/api/account/missing")
+                                .header(HttpHeaders.AUTHORIZATION, bearer(forged)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
     }
