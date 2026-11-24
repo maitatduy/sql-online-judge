@@ -71,3 +71,19 @@ export function useProblemOptions(query: string) {
         placeholderData: keepPreviousData,
     });
 }
+
+export function useProblemSolutions(problemId: string | null) {
+    return useQuery({
+        queryKey: ["community", "problem-solutions", problemId],
+        queryFn: ({ signal }) => communityApi.problemSolutions(problemId ?? "", signal),
+        enabled: problemId !== null,
+    });
+}
+
+export function useEditorial(slug: string) {
+    return useQuery({
+        queryKey: ["community", "editorial", slug],
+        queryFn: ({ signal }) => communityApi.editorial(slug, signal),
+        retry: false,
+    });
+}

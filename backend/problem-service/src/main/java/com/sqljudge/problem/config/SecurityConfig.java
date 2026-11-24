@@ -53,7 +53,8 @@ public class SecurityConfig {
                                                 HttpMethod.GET,
                                                 "/api/tags",
                                                 "/api/problems",
-                                                "/api/problems/*")
+                                                "/api/problems/*",
+                                                "/api/problems/*/editorial")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

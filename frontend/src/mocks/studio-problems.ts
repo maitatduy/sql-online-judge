@@ -31,6 +31,7 @@ export interface StoredProblem extends StudioProblemSummary {
     deletedAt?: string;
     tagSlugs: string[];
     statementMarkdown: string;
+    editorialMarkdown?: string;
     datasetId?: string;
     answer?: SaveProblemAnswerRequest;
     latestReview?: ProblemReview;
@@ -177,6 +178,7 @@ export function toStudioProblemDetail(problem: StoredProblem): StudioProblem {
         ...toSummary(problem),
         tags: PRACTICE_TAGS.filter((tag) => problem.tagSlugs.includes(tag.slug)),
         statementMarkdown: problem.statementMarkdown,
+        editorialMarkdown: problem.editorialMarkdown ?? null,
         dataset: datasetOf(problem.datasetId),
         latestReview: problem.latestReview ?? null,
     };

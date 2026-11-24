@@ -113,6 +113,11 @@ export interface CodeRun {
     runtimeMs: number | null;
 }
 
+export interface ProblemEditorial {
+    status: "AVAILABLE" | "LOCKED" | "NONE";
+    editorialMarkdown: string | null;
+}
+
 export interface VoteResult {
     voteScore: number;
     myVote: number;

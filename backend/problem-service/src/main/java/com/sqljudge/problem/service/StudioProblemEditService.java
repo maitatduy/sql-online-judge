@@ -60,6 +60,9 @@ public class StudioProblemEditService {
         if (request.statementMarkdown() != null) {
             problem.setStatementMarkdown(request.statementMarkdown());
         }
+        if (request.editorialMarkdown() != null) {
+            problem.setEditorialMarkdown(request.editorialMarkdown());
+        }
         return StudioProblemResponse.from(problemRepository.saveAndFlush(problem));
     }
 

@@ -27,7 +27,7 @@ export function ProblemTabs({ problem, target, id, className }: ProblemTabsProps
                 className,
             )}
         >
-            <TabsList>
+            <TabsList className="overflow-x-auto">
                 <TabsTrigger value="statement">Đề bài</TabsTrigger>
                 <TabsTrigger value="schema">
                     <Database aria-hidden="true" />
@@ -39,6 +39,11 @@ export function ProblemTabs({ problem, target, id, className }: ProblemTabsProps
                         Lịch sử nộp
                     </TabsTrigger>
                 ) : null}
+                {target.extraTabs?.map((tab) => (
+                    <TabsTrigger key={tab.value} value={tab.value}>
+                        {tab.label}
+                    </TabsTrigger>
+                ))}
             </TabsList>
             <TabsContent value="statement" className="overflow-y-auto">
                 <ProblemStatement problem={problem} meta={target.statementMeta} />
@@ -54,6 +59,11 @@ export function ProblemTabs({ problem, target, id, className }: ProblemTabsProps
                     />
                 </TabsContent>
             ) : null}
+            {target.extraTabs?.map((tab) => (
+                <TabsContent key={tab.value} value={tab.value} className="overflow-y-auto">
+                    {tab.content}
+                </TabsContent>
+            ))}
         </Tabs>
     );
 }

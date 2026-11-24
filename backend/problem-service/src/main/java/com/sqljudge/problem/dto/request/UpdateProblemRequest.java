@@ -15,4 +15,5 @@ public record UpdateProblemRequest(
                 @Size(max = 160, message = "Tối đa 160 ký tự") String slug,
         Difficulty difficulty,
         @Size(max = 5, message = "Tối đa 5 chủ đề") List<@NotBlank(message = "Không được để trống") String> tagSlugs,
-        @Size(max = 51_200, message = "Đề bài tối đa 50 KB") String statementMarkdown) {}
+        @Size(max = 51_200, message = "Đề bài tối đa 50 KB") String statementMarkdown,
+        @Size(max = 51_200, message = "Lời giải tối đa 50 KB") String editorialMarkdown) {}

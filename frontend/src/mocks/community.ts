@@ -130,12 +130,14 @@ function itemOf(comment: MockComment, userId: string | null): CommentItem {
 
 function visiblePosts(url: URL, userId: string | null): MockPost[] {
     const category = url.searchParams.get("category");
+    const problemId = url.searchParams.get("problemId");
     const tab = url.searchParams.get("tab");
     const query = (url.searchParams.get("q") ?? "").toLowerCase();
     const matching = posts.filter(
         (post) =>
             post.status === "PUBLISHED" &&
             (!category || post.category === category) &&
+            (!problemId || post.problemId === problemId) &&
             (!query || post.title.toLowerCase().includes(query)) &&
             (tab !== "UNANSWERED" || post.commentCount === 0) &&
             (tab !== "SAVED" || (userId !== null && post.savedBy.has(userId))),
@@ -186,6 +188,18 @@ function unauthenticated() {
 }
 
 export const communityHandlers: RequestHandler[] = [
+    http.get("*/api/problems/:slug/editorial", async () => {
+        await delay(100);
+        return HttpResponse.json(
+            readMockSession()
+                ? {
+                      status: "AVAILABLE",
+                      editorialMarkdown:
+                          "Gom nhóm theo `status` rồi đếm.\n\n```sql run\nSELECT status, COUNT(*) AS total\nFROM orders\nGROUP BY status;\n```",
+                  }
+                : { status: "LOCKED", editorialMarkdown: null },
+        );
+    }),
     http.get("*/api/community/overview", async () => {
         await delay(100);
         const categoryCounts: Partial<Record<PostCategory, number>> = {};
@@ -287,9 +301,15 @@ export const communityHandlers: RequestHandler[] = [
         await delay(100);
         const url = new URL(request.url);
         const postId = url.searchParams.get("postId");
+        const problemId = url.searchParams.get("problemId");
         const isNewest = url.searchParams.get("sort") === "NEW";
         const roots = comments
-            .filter((comment) => comment.parentId === null && comment.postId === postId)
+            .filter(
+                (comment) =>
+                    comment.parentId === null &&
+                    comment.postId === postId &&
+                    comment.problemId === problemId,
+            )
             .sort((a, b) =>
                 isNewest ? b.createdAt.localeCompare(a.createdAt) : b.voteScore - a.voteScore,
             );
@@ -308,6 +328,7 @@ export const communityHandlers: RequestHandler[] = [
         }
         const body = (await request.json()) as {
             postId?: string;
+            problemId?: string;
             parentId?: string;
             body: string;
         };
@@ -315,7 +336,7 @@ export const communityHandlers: RequestHandler[] = [
         comments.push({
             id: crypto.randomUUID(),
             postId: body.postId ?? null,
-            problemId: null,
+            problemId: body.problemId ?? null,
             parentId: body.parentId ?? null,
             authorId: session.id,
             authorUsername: session.username,

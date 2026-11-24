@@ -60,7 +60,9 @@ describe("ProblemStudio - bước Đề bài", () => {
         fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
 
         expect(await screen.findByText(/^Đã lưu \d{2}:\d{2}$/)).toBeInTheDocument();
-        expect(patches).toEqual([{ statementMarkdown: "## Yêu cầu\nTính tỉ lệ chuyển đổi." }]);
+        expect(patches).toEqual([
+            { statementMarkdown: "## Yêu cầu\nTính tỉ lệ chuyển đổi.", editorialMarkdown: "" },
+        ]);
     });
 
     it("xem trước đề bài dưới dạng Markdown", async () => {

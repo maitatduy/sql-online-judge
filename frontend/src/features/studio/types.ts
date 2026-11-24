@@ -29,6 +29,7 @@ export interface StudioProblem {
     difficulty: Difficulty;
     tags: StudioTag[];
     statementMarkdown: string;
+    editorialMarkdown: string | null;
     dataset: { id: string; name: string } | null;
     latestReview: ProblemReview | null;
     updatedAt: string;
@@ -40,6 +41,7 @@ export interface UpdateProblemRequest {
     difficulty?: Difficulty;
     tagSlugs?: string[];
     statementMarkdown?: string;
+    editorialMarkdown?: string;
 }
 
 export interface StudioDatasetSummary {
