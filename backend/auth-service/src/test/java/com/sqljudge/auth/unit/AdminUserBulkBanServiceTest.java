@@ -3,6 +3,7 @@ package com.sqljudge.auth.unit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -19,6 +20,7 @@ import com.sqljudge.auth.event.BanNotificationEmailRequestedEvent;
 import com.sqljudge.auth.repository.AdminActionRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
+import com.sqljudge.auth.service.AccessRevocations;
 import com.sqljudge.auth.service.AdminUserBanService;
 import com.sqljudge.auth.service.AdminUserBulkService;
 import com.sqljudge.auth.service.AdminUserEditService;
@@ -61,12 +63,14 @@ class AdminUserBulkBanServiceTest {
                         new AdminUserBanService(
                                 userRepository,
                                 userSessionRepository,
+                                mock(AccessRevocations.class),
                                 adminActionRepository,
                                 eventPublisher,
                                 clock),
                         new AdminUserEditService(
                                 userRepository,
                                 userSessionRepository,
+                                mock(AccessRevocations.class),
                                 adminActionRepository,
                                 clock),
                         clock);

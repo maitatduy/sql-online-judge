@@ -28,6 +28,7 @@ public class AdminUserSessionService {
 
     private final UserRepository userRepository;
     private final UserSessionRepository userSessionRepository;
+    private final AccessRevocations accessRevocations;
     private final AdminActionRepository adminActionRepository;
     private final Clock clock;
 
@@ -59,6 +60,7 @@ public class AdminUserSessionService {
                                                 ErrorCode.SESSION_NOT_FOUND,
                                                 "Không tìm thấy phiên đăng nhập"));
         session.revoke(now);
+        accessRevocations.revokeSession(session.getId());
         adminActionRepository.save(AdminAction.revokeSession(actorId, user));
         log.info("admin_session_revoked userId={} actorId={}", user.getId(), actorId);
     }
@@ -67,7 +69,9 @@ public class AdminUserSessionService {
     public void revokeAllSessions(String username, UUID actorId) {
         User user = AdminUserLookup.findLive(userRepository, username);
         AdminTargetGuard.requireModerable(user, actorId, AdminTargetGuard.Action.REVOKE_SESSIONS);
-        int revokedCount = userSessionRepository.revokeAllActiveSessions(user, clock.instant());
+        Instant now = clock.instant();
+        int revokedCount = userSessionRepository.revokeAllActiveSessions(user, now);
+        accessRevocations.revokeUser(user.getId(), now);
         if (revokedCount == 0) {
             return;
         }

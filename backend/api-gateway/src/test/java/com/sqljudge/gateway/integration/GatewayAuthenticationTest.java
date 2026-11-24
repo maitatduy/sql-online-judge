@@ -4,11 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.nimbusds.jose.jwk.RSAKey;
 import com.sqljudge.gateway.integration.AuthServiceStub.RecordedRequest;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -18,6 +23,8 @@ class GatewayAuthenticationTest extends GatewayIntegrationSupport {
 
     private static final String FRONTEND_ORIGIN = "http://localhost:3000";
     private static final RSAKey SIGNING_KEY = TestJwts.newKey();
+    @Autowired private ReactiveStringRedisTemplate redisTemplate;
+
     private static final AuthServiceStub AUTH_SERVICE =
             AuthServiceStub.start(TestJwts.jwksOf(SIGNING_KEY), 200);
 
@@ -118,6 +125,53 @@ class GatewayAuthenticationTest extends GatewayIntegrationSupport {
                 .exists();
 
         assertThat(AUTH_SERVICE.forwardedRequests()).isEmpty();
+    }
+
+    @Test
+    @DisplayName(
+            "Phiên đã thu hồi hoặc người dùng bị thu hồi sau khi cấp token: 401, không gọi service")
+    void revokedAccess_isRejectedAtGateway() {
+        Instant issuedAt = Instant.now().minusSeconds(60);
+        String revokedSession = UUID.randomUUID().toString();
+        String revokedUser = UUID.randomUUID().toString();
+        redisTemplate
+                .opsForValue()
+                .set("sqljudge:auth:revoked-session:" + revokedSession, "1", Duration.ofMinutes(15))
+                .block();
+        redisTemplate
+                .opsForValue()
+                .set(
+                        "sqljudge:auth:revoked-user:" + revokedUser,
+                        Long.toString(issuedAt.plusSeconds(30).getEpochSecond()),
+                        Duration.ofMinutes(15))
+                .block();
+
+        assertStatus(
+                TestJwts.sessionToken(SIGNING_KEY, TestJwts.USER_ID, revokedSession, issuedAt),
+                401);
+        assertStatus(
+                TestJwts.sessionToken(
+                        SIGNING_KEY, revokedUser, UUID.randomUUID().toString(), issuedAt),
+                401);
+        assertThat(AUTH_SERVICE.forwardedRequests()).isEmpty();
+
+        assertStatus(
+                TestJwts.sessionToken(
+                        SIGNING_KEY,
+                        revokedUser,
+                        UUID.randomUUID().toString(),
+                        issuedAt.plusSeconds(45)),
+                200);
+    }
+
+    private void assertStatus(String token, int status) {
+        webTestClient
+                .get()
+                .uri("/api/auth/me")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .exchange()
+                .expectStatus()
+                .isEqualTo(status);
     }
 
     @Test

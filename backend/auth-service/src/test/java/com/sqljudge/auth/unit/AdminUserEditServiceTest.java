@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -18,6 +19,7 @@ import com.sqljudge.auth.entity.User;
 import com.sqljudge.auth.repository.AdminActionRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
+import com.sqljudge.auth.service.AccessRevocations;
 import com.sqljudge.auth.service.AdminUserEditService;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.AppException;
@@ -45,6 +47,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class AdminUserEditServiceTest {
 
+    private final AccessRevocations accessRevocations = mock(AccessRevocations.class);
+
     private static final Instant NOW = Instant.parse("2026-10-19T05:00:00Z");
     private static final UUID ADMIN_ID = UUID.fromString("0192f3a0-0000-7000-8000-00000000000a");
     private static final UUID TARGET_ID = UUID.fromString("0192f3a0-0000-7000-8000-00000000000b");
@@ -62,6 +66,7 @@ class AdminUserEditServiceTest {
                 new AdminUserEditService(
                         userRepository,
                         userSessionRepository,
+                        accessRevocations,
                         adminActionRepository,
                         Clock.fixed(NOW, ZoneOffset.UTC));
         target = new User();

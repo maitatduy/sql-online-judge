@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,6 +18,7 @@ import com.sqljudge.auth.repository.EmailTokenRepository;
 import com.sqljudge.auth.repository.OAuthAccountRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
+import com.sqljudge.auth.service.AccessRevocations;
 import com.sqljudge.auth.service.OAuthProfile;
 import com.sqljudge.auth.service.OAuthSignInService;
 import com.sqljudge.auth.service.SignInResult;
@@ -44,6 +46,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class OAuthSignInServiceTest {
+
+    private final AccessRevocations accessRevocations = mock(AccessRevocations.class);
 
     private static final Instant NOW = Instant.parse("2026-10-17T05:00:00Z");
     private static final String USER_AGENT = "Mozilla/5.0";
@@ -75,6 +79,7 @@ class OAuthSignInServiceTest {
                         oauthAccountRepository,
                         userRepository,
                         userSessionRepository,
+                        accessRevocations,
                         emailTokenRepository,
                         usernameGenerator,
                         signInService,

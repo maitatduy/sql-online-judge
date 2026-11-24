@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 public class AccessTokenIssuer {
 
     static final Duration ACCESS_TOKEN_TTL = Duration.ofMinutes(15);
+    static final String SESSION_CLAIM = "sid";
 
     private final JwtEncoder jwtEncoder;
     private final String keyId;
@@ -32,7 +33,7 @@ public class AccessTokenIssuer {
         this.clock = clock;
     }
 
-    public String issue(User user) {
+    public String issue(User user, UUID sessionId) {
         Instant now = clock.instant();
         JwtClaimsSet claims =
                 JwtClaimsSet.builder()
@@ -40,6 +41,7 @@ public class AccessTokenIssuer {
                         .subject(user.getId().toString())
                         .claim(JwtCurrentUserConverter.USERNAME_CLAIM, user.getUsername())
                         .claim(JwtCurrentUserConverter.ROLE_CLAIM, user.getRole().name())
+                        .claim(SESSION_CLAIM, sessionId.toString())
                         .issuedAt(now)
                         .expiresAt(now.plus(ACCESS_TOKEN_TTL))
                         .build();

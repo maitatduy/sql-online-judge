@@ -2,6 +2,7 @@ package com.sqljudge.auth.unit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -16,6 +17,7 @@ import com.sqljudge.auth.repository.AdminActionRepository;
 import com.sqljudge.auth.repository.EmailTokenRepository;
 import com.sqljudge.auth.repository.UserRepository;
 import com.sqljudge.auth.repository.UserSessionRepository;
+import com.sqljudge.auth.service.AccessRevocations;
 import com.sqljudge.auth.service.AdminUserDeletionService;
 import com.sqljudge.common.error.ErrorCode;
 import com.sqljudge.common.exception.AppException;
@@ -37,6 +39,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class AdminUserDeletionServiceTest {
 
+    private final AccessRevocations accessRevocations = mock(AccessRevocations.class);
+
     private static final Instant NOW = Instant.parse("2026-10-20T03:00:00Z");
     private static final UUID ADMIN_ID = UUID.fromString("0192f3a0-0000-7000-8000-00000000000a");
     private static final UUID USER_ID = UUID.fromString("0192f3a0-0000-7000-8000-00000000000b");
@@ -55,6 +59,7 @@ class AdminUserDeletionServiceTest {
                 new AdminUserDeletionService(
                         userRepository,
                         userSessionRepository,
+                        accessRevocations,
                         emailTokenRepository,
                         adminActionRepository,
                         Clock.fixed(NOW, ZoneOffset.UTC));

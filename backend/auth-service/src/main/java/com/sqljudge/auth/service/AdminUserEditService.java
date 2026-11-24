@@ -27,6 +27,7 @@ public class AdminUserEditService {
 
     private final UserRepository userRepository;
     private final UserSessionRepository userSessionRepository;
+    private final AccessRevocations accessRevocations;
     private final AdminActionRepository adminActionRepository;
     private final Clock clock;
 
@@ -53,6 +54,7 @@ public class AdminUserEditService {
         user.setRole(change.role());
         Instant now = clock.instant();
         userSessionRepository.revokeAllActiveSessions(user, now);
+        accessRevocations.revokeUser(user.getId(), now);
         adminActionRepository.save(
                 AdminAction.changeRole(
                         actorId, user, new ValueChange(previousRole.name(), change.reason())));

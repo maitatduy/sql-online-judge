@@ -27,6 +27,7 @@ public class OAuthSignInService {
     private final OAuthAccountRepository oauthAccountRepository;
     private final UserRepository userRepository;
     private final UserSessionRepository userSessionRepository;
+    private final AccessRevocations accessRevocations;
     private final EmailTokenRepository emailTokenRepository;
     private final UsernameGenerator usernameGenerator;
     private final SignInService signInService;
@@ -88,6 +89,7 @@ public class OAuthSignInService {
     private void discardUnverifiedCredentials(User user, Instant now) {
         user.setPasswordHash(null);
         userSessionRepository.revokeAllActiveSessions(user, now);
+        accessRevocations.revokeUser(user.getId(), now);
         emailTokenRepository.invalidateAllUnusedTokens(user, now);
     }
 

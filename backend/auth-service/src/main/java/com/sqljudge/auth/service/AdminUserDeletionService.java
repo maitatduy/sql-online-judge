@@ -25,6 +25,7 @@ public class AdminUserDeletionService {
 
     private final UserRepository userRepository;
     private final UserSessionRepository userSessionRepository;
+    private final AccessRevocations accessRevocations;
     private final EmailTokenRepository emailTokenRepository;
     private final AdminActionRepository adminActionRepository;
     private final Clock clock;
@@ -36,6 +37,7 @@ public class AdminUserDeletionService {
         Instant now = clock.instant();
         user.markDeleted(now);
         userSessionRepository.revokeAllActiveSessions(user, now);
+        accessRevocations.revokeUser(user.getId(), now);
         emailTokenRepository.invalidateAllUnusedTokens(user, now);
         adminActionRepository.save(AdminAction.delete(actorId, user, request.reason().strip()));
         log.info("admin_user_deleted userId={} actorId={}", user.getId(), actorId);
