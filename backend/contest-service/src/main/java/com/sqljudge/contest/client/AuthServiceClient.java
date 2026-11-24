@@ -1,9 +1,12 @@
 package com.sqljudge.contest.client;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
         name = "auth-service",
@@ -14,4 +17,7 @@ public interface AuthServiceClient {
 
     @GetMapping("/internal/users/{userId}")
     ContestantInfo user(@PathVariable("userId") UUID userId);
+
+    @GetMapping("/internal/users")
+    List<UserName> userNames(@RequestParam("ids") Collection<UUID> userIds);
 }

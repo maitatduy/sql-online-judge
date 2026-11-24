@@ -14,7 +14,10 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(
         name = "user_ratings",
-        indexes = @Index(name = "uk_user_ratings_user_id", columnList = "user_id", unique = true))
+        indexes = {
+            @Index(name = "uk_user_ratings_user_id", columnList = "user_id", unique = true),
+            @Index(name = "idx_user_ratings_rating", columnList = "rating")
+        })
 @Getter
 @NoArgsConstructor
 public class UserRating extends BaseEntity {
