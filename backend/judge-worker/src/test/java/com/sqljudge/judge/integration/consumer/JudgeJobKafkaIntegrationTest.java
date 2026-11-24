@@ -300,7 +300,7 @@ class JudgeJobKafkaIntegrationTest {
                 """
                 {"eventId": "%s", "occurredAt": "2026-11-11T08:00:00Z", "version": 1,
                  "submissionId": "%s", "revisionId": "%s", "dialect": "SQLITE",
-                 "code": "%s", "attempt": 1}
+                 "code": "%s", "attempt": 1, "showsDiff": true}
                 """
                         .formatted(UUID.randomUUID(), submissionId, revisionId, code));
         return submissionId;

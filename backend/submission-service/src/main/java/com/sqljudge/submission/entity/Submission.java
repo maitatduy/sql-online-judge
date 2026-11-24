@@ -166,7 +166,10 @@ public class Submission extends BaseEntity {
         errorMessage = result.message();
         firstFailedIndex = result.failedIndex();
         firstFailedIsHidden = result.failedIsHidden();
-        diff = Boolean.FALSE.equals(result.failedIsHidden()) ? result.diff() : null;
+        diff =
+                !isInContest() && Boolean.FALSE.equals(result.failedIsHidden())
+                        ? result.diff()
+                        : null;
         judgedTestcases = result.judgedTestcases();
         judgedAt = now;
         return JudgeOutcome.COMPLETED;
