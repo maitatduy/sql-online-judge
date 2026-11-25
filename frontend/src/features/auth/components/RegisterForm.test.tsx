@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { delay, http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -156,25 +156,36 @@ describe("RegisterForm", () => {
         const meter = screen.getByRole("meter", { name: "Độ mạnh mật khẩu" });
 
         expect(meter).toHaveAttribute("aria-valuenow", "0");
+        expect(meter).toHaveAttribute("aria-valuetext", "Chưa nhập");
 
         fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "abcdefg1" } });
 
         expect(meter).toHaveAttribute("aria-valuenow", "2");
         expect(meter).toHaveAttribute("aria-valuemax", "4");
+        expect(meter).toHaveAttribute("aria-valuetext", "Trung bình");
+        expect(screen.getByText("Trung bình")).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText("Mật khẩu"), {
+            target: { value: "sql-judge-2026" },
+        });
+
+        expect(meter).toHaveAttribute("aria-valuetext", "Mạnh");
     });
 
-    it("nói trước độ dài tối thiểu của mật khẩu", () => {
+    it("liệt kê tiêu chí mật khẩu và đánh dấu tiêu chí đã đạt", () => {
         renderWithProviders(<RegisterForm nextPath="/" />);
+        fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "abcdefg1" } });
 
-        expect(screen.getByText("Ít nhất 8 ký tự")).toBeInTheDocument();
-    });
+        const rules = within(screen.getByRole("list", { name: "Tiêu chí mật khẩu" })).getAllByRole(
+            "listitem",
+        );
 
-    it("không liệt kê các tiêu chí mật khẩu", () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
-
-        expect(screen.queryByText("Từ 8 ký tự")).not.toBeInTheDocument();
-        expect(screen.queryByText("Có chữ và số")).not.toBeInTheDocument();
-        expect(screen.queryByText("Có ký tự đặc biệt")).not.toBeInTheDocument();
+        expect(rules.map((rule) => rule.textContent)).toEqual([
+            "Ít nhất 8 ký tự: đạt",
+            "Có cả chữ và số: đạt",
+            "Có ký tự đặc biệt: chưa đạt",
+            "Từ 12 ký tự trở lên: chưa đạt",
+        ]);
     });
 
     it("mất kết nối thì báo lỗi chung và cho gửi lại", async () => {

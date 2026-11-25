@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getPasswordScore } from "./password-strength";
+import { getPasswordLevel, getPasswordScore } from "./password-strength";
 
 describe("getPasswordScore", () => {
     it.each([
@@ -16,5 +16,18 @@ describe("getPasswordScore", () => {
 
     it("mật khẩu dưới 8 ký tự không vượt quá 1 điểm dù có đủ loại ký tự", () => {
         expect(getPasswordScore("a1!")).toBe(1);
+    });
+});
+
+describe("getPasswordLevel", () => {
+    it.each([
+        ["", "EMPTY"],
+        ["a1!", "WEAK"],
+        ["abcdefgh", "WEAK"],
+        ["abcdefg1", "FAIR"],
+        ["abcdefg1!", "STRONG"],
+        ["abcdefghij1!", "STRONG"],
+    ])("%s ở mức %s", (password, level) => {
+        expect(getPasswordLevel(password)).toBe(level);
     });
 });

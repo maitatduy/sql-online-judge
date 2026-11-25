@@ -3,7 +3,6 @@ import { ROUTES } from "@/lib/routes";
 import type { AuthMode } from "./types";
 
 interface AuthContent {
-    eyebrow: string;
     lead: string;
     sampleLearnerName: string;
     title: string;
@@ -15,8 +14,7 @@ interface AuthContent {
 
 export const AUTH_CONTENT: Record<AuthMode, AuthContent> = {
     login: {
-        eyebrow: "Chào mừng trở lại",
-        lead: "Lộ trình, bài đang làm dở và chuỗi ngày học của bạn vẫn ở đây. Giải một bài hôm nay để giữ lửa.",
+        lead: "Bài đang làm dở và chuỗi ngày học của bạn vẫn ở đây.",
         sampleLearnerName: "'bạn'",
         title: "Chào mừng trở lại",
         subtitle: "Đăng nhập để tiếp tục lộ trình và bài đang làm dở.",
@@ -25,8 +23,7 @@ export const AUTH_CONTENT: Record<AuthMode, AuthContent> = {
         switchHref: ROUTES.register,
     },
     register: {
-        eyebrow: "Tạo tài khoản mới",
-        lead: "Bài tập có máy chấm, contest hằng tuần và trợ lý AI chỉ ra vì sao truy vấn của bạn sai. Miễn phí cho người học.",
+        lead: "Bài tập có máy chấm, contest hằng tuần, miễn phí cho người học.",
         sampleLearnerName: "'duy'",
         title: "Tạo tài khoản miễn phí",
         subtitle: "Mất chưa tới một phút. Không cần thẻ thanh toán.",
