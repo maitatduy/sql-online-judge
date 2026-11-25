@@ -29,7 +29,9 @@ import org.hibernate.type.SqlTypes;
                     columnList = "user_id, problem_id, id"),
             @Index(
                     name = "idx_submissions_problem_id_contest_id",
-                    columnList = "problem_id, contest_id")
+                    columnList = "problem_id, contest_id"),
+            @Index(name = "idx_submissions_status_updated_at", columnList = "status, updated_at"),
+            @Index(name = "idx_submissions_verdict_judged_at", columnList = "verdict, judged_at")
         })
 @Getter
 @NoArgsConstructor
@@ -190,6 +192,17 @@ public class Submission extends BaseEntity {
         diff = null;
         judgedTestcases = 0;
         judgedAt = null;
+    }
+
+    public boolean needsRejudgeAt(Instant stuckBefore) {
+        if (status == SubmissionStatus.COMPLETED) {
+            return verdict == Verdict.SE;
+        }
+        return getUpdatedAt().isBefore(stuckBefore);
+    }
+
+    public void requeueSameRevision() {
+        rejudge(problemRevisionId, totalTestcases, null);
     }
 
     public UUID finishRejudge() {

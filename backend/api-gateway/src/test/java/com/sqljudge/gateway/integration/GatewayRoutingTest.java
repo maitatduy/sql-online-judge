@@ -223,14 +223,21 @@ class GatewayRoutingTest extends GatewayIntegrationSupport {
     }
 
     @Test
-    @DisplayName("Danh sách và chi tiết bài nộp của admin được chuyển tới submission-service")
+    @DisplayName("Bài nộp và máy chấm của admin được chuyển tới submission-service")
     void adminSubmissionPaths_areRoutedToSubmissionService() {
         webTestClient.get().uri("/api/admin/submissions?verdict=WA").exchange();
         webTestClient.get().uri("/api/admin/submissions/abc").exchange();
+        webTestClient.post().uri("/api/admin/submissions/abc/rejudge").exchange();
+        webTestClient.get().uri("/api/admin/judge/queue").exchange();
+        webTestClient.get().uri("/api/admin/judge/attention").exchange();
 
         assertThat(SUBMISSION_SERVICE.forwardedRequestLines())
                 .containsExactly(
-                        "GET /api/admin/submissions?verdict=WA", "GET /api/admin/submissions/abc");
+                        "GET /api/admin/submissions?verdict=WA",
+                        "GET /api/admin/submissions/abc",
+                        "POST /api/admin/submissions/abc/rejudge",
+                        "GET /api/admin/judge/queue",
+                        "GET /api/admin/judge/attention");
     }
 
     @Test

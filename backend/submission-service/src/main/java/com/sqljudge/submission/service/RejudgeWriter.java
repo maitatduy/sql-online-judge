@@ -1,7 +1,9 @@
 package com.sqljudge.submission.service;
 
 import com.sqljudge.common.error.ErrorCode;
+import com.sqljudge.common.exception.BusinessRuleException;
 import com.sqljudge.common.exception.ConflictException;
+import com.sqljudge.common.exception.NotFoundException;
 import com.sqljudge.common.outbox.OutboxWriter;
 import com.sqljudge.common.persistence.UuidV7;
 import com.sqljudge.submission.client.JudgingInfo;
@@ -16,6 +18,7 @@ import com.sqljudge.submission.event.SubmissionTopics;
 import com.sqljudge.submission.repository.RejudgeBatchRepository;
 import com.sqljudge.submission.repository.SubmissionRepository;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,30 @@ public class RejudgeWriter {
     private final SubmissionRepository submissionRepository;
     private final OutboxWriter outboxWriter;
     private final Clock clock;
+
+    @Transactional
+    public void rejudgeOne(UUID submissionId, Instant stuckBefore) {
+        Submission submission =
+                submissionRepository
+                        .findById(submissionId)
+                        .filter(found -> found.getDeletedAt() == null)
+                        .orElseThrow(
+                                () ->
+                                        new NotFoundException(
+                                                ErrorCode.SUBMISSION_NOT_FOUND,
+                                                "Không tìm thấy bài nộp"));
+        if (!submission.needsRejudgeAt(stuckBefore)) {
+            throw new BusinessRuleException(
+                    ErrorCode.SUBMISSION_NOT_REJUDGEABLE,
+                    "Chỉ chấm lại được bài lỗi hệ thống chấm hoặc bài bị kẹt trong hàng đợi");
+        }
+        submission.requeueSameRevision();
+        queueRejudge(submission);
+        log.info(
+                "submission_rejudge_requested submissionId={} attempt={}",
+                submissionId,
+                submission.getAttempts());
+    }
 
     @Transactional
     public RejudgeBatchResponse start(JudgingInfo problem) {
