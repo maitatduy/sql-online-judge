@@ -77,19 +77,17 @@ export function ProblemTabs({ problem, target }: ProblemTabsProps) {
             aria-label="Đề bài và schema"
             className="@container/tabs h-full min-h-0 flex-1"
         >
-            <TabsList className="gap-0.5 overflow-x-auto px-1">
+            <TabsList className="gap-0.5 px-1">
                 {tabs.map((tab) => (
                     <TabsTrigger
                         key={tab.value}
                         value={tab.value}
                         aria-label={tab.label}
                         title={tab.label}
-                        className="group h-9 gap-1.5 px-2.5 [&_svg]:size-4"
+                        className="h-11 shrink-0 gap-2 px-3 text-[15px] [&_svg]:size-[18px]"
                     >
                         {tab.icon}
-                        <span className="hidden group-data-[state=active]:inline @[40rem]/tabs:inline">
-                            {tab.label}
-                        </span>
+                        <span className="hidden @[46rem]/tabs:inline">{tab.label}</span>
                     </TabsTrigger>
                 ))}
             </TabsList>

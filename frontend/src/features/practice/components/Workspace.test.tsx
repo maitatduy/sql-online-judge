@@ -58,7 +58,8 @@ describe("Workspace", () => {
         const statement = within(screen.getByRole("tabpanel", { name: "Đề bài" }));
         expect(statement.getByText("Trung bình")).toHaveClass("text-difficulty-medium");
         expect(statement.getByText("Subquery")).toBeInTheDocument();
-        expect(statement.getByText("AC 41,2%, 12.380 người giải")).toBeInTheDocument();
+        expect(statement.getByText("Tỉ lệ AC").nextElementSibling).toHaveTextContent("41,2%");
+        expect(statement.getByText("Người giải").nextElementSibling).toHaveTextContent("12.380");
         expect(
             statement.getByText("lương cao nhất trong mỗi phòng ban", { selector: "strong" }),
         ).toBeInTheDocument();
@@ -78,17 +79,26 @@ describe("Workspace", () => {
         );
     });
 
-    it("hiện ví dụ kết quả mong đợi và các ràng buộc của bài", async () => {
+    it("chia đề thành Đề bài, Input, Output, Điều kiện và Chú ý", async () => {
         await renderWorkspace();
         const statement = within(screen.getByRole("tabpanel", { name: "Đề bài" }));
 
-        const example = within(statement.getByRole("table", { name: "Ví dụ kết quả mong đợi" }));
+        const input = within(statement.getByRole("region", { name: "Input" }));
+        expect(input.getByText("employees")).toBeInTheDocument();
+        const output = within(statement.getByRole("region", { name: "Output" }));
+        const example = within(output.getByRole("table", { name: "Ví dụ kết quả mong đợi" }));
         expect(example.getAllByRole("row")).toHaveLength(5);
-        expect(statement.getByText(/Bắt buộc đúng thứ tự dòng/)).toBeInTheDocument();
-        expect(statement.getByText("Chỉ cho phép SELECT, WITH.")).toBeInTheDocument();
-        expect(
-            statement.getByText("Giới hạn thời gian 2 giây, 2 testcase ẩn."),
-        ).toBeInTheDocument();
+        const conditions = within(statement.getByRole("region", { name: "Điều kiện" }));
+        expect(conditions.getByText("Câu lệnh được dùng").nextElementSibling).toHaveTextContent(
+            "SELECT, WITH",
+        );
+        expect(conditions.getByText("Giới hạn thời gian").nextElementSibling).toHaveTextContent(
+            "2 giây mỗi testcase",
+        );
+        expect(conditions.getByText("Testcase ẩn").nextElementSibling).toHaveTextContent("2");
+        const notes = within(statement.getByRole("region", { name: "Chú ý" }));
+        expect(notes.getByText(/Bắt buộc đúng thứ tự dòng/)).toBeInTheDocument();
+        expect(notes.getByText("Mỗi lần nộp chỉ gồm một câu truy vấn.")).toBeInTheDocument();
     });
 
     it("cho xem schema: bảng, cột, kiểu, khoá chính, khoá ngoại", async () => {
