@@ -23,7 +23,7 @@ function RunOutcome({ run, problem }: { run: CodeRun; problem: WorkspaceProblem 
     if (run.outcome === "OK" && run.result) {
         return (
             <div className="flex flex-col gap-2">
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                     {`${formatNumber(run.result.rows.length)} dòng, ${formatNumber(run.runtimeMs ?? 0)} ms`}
                 </p>
                 <ResultTable label="Kết quả chạy thử" result={run.result} />
@@ -41,12 +41,12 @@ function RunOutcome({ run, problem }: { run: CodeRun; problem: WorkspaceProblem 
               : run.errorMessage;
     return (
         <div className="flex flex-col gap-2">
-            <p className="flex items-center gap-2 font-semibold">
+            <p className="flex items-center gap-2 text-lg font-semibold">
                 <VerdictBadge verdict={run.outcome} variant="solid" />
                 {VERDICT_LABELS[run.outcome]}
             </p>
             {message ? (
-                <pre className="rounded-lg border bg-background px-4 py-3 font-mono text-[13px] whitespace-pre-wrap">
+                <pre className="rounded-lg border bg-background px-4 py-3 font-mono text-[15px] whitespace-pre-wrap">
                     {message}
                 </pre>
             ) : null}
@@ -67,7 +67,7 @@ export function RunContent({
             <p
                 role="status"
                 aria-label="Đang chạy thử"
-                className="text-[13px] text-muted-foreground"
+                className="text-[15px] text-muted-foreground"
             >
                 Đang chạy thử trên dữ liệu mẫu…
             </p>
@@ -88,7 +88,7 @@ export function RunContent({
         return <RunOutcome run={run} problem={problem} />;
     }
     return (
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-[15px] text-muted-foreground">
             Bấm Run để chạy thử trên dữ liệu mẫu. Chạy thử không tính là lần nộp.
         </p>
     );

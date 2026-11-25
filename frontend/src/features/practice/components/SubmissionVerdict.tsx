@@ -58,10 +58,10 @@ export function SubmissionVerdict({ problem, submission }: SubmissionVerdictProp
             <div className="flex flex-wrap items-center gap-3">
                 <VerdictBadge verdict={verdict} variant="solid" />
                 <div>
-                    <p className={cn("font-bold", VERDICT_TEXT_CLASSES[verdict])}>
+                    <p className={cn("text-lg font-bold", VERDICT_TEXT_CLASSES[verdict])}>
                         {VERDICT_LABELS[verdict]}
                     </p>
-                    {summary ? <p className="text-xs text-muted-foreground">{summary}</p> : null}
+                    {summary ? <p className="text-sm text-muted-foreground">{summary}</p> : null}
                 </div>
                 {verdict === "AC" ? (
                     <Button asChild size="sm" variant="outline" className="ml-auto">
@@ -70,13 +70,13 @@ export function SubmissionVerdict({ problem, submission }: SubmissionVerdictProp
                 ) : null}
             </div>
             {submission.errorMessage ? (
-                <pre className="rounded-lg border bg-background px-4 py-3 font-mono text-[13px] whitespace-pre-wrap">
+                <pre className="rounded-lg border bg-background px-4 py-3 font-mono text-[15px] whitespace-pre-wrap">
                     {submission.errorMessage}
                 </pre>
             ) : null}
             {failed?.diff ? <SubmissionDiffView diff={failed.diff} /> : null}
             {failed?.isHidden ? (
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-[15px] text-muted-foreground">
                     Testcase ẩn nên không hiện dữ liệu so sánh.
                 </p>
             ) : null}

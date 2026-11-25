@@ -78,7 +78,7 @@ export function SubmissionContent({
         return <SubmissionVerdict problem={problem} submission={submission} />;
     }
     return (
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-[15px] text-muted-foreground">
             Bấm Submit để nộp bài. Bài nộp được chấm trên mọi testcase, kể cả testcase ẩn.
         </p>
     );

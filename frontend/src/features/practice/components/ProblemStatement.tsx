@@ -35,7 +35,7 @@ export function ProblemStatement({ problem, meta }: ProblemStatementProps) {
             <StatementSection title="Đề bài">
                 <Markdown>{problem.statementMarkdown}</Markdown>
             </StatementSection>
-            <StatementSection title="Input">
+            <StatementSection title="Dữ liệu vào">
                 <p>Truy vấn chạy trên các bảng sau, chi tiết kiểu dữ liệu ở tab Schema:</p>
                 <ul className="flex flex-col gap-1.5">
                     {problem.schema.map((table) => (
@@ -48,7 +48,7 @@ export function ProblemStatement({ problem, meta }: ProblemStatementProps) {
                     ))}
                 </ul>
             </StatementSection>
-            <StatementSection title="Output">
+            <StatementSection title="Kết quả cần trả về">
                 {example ? (
                     <>
                         <p>

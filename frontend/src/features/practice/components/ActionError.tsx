@@ -22,7 +22,7 @@ export function ActionError({
 }: ActionErrorProps) {
     if (isUnauthenticatedError(error)) {
         return (
-            <p className="text-[13px]">
+            <p className="text-[15px]">
                 {loginMessage}{" "}
                 <Link href={loginHref} className="font-semibold text-brand">
                     Đăng nhập
@@ -32,7 +32,7 @@ export function ActionError({
     }
     if (error instanceof ApiRequestError && error.status === RATE_LIMITED_STATUS) {
         return (
-            <p role="alert" className="text-[13px]">
+            <p role="alert" className="text-[15px]">
                 {error.retryAfterSeconds
                     ? `${rateLimitedMessage} Thử lại sau ${error.retryAfterSeconds} giây.`
                     : `${rateLimitedMessage} Thử lại sau ít phút.`}
@@ -40,7 +40,7 @@ export function ActionError({
         );
     }
     return (
-        <div role="alert" className="flex items-center gap-3 text-[13px]">
+        <div role="alert" className="flex items-center gap-3 text-[15px]">
             <span>{error.message}</span>
             <Button type="button" size="sm" variant="outline" onClick={onRetry}>
                 Thử lại

@@ -20,7 +20,7 @@ function marked(rows: DiffCell[][], mark: RowMark): Partial<Record<number, RowMa
 
 function ColumnsDiff({ diff }: { diff: SubmissionDiff }) {
     return (
-        <dl className="grid gap-1 text-[13px]">
+        <dl className="grid gap-1 text-[15px]">
             <div>
                 <dt className="inline text-muted-foreground">
                     Mong đợi {formatNumber(diff.expectedColumns.length)} cột:{" "}
@@ -75,7 +75,7 @@ function RowsDiff({ diff }: { diff: SubmissionDiff }) {
                 ) : null}
             </div>
             {isLimited ? (
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-[15px] text-muted-foreground">
                     Chỉ hiện tối đa {DIFF_ROW_LIMIT} dòng thiếu và {DIFF_ROW_LIMIT} dòng thừa.
                 </p>
             ) : null}
@@ -86,7 +86,7 @@ function RowsDiff({ diff }: { diff: SubmissionDiff }) {
 export function SubmissionDiffView({ diff }: { diff: SubmissionDiff }) {
     return (
         <div className="flex flex-col gap-3">
-            <p className="text-[13px] text-muted-foreground">
+            <p className="text-[15px] text-muted-foreground">
                 Mong đợi {formatNumber(diff.expectedRowCount)} dòng, kết quả của bạn có{" "}
                 {formatNumber(diff.actualRowCount)} dòng.
             </p>

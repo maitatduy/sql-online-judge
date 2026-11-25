@@ -79,13 +79,13 @@ describe("Workspace", () => {
         );
     });
 
-    it("chia đề thành Đề bài, Input, Output, Điều kiện và Chú ý", async () => {
+    it("chia đề thành Đề bài, Dữ liệu vào, Kết quả cần trả về, Điều kiện và Chú ý", async () => {
         await renderWorkspace();
         const statement = within(screen.getByRole("tabpanel", { name: "Đề bài" }));
 
-        const input = within(statement.getByRole("region", { name: "Input" }));
+        const input = within(statement.getByRole("region", { name: "Dữ liệu vào" }));
         expect(input.getByText("employees")).toBeInTheDocument();
-        const output = within(statement.getByRole("region", { name: "Output" }));
+        const output = within(statement.getByRole("region", { name: "Kết quả cần trả về" }));
         const example = within(output.getByRole("table", { name: "Ví dụ kết quả mong đợi" }));
         expect(example.getAllByRole("row")).toHaveLength(5);
         const conditions = within(statement.getByRole("region", { name: "Điều kiện" }));
@@ -111,7 +111,7 @@ describe("Workspace", () => {
         expect(employees.getByRole("row", { name: /id INTEGER Khoá chính/ })).toBeInTheDocument();
         expect(
             employees.getByRole("row", {
-                name: /department_id INTEGER Khoá ngoại → departments\.id, Có thể NULL/,
+                name: /department_id INTEGER Khoá ngoại → departments\.id,\s?Có thể NULL/,
             }),
         ).toBeInTheDocument();
     });
