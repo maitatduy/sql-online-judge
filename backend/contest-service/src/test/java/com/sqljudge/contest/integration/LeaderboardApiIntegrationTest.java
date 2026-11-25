@@ -50,8 +50,7 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
 
     @BeforeEach
     void seedRatings() {
-        jdbcTemplate.update("DELETE FROM contest_rating_changes");
-        jdbcTemplate.update("DELETE FROM contests");
+        deleteHistoryContests();
         jdbcTemplate.update("DELETE FROM user_ratings");
         AuthServiceStub.reset();
         AuthServiceStub.user(TOP, "an.bui", false);
@@ -65,8 +64,7 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
 
     @AfterEach
     void deleteRatings() {
-        jdbcTemplate.update("DELETE FROM contest_rating_changes");
-        jdbcTemplate.update("DELETE FROM contests");
+        deleteHistoryContests();
         jdbcTemplate.update("DELETE FROM user_ratings");
     }
 
@@ -107,8 +105,10 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
     @Test
     @DisplayName("Lịch sử rating: mỗi contest đã thi một mốc, contest kết thúc trước đứng trước")
     void history_listsRatingAfterEachContest() {
-        Contest later = contest("sql-cup-2", "SQL Cup 2", Instant.parse("2026-10-04T13:00:00Z"));
-        Contest earlier = contest("sql-cup-1", "SQL Cup 1", Instant.parse("2026-09-06T13:00:00Z"));
+        Contest later =
+                contest("lich-su-rating-2", "SQL Cup 2", Instant.parse("2026-10-04T13:00:00Z"));
+        Contest earlier =
+                contest("lich-su-rating-1", "SQL Cup 1", Instant.parse("2026-09-06T13:00:00Z"));
         ratingChangeRepository.save(
                 ContestRatingChange.of(
                         later.getId(), "minh.anh", new Change(SECOND, 4, 1560, 1640, 80)));
@@ -122,7 +122,7 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
         DocumentContext history = getOk("/api/leaderboard/" + SECOND + "/history");
 
         assertThat(history.read("$.items[*].contestSlug", List.class))
-                .containsExactly("sql-cup-1", "sql-cup-2");
+                .containsExactly("lich-su-rating-1", "lich-su-rating-2");
         assertThat(history.read("$.items[*].rating", List.class)).containsExactly(1560, 1640);
         assertThat(history.read("$.items[*].rank", List.class)).containsExactly(12, 4);
         assertThat(history.read("$.items[1].contestTitle", String.class)).isEqualTo("SQL Cup 2");
@@ -140,6 +140,13 @@ class LeaderboardApiIntegrationTest extends ContainerSupport {
                                 .getForEntity("/api/leaderboard?size=101", String.class)
                                 .getStatusCode())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    private void deleteHistoryContests() {
+        jdbcTemplate.update(
+                "DELETE r FROM contest_rating_changes r JOIN contests c ON c.id = r.contest_id"
+                        + " WHERE c.slug LIKE 'lich-su-rating-%'");
+        jdbcTemplate.update("DELETE FROM contests WHERE slug LIKE 'lich-su-rating-%'");
     }
 
     private Contest contest(String slug, String title, Instant startAt) {
