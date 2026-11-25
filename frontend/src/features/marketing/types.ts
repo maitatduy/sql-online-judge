@@ -1,25 +1,28 @@
-export interface Stat {
-    value: number | string;
+export interface LandingStat {
     label: string;
+    value: number;
 }
 
-export interface UpcomingContest {
+export interface LandingContest {
+    id: string;
+    slug: string;
     title: string;
-    startLabel: string;
-    problemCount: number;
+    startAt: string;
     durationMinutes: number;
-    note: string;
+    isRated: boolean;
 }
 
-export interface TopRatedUser {
-    username: string;
+export interface LandingRatedUser {
+    userId: string;
+    username: string | null;
+    displayName: string | null;
     rating: number;
 }
 
-export type RoadmapLevel = "FOUNDATION" | "ADVANCED";
+export interface TotalCount {
+    totalItems: number;
+}
 
-export interface RoadmapStage {
-    title: string;
-    topics: string;
-    level: RoadmapLevel;
+export interface LandingPage<T> {
+    items: T[];
 }

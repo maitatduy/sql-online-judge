@@ -42,18 +42,10 @@ describe("CtaBanner", () => {
         expect(within(example).getByText("AC - 12 ms")).toBeInTheDocument();
     });
 
-    it("có câu mô tả ngắn và ba lý do để bắt đầu", () => {
+    it("chỉ có một câu mô tả ngắn", () => {
         renderWithProviders(<CtaBanner />);
 
-        const reasons = within(screen.getByRole("list")).getAllByRole("listitem");
-
-        expect(
-            screen.getByText("Không cần cài đặt cơ sở dữ liệu. Miễn phí cho người học."),
-        ).toBeInTheDocument();
-        expect(reasons.map((reason) => reason.textContent)).toEqual([
-            "Hỗ trợ PostgreSQL, MySQL và SQLite",
-            "Máy chấm trả kết quả trong vài giây",
-            "Trợ lý AI gợi ý khi bạn bí",
-        ]);
+        expect(screen.getByText("Không cần cài database. Miễn phí.")).toBeInTheDocument();
+        expect(screen.queryByRole("list")).not.toBeInTheDocument();
     });
 });
