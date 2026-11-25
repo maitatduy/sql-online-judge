@@ -46,13 +46,13 @@ export function NotificationBell() {
                     variant="ghost"
                     size="icon"
                     aria-label={label}
-                    className="relative"
+                    className="relative size-11"
                 >
-                    <Bell aria-hidden="true" />
+                    <Bell aria-hidden="true" className="size-5.5" />
                     {count > 0 ? (
                         <span
                             aria-hidden="true"
-                            className="absolute top-1 right-1 min-w-4 rounded-full bg-brand px-1 text-[10px] leading-4 font-bold text-white"
+                            className="absolute top-1.5 right-1.5 min-w-4 rounded-full bg-brand px-1 text-[10px] leading-4 font-bold text-white"
                         >
                             {count > MAX_BADGE ? `${MAX_BADGE}+` : count}
                         </span>
