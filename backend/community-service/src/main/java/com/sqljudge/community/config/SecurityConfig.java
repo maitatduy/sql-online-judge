@@ -59,7 +59,8 @@ public class SecurityConfig {
                                                 "/api/community/posts/*",
                                                 "/api/community/comments",
                                                 "/api/community/overview",
-                                                "/api/community/contributors")
+                                                "/api/community/contributors",
+                                                "/api/community/problem-discussions")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

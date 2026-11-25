@@ -14,6 +14,7 @@ import type {
     PostDetail,
     AiText,
     PostPage,
+    ProblemDiscussion,
     ProblemEditorial,
     ProblemOption,
     ReportReason,
@@ -26,6 +27,7 @@ import type {
 export const POST_PAGE_SIZE = 20;
 const COMMENT_PAGE_SIZE = 50;
 const PROBLEM_OPTION_COUNT = 8;
+const PROBLEM_DISCUSSION_COUNT = 6;
 
 function postPath(postId: string): string {
     return `/api/community/posts/${encodeURIComponent(postId)}`;
@@ -99,6 +101,11 @@ export const communityApi = {
         apiClient.get<CommunityOverview>("/api/community/overview", { signal }),
     contributors: (signal?: AbortSignal) =>
         apiClient.get<Contributor[]>("/api/community/contributors", { signal }),
+    problemDiscussions: (signal?: AbortSignal) =>
+        apiClient.get<ProblemDiscussion[]>("/api/community/problem-discussions", {
+            params: { size: PROBLEM_DISCUSSION_COUNT },
+            signal,
+        }),
     comments: (thread: CommentThread, sort: CommentSort, signal?: AbortSignal) =>
         apiClient.get<CommentPage>("/api/community/comments", {
             params: { ...thread, sort, page: 1, size: COMMENT_PAGE_SIZE },

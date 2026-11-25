@@ -59,6 +59,18 @@ export interface Contributor {
     points: number;
 }
 
+export interface ProblemDiscussion {
+    commentId: string;
+    problemId: string;
+    problemSlug: string;
+    problemTitle: string;
+    authorId: string;
+    authorUsername: string | null;
+    excerpt: string;
+    isReply: boolean;
+    createdAt: string;
+}
+
 export interface CommentItem {
     id: string;
     postId: string | null;

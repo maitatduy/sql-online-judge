@@ -212,6 +212,33 @@ export const communityHandlers: RequestHandler[] = [
         await delay(100);
         return HttpResponse.json([{ userId: AUTHOR_ID, username: "an.bui", points: 42 }]);
     }),
+    http.get("*/api/community/problem-discussions", async ({ request }) => {
+        await delay(100);
+        const size = Number(new URL(request.url).searchParams.get("size") ?? 6);
+        const discussions = [...comments]
+            .reverse()
+            .filter((comment) => comment.problemId)
+            .flatMap((comment) => {
+                const problem = findProblem(comment.problemId ?? "");
+                return problem
+                    ? [
+                          {
+                              commentId: comment.id,
+                              problemId: problem.id,
+                              problemSlug: problem.slug,
+                              problemTitle: problem.title,
+                              authorId: comment.authorId,
+                              authorUsername: comment.authorUsername,
+                              excerpt: comment.body,
+                              isReply: comment.parentId !== null,
+                              createdAt: comment.createdAt,
+                          },
+                      ]
+                    : [];
+            })
+            .slice(0, size);
+        return HttpResponse.json(discussions);
+    }),
     http.get("*/api/community/posts", async ({ request }) => {
         await delay(150);
         const url = new URL(request.url);

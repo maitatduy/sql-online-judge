@@ -21,7 +21,8 @@ import lombok.NoArgsConstructor;
             @Index(
                     name = "idx_comments_problem_id_created_at",
                     columnList = "problem_id, created_at"),
-            @Index(name = "idx_comments_parent_id", columnList = "parent_id")
+            @Index(name = "idx_comments_parent_id", columnList = "parent_id"),
+            @Index(name = "idx_comments_status_created_at", columnList = "status, created_at")
         })
 @Getter
 @NoArgsConstructor

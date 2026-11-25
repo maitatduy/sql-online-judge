@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,6 +35,11 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
             @Param("visible") CommentStatus visible);
 
     Optional<Comment> findByIdAndDeletedAtIsNull(UUID id);
+
+    @Query(
+            "SELECT c FROM Comment c WHERE c.problemId IS NOT NULL AND c.deletedAt IS NULL"
+                    + " AND c.status = :visible ORDER BY c.createdAt DESC, c.id DESC")
+    List<Comment> findLatestOnProblems(@Param("visible") CommentStatus visible, Limit limit);
 
     List<Comment> findByProblemIdInAndHiddenReason(
             Collection<UUID> problemIds, HiddenReason hiddenReason);

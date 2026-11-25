@@ -35,6 +35,7 @@ export const ROUTES = {
     studioLesson: (courseId: string, lessonId: string) =>
         `/studio/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}`,
     problem: (slug: string) => `/problems/${encodeURIComponent(slug)}`,
+    problemDiscussion: (slug: string) => `/problems/${encodeURIComponent(slug)}?tab=discussion`,
     communityPost: (postId: string) => `/community/${encodeURIComponent(postId)}`,
     communityEdit: (postId: string) => `/community/${encodeURIComponent(postId)}/edit`,
     communityNewForProblem: (problemSlug: string) =>

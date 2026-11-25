@@ -1,4 +1,5 @@
 import { Database, History } from "lucide-react";
+import { useState } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -16,11 +17,25 @@ interface ProblemTabsProps {
     className?: string;
 }
 
+const DEFAULT_TAB = "statement";
+const TAB_PARAM = "tab";
+
+function initialTab(target: WorkspaceTarget): string {
+    const requested =
+        typeof window === "undefined"
+            ? null
+            : new URLSearchParams(window.location.search).get(TAB_PARAM);
+    const isKnown = target.extraTabs?.some((tab) => tab.value === requested) ?? false;
+    return requested && isKnown ? requested : DEFAULT_TAB;
+}
+
 export function ProblemTabs({ problem, target, id, className }: ProblemTabsProps) {
+    const [defaultTab] = useState(() => initialTab(target));
+
     return (
         <Tabs
             id={id}
-            defaultValue="statement"
+            defaultValue={defaultTab}
             aria-label="Đề bài và schema"
             className={cn(
                 "min-h-0 max-lg:flex-1 lg:w-[38%] lg:min-w-[420px] lg:border-r",
