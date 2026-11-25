@@ -1,7 +1,9 @@
 import { screen, waitFor, within } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { completeMockLesson, resetMockLearningProgress } from "@/mocks/learning-progress";
+import { server } from "@/mocks/server";
 import { clearMockSession, DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
 
@@ -39,7 +41,17 @@ describe("LearningDashboard", () => {
         expect(await screen.findByText("3 ngày")).toBeInTheDocument();
     });
 
-    it("hiện số bài AC, tỉ lệ AC và ô sắp có cho rating và hạng", async () => {
+    it("hiện số bài AC, tỉ lệ AC, rating và hạng toàn cục", async () => {
+        server.use(
+            http.get("*/api/leaderboard/:userId", ({ params }) =>
+                HttpResponse.json({
+                    userId: params.userId,
+                    rating: 1650,
+                    rank: 12,
+                    contestsPlayed: 4,
+                }),
+            ),
+        );
         renderWithProviders(<LearningDashboard />);
 
         const stats = within(await screen.findByRole("list", { name: "Thống kê" }));
@@ -47,7 +59,27 @@ describe("LearningDashboard", () => {
         expect(stats.getByText("+2 tuần này")).toBeInTheDocument();
         expect(stats.getByText("60%")).toBeInTheDocument();
         expect(stats.getByText("20 bài nộp")).toBeInTheDocument();
-        expect(stats.getAllByText("Sắp có")).toHaveLength(2);
+        expect(await stats.findByText("1.650")).toBeInTheDocument();
+        expect(stats.getByText("4 contest đã thi")).toBeInTheDocument();
+        expect(stats.getByText("#12")).toBeInTheDocument();
+    });
+
+    it("chưa thi contest tính rating thì rating và hạng để trống kèm lời nhắc", async () => {
+        server.use(
+            http.get("*/api/leaderboard/:userId", ({ params }) =>
+                HttpResponse.json({
+                    userId: params.userId,
+                    rating: null,
+                    rank: null,
+                    contestsPlayed: 0,
+                }),
+            ),
+        );
+        renderWithProviders(<LearningDashboard />);
+
+        const stats = within(await screen.findByRole("list", { name: "Thống kê" }));
+        expect(await stats.findByText("Chưa thi contest tính rating")).toBeInTheDocument();
+        expect(stats.getAllByText("-")).toHaveLength(2);
     });
 
     it("học tiếp khoá đang học và gợi ý bài luyện tập hôm nay", async () => {
@@ -82,15 +114,69 @@ describe("LearningDashboard", () => {
         ).toHaveAttribute("href", "/problems/tong-luong-moi-phong-ban");
     });
 
-    it("hiện hoạt động 12 tháng gộp bài học và bài nộp, kèm khối sắp có", async () => {
+    it("hiện hoạt động 12 tháng gộp bài học và bài nộp", async () => {
         completeMockLesson("sql-co-ban", "01a1d2c0-0000-7000-8000-000000000201");
         renderWithProviders(<LearningDashboard />);
 
         expect(
             await screen.findByRole("img", { name: /Lịch hoạt động .* 6 hoạt động/ }),
         ).toBeInTheDocument();
-        expect(within(await region("Kỹ năng theo chủ đề")).getByText("Sắp có")).toBeVisible();
-        expect(within(await region("Contest sắp tới")).getByText("Sắp có")).toBeVisible();
+    });
+
+    it("kỹ năng theo chủ đề hiện số bài đã AC trên tổng bài và dẫn tới danh sách bài", async () => {
+        server.use(
+            http.get("*/api/solved-summaries/:userId/topics", ({ params }) =>
+                HttpResponse.json({
+                    userId: params.userId,
+                    topics: [
+                        { slug: "join", name: "JOIN", solved: 3, total: 8 },
+                        { slug: "cte", name: "CTE", solved: 0, total: 2 },
+                    ],
+                }),
+            ),
+        );
+        renderWithProviders(<LearningDashboard />);
+
+        const skills = within(await region("Kỹ năng theo chủ đề"));
+        expect(await skills.findByRole("link", { name: "JOIN" })).toHaveAttribute(
+            "href",
+            "/problems?tag=join",
+        );
+        expect(skills.getByText("3/8")).toBeInTheDocument();
+        expect(
+            skills.getByRole("progressbar", { name: "JOIN: đã AC 3 trên 8 bài" }),
+        ).toHaveAttribute("aria-valuenow", "3");
+    });
+
+    it("contest sắp tới dẫn tới trang contest", async () => {
+        server.use(
+            http.get("*/api/contests", () =>
+                HttpResponse.json({
+                    items: [
+                        {
+                            id: "contest-1",
+                            slug: "sql-weekly-40",
+                            title: "SQL Weekly #40",
+                            startAt: "2026-12-01T13:00:00Z",
+                            durationMinutes: 90,
+                            isRated: true,
+                        },
+                    ],
+                    page: 1,
+                    size: 3,
+                    totalItems: 1,
+                    totalPages: 1,
+                }),
+            ),
+        );
+        renderWithProviders(<LearningDashboard />);
+
+        const contests = within(await region("Contest sắp tới"));
+        expect(await contests.findByRole("link", { name: /SQL Weekly #40/ })).toHaveAttribute(
+            "href",
+            "/contests/sql-weekly-40",
+        );
+        expect(contests.getByText(/90 phút$/)).toBeInTheDocument();
     });
 
     it("chưa học khoá nào thì mời xem khoá học", async () => {

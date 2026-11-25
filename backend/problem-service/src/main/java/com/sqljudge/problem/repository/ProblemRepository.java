@@ -33,6 +33,50 @@ public interface ProblemRepository extends JpaRepository<Problem, UUID> {
     List<DifficultyCount> countSolvedByDifficulty(
             @Param("userId") UUID userId, @Param("solved") ProblemProgressStatus solved);
 
+    @Query(
+            "SELECT t.slug AS slug, t.name AS name, COUNT(p) AS total FROM Problem p JOIN p.tags t"
+                    + " WHERE p.status = :status AND p.visibility = :visibility"
+                    + " AND p.deletedAt IS NULL GROUP BY t.slug, t.name")
+    List<TagTotalRow> countPublishedByTag(
+            @Param("status") ProblemStatus status,
+            @Param("visibility") ProblemVisibility visibility);
+
+    @Query(
+            "SELECT t.slug AS slug, COUNT(p) AS total"
+                    + " FROM UserProblemProgress g JOIN Problem p ON p.id = g.problemId"
+                    + " JOIN p.tags t"
+                    + " WHERE g.userId = :userId AND g.status = :solved"
+                    + " AND p.status = :status AND p.visibility = :visibility"
+                    + " AND p.deletedAt IS NULL GROUP BY t.slug")
+    List<TagUsageRow> countSolvedByTag(
+            @Param("userId") UUID userId,
+            @Param("solved") ProblemProgressStatus solved,
+            @Param("status") ProblemStatus status,
+            @Param("visibility") ProblemVisibility visibility);
+
+    @Query(
+            "SELECT p.id FROM Problem p"
+                    + " LEFT JOIN UserProblemProgress up"
+                    + " ON up.problemId = p.id AND up.userId = :userId AND up.status = :solved"
+                    + " WHERE p.status = :status AND p.visibility = :visibility"
+                    + " AND p.deletedAt IS NULL AND up.id IS NULL ORDER BY p.number")
+    List<UUID> findUnsolvedIds(
+            @Param("userId") UUID userId,
+            @Param("solved") ProblemProgressStatus solved,
+            @Param("status") ProblemStatus status,
+            @Param("visibility") ProblemVisibility visibility);
+
+    @Query(
+            "SELECT new com.sqljudge.problem.repository.ProblemSummaryRow(p.id, p.number,"
+                    + " p.slug, p.title, p.difficulty, s.submissionCount, s.acceptedCount,"
+                    + " s.solvedUserCount, up.status) FROM Problem p"
+                    + " LEFT JOIN ProblemStats s ON s.problemId = p.id"
+                    + " LEFT JOIN UserProblemProgress up"
+                    + " ON up.problemId = p.id AND up.userId = :userId"
+                    + " WHERE p.id IN :problemIds")
+    List<ProblemSummaryRow> findSummariesOf(
+            @Param("problemIds") Collection<UUID> problemIds, @Param("userId") UUID userId);
+
     String ADMIN_PROBLEMS =
             """
             FROM Problem p

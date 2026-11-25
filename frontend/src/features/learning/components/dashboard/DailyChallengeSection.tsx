@@ -23,7 +23,7 @@ export function DailyChallengeSection({ problems }: DailyChallengeSectionProps) 
         >
             {problems === undefined ? <Skeleton className="h-28 rounded-lg" /> : null}
             {problems?.length === 0 ? (
-                <p className="rounded-lg bg-surface-2 p-5 font-semibold">Bạn đã thử hết bài</p>
+                <p className="rounded-lg bg-surface-2 p-5 font-semibold">Bạn đã AC hết bài</p>
             ) : null}
             {featured ? (
                 <Link

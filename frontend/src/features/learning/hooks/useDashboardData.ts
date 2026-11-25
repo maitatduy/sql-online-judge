@@ -5,7 +5,8 @@ import { submissionActivityQuery } from "@/lib/useLearningStreak";
 import { learningApi } from "../api";
 
 const RECENT_SUBMISSIONS = 5;
-const SUGGESTED_PROBLEMS = 4;
+const DAILY_CHALLENGES = 4;
+const UPCOMING_CONTESTS = 3;
 
 export function useSubmissionStats() {
     return useQuery({
@@ -25,9 +26,32 @@ export function useRecentSubmissions() {
     });
 }
 
-export function useSuggestedProblems() {
+export function useDailyChallenges() {
     return useQuery({
-        queryKey: ["suggested-problems"],
-        queryFn: ({ signal }) => learningApi.listSuggestedProblems(SUGGESTED_PROBLEMS, signal),
+        queryKey: ["daily-challenges"],
+        queryFn: ({ signal }) => learningApi.listDailyChallenges(DAILY_CHALLENGES, signal),
+    });
+}
+
+export function useTopicProgress(userId: string | undefined) {
+    return useQuery({
+        queryKey: ["topic-progress", userId],
+        queryFn: ({ signal }) => learningApi.getTopicProgress(userId ?? "", signal),
+        enabled: userId !== undefined,
+    });
+}
+
+export function useRatingSummary(userId: string | undefined) {
+    return useQuery({
+        queryKey: ["rating-summary", userId],
+        queryFn: ({ signal }) => learningApi.getRatingSummary(userId ?? "", signal),
+        enabled: userId !== undefined,
+    });
+}
+
+export function useUpcomingContests() {
+    return useQuery({
+        queryKey: ["upcoming-contests", UPCOMING_CONTESTS],
+        queryFn: ({ signal }) => learningApi.listUpcomingContests(UPCOMING_CONTESTS, signal),
     });
 }
