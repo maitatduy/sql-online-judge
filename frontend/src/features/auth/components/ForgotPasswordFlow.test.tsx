@@ -35,8 +35,10 @@ describe("ForgotPasswordFlow", () => {
             await screen.findByRole("heading", { level: 1, name: "Kiểm tra hộp thư" }),
         ).toBeInTheDocument();
         expect(receivedBody).toEqual({ email: EMAIL });
-        expect(screen.getByText(/có tài khoản trên SQL Judge/)).toBeInTheDocument();
+        expect(screen.getByText(/đã đăng ký, liên kết sẽ tới trong vài phút/)).toBeInTheDocument();
         expect(screen.getByText(EMAIL)).toBeInTheDocument();
+        expect(screen.getByText("Không thấy thư? Xem thư mục Spam.")).toBeInTheDocument();
+        expect(screen.queryByRole("list")).not.toBeInTheDocument();
     });
 
     it("email sai định dạng thì báo lỗi và không gửi request", async () => {

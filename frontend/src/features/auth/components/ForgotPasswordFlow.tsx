@@ -54,7 +54,7 @@ export function ForgotPasswordFlow() {
             tone="brand"
             headingAlign="center"
             title="Quên mật khẩu?"
-            description="Nhập email đã đăng ký. Chúng tôi sẽ gửi một liên kết để bạn đặt mật khẩu mới, có hiệu lực trong 30 phút."
+            description="Nhập email đã đăng ký để nhận liên kết đặt lại mật khẩu."
         >
             <form noValidate onSubmit={handleSubmit(handleRequest)} className="flex flex-col gap-4">
                 {formError && <FormAlert message={formError} />}
@@ -107,15 +107,14 @@ function ResetLinkSent({ email, onUseAnotherEmail }: ResetLinkSentProps) {
             title="Kiểm tra hộp thư"
             description={
                 <>
-                    Nếu <strong className="text-foreground">{email}</strong> có tài khoản trên SQL
-                    Judge, bạn sẽ nhận được email kèm liên kết đặt lại mật khẩu trong vài phút.
+                    Nếu <strong className="text-foreground">{email}</strong> đã đăng ký, liên kết sẽ
+                    tới trong vài phút và dùng được 30 phút.
                 </>
             }
         >
-            <ul className="flex flex-col gap-2 rounded-lg bg-surface-2 px-4 py-3.5 text-[13px] text-muted-foreground">
-                <li>Liên kết hết hạn sau 30 phút.</li>
-                <li>Không thấy? Xem thư mục Spam hoặc Quảng cáo.</li>
-            </ul>
+            <p className="text-center text-[13px] text-muted-foreground">
+                Không thấy thư? Xem thư mục Spam.
+            </p>
             <Button
                 type="button"
                 variant="outline"
