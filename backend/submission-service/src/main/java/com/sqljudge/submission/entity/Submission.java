@@ -9,6 +9,9 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
@@ -64,6 +67,9 @@ public class Submission extends BaseEntity {
 
     @Column(name = "code", nullable = false, columnDefinition = "MEDIUMTEXT")
     private String code;
+
+    @Column(name = "code_hash", columnDefinition = "BINARY(32)")
+    private byte[] codeHash;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 16)
@@ -132,6 +138,7 @@ public class Submission extends BaseEntity {
         submission.problemTitle = solution.problem().title();
         submission.dialect = solution.dialect();
         submission.code = solution.code();
+        submission.codeHash = sha256(solution.code());
         submission.totalTestcases = solution.testcaseCount();
         submission.status = SubmissionStatus.PENDING;
         submission.attempts = FIRST_ATTEMPT;
@@ -225,4 +232,13 @@ public class Submission extends BaseEntity {
             UUID contestId) {}
 
     public record ProblemLabel(Integer number, String slug, String title) {}
+
+    private static byte[] sha256(String text) {
+        try {
+            return MessageDigest.getInstance("SHA-256")
+                    .digest(text.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 is unavailable", exception);
+        }
+    }
 }

@@ -48,8 +48,7 @@ public class SubmissionStatsService {
                         .filter(solve -> !solve.firstSolvedAt().isBefore(weekAgo))
                         .count();
         return new SubmissionStatsResponse(
-                submissionRepository.countOwn(userId),
-                submissionRepository.countOwnAccepted(userId),
+                submissionRepository.countOwnAttempts(userId.toString()),
                 firstSolves.size(),
                 solvedThisWeek);
     }

@@ -58,7 +58,7 @@ describe("LearningDashboard", () => {
         expect(await stats.findByText("9")).toBeInTheDocument();
         expect(stats.getByText("+2 tuần này")).toBeInTheDocument();
         expect(stats.getByText("60%")).toBeInTheDocument();
-        expect(stats.getByText("20 bài nộp")).toBeInTheDocument();
+        expect(stats.getByText("15 lần thử")).toBeInTheDocument();
         expect(await stats.findByText("1.650")).toBeInTheDocument();
         expect(stats.getByText("4 contest đã thi")).toBeInTheDocument();
         expect(stats.getByText("#12")).toBeInTheDocument();

@@ -1,4 +1,3 @@
 package com.sqljudge.submission.dto.response;
 
-public record SubmissionStatsResponse(
-        long submissionCount, long acceptedCount, long solvedCount, long solvedThisWeek) {}
+public record SubmissionStatsResponse(long attemptCount, long solvedCount, long solvedThisWeek) {}

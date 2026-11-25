@@ -39,11 +39,10 @@ class SubmissionStatsApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
-    @DisplayName("Tổng hợp đếm bài nộp, lần AC, số bài đã giải và số bài giải trong 7 ngày")
-    void summary_countsOwnSubmissions() {
+    @DisplayName("Tổng hợp đếm số bài đã giải, số bài giải trong 7 ngày và số lần thử")
+    void summary_countsOwnSolvesAndAttempts() {
         store(TestJwts.LEARNER_ID, FIRST_PROBLEM, "WA", "NOW(6) - INTERVAL 20 DAY");
         store(TestJwts.LEARNER_ID, FIRST_PROBLEM, "AC", "NOW(6) - INTERVAL 20 DAY");
-        store(TestJwts.LEARNER_ID, FIRST_PROBLEM, "AC", "NOW(6) - INTERVAL 1 DAY");
         store(TestJwts.LEARNER_ID, SECOND_PROBLEM, "AC", "NOW(6) - INTERVAL 2 DAY");
         store(TestJwts.LEARNER_ID, THIRD_PROBLEM, "RE", "NOW(6)");
         store(UUID.randomUUID(), THIRD_PROBLEM, "AC", "NOW(6)");
@@ -54,10 +53,33 @@ class SubmissionStatsApiIntegrationTest extends ContainerSupport {
 
         DocumentContext summary = get("/api/submissions/summary");
 
-        assertThat(summary.read("$.submissionCount", Integer.class)).isEqualTo(5);
-        assertThat(summary.read("$.acceptedCount", Integer.class)).isEqualTo(3);
+        assertThat(summary.read("$.attemptCount", Integer.class)).isEqualTo(4);
         assertThat(summary.read("$.solvedCount", Integer.class)).isEqualTo(2);
         assertThat(summary.read("$.solvedThisWeek", Integer.class)).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName(
+            "Số lần thử bỏ bài nộp sau lần AC đầu, gộp code trùng, bỏ bài chưa chấm xong và SE")
+    void summary_attemptsIgnoreResubmissionsDuplicatesPendingAndSystemErrors() {
+        storeCode(FIRST_PROBLEM, "WA", "SELECT 1", "NOW(6) - INTERVAL 5 HOUR");
+        storeCode(FIRST_PROBLEM, "WA", "SELECT 1", "NOW(6) - INTERVAL 4 HOUR");
+        storeCode(FIRST_PROBLEM, "WA", "SELECT 2", "NOW(6) - INTERVAL 3 HOUR");
+        storeCode(FIRST_PROBLEM, "AC", "SELECT 3", "NOW(6) - INTERVAL 2 HOUR");
+        storeCode(FIRST_PROBLEM, "AC", "SELECT 3", "NOW(6) - INTERVAL 1 HOUR");
+        storeCode(FIRST_PROBLEM, "WA", "SELECT 4", "NOW(6)");
+        storeCode(SECOND_PROBLEM, "SE", "SELECT 5", "NOW(6)");
+        storeCode(SECOND_PROBLEM, "WA", "SELECT 1", "NOW(6)");
+        UUID pending = storeCode(SECOND_PROBLEM, "WA", "SELECT 6", "NOW(6)");
+        jdbcTemplate.update(
+                "UPDATE submissions SET status = 'PENDING', verdict = NULL"
+                        + " WHERE id = UUID_TO_BIN(?)",
+                pending.toString());
+
+        DocumentContext summary = get("/api/submissions/summary");
+
+        assertThat(summary.read("$.attemptCount", Integer.class)).isEqualTo(4);
+        assertThat(summary.read("$.solvedCount", Integer.class)).isEqualTo(1);
     }
 
     @Test
@@ -115,6 +137,17 @@ class SubmissionStatsApiIntegrationTest extends ContainerSupport {
         assertThat(recent.read("$[1].dialect", String.class)).isEqualTo("POSTGRESQL");
         assertThat(exchange("/api/submissions/recent?size=21").getStatusCode())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    private UUID storeCode(UUID problemId, String verdict, String code, String createdAt) {
+        UUID id = store(TestJwts.LEARNER_ID, problemId, verdict, createdAt);
+        jdbcTemplate.update(
+                "UPDATE submissions SET code = ?, code_hash = UNHEX(SHA2(?, 256))"
+                        + " WHERE id = UUID_TO_BIN(?)",
+                code,
+                code,
+                id.toString());
+        return id;
     }
 
     private UUID store(UUID userId, UUID problemId, String verdict, String createdAt) {
