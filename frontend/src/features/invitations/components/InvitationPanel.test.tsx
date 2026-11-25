@@ -60,12 +60,24 @@ describe("trang nhận lời mời", () => {
         ["loi-moi-het-han", "Lời mời đã hết hạn"],
         ["loi-moi-da-huy", "Lời mời đã bị huỷ"],
         ["loi-moi-da-nhan", "Lời mời đã được nhận"],
+        ["loi-moi-da-tu-choi", "Bạn đã từ chối lời mời"],
     ])("lời mời %s thì báo %s và không cho nhận", async (token, title) => {
         writeMockSession(INVITEE);
         renderPanel(token);
 
         expect(await screen.findByText(title)).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Nhận quyền" })).not.toBeInTheDocument();
+    });
+
+    it("chưa đăng nhập vẫn từ chối được, có hỏi lại trước khi từ chối", async () => {
+        renderPanel("loi-moi-de-tu-choi");
+
+        fireEvent.click(await screen.findByRole("button", { name: "Từ chối lời mời" }));
+        expect(await screen.findByRole("alertdialog")).toHaveTextContent("Người ra đề");
+        fireEvent.click(screen.getByRole("button", { name: "Từ chối" }));
+
+        expect(await screen.findByText("Bạn đã từ chối lời mời")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Từ chối lời mời" })).not.toBeInTheDocument();
     });
 
     it("link không tồn tại: báo không tìm thấy lời mời", async () => {

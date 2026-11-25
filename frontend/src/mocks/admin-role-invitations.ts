@@ -26,6 +26,7 @@ interface StoredInvitation {
     expiresAtMs: number;
     acceptedAtMs: number | null;
     revokedAtMs: number | null;
+    declinedAtMs: number | null;
 }
 
 function seed(
@@ -45,6 +46,7 @@ function seed(
         expiresAtMs: invitedAtMs + TTL_MS,
         acceptedAtMs: null,
         revokedAtMs: null,
+        declinedAtMs: null,
         ...extra,
     };
 }
@@ -56,6 +58,7 @@ function seededInvitations(): StoredInvitation[] {
         seed("inv-an", "an.nguyen@gmail.com", "SETTER", 3, { acceptedAtMs: Date.now() - DAY_MS }),
         seed("inv-binh", "binh.le@gmail.com", "SETTER", 9),
         seed("inv-chi", "chi.pham@gmail.com", "MODERATOR", 4, { revokedAtMs: Date.now() - DAY_MS }),
+        seed("inv-dung", "dung.ho@gmail.com", "SETTER", 2, { declinedAtMs: Date.now() - DAY_MS }),
     ];
 }
 
@@ -75,6 +78,9 @@ function statusOf(invitation: StoredInvitation, nowMs: number): InvitationStatus
     if (invitation.revokedAtMs !== null) {
         return "REVOKED";
     }
+    if (invitation.declinedAtMs !== null) {
+        return "DECLINED";
+    }
     return nowMs < invitation.expiresAtMs ? "PENDING" : "EXPIRED";
 }
 
@@ -90,6 +96,7 @@ function toSummary(invitation: StoredInvitation, nowMs: number): RoleInvitationS
         expiresAt: new Date(invitation.expiresAtMs).toISOString(),
         acceptedAt: iso(invitation.acceptedAtMs),
         revokedAt: iso(invitation.revokedAtMs),
+        declinedAt: iso(invitation.declinedAtMs),
     };
 }
 

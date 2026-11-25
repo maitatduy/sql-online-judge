@@ -11,8 +11,10 @@ import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 import { useAcceptInvitation } from "../hooks/useAcceptInvitation";
+import { useDeclineInvitation } from "../hooks/useDeclineInvitation";
 import { useRoleInvitation } from "../hooks/useRoleInvitation";
 import type { InvitationStatus, InvitedRole, RoleInvitationView } from "../types";
+import { DeclineInvitationButton } from "./DeclineInvitationButton";
 
 const ROLE_LABELS: Record<InvitedRole, string> = {
     SETTER: "Người ra đề",
@@ -23,6 +25,7 @@ const CLOSED_TITLES: Record<Exclude<InvitationStatus, "PENDING">, string> = {
     EXPIRED: "Lời mời đã hết hạn",
     REVOKED: "Lời mời đã bị huỷ",
     ACCEPTED: "Lời mời đã được nhận",
+    DECLINED: "Bạn đã từ chối lời mời",
 };
 
 const CLOSED_HINT = "Cần quyền này thì nhờ quản trị viên gửi lời mời mới.";
@@ -77,7 +80,10 @@ function InvitationError({ error, onRetry }: { error: Error; onRetry: () => void
 function InvitationBody({ token, invitation }: { token: string; invitation: RoleInvitationView }) {
     const { data: currentUser, isPending: isUserPending } = useCurrentUser();
     const acceptInvitation = useAcceptInvitation(token);
+    const declineInvitation = useDeclineInvitation(token);
     const roleLabel = ROLE_LABELS[invitation.role];
+    const actionError = acceptInvitation.error ?? declineInvitation.error;
+    const isBusy = acceptInvitation.isPending || declineInvitation.isPending;
 
     if (acceptInvitation.isSuccess) {
         return (
@@ -100,36 +106,49 @@ function InvitationBody({ token, invitation }: { token: string; invitation: Role
                 title={`${invitation.inviterUsername ?? "Quản trị viên"} mời bạn làm ${roleLabel}`}
                 text={`Gửi tới ${invitation.maskedEmail}, hết hạn ngày ${formatDate(invitation.expiresAt)}.`}
             />
-            {acceptInvitation.error ? (
+            {actionError ? (
                 <p role="alert" className="text-center text-sm text-destructive">
-                    {acceptErrorText(acceptInvitation.error, invitation.maskedEmail)}
+                    {actionErrorText(actionError, invitation.maskedEmail)}
                 </p>
             ) : null}
-            {isUserPending ? null : currentUser ? (
-                <Button
-                    type="button"
-                    size="lg"
-                    className={ACTION_CLASS}
-                    disabled={acceptInvitation.isPending}
-                    onClick={() => acceptInvitation.mutate()}
-                >
-                    Nhận quyền
-                </Button>
-            ) : (
+            {isUserPending ? null : (
                 <div className="flex flex-col gap-2.5">
-                    <Button asChild size="lg" className={ACTION_CLASS}>
-                        <Link href={ROUTES.loginWithNext(nextPath)}>Đăng nhập để nhận quyền</Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline" className={ACTION_CLASS}>
-                        <Link href={ROUTES.registerWithNext(nextPath)}>Đăng ký tài khoản</Link>
-                    </Button>
+                    {currentUser ? (
+                        <Button
+                            type="button"
+                            size="lg"
+                            className={ACTION_CLASS}
+                            disabled={isBusy}
+                            onClick={() => acceptInvitation.mutate()}
+                        >
+                            Nhận quyền
+                        </Button>
+                    ) : (
+                        <>
+                            <Button asChild size="lg" className={ACTION_CLASS}>
+                                <Link href={ROUTES.loginWithNext(nextPath)}>
+                                    Đăng nhập để nhận quyền
+                                </Link>
+                            </Button>
+                            <Button asChild size="lg" variant="outline" className={ACTION_CLASS}>
+                                <Link href={ROUTES.registerWithNext(nextPath)}>
+                                    Đăng ký tài khoản
+                                </Link>
+                            </Button>
+                        </>
+                    )}
+                    <DeclineInvitationButton
+                        roleLabel={roleLabel}
+                        isPending={isBusy}
+                        onConfirm={() => declineInvitation.mutate()}
+                    />
                 </div>
             )}
         </>
     );
 }
 
-function acceptErrorText(error: Error, maskedEmail: string): string {
+function actionErrorText(error: Error, maskedEmail: string): string {
     if (error instanceof ApiRequestError && error.code === "INVITATION_EMAIL_MISMATCH") {
         return `Lời mời này gửi tới ${maskedEmail}. Hãy đăng nhập đúng tài khoản đó.`;
     }

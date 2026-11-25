@@ -14,15 +14,23 @@ import org.springframework.data.repository.query.Param;
 
 public interface RoleInvitationRepository extends JpaRepository<RoleInvitation, UUID> {
 
+    String OPEN = "i.acceptedAt IS NULL AND i.revokedAt IS NULL AND i.declinedAt IS NULL";
+
+    String STATUS_FILTER =
+            " AND (:status IS NULL OR (:status = 'ACCEPTED' AND i.acceptedAt IS NOT NULL) OR"
+                + " (:status = 'REVOKED' AND i.acceptedAt IS NULL AND i.revokedAt IS NOT NULL) OR"
+                + " (:status = 'DECLINED' AND i.acceptedAt IS NULL AND i.revokedAt IS NULL AND"
+                + " i.declinedAt IS NOT NULL) OR (:status = 'PENDING' AND "
+                    + OPEN
+                    + " AND i.expiresAt > :now)"
+                    + " OR (:status = 'EXPIRED' AND "
+                    + OPEN
+                    + " AND i.expiresAt <= :now))";
+
     @Query(
-            """
-            SELECT COUNT(i) > 0
-            FROM RoleInvitation i
-            WHERE i.email = :email
-              AND i.acceptedAt IS NULL
-              AND i.revokedAt IS NULL
-              AND i.expiresAt > :now
-            """)
+            "SELECT COUNT(i) > 0 FROM RoleInvitation i WHERE i.email = :email AND "
+                    + OPEN
+                    + " AND i.expiresAt > :now")
     boolean hasPendingInvitation(@Param("email") String email, @Param("now") Instant now);
 
     Optional<RoleInvitation> findByTokenHash(String tokenHash);
@@ -37,35 +45,17 @@ public interface RoleInvitationRepository extends JpaRepository<RoleInvitation, 
 
     @Query(
             value =
-                    """
-                    SELECT new com.sqljudge.auth.repository.RoleInvitationRow(
-                        i.id, i.email, i.role, inviter.username, i.createdAt, i.expiresAt,
-                        i.acceptedAt, i.revokedAt)
-                    FROM RoleInvitation i
-                    JOIN User inviter ON inviter.id = i.invitedBy
-                    WHERE (:keyword IS NULL OR i.email LIKE :keyword ESCAPE '\\')
-                      AND (:status IS NULL
-                        OR (:status = 'ACCEPTED' AND i.acceptedAt IS NOT NULL)
-                        OR (:status = 'REVOKED' AND i.acceptedAt IS NULL AND i.revokedAt IS NOT NULL)
-                        OR (:status = 'PENDING' AND i.acceptedAt IS NULL AND i.revokedAt IS NULL
-                            AND i.expiresAt > :now)
-                        OR (:status = 'EXPIRED' AND i.acceptedAt IS NULL AND i.revokedAt IS NULL
-                            AND i.expiresAt <= :now))
-                    ORDER BY i.createdAt DESC, i.id DESC
-                    """,
+                    "SELECT new com.sqljudge.auth.repository.RoleInvitationRow(i.id, i.email,"
+                            + " i.role, inviter.username, i.createdAt, i.expiresAt, i.acceptedAt,"
+                            + " i.revokedAt, i.declinedAt)"
+                            + " FROM RoleInvitation i JOIN User inviter ON inviter.id = i.invitedBy"
+                            + " WHERE (:keyword IS NULL OR i.email LIKE :keyword ESCAPE '\\')"
+                            + STATUS_FILTER
+                            + " ORDER BY i.createdAt DESC, i.id DESC",
             countQuery =
-                    """
-                    SELECT COUNT(i)
-                    FROM RoleInvitation i
-                    WHERE (:keyword IS NULL OR i.email LIKE :keyword ESCAPE '\\')
-                      AND (:status IS NULL
-                        OR (:status = 'ACCEPTED' AND i.acceptedAt IS NOT NULL)
-                        OR (:status = 'REVOKED' AND i.acceptedAt IS NULL AND i.revokedAt IS NOT NULL)
-                        OR (:status = 'PENDING' AND i.acceptedAt IS NULL AND i.revokedAt IS NULL
-                            AND i.expiresAt > :now)
-                        OR (:status = 'EXPIRED' AND i.acceptedAt IS NULL AND i.revokedAt IS NULL
-                            AND i.expiresAt <= :now))
-                    """)
+                    "SELECT COUNT(i) FROM RoleInvitation i"
+                            + " WHERE (:keyword IS NULL OR i.email LIKE :keyword ESCAPE '\\')"
+                            + STATUS_FILTER)
     Page<RoleInvitationRow> searchInvitations(
             @Param("status") String status,
             @Param("keyword") String keyword,

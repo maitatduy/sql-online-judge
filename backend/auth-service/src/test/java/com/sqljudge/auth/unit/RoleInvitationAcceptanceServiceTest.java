@@ -184,6 +184,55 @@ class RoleInvitationAcceptanceServiceTest {
         assertThat(invitee.getRole()).isEqualTo(Role.ADMIN);
     }
 
+    @Test
+    @DisplayName("Từ chối lời mời đang chờ thì lời mời chuyển sang đã từ chối")
+    void decline_pendingInvitation_marksDeclined() {
+        RoleInvitation pending = invitation("viet.luu@gmail.com");
+        stubLock(pending);
+
+        service.decline(TOKEN);
+        service.decline(TOKEN);
+
+        assertThat(pending.statusAt(NOW)).isEqualTo(InvitationStatus.DECLINED);
+        assertThat(pending.getDeclinedAt()).isEqualTo(NOW);
+        verifyNoInteractions(adminActionRepository);
+    }
+
+    @Test
+    @DisplayName("Không từ chối được lời mời đã nhận, đã huỷ hoặc hết hạn")
+    void decline_finishedInvitations_areRejected() {
+        RoleInvitation accepted = invitation("viet.luu@gmail.com");
+        accepted.accept(invitee.getId(), NOW.minusSeconds(1));
+        stubLock(accepted);
+        assertRejected(() -> service.decline(TOKEN), ErrorCode.INVITATION_ALREADY_ACCEPTED);
+
+        RoleInvitation revoked = invitation("viet.luu@gmail.com");
+        ReflectionTestUtils.setField(revoked, "revokedAt", NOW.minusSeconds(1));
+        stubLock(revoked);
+        assertRejected(() -> service.decline(TOKEN), ErrorCode.INVITATION_REVOKED);
+
+        RoleInvitation expired = invitation("viet.luu@gmail.com");
+        ReflectionTestUtils.setField(expired, "expiresAt", NOW);
+        stubLock(expired);
+        assertRejected(() -> service.decline(TOKEN), ErrorCode.INVITATION_EXPIRED);
+    }
+
+    @Test
+    @DisplayName("Lời mời đã từ chối thì không nhận được nữa")
+    void accept_declinedInvitation_isRejected() {
+        RoleInvitation declined = invitation("viet.luu@gmail.com");
+        declined.decline(NOW.minusSeconds(1));
+        stubAccept(declined);
+
+        assertRejected(() -> service.accept(TOKEN, actor(invitee)), ErrorCode.INVITATION_DECLINED);
+        assertThat(invitee.getRole()).isEqualTo(Role.LEARNER);
+    }
+
+    private void stubLock(RoleInvitation invitation) {
+        when(roleInvitationRepository.findByTokenHashForUpdate(SecureTokens.sha256(TOKEN)))
+                .thenReturn(Optional.of(invitation));
+    }
+
     private void stubAccept(RoleInvitation invitation) {
         when(roleInvitationRepository.findByTokenHashForUpdate(SecureTokens.sha256(TOKEN)))
                 .thenReturn(Optional.of(invitation));

@@ -1,6 +1,6 @@
 export type InvitedRole = "SETTER" | "MODERATOR";
 
-export type InvitationStatus = "PENDING" | "ACCEPTED" | "EXPIRED" | "REVOKED";
+export type InvitationStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "EXPIRED" | "REVOKED";
 
 export interface RoleInvitationView {
     maskedEmail: string;

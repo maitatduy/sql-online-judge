@@ -13,10 +13,14 @@ const STATUS_BY_TOKEN: Record<string, InvitationStatus> = {
     "loi-moi-het-han": "EXPIRED",
     "loi-moi-da-huy": "REVOKED",
     "loi-moi-da-nhan": "ACCEPTED",
+    "loi-moi-da-tu-choi": "DECLINED",
+    "loi-moi-de-tu-choi": "PENDING",
 };
 
+const declinedTokens = new Set<string>();
+
 function invitationOf(token: string): RoleInvitationView | null {
-    const status = STATUS_BY_TOKEN[token];
+    const status = declinedTokens.has(token) ? "DECLINED" : STATUS_BY_TOKEN[token];
     if (!status) {
         return null;
     }
@@ -57,5 +61,19 @@ export const invitationHandlers: RequestHandler[] = [
         }
         writeMockSession({ ...currentUser, role: invitation.role });
         return HttpResponse.json({ role: invitation.role });
+    }),
+
+    http.post("*/api/role-invitations/:token/decline", async ({ params }) => {
+        await delay();
+        const token = String(params.token);
+        const invitation = invitationOf(token);
+        if (!invitation) {
+            return apiError(404, "INVITATION_NOT_FOUND", "Không tìm thấy lời mời");
+        }
+        if (invitation.status !== "PENDING" && invitation.status !== "DECLINED") {
+            return apiError(422, "INVITATION_EXPIRED", "Lời mời này đã hết hạn");
+        }
+        declinedTokens.add(token);
+        return new HttpResponse(null, { status: 204 });
     }),
 ];

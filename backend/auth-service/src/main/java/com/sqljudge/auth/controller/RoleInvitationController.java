@@ -7,10 +7,12 @@ import com.sqljudge.common.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -42,5 +44,16 @@ public class RoleInvitationController {
     @PostMapping("/accept")
     public AcceptInvitationResponse accept(@PathVariable String token) {
         return acceptanceService.accept(token, SecurityUtils.requireCurrentUser());
+    }
+
+    @Operation(summary = "Từ chối lời mời bằng link trong email, không cần đăng nhập")
+    @ApiResponse(responseCode = "204", description = "Đã từ chối, hoặc đã từ chối từ trước")
+    @ApiResponse(responseCode = "404", description = "Không có lời mời ứng với link")
+    @ApiResponse(responseCode = "409", description = "Lời mời đã được nhận")
+    @ApiResponse(responseCode = "422", description = "Lời mời hết hạn hoặc đã huỷ")
+    @PostMapping("/decline")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void decline(@PathVariable String token) {
+        acceptanceService.decline(token);
     }
 }

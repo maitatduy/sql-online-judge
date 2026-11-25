@@ -69,6 +69,7 @@ class AdminRoleInvitationControllerTest {
                     Instant.parse("2026-10-24T05:00:00Z"),
                     Instant.parse("2026-10-31T05:00:00Z"),
                     null,
+                    null,
                     null);
     private static final String VALID_BODY =
             """

@@ -2,7 +2,7 @@ import type { Page } from "@/lib/pagination";
 
 export type InvitableRole = "SETTER" | "MODERATOR";
 
-export type InvitationStatus = "PENDING" | "ACCEPTED" | "EXPIRED" | "REVOKED";
+export type InvitationStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "EXPIRED" | "REVOKED";
 
 export interface InviteRolesRequest {
     emails: string[];
@@ -30,6 +30,7 @@ export interface RoleInvitationSummary {
     expiresAt: string;
     acceptedAt: string | null;
     revokedAt: string | null;
+    declinedAt: string | null;
 }
 
 export type RoleInvitationsResponse = Page<RoleInvitationSummary>;

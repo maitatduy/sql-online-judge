@@ -76,7 +76,8 @@ public class SecurityConfig {
                                                 "/api/auth/email-verification",
                                                 "/api/auth/email-verification/confirm",
                                                 "/api/auth/password-reset",
-                                                "/api/auth/password-reset/confirm")
+                                                "/api/auth/password-reset/confirm",
+                                                "/api/role-invitations/*/decline")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

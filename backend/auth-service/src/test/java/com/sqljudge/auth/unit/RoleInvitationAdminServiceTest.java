@@ -202,7 +202,8 @@ class RoleInvitationAdminServiceTest {
                 NOW.minus(Duration.ofDays(1)),
                 expiresAt,
                 acceptedAt,
-                revokedAt);
+                revokedAt,
+                null);
     }
 
     private static RoleInvitation invitation(String email, Instant expiresAt) {

@@ -100,6 +100,53 @@ class RoleInvitationAcceptIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName(
+            "Từ chối lời mời không cần đăng nhập, từ chối lại vẫn 204, sau đó không nhận được"
+                    + " và quản trị viên thấy trạng thái đã từ chối")
+    void decline_endToEnd() throws Exception {
+        registerVerified("tc.admin", "tc.admin@gmail.com");
+        promoteToAdmin("tc.admin");
+        String adminToken = accessToken(login("tc.admin@gmail.com"));
+        registerVerified("tc.hocvien", "tc.hocvien@gmail.com");
+        restTemplate.postForEntity(
+                "/api/admin/role-invitations",
+                new HttpEntity<>(
+                        Map.of("emails", List.of("tc.hocvien@gmail.com"), "role", "MODERATOR"),
+                        bearer(adminToken)),
+                Map.class);
+        String token =
+                MailpitContainer.firstGroup(
+                        INVITATION_LINK,
+                        MailpitContainer.client()
+                                .awaitMailWithSubject(
+                                        "tc.hocvien@gmail.com",
+                                        "Lời mời tham gia đội ngũ SQL Judge")
+                                .text());
+        String path = "/api/role-invitations/" + token;
+
+        assertThat(decline(path).getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(decline(path).getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(restTemplate.getForEntity(path, Map.class).getBody())
+                .containsEntry("status", "DECLINED");
+
+        ResponseEntity<Map> accepted = accept(path, accessToken(login("tc.hocvien@gmail.com")));
+        assertThat(accepted.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(accepted.getBody()).containsEntry("code", "INVITATION_DECLINED");
+        assertThat(userRepository.findByUsername("tc.hocvien").orElseThrow().getRole())
+                .isEqualTo(Role.LEARNER);
+
+        ResponseEntity<Map> listed =
+                restTemplate.exchange(
+                        "/api/admin/role-invitations?status=DECLINED&q=tc.hocvien",
+                        HttpMethod.GET,
+                        new HttpEntity<>(bearer(adminToken)),
+                        Map.class);
+        assertThat((List<Map<String, Object>>) listed.getBody().get("items"))
+                .singleElement()
+                .satisfies(row -> assertThat(row).containsEntry("status", "DECLINED"));
+    }
+
+    @Test
     @DisplayName("Token không tồn tại: 404 khi xem và khi nhận")
     void unknownToken_isNotFound() throws Exception {
         registerVerified("nh.lac", "nh.lac@gmail.com");
@@ -114,6 +161,10 @@ class RoleInvitationAcceptIntegrationTest extends ContainerSupport {
     private ResponseEntity<Map> accept(String path, String token) {
         return restTemplate.postForEntity(
                 path + "/accept", new HttpEntity<>(bearer(token)), Map.class);
+    }
+
+    private ResponseEntity<Void> decline(String path) {
+        return restTemplate.postForEntity(path + "/decline", null, Void.class);
     }
 
     private static HttpHeaders bearer(String token) {
