@@ -35,7 +35,11 @@ export const ACCOUNT_MENU_LINKS: SiteLink[] = [
 ];
 
 export function siteLinksFor(role: Role | undefined): SiteLink[] {
-    return role ? [DASHBOARD_LINK, ...PUBLIC_LINKS, ...ROLE_LINKS[role]] : PUBLIC_LINKS;
+    return role ? [DASHBOARD_LINK, ...PUBLIC_LINKS] : PUBLIC_LINKS;
+}
+
+export function roleLinksFor(role: Role): SiteLink[] {
+    return ROLE_LINKS[role];
 }
 
 export function isSectionOpen(pathname: string, sectionPath: string): boolean {

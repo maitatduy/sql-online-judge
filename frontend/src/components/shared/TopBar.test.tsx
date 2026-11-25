@@ -19,6 +19,13 @@ vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: vi.fn() }),
 }));
 
+async function openAccountMenu() {
+    fireEvent.keyDown(await screen.findByRole("button", { name: "Tài khoản của tôi" }), {
+        key: "Enter",
+    });
+    return screen.findByRole("menu");
+}
+
 describe("TopBar", () => {
     beforeEach(() => {
         clearMockSession();
@@ -46,27 +53,31 @@ describe("TopBar", () => {
         expect(within(nav).queryByRole("link", { name: "Lộ trình" })).not.toBeInTheDocument();
     });
 
-    it("người ra đề thấy lối vào Studio, admin thấy thêm Quản trị", async () => {
+    it("mục theo vai trò nằm trong menu tài khoản, không nằm trên thanh điều hướng", async () => {
         writeMockSession(SETTER_SESSION_USER);
         const { unmount } = renderWithProviders(<TopBar />);
         const setterNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
+        const setterMenu = await openAccountMenu();
 
-        expect(await within(setterNav).findByRole("link", { name: "Ra đề" })).toHaveAttribute(
+        expect(within(setterMenu).getByRole("menuitem", { name: "Ra đề" })).toHaveAttribute(
             "href",
             "/studio/problems",
         );
-        expect(within(setterNav).getByRole("link", { name: "Tạo khoá học" })).toHaveAttribute(
+        expect(within(setterMenu).getByRole("menuitem", { name: "Tạo khoá học" })).toHaveAttribute(
             "href",
             "/studio/courses",
         );
-        expect(within(setterNav).queryByRole("link", { name: "Quản trị" })).not.toBeInTheDocument();
+        expect(
+            within(setterMenu).queryByRole("menuitem", { name: "Quản trị" }),
+        ).not.toBeInTheDocument();
+        expect(within(setterNav).queryByRole("link", { name: "Ra đề" })).not.toBeInTheDocument();
         unmount();
 
         writeMockSession(ADMIN_SESSION_USER);
         renderWithProviders(<TopBar />);
-        const adminNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
+        const adminMenu = await openAccountMenu();
 
-        expect(await within(adminNav).findByRole("link", { name: "Quản trị" })).toHaveAttribute(
+        expect(within(adminMenu).getByRole("menuitem", { name: "Quản trị" })).toHaveAttribute(
             "href",
             "/admin",
         );
@@ -84,10 +95,10 @@ describe("TopBar", () => {
         );
     });
 
-    it("đã đăng nhập thì menu điện thoại có trợ lý AI, thông báo và đăng xuất", async () => {
+    it("đã đăng nhập thì menu điện thoại có trợ lý AI và thông báo", async () => {
         writeMockSession(DEMO_SESSION_USER);
         renderWithProviders(<TopBar />);
-        await screen.findByRole("link", { name: "Hồ sơ của tôi" });
+        await screen.findByRole("button", { name: "Tài khoản của tôi" });
 
         fireEvent.click(screen.getByRole("button", { name: "Mở menu" }));
 
@@ -100,7 +111,6 @@ describe("TopBar", () => {
             "href",
             "/notifications",
         );
-        expect(within(menu).getByRole("button", { name: "Đăng xuất" })).toBeInTheDocument();
     });
 
     it("chưa đăng nhập thì có nút đăng nhập và đăng ký", async () => {
@@ -116,29 +126,35 @@ describe("TopBar", () => {
         );
     });
 
-    it("đã đăng nhập thì chỉ thấy tài khoản của mình, không có nút tiếp tục luyện tập", async () => {
+    it("đã đăng nhập thì menu tài khoản có hồ sơ, cài đặt và đăng xuất", async () => {
         writeMockSession(DEMO_SESSION_USER);
-
         renderWithProviders(<TopBar />);
 
-        expect(await screen.findByRole("link", { name: "Hồ sơ của tôi" })).toBeInTheDocument();
-        expect(screen.queryByRole("link", { name: "Tiếp tục luyện tập" })).not.toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Đăng xuất" })).toBeInTheDocument();
+        const menu = await openAccountMenu();
+
+        expect(within(menu).getByText("@minh.anh")).toBeInTheDocument();
+        expect(within(menu).getByRole("menuitem", { name: "Hồ sơ của tôi" })).toHaveAttribute(
+            "href",
+            "/u/minh.anh",
+        );
+        expect(within(menu).getByRole("menuitem", { name: "Cài đặt" })).toHaveAttribute(
+            "href",
+            "/settings",
+        );
+        expect(within(menu).getByRole("menuitem", { name: "Đăng xuất" })).toBeInTheDocument();
         expect(screen.queryByRole("link", { name: "Đăng nhập" })).not.toBeInTheDocument();
         expect(screen.queryByRole("link", { name: "Bắt đầu miễn phí" })).not.toBeInTheDocument();
     });
 
-    it("đăng xuất thì ẩn ngay các mục theo vai trò và hiện lại nút đăng nhập", async () => {
+    it("đăng xuất từ menu tài khoản thì hiện lại nút đăng nhập", async () => {
         writeMockSession(ADMIN_SESSION_USER);
         renderWithProviders(<TopBar />);
-        const nav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-        expect(await within(nav).findByRole("link", { name: "Quản trị" })).toBeInTheDocument();
+        const menu = await openAccountMenu();
 
-        fireEvent.click(screen.getByRole("button", { name: "Đăng xuất" }));
+        fireEvent.click(within(menu).getByRole("menuitem", { name: "Đăng xuất" }));
 
         expect(await screen.findByRole("link", { name: "Đăng nhập" })).toBeInTheDocument();
-        expect(within(nav).queryByRole("link", { name: "Quản trị" })).not.toBeInTheDocument();
-        expect(within(nav).queryByRole("link", { name: "Ra đề" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Tài khoản của tôi" })).not.toBeInTheDocument();
     });
 
     it("đã đăng nhập thì có mục Tổng quan dẫn tới dashboard và đánh dấu trang đang mở", async () => {

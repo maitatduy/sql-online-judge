@@ -1,22 +1,20 @@
 "use client";
 
-import { Flame, LogOut } from "lucide-react";
+import { Flame } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Avatar } from "@/components/shared/Avatar";
+import { AccountMenu } from "@/components/shared/AccountMenu";
 import { Button } from "@/components/ui/button";
 import { isUnauthenticatedError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useLearningStreak } from "@/lib/useLearningStreak";
-import { useLogout } from "@/lib/useLogout";
 
 export function TopBarAccount() {
     const pathname = usePathname();
     const { data: currentUser, error, isPending } = useCurrentUser();
-    const logout = useLogout();
     const streakDays = useLearningStreak(currentUser !== undefined);
 
     if (isPending) {
@@ -53,25 +51,7 @@ export function TopBarAccount() {
                 {formatNumber(streakDays ?? 0)}
                 <span className="sr-only"> ngày học liên tiếp</span>
             </Link>
-            <Link
-                href={ROUTES.profile(currentUser.username)}
-                aria-label="Hồ sơ của tôi"
-                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full"
-            >
-                <Avatar name={currentUser.displayName} src={currentUser.avatarUrl} />
-            </Link>
-            <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label="Đăng xuất"
-                title="Đăng xuất"
-                disabled={logout.isPending}
-                onClick={() => logout.mutate()}
-                className="hidden size-11 text-muted-foreground sm:inline-flex"
-            >
-                <LogOut aria-hidden="true" className="size-4.5" />
-            </Button>
+            <AccountMenu user={currentUser} />
         </>
     );
 }

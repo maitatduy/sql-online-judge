@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { ACCOUNT_MENU_LINKS, isSectionOpen, siteLinksFor } from "@/lib/site-navigation";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-import { useLogout } from "@/lib/useLogout";
 import { cn } from "@/lib/utils";
 
 const MENU_ITEM_CLASS =
@@ -20,7 +19,6 @@ export function TopBarNav() {
     const pathname = usePathname();
     const { data: currentUser } = useCurrentUser();
     const [isMenuOpen, setMenuOpen] = useState(false);
-    const logout = useLogout();
     const links = siteLinksFor(currentUser?.role);
     const menuLinks = currentUser ? [...links, ...ACCOUNT_MENU_LINKS] : links;
 
@@ -85,21 +83,6 @@ export function TopBarNav() {
                                     </li>
                                 );
                             })}
-                            {currentUser ? (
-                                <li>
-                                    <button
-                                        type="button"
-                                        disabled={logout.isPending}
-                                        onClick={() => {
-                                            setMenuOpen(false);
-                                            logout.mutate();
-                                        }}
-                                        className={cn(MENU_ITEM_CLASS, "text-muted-foreground")}
-                                    >
-                                        Đăng xuất
-                                    </button>
-                                </li>
-                            ) : null}
                         </ul>
                     </nav>
                 </DialogContent>

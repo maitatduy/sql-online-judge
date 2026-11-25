@@ -18,14 +18,18 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("TopBarAccount", () => {
-    it("hiện avatar dẫn tới hồ sơ của người đang đăng nhập", async () => {
+    it("hiện avatar mở menu tài khoản có hồ sơ của người đang đăng nhập", async () => {
         writeMockSession(DEMO_SESSION_USER);
         renderWithProviders(<TopBarAccount />);
 
-        const profileLink = await screen.findByRole("link", { name: "Hồ sơ của tôi" });
+        const trigger = await screen.findByRole("button", { name: "Tài khoản của tôi" });
+        expect(trigger).toHaveTextContent("MA");
+        fireEvent.keyDown(trigger, { key: "Enter" });
 
-        expect(profileLink).toHaveAttribute("href", "/u/minh.anh");
-        expect(profileLink).toHaveTextContent("MA");
+        expect(await screen.findByRole("menuitem", { name: "Hồ sơ của tôi" })).toHaveAttribute(
+            "href",
+            "/u/minh.anh",
+        );
         expect(screen.queryByRole("link", { name: "Đăng nhập" })).not.toBeInTheDocument();
     });
 
@@ -47,7 +51,7 @@ describe("TopBarAccount", () => {
             "href",
             "/login?next=%2Fu%2Fminh.anh",
         );
-        expect(screen.queryByRole("link", { name: "Hồ sơ của tôi" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Tài khoản của tôi" })).not.toBeInTheDocument();
     });
 
     it("không mời đăng nhập khi máy chủ lỗi", async () => {
@@ -79,7 +83,10 @@ describe("TopBarAccount", () => {
         setAccessToken("access-token");
         renderWithProviders(<TopBarAccount />);
 
-        fireEvent.click(await screen.findByRole("button", { name: "Đăng xuất" }));
+        fireEvent.keyDown(await screen.findByRole("button", { name: "Tài khoản của tôi" }), {
+            key: "Enter",
+        });
+        fireEvent.click(await screen.findByRole("menuitem", { name: "Đăng xuất" }));
 
         await waitFor(() => expect(push).toHaveBeenCalledWith("/"));
         expect(hasLoggedOut).toBe(true);
