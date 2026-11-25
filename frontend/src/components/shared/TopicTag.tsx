@@ -11,12 +11,31 @@ const TOPIC_CLASS_NAMES = [
     "bg-topic-8/12 text-topic-8",
 ];
 
-export function topicClassNameOf(slug: string): string {
+const TOPIC_FILL_CLASS_NAMES = [
+    "bg-topic-1",
+    "bg-topic-2",
+    "bg-topic-3",
+    "bg-topic-4",
+    "bg-topic-5",
+    "bg-topic-6",
+    "bg-topic-7",
+    "bg-topic-8",
+];
+
+function topicIndexOf(slug: string): number {
     const charCodeSum = Array.from(slug).reduce(
         (sum, character) => sum + character.charCodeAt(0),
         0,
     );
-    return TOPIC_CLASS_NAMES[charCodeSum % TOPIC_CLASS_NAMES.length];
+    return charCodeSum % TOPIC_CLASS_NAMES.length;
+}
+
+export function topicClassNameOf(slug: string): string {
+    return TOPIC_CLASS_NAMES[topicIndexOf(slug)];
+}
+
+export function topicFillClassOf(slug: string): string {
+    return TOPIC_FILL_CLASS_NAMES[topicIndexOf(slug)];
 }
 
 interface TopicTagProps {

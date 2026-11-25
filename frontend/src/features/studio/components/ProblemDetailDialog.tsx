@@ -7,6 +7,7 @@ import { Markdown } from "@/components/shared/Markdown";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { TopicTag } from "@/components/shared/TopicTag";
 
 import { useStudioProblem } from "../hooks/useStudioProblem";
 import { EDITABLE_STATUSES, type StudioProblemSummary } from "../types";
@@ -38,11 +39,8 @@ function ProblemDetailBody({ problemId }: { problemId: string }) {
             {detail.tags.length > 0 ? (
                 <ul aria-label="Chủ đề" className="flex flex-wrap gap-1.5">
                     {detail.tags.map((tag) => (
-                        <li
-                            key={tag.slug}
-                            className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs"
-                        >
-                            {tag.name}
+                        <li key={tag.slug}>
+                            <TopicTag slug={tag.slug} name={tag.name} />
                         </li>
                     ))}
                 </ul>

@@ -41,7 +41,7 @@ Trong component chỉ dùng class token (`bg-brand`, `text-verdict-wa`) hoặc `
 | Vi phạm của tài khoản | `violation-severe`, `violation-minor` | **Chỉ** lịch sử vi phạm của một tài khoản: chấm mức nghiêm trọng, mức nhẹ; ô đếm vi phạm dùng `violation-severe` |
 | Trạng thái xử lý vi phạm | `case-open`, `case-resolved` | **Chỉ** nhãn trạng thái xử lý của một vi phạm hoặc báo cáo: chờ xử lý, đã xử lý |
 | Nền avatar | `avatar-1` … `avatar-8` | Nền avatar chữ cái, chọn theo username, chữ trắng. Giống nhau ở nền sáng và nền tối |
-| Chủ đề bài tập | `topic-1` … `topic-8` | **Chỉ** nhãn chủ đề (tag) của bài tập, chọn theo slug để cùng chủ đề luôn cùng màu (`TopicTag`). Chữ dùng token, nền dùng độ mờ `/12` của chính token |
+| Chủ đề bài tập | `topic-1` … `topic-8` | **Chỉ** nhãn chủ đề (tag) của bài tập, chọn theo slug để cùng chủ đề luôn cùng màu (`TopicTag`, `topicFillClassOf`). Nhãn: chữ dùng token, nền dùng độ mờ `/12`; thanh tiến độ theo chủ đề dùng token làm màu tô |
 | Nhãn đếm admin | `count-review`, `count-report`, `count-ai-flag`, `count-support`, `count-live` | Nền nhãn số việc chờ xử lý trong Admin Console, chữ trắng: bài chờ duyệt, báo cáo vi phạm, hội thoại AI bị gắn cờ, tin nhắn hỗ trợ, contest đang diễn ra |
 
 Các token của shadcn (`background`, `foreground`, `card`, `primary`, `muted`, `border`, `ring`…) là bí danh trỏ về nhóm trên; đổi giá trị ở token gốc, không đổi ở bí danh.
