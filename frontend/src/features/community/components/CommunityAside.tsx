@@ -4,6 +4,7 @@ import { Avatar } from "@/components/shared/Avatar";
 import { formatNumber } from "@/lib/format";
 
 import { useContributors } from "../hooks/useCommunity";
+import { ProblemDiscussionsCard } from "./ProblemDiscussionsCard";
 
 const RULES = [
     "Không đăng đáp án bài đang trong contest.",
@@ -16,6 +17,7 @@ export function CommunityAside() {
 
     return (
         <aside className="flex flex-col gap-4">
+            <ProblemDiscussionsCard />
             {contributors && contributors.length > 0 ? (
                 <section className="flex flex-col gap-3 rounded-lg border bg-card p-5">
                     <h2 className="text-base font-bold">Đóng góp nhiều tuần này</h2>

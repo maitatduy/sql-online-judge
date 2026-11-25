@@ -27,6 +27,13 @@ export function useContributors() {
     });
 }
 
+export function useProblemDiscussions() {
+    return useQuery({
+        queryKey: ["community", "problem-discussions"],
+        queryFn: ({ signal }) => communityApi.problemDiscussions(signal),
+    });
+}
+
 export function usePost(postId: string) {
     return useQuery({
         queryKey: ["community", "post", postId],
