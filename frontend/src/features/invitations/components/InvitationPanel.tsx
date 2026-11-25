@@ -4,7 +4,6 @@ import Link from "next/link";
 
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
-import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
@@ -37,26 +36,21 @@ export function InvitationPanel({ token }: InvitationPanelProps) {
     const { data: invitation, error, isPending, refetch } = useRoleInvitation(token);
 
     return (
-        <main
-            id={MAIN_CONTENT_ID}
-            className="mx-auto flex w-full max-w-[460px] flex-1 flex-col justify-center px-4 py-10"
-        >
-            <section className="flex flex-col gap-5 rounded-xl border bg-card p-6 shadow-2xl sm:p-8">
-                {isPending ? (
-                    <div
-                        role="status"
-                        aria-label="Đang tải lời mời"
-                        className="flex flex-col items-center gap-3"
-                    >
-                        <Skeleton className="h-7 w-3/4" />
-                        <Skeleton className="h-4 w-2/3" />
-                        <Skeleton className="h-12 w-full" />
-                    </div>
-                ) : null}
-                {error ? <InvitationError error={error} onRetry={() => void refetch()} /> : null}
-                {invitation ? <InvitationBody token={token} invitation={invitation} /> : null}
-            </section>
-        </main>
+        <section className="flex flex-col gap-5 rounded-xl border bg-card p-6 shadow-2xl sm:p-8">
+            {isPending ? (
+                <div
+                    role="status"
+                    aria-label="Đang tải lời mời"
+                    className="flex flex-col items-center gap-3"
+                >
+                    <Skeleton className="h-7 w-3/4" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-12 w-full" />
+                </div>
+            ) : null}
+            {error ? <InvitationError error={error} onRetry={() => void refetch()} /> : null}
+            {invitation ? <InvitationBody token={token} invitation={invitation} /> : null}
+        </section>
     );
 }
 
