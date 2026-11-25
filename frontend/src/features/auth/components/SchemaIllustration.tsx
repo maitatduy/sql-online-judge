@@ -1,5 +1,3 @@
-import { VerdictBadge } from "@/components/shared/VerdictBadge";
-
 import { SchemaTableCard } from "./SchemaTableCard";
 
 interface SchemaIllustrationProps {
@@ -8,8 +6,8 @@ interface SchemaIllustrationProps {
 
 export function SchemaIllustration({ sampleLearnerName }: SchemaIllustrationProps) {
     return (
-        <div aria-hidden="true" className="relative hidden h-[330px] w-[560px] max-w-full xl:block">
-            <svg viewBox="0 0 560 330" fill="none" className="absolute inset-0 size-full">
+        <div aria-hidden="true" className="relative hidden h-[270px] w-[560px] max-w-full xl:block">
+            <svg viewBox="0 0 560 270" fill="none" className="absolute inset-0 size-full">
                 <path
                     d="M236 92C300 92 290 186 318 186"
                     strokeWidth="1.5"
@@ -49,19 +47,6 @@ export function SchemaIllustration({ sampleLearnerName }: SchemaIllustrationProp
                     },
                 ]}
             />
-            <div className="dark absolute top-[218px] left-6 w-[268px] rounded-lg border bg-surface px-3.5 py-3 text-xs leading-[1.7] text-foreground shadow-2xl">
-                <p>
-                    <span className="font-bold text-syntax-keyword">SELECT</span> ket_qua{" "}
-                    <span className="font-bold text-syntax-keyword">FROM</span> bai_nop
-                </p>
-                <p>
-                    <span className="font-bold text-syntax-keyword">WHERE</span> nguoi_hoc_id ={" "}
-                    <span className="text-syntax-string">:ban</span>;
-                </p>
-                <p className="mt-2 flex items-center gap-2 border-t border-dashed pt-2 text-muted-foreground">
-                    <VerdictBadge verdict="AC" variant="solid" />1 dòng, 48 ms
-                </p>
-            </div>
         </div>
     );
 }

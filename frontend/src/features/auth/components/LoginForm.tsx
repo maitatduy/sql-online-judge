@@ -99,6 +99,7 @@ export function LoginForm({ nextPath, oauthErrorCode }: LoginFormProps) {
             )}
             <TextField
                 id="login-email"
+                placeholder="nguyenvana@gmail.com"
                 label="Email"
                 icon={Mail}
                 type="email"
@@ -108,6 +109,7 @@ export function LoginForm({ nextPath, oauthErrorCode }: LoginFormProps) {
             />
             <PasswordField
                 id="login-password"
+                placeholder="••••••••"
                 label="Mật khẩu"
                 autoComplete="current-password"
                 error={errors.password?.message}

@@ -151,30 +151,20 @@ describe("RegisterForm", () => {
         expect(screen.getByLabelText("Email")).not.toHaveAttribute("aria-invalid", "true");
     });
 
-    it("thanh độ mạnh cập nhật khi gõ mật khẩu", () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
-        const meter = screen.getByRole("meter", { name: "Độ mạnh mật khẩu" });
-
-        expect(meter).toHaveAttribute("aria-valuenow", "0");
-
-        fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "abcdefg1" } });
-
-        expect(meter).toHaveAttribute("aria-valuenow", "2");
-        expect(meter).toHaveAttribute("aria-valuemax", "4");
-    });
-
-    it("nói trước độ dài tối thiểu của mật khẩu", () => {
+    it("các ô có chữ gợi ý, không có thanh hay danh sách tiêu chí mật khẩu", () => {
         renderWithProviders(<RegisterForm nextPath="/" />);
 
-        expect(screen.getByText("Ít nhất 8 ký tự")).toBeInTheDocument();
-    });
-
-    it("không liệt kê các tiêu chí mật khẩu", () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
-
-        expect(screen.queryByText("Từ 8 ký tự")).not.toBeInTheDocument();
-        expect(screen.queryByText("Có chữ và số")).not.toBeInTheDocument();
-        expect(screen.queryByText("Có ký tự đặc biệt")).not.toBeInTheDocument();
+        expect(screen.getByLabelText("Tên người dùng")).toHaveAttribute(
+            "placeholder",
+            "nguyenvana",
+        );
+        expect(screen.getByLabelText("Email")).toHaveAttribute(
+            "placeholder",
+            "nguyenvana@gmail.com",
+        );
+        expect(screen.getByLabelText("Mật khẩu")).toHaveAttribute("placeholder", "••••••••");
+        expect(screen.queryByRole("meter")).not.toBeInTheDocument();
+        expect(screen.queryByRole("list", { name: "Tiêu chí mật khẩu" })).not.toBeInTheDocument();
     });
 
     it("mất kết nối thì báo lỗi chung và cho gửi lại", async () => {

@@ -26,7 +26,7 @@ describe("AuthShell", () => {
         expect(
             screen.getByRole("heading", { level: 2, name: "Chào mừng trở lại" }),
         ).toBeInTheDocument();
-        expect(screen.getByText("-- Chào mừng trở lại")).toBeInTheDocument();
+        expect(screen.queryByText(/^-- /)).not.toBeInTheDocument();
         expect(screen.getByRole("link", { name: "Đăng ký miễn phí" })).toHaveAttribute(
             "href",
             "/register",
@@ -39,7 +39,8 @@ describe("AuthShell", () => {
         expect(
             screen.getByRole("heading", { level: 2, name: "Tạo tài khoản miễn phí" }),
         ).toBeInTheDocument();
-        expect(screen.getByText("-- Tạo tài khoản mới")).toBeInTheDocument();
+        expect(screen.queryByText(/^-- /)).not.toBeInTheDocument();
+        expect(screen.queryByText(/1 dòng, 48 ms/)).not.toBeInTheDocument();
         expect(screen.getByText("Đã có tài khoản?")).toBeInTheDocument();
     });
 

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleAlert, CircleCheck, LockKeyhole } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
@@ -17,7 +17,6 @@ import { resetPasswordSchema, type ResetPasswordFormValues } from "../schemas";
 import { AuthStatusCard } from "./AuthStatusCard";
 import { FormAlert } from "./FormAlert";
 import { PasswordField } from "./PasswordField";
-import { PasswordStrength } from "./PasswordStrength";
 
 interface ResetPasswordFlowProps {
     token?: string;
@@ -88,13 +87,11 @@ function NewPasswordForm({ token, onDone, onExpired }: NewPasswordFormProps) {
         register,
         handleSubmit,
         setError,
-        control,
         formState: { errors },
     } = useForm<ResetPasswordFormValues>({
         resolver: zodResolver(resetPasswordSchema),
         defaultValues: { newPassword: "", confirmPassword: "" },
     });
-    const newPassword = useWatch({ control, name: "newPassword" });
     const { formError, clearFormError, handleApiError } = useApiFormErrors(setError, API_FIELDS);
 
     const handleSave = (values: ResetPasswordFormValues) => {
@@ -123,16 +120,13 @@ function NewPasswordForm({ token, onDone, onExpired }: NewPasswordFormProps) {
         >
             <form noValidate onSubmit={handleSubmit(handleSave)} className="flex flex-col gap-4">
                 {formError && <FormAlert message={formError} />}
-                <div className="flex flex-col gap-2.5">
-                    <PasswordField
-                        id="reset-new-password"
-                        label="Mật khẩu mới"
-                        autoComplete="new-password"
-                        error={errors.newPassword?.message}
-                        {...register("newPassword")}
-                    />
-                    <PasswordStrength password={newPassword} />
-                </div>
+                <PasswordField
+                    id="reset-new-password"
+                    label="Mật khẩu mới"
+                    autoComplete="new-password"
+                    error={errors.newPassword?.message}
+                    {...register("newPassword")}
+                />
                 <PasswordField
                     id="reset-confirm-password"
                     label="Nhập lại mật khẩu mới"
