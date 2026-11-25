@@ -4,6 +4,8 @@ export interface RoadmapStage {
     tag: string;
     keyword: string;
     title: string;
+    summary: string;
+    subtopics: string[];
     fileName: string;
     lineCount: number;
     columns: string[];
@@ -28,7 +30,9 @@ export const ROADMAP_STAGES: RoadmapStage[] = [
     {
         tag: "select-where",
         keyword: "SELECT",
-        title: "Lọc và sắp xếp",
+        title: "Truy vấn cơ bản",
+        summary: "Chọn cột, lọc dòng và sắp xếp kết quả.",
+        subtopics: ["SELECT", "WHERE", "ORDER BY", "LIMIT"],
         fileName: "nhan_vien_ky_thuat.sql",
         lineCount: 4,
         columns: ["name", "salary"],
@@ -51,6 +55,8 @@ export const ROADMAP_STAGES: RoadmapStage[] = [
         tag: "join",
         keyword: "JOIN",
         title: "Nối bảng",
+        summary: "Ghép dữ liệu từ nhiều bảng theo khoá.",
+        subtopics: ["INNER JOIN", "LEFT JOIN", "SELF JOIN", "CROSS JOIN"],
         fileName: "nhan_vien_phong_ban.sql",
         lineCount: 3,
         columns: ["name", "department"],
@@ -73,6 +79,8 @@ export const ROADMAP_STAGES: RoadmapStage[] = [
         tag: "group-by",
         keyword: "GROUP BY",
         title: "Gom nhóm",
+        summary: "Đếm, cộng, lấy trung bình theo từng nhóm.",
+        subtopics: ["COUNT, SUM, AVG", "GROUP BY", "HAVING"],
         fileName: "tong_luong_phong_ban.sql",
         lineCount: 4,
         columns: ["department_id", "total"],
@@ -95,6 +103,8 @@ export const ROADMAP_STAGES: RoadmapStage[] = [
         tag: "subquery",
         keyword: "SUBQUERY",
         title: "Truy vấn lồng",
+        summary: "Dùng kết quả của một truy vấn làm điều kiện cho truy vấn khác.",
+        subtopics: ["IN", "EXISTS", "Subquery tương quan"],
         fileName: "tren_trung_binh.sql",
         lineCount: 3,
         columns: ["name", "salary"],
@@ -115,6 +125,8 @@ export const ROADMAP_STAGES: RoadmapStage[] = [
         tag: "cte",
         keyword: "WITH",
         title: "CTE",
+        summary: "Đặt tên cho bước trung gian để truy vấn dài dễ đọc.",
+        subtopics: ["WITH", "CTE đệ quy"],
         fileName: "phong_ban_dong_nguoi.sql",
         lineCount: 5,
         columns: ["department_id", "headcount"],
@@ -138,6 +150,8 @@ export const ROADMAP_STAGES: RoadmapStage[] = [
         tag: "window-function",
         keyword: "OVER()",
         title: "Window function",
+        summary: "Xếp hạng, cộng dồn, so với dòng trước mà không mất dòng nào.",
+        subtopics: ["ROW_NUMBER, RANK", "PARTITION BY", "LAG, LEAD"],
         fileName: "xep_hang_luong.sql",
         lineCount: 3,
         columns: ["name", "rk"],
