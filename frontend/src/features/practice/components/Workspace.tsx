@@ -10,7 +10,7 @@ import { ROUTES } from "@/lib/routes";
 import { practiceApi } from "../api";
 import { isProblemNotFound, useProblemDetail } from "../hooks/useProblemDetail";
 import type { ProblemDetail } from "../types";
-import type { WorkspaceExtraTab, WorkspaceTarget } from "../workspace-target";
+import { PRACTICE_PARENT, type WorkspaceExtraTab, type WorkspaceTarget } from "../workspace-target";
 import { ProblemStatementMeta } from "./ProblemStatementMeta";
 import { ProblemWorkspace } from "./ProblemWorkspace";
 import { WorkspaceHeader } from "./WorkspaceHeader";
@@ -38,6 +38,7 @@ function practiceTarget(
     return {
         storageKey: problem.id,
         heading: `#${problem.number}. ${problem.title}`,
+        parent: PRACTICE_PARENT,
         loginPath: ROUTES.problem(problem.slug),
         historyProblemId: problem.id,
         statementMeta: <ProblemStatementMeta problem={problem} />,
@@ -66,7 +67,7 @@ export function Workspace({ slug, extraTabs }: WorkspaceProps) {
                     />
                 </ToastProvider>
             ) : null}
-            {!problem ? <WorkspaceHeader title={null} /> : null}
+            {!problem ? <WorkspaceHeader parent={PRACTICE_PARENT} title={null} /> : null}
             {isPending ? <WorkspaceSkeleton /> : null}
             {!problem && error ? (
                 <ErrorState

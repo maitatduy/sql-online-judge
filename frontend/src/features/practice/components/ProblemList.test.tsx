@@ -39,10 +39,19 @@ describe("ProblemList", () => {
             "/problems/highest-salary-per-department",
         );
         expect(row.getByText("184")).toBeInTheDocument();
-        expect(row.getByText("Subquery")).toBeInTheDocument();
+        expect(row.getByText("Subquery").className).toMatch(/\btext-topic-[1-8]\b/);
         expect(row.getByText("Trung bình")).toHaveClass("text-difficulty-medium");
         expect(row.getByText("41,2%")).toBeInTheDocument();
         expect(row.getByText("12.380")).toBeInTheDocument();
+    });
+
+    it("có breadcrumb về trang chủ, không còn dòng phụ đề", async () => {
+        await renderList();
+
+        const breadcrumb = within(screen.getByRole("navigation", { name: "Đường dẫn" }));
+        expect(breadcrumb.getByRole("link", { name: "Trang chủ" })).toHaveAttribute("href", "/");
+        expect(breadcrumb.getByText("Luyện tập")).toHaveAttribute("aria-current", "page");
+        expect(screen.queryByText("Chấm tự động với testcase ẩn")).not.toBeInTheDocument();
     });
 
     it("ẩn cột và bộ lọc tiến độ khi chưa đăng nhập", async () => {
