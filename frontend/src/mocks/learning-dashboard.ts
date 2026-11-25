@@ -4,6 +4,7 @@ import type { RecentSubmission, SubmissionStats } from "@/features/learning/type
 import { shiftDateKey, vietnamDateKey } from "@/lib/activity-calendar";
 
 import { apiError } from "./api-error";
+import { buildProblemSummaries } from "./practice-fixtures";
 import { readMockSession } from "./session";
 
 export const MOCK_SUBMISSION_STATS: SubmissionStats = {
@@ -48,7 +49,41 @@ function withSession(respond: () => Response): Response {
     return readMockSession() ? respond() : apiError(401, "UNAUTHENTICATED", "Bạn chưa đăng nhập");
 }
 
+const DEFAULT_DAILY_CHALLENGES = 4;
+
+function dailyChallenges(size: number) {
+    const unsolved = buildProblemSummaries(true).filter((problem) => problem.progress !== "SOLVED");
+    const offset = Number(vietnamDateKey(new Date()).replaceAll("-", "")) % unsolved.length;
+    return [...unsolved.slice(offset), ...unsolved.slice(0, offset)].slice(0, size);
+}
+
+function topicProgress() {
+    const topics = new Map<string, { slug: string; name: string; solved: number; total: number }>();
+    for (const problem of buildProblemSummaries(true)) {
+        for (const tag of problem.tags) {
+            const topic = topics.get(tag.slug) ?? { ...tag, solved: 0, total: 0 };
+            topic.total += 1;
+            topic.solved += problem.progress === "SOLVED" ? 1 : 0;
+            topics.set(tag.slug, topic);
+        }
+    }
+    return [...topics.values()].sort(
+        (first, second) => second.total - first.total || first.name.localeCompare(second.name),
+    );
+}
+
 export const learningDashboardHandlers: RequestHandler[] = [
+    http.get("*/api/problems/daily-challenges", async ({ request }) => {
+        await delay(100);
+        const size = Number(
+            new URL(request.url).searchParams.get("size") ?? DEFAULT_DAILY_CHALLENGES,
+        );
+        return withSession(() => HttpResponse.json({ items: dailyChallenges(size) }));
+    }),
+    http.get("*/api/solved-summaries/:userId/topics", async ({ params }) => {
+        await delay(100);
+        return HttpResponse.json({ userId: String(params.userId), topics: topicProgress() });
+    }),
     http.get("*/api/submissions/summary", async () => {
         await delay(100);
         return withSession(() => HttpResponse.json(MOCK_SUBMISSION_STATS));

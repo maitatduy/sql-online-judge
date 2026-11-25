@@ -11,9 +11,12 @@ import type {
     LessonRun,
     QuizAnswer,
     QuizResult,
+    RatingSummary,
     RecentSubmission,
     SubmissionStats,
     SuggestedProblem,
+    TopicProgressSummary,
+    UpcomingContest,
 } from "./types";
 
 export const learningApi = {
@@ -54,9 +57,23 @@ export const learningApi = {
         apiClient.get<SubmissionStats>("/api/submissions/summary", { signal }),
     listRecentSubmissions: (size: number, signal?: AbortSignal) =>
         apiClient.get<RecentSubmission[]>("/api/submissions/recent", { params: { size }, signal }),
-    listSuggestedProblems: (size: number, signal?: AbortSignal) =>
-        apiClient.get<Page<SuggestedProblem>>("/api/problems", {
-            params: { progress: "NOT_STARTED", size },
+    listDailyChallenges: (size: number, signal?: AbortSignal) =>
+        apiClient.get<{ items: SuggestedProblem[] }>("/api/problems/daily-challenges", {
+            params: { size },
+            signal,
+        }),
+    getTopicProgress: (userId: string, signal?: AbortSignal) =>
+        apiClient.get<TopicProgressSummary>(
+            `/api/solved-summaries/${encodeURIComponent(userId)}/topics`,
+            { signal },
+        ),
+    getRatingSummary: (userId: string, signal?: AbortSignal) =>
+        apiClient.get<RatingSummary>(`/api/leaderboard/${encodeURIComponent(userId)}`, {
+            signal,
+        }),
+    listUpcomingContests: (size: number, signal?: AbortSignal) =>
+        apiClient.get<Page<UpcomingContest>>("/api/contests", {
+            params: { phase: "UPCOMING", page: 1, size },
             signal,
         }),
 };

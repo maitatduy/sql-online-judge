@@ -1,6 +1,8 @@
 package com.sqljudge.problem.controller;
 
+import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.common.web.PageResponse;
+import com.sqljudge.problem.dto.response.DailyChallengesResponse;
 import com.sqljudge.problem.dto.response.ProblemDetailResponse;
 import com.sqljudge.problem.dto.response.ProblemEditorialResponse;
 import com.sqljudge.problem.dto.response.ProblemProgress;
@@ -30,6 +32,7 @@ public class ProblemController {
 
     private static final int MAX_PAGE_SIZE = 100;
     private static final int MAX_KEYWORD_LENGTH = 100;
+    private static final int MAX_DAILY_CHALLENGES = 10;
 
     private final ProblemQueryService problemQueryService;
     private final ProblemDetailService problemDetailService;
@@ -55,6 +58,21 @@ public class ProblemController {
                     @Min(value = 1, message = "Phải từ 1 đến 100") @Max(value = MAX_PAGE_SIZE, message = "Phải từ 1 đến 100") int size) {
         return problemQueryService.listPublished(
                 new ProblemSearch(q, difficulty, tag, progress), page, size);
+    }
+
+    @GetMapping("/daily-challenges")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(
+            summary =
+                    "Thử thách hôm nay: bài công khai người xem chưa AC, chọn ngẫu nhiên và giữ"
+                            + " nguyên trong một ngày theo giờ Việt Nam")
+    @ApiResponse(responseCode = "200", description = "Bài đầu tiên là thử thách chính")
+    @ApiResponse(responseCode = "400", description = "size ngoài khoảng 1 đến 10")
+    @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
+    public DailyChallengesResponse dailyChallenges(
+            @RequestParam(defaultValue = "4")
+                    @Min(value = 1, message = "Phải từ 1 đến 10") @Max(value = MAX_DAILY_CHALLENGES, message = "Phải từ 1 đến 10") int size) {
+        return problemQueryService.dailyChallenges(SecurityUtils.requireCurrentUser().id(), size);
     }
 
     @GetMapping("/{slug}")

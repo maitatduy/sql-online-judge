@@ -123,3 +123,31 @@ export interface SuggestedProblem {
     difficulty: Difficulty;
     tags: { slug: string; name: string }[];
 }
+
+export interface TopicProgress {
+    slug: string;
+    name: string;
+    solved: number;
+    total: number;
+}
+
+export interface TopicProgressSummary {
+    userId: string;
+    topics: TopicProgress[];
+}
+
+export interface RatingSummary {
+    userId: string;
+    rating: number | null;
+    rank: number | null;
+    contestsPlayed: number;
+}
+
+export interface UpcomingContest {
+    id: string;
+    slug: string;
+    title: string;
+    startAt: string;
+    durationMinutes: number;
+    isRated: boolean;
+}

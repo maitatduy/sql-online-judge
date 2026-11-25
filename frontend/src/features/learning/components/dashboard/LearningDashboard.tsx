@@ -11,20 +11,24 @@ import { useCurrentUser } from "@/lib/useCurrentUser";
 import { activitySince, useLearningStreak } from "@/lib/useLearningStreak";
 
 import {
+    useDailyChallenges,
+    useRatingSummary,
     useRecentSubmissions,
     useSubmissionActivity,
     useSubmissionStats,
-    useSuggestedProblems,
+    useTopicProgress,
+    useUpcomingContests,
 } from "../../hooks/useDashboardData";
 import { useEnrollments } from "../../hooks/useEnrollments";
 import { useLearningActivity } from "../../hooks/useLearningActivity";
 import { ActivitySection } from "./ActivitySection";
-import { ComingSoonSection } from "./ComingSoonSection";
 import { ContinueLearningSection } from "./ContinueLearningSection";
 import { DailyChallengeSection } from "./DailyChallengeSection";
 import { DashboardHeader } from "./DashboardHeader";
 import { DashboardStats } from "./DashboardStats";
 import { RecentSubmissionsSection } from "./RecentSubmissionsSection";
+import { TopicSkillsSection } from "./TopicSkillsSection";
+import { UpcomingContestsSection } from "./UpcomingContestsSection";
 
 const ROW = "flex flex-wrap gap-6";
 
@@ -40,7 +44,10 @@ export function LearningDashboard() {
     const submissionActivity = useSubmissionActivity(from);
     const stats = useSubmissionStats();
     const recent = useRecentSubmissions();
-    const suggested = useSuggestedProblems();
+    const dailyChallenges = useDailyChallenges();
+    const topicProgress = useTopicProgress(currentUser?.id);
+    const rating = useRatingSummary(currentUser?.id);
+    const upcomingContests = useUpcomingContests();
     const isUnauthenticated = isUnauthenticatedError(userError);
 
     useEffect(() => {
@@ -53,7 +60,7 @@ export function LearningDashboard() {
         learningActivity.data && submissionActivity.data
             ? mergeActivity(learningActivity.data, submissionActivity.data)
             : undefined;
-    const challenge = suggested.data?.items[0];
+    const challenge = dailyChallenges.data?.items[0];
 
     return (
         <main
@@ -66,21 +73,18 @@ export function LearningDashboard() {
                 challengeHref={challenge ? ROUTES.problem(challenge.slug) : ROUTES.problems}
                 now={now}
             />
-            <DashboardStats stats={stats.data} />
+            <DashboardStats stats={stats.data} rating={rating.data} />
             <div className={ROW}>
                 <ContinueLearningSection enrollments={enrollments.data} />
-                <DailyChallengeSection problems={suggested.data?.items} />
+                <DailyChallengeSection problems={dailyChallenges.data?.items} />
             </div>
             <div className={ROW}>
                 <ActivitySection days={activity} now={now} />
-                <ComingSoonSection
-                    title="Kỹ năng theo chủ đề"
-                    note="Mở khi đủ bài đã giải theo từng chủ đề"
-                />
+                <TopicSkillsSection topics={topicProgress.data?.topics} />
             </div>
             <div className={ROW}>
                 <RecentSubmissionsSection submissions={recent.data} now={now} />
-                <ComingSoonSection title="Contest sắp tới" note="Mở cùng tính năng contest" />
+                <UpcomingContestsSection contests={upcomingContests.data?.items} />
             </div>
         </main>
     );

@@ -158,6 +158,49 @@ class ProblemListApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Thử thách hôm nay: chỉ bài công khai chưa AC, thứ tự giữ nguyên trong ngày")
+    void dailyChallenges_signedIn_returnsUnsolvedProblemsStableForTheDay() {
+        String token = TestJwts.learnerToken();
+
+        List<Integer> first = numbers("/api/problems/daily-challenges?size=4", token);
+        List<Integer> second = numbers("/api/problems/daily-challenges?size=4", token);
+
+        assertThat(first).containsExactlyInAnyOrder(1, 3);
+        assertThat(second).isEqualTo(first);
+        assertThat(numbers("/api/problems/daily-challenges?size=1", token))
+                .containsExactly(first.get(0));
+        assertThat(
+                        getOk("/api/problems/daily-challenges", token)
+                                .read("$.items[*].tags[0].slug", List.class))
+                .isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Thử thách hôm nay cần đăng nhập, size ngoài 1 đến 10 trả 400")
+    void dailyChallenges_anonymousOrBadSize_isRejected() {
+        String token = TestJwts.learnerToken();
+
+        assertThat(get("/api/problems/daily-challenges", null).getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(get("/api/problems/daily-challenges?size=11", token).getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    @DisplayName("Kỹ năng theo chủ đề: số bài đã AC trên tổng bài công khai của từng tag")
+    void topicProgress_countsSolvedAndTotalPerTag() {
+        DocumentContext topics =
+                getOk("/api/solved-summaries/" + TestJwts.LEARNER_ID + "/topics", null);
+
+        assertThat(topics.read("$.topics[*].slug", List.class)).containsExactly("join", "cte");
+        assertThat(topics.read("$.topics[0].name", String.class)).isEqualTo("JOIN");
+        assertThat(topics.read("$.topics[0].solved", Integer.class)).isEqualTo(1);
+        assertThat(topics.read("$.topics[0].total", Integer.class)).isEqualTo(2);
+        assertThat(topics.read("$.topics[1].solved", Integer.class)).isZero();
+        assertThat(topics.read("$.topics[1].total", Integer.class)).isEqualTo(1);
+    }
+
+    @Test
     @DisplayName("Khách gửi bộ lọc tiến độ thì bộ lọc bị bỏ qua")
     void list_anonymousWithProgressFilter_ignoresFilter() {
         assertThat(numbers("/api/problems?progress=SOLVED", null)).containsExactly(1, 2, 3);
