@@ -1,5 +1,4 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 
 export type ResultTab = "run" | "submission";
 
@@ -8,8 +7,6 @@ interface ResultPanelProps {
     onTabChange: (tab: ResultTab) => void;
     runContent: React.ReactNode;
     submissionContent: React.ReactNode;
-    id: string;
-    className?: string;
 }
 
 export function ResultPanel({
@@ -17,23 +14,21 @@ export function ResultPanel({
     onTabChange,
     runContent,
     submissionContent,
-    id,
-    className,
 }: ResultPanelProps) {
     return (
         <Tabs
             value={activeTab}
             onValueChange={(tab) => onTabChange(tab as ResultTab)}
-            id={id}
             aria-label="Kết quả"
-            className={cn(
-                "shrink-0 border-t bg-card max-lg:flex-1 max-lg:border-t-0 lg:h-2/5 lg:min-h-40",
-                className,
-            )}
+            className="h-full min-h-0 flex-1 bg-card"
         >
             <TabsList>
-                <TabsTrigger value="run">Chạy thử</TabsTrigger>
-                <TabsTrigger value="submission">Nộp bài</TabsTrigger>
+                <TabsTrigger value="run" className="h-9">
+                    Chạy thử
+                </TabsTrigger>
+                <TabsTrigger value="submission" className="h-9">
+                    Nộp bài
+                </TabsTrigger>
             </TabsList>
             <TabsContent value="run" className="overflow-auto px-4 py-3">
                 {runContent}
