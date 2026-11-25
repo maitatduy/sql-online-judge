@@ -24,6 +24,7 @@ describe("phiên đăng nhập giả", () => {
         expect(currentUser).toMatchObject({
             username: "minh.anh",
             displayName: "Nguyễn Minh Anh",
+            avatarUrl: null,
             currentStreakDays: 12,
         });
     });

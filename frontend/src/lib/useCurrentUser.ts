@@ -5,9 +5,11 @@ import type { CurrentUser } from "@/lib/current-user";
 
 const CURRENT_USER_STALE_TIME_MS = 5 * 60_000;
 
+export const CURRENT_USER_KEY = ["current-user"] as const;
+
 export function useCurrentUser() {
-    return useQuery({
-        queryKey: ["current-user"],
+    return useQuery<CurrentUser | null>({
+        queryKey: CURRENT_USER_KEY,
         queryFn: ({ signal }) => apiClient.get<CurrentUser>("/api/auth/me", { signal }),
         staleTime: CURRENT_USER_STALE_TIME_MS,
         retry: false,

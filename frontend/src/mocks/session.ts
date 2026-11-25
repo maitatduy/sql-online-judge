@@ -7,6 +7,7 @@ export const DEMO_SESSION_USER: CurrentUser = {
     username: "minh.anh",
     displayName: "Nguyễn Minh Anh",
     role: "LEARNER",
+    avatarUrl: null,
     currentStreakDays: 12,
 };
 
@@ -15,6 +16,7 @@ export const ADMIN_SESSION_USER: CurrentUser = {
     username: "admin.huy",
     displayName: "Admin Huy",
     role: "ADMIN",
+    avatarUrl: null,
     currentStreakDays: 0,
 };
 
@@ -23,6 +25,7 @@ export const SETTER_SESSION_USER: CurrentUser = {
     username: "an.bui",
     displayName: "Bùi An",
     role: "SETTER",
+    avatarUrl: null,
     currentStreakDays: 0,
 };
 

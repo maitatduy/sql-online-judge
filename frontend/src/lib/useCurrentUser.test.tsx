@@ -30,6 +30,7 @@ describe("useCurrentUser", () => {
             username: "minh.anh",
             displayName: "Nguyễn Minh Anh",
             role: "LEARNER",
+            avatarUrl: null,
             currentStreakDays: 12,
         });
     });

@@ -31,13 +31,13 @@ describe("LandingPage", () => {
         expect(headings[0]).toHaveTextContent("Học SQL bằng cách viết SQL.");
     });
 
-    it("hiện dải số liệu", () => {
+    it("hiện dải số liệu lấy từ API", async () => {
         renderWithProviders(<LandingPage />);
 
-        expect(screen.getByText("bài tập có máy chấm")).toBeInTheDocument();
+        expect(await screen.findByText("bài tập có máy chấm")).toBeInTheDocument();
     });
 
-    it("hiện các khối nội dung theo thứ tự của canvas", () => {
+    it("hiện các khối nội dung theo thứ tự, không còn khối trụ cột và trợ lý AI", () => {
         renderWithProviders(<LandingPage />);
 
         const sectionTitles = screen
@@ -45,12 +45,10 @@ describe("LandingPage", () => {
             .map((heading) => heading.textContent);
 
         expect(sectionTitles).toEqual([
-            "Từ câu SELECT đầu tiên đến bảng xếp hạng contest",
-            "Gợi ý, không giải hộ.",
+            "Lộ trình SQL",
             "Contest sắp tới",
             "Top rating",
-            "Sáu chặng, đi theo tốc độ của bạn",
-            "Câu truy vấn đầu tiên chỉ mất 30 giây.",
+            "Database đã sẵn sàng, chỉ còn thiếu câu truy vấn của bạn.",
         ]);
     });
 });

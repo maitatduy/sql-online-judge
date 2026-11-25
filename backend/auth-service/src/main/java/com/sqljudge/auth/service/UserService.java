@@ -44,6 +44,7 @@ public class UserService {
                 user.getId(),
                 user.getUsername(),
                 displayName,
+                user.getAvatarUrl(),
                 user.getRole(),
                 STREAK_NOT_TRACKED_YET);
     }

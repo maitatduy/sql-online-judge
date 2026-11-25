@@ -202,7 +202,12 @@ class AuthControllerTest {
         when(userService.getCurrentUser(TestJwts.USER_ID))
                 .thenReturn(
                         new CurrentUserResponse(
-                                TestJwts.USER_ID, "minh.anh", "Nguyễn Minh Anh", Role.LEARNER, 0));
+                                TestJwts.USER_ID,
+                                "minh.anh",
+                                "Nguyễn Minh Anh",
+                                "https://res.cloudinary.com/demo/minh.png",
+                                Role.LEARNER,
+                                0));
 
         mockMvc.perform(
                         get("/api/auth/me")
@@ -212,6 +217,8 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(TestJwts.USER_ID.toString()))
                 .andExpect(jsonPath("$.displayName").value("Nguyễn Minh Anh"))
+                .andExpect(
+                        jsonPath("$.avatarUrl").value("https://res.cloudinary.com/demo/minh.png"))
                 .andExpect(jsonPath("$.currentStreakDays").value(0));
     }
 

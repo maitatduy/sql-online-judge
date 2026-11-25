@@ -8,9 +8,8 @@ export function HeroSection() {
                 <h1 className="text-[40px] leading-[1.05] font-extrabold tracking-[-0.035em] sm:text-5xl md:text-[64px]">
                     Học SQL bằng cách <span className="text-brand">viết SQL</span>.
                 </h1>
-                <p className="mt-6 max-w-[520px] text-[19px] leading-[1.6] text-muted-foreground">
-                    Viết truy vấn ngay trên trình duyệt, máy chấm trả kết quả trong vài giây, thi
-                    đấu hằng tuần với cộng đồng.
+                <p className="mt-6 max-w-[480px] text-[19px] leading-[1.6] text-muted-foreground">
+                    Viết truy vấn, máy chấm trả kết quả sau vài giây.
                 </p>
                 <StartLearningActions />
             </div>
