@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { isReservedUsername, RESERVED_USERNAME_MESSAGE, USERNAME_PATTERN } from "@/lib/username";
 
-import { MIN_PASSWORD_LENGTH } from "./password-strength";
+const MIN_PASSWORD_LENGTH = 8;
 
 const emailSchema = z
     .string()

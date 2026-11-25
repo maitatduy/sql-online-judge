@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { delay, http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -151,7 +151,7 @@ describe("RegisterForm", () => {
         expect(screen.getByLabelText("Email")).not.toHaveAttribute("aria-invalid", "true");
     });
 
-    it("các ô có chữ gợi ý và không còn thanh độ mạnh mật khẩu", () => {
+    it("các ô có chữ gợi ý, không có thanh hay danh sách tiêu chí mật khẩu", () => {
         renderWithProviders(<RegisterForm nextPath="/" />);
 
         expect(screen.getByLabelText("Tên người dùng")).toHaveAttribute(
@@ -164,22 +164,7 @@ describe("RegisterForm", () => {
         );
         expect(screen.getByLabelText("Mật khẩu")).toHaveAttribute("placeholder", "••••••••");
         expect(screen.queryByRole("meter")).not.toBeInTheDocument();
-    });
-
-    it("liệt kê tiêu chí mật khẩu và đánh dấu tiêu chí đã đạt", () => {
-        renderWithProviders(<RegisterForm nextPath="/" />);
-        fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "abcdefg1" } });
-
-        const rules = within(screen.getByRole("list", { name: "Tiêu chí mật khẩu" })).getAllByRole(
-            "listitem",
-        );
-
-        expect(rules.map((rule) => rule.textContent)).toEqual([
-            "Ít nhất 8 ký tự: đạt",
-            "Có cả chữ và số: đạt",
-            "Có ký tự đặc biệt: chưa đạt",
-            "Từ 12 ký tự trở lên: chưa đạt",
-        ]);
+        expect(screen.queryByRole("list", { name: "Tiêu chí mật khẩu" })).not.toBeInTheDocument();
     });
 
     it("mất kết nối thì báo lỗi chung và cho gửi lại", async () => {

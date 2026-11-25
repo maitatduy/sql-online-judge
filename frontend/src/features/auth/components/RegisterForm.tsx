@@ -16,7 +16,6 @@ import { registerSchema, type RegisterFormValues } from "../schemas";
 
 import { FormAlert } from "./FormAlert";
 import { PasswordField } from "./PasswordField";
-import { PasswordChecklist } from "./PasswordChecklist";
 import { TextField } from "./TextField";
 import { UsernameAvailability } from "./UsernameAvailability";
 
@@ -40,7 +39,6 @@ export function RegisterForm({ nextPath }: RegisterFormProps) {
         resolver: zodResolver(registerSchema),
         defaultValues: { username: "", email: "", password: "", acceptedTerms: false },
     });
-    const password = useWatch({ control, name: "password" });
     const username = useWatch({ control, name: "username" });
     const usernameAvailability = useUsernameAvailability(username);
     const { formError, clearFormError, handleApiError } = useApiFormErrors(setError, API_FIELDS);
@@ -88,17 +86,14 @@ export function RegisterForm({ nextPath }: RegisterFormProps) {
                 error={errors.email?.message}
                 {...register("email")}
             />
-            <div className="flex flex-col gap-2.5">
-                <PasswordField
-                    id="register-password"
-                    placeholder="••••••••"
-                    label="Mật khẩu"
-                    autoComplete="new-password"
-                    error={errors.password?.message}
-                    {...register("password")}
-                />
-                <PasswordChecklist password={password} />
-            </div>
+            <PasswordField
+                id="register-password"
+                placeholder="••••••••"
+                label="Mật khẩu"
+                autoComplete="new-password"
+                error={errors.password?.message}
+                {...register("password")}
+            />
             <div>
                 <label className="flex min-h-11 items-center gap-2.5 text-[13px] leading-normal md:min-h-0 md:items-start">
                     <input

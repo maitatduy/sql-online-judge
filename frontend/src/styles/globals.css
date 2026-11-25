@@ -58,8 +58,6 @@
     --meter-high: #ca8a04;
     --meter-critical: #c2410c;
 
-    --password-rule-met: #15803d;
-
     --count-review: #c2410c;
     --count-report: #c81e1e;
     --count-ai-flag: #6d28d9;
@@ -168,8 +166,6 @@
     --meter-normal: #3b82f6;
     --meter-high: #facc15;
     --meter-critical: #fb923c;
-
-    --password-rule-met: #4ade80;
 
     --count-review: #c2410c;
     --count-report: #c81e1e;
@@ -306,8 +302,6 @@
     --color-meter-normal: var(--meter-normal);
     --color-meter-high: var(--meter-high);
     --color-meter-critical: var(--meter-critical);
-
-    --color-password-rule-met: var(--password-rule-met);
 
     --color-count-review: var(--count-review);
     --color-count-report: var(--count-report);
