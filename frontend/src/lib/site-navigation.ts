@@ -2,30 +2,37 @@ import { ADMIN_ROUTES } from "@/lib/admin-navigation";
 import type { Role } from "@/lib/current-user";
 import { ROUTES } from "@/lib/routes";
 
-export interface MarketingLink {
+export interface SiteLink {
     label: string;
     href: string;
 }
 
-const PUBLIC_LINKS: MarketingLink[] = [
+const DASHBOARD_LINK: SiteLink = { label: "Tổng quan", href: ROUTES.dashboard };
+
+const PUBLIC_LINKS: SiteLink[] = [
     { label: "Học", href: ROUTES.learn },
     { label: "Luyện tập", href: ROUTES.problems },
     { label: "Contest", href: ROUTES.contests },
     { label: "Cộng đồng", href: ROUTES.community },
+    { label: "Xếp hạng", href: ROUTES.leaderboard },
 ];
 
-const STUDIO_LINKS: MarketingLink[] = [
+const STUDIO_LINKS: SiteLink[] = [
     { label: "Ra đề", href: ROUTES.studioProblems },
     { label: "Tạo khoá học", href: ROUTES.studioCourses },
 ];
 
-const ROLE_LINKS: Record<Role, MarketingLink[]> = {
+const ROLE_LINKS: Record<Role, SiteLink[]> = {
     LEARNER: [],
     SETTER: STUDIO_LINKS,
     MODERATOR: [{ label: "Báo cáo vi phạm", href: ADMIN_ROUTES.reports }],
     ADMIN: [...STUDIO_LINKS, { label: "Quản trị", href: ROUTES.admin }],
 };
 
-export function marketingLinksFor(role: Role | undefined): MarketingLink[] {
-    return role ? [...PUBLIC_LINKS, ...ROLE_LINKS[role]] : PUBLIC_LINKS;
+export function siteLinksFor(role: Role | undefined): SiteLink[] {
+    return role ? [DASHBOARD_LINK, ...PUBLIC_LINKS, ...ROLE_LINKS[role]] : PUBLIC_LINKS;
+}
+
+export function isSectionOpen(pathname: string, sectionPath: string): boolean {
+    return pathname === sectionPath || pathname.startsWith(`${sectionPath}/`);
 }

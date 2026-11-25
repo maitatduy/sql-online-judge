@@ -24,10 +24,21 @@ export function TopBarAccount() {
     }
 
     if (!currentUser) {
-        return isUnauthenticatedError(error) ? (
-            <Button asChild variant="outline">
-                <Link href={ROUTES.loginWithNext(pathname)}>Đăng nhập</Link>
-            </Button>
+        return currentUser === null || isUnauthenticatedError(error) ? (
+            <>
+                <Button asChild variant="ghost">
+                    <Link
+                        href={
+                            pathname === ROUTES.home ? ROUTES.login : ROUTES.loginWithNext(pathname)
+                        }
+                    >
+                        Đăng nhập
+                    </Link>
+                </Button>
+                <Button asChild className="hidden sm:inline-flex">
+                    <Link href={ROUTES.register}>Bắt đầu miễn phí</Link>
+                </Button>
+            </>
         ) : null;
     }
 

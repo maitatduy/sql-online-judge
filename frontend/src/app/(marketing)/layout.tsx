@@ -1,7 +1,7 @@
 import { AppProviders } from "@/app/providers";
 import { SkipLink } from "@/components/shared/SkipLink";
+import { TopBar } from "@/components/shared/TopBar";
 import { MarketingFooter } from "@/features/marketing/components/MarketingFooter";
-import { MarketingHeader } from "@/features/marketing/components/MarketingHeader";
 
 export default function MarketingLayout({
     children,
@@ -11,7 +11,7 @@ export default function MarketingLayout({
     return (
         <AppProviders>
             <SkipLink />
-            <MarketingHeader />
+            <TopBar />
             {children}
             <MarketingFooter />
         </AppProviders>
