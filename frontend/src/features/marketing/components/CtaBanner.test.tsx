@@ -12,7 +12,7 @@ describe("CtaBanner", () => {
         expect(
             screen.getByRole("heading", {
                 level: 2,
-                name: "Câu truy vấn đầu tiên chỉ mất 30 giây.",
+                name: "Database đã sẵn sàng, chỉ còn thiếu câu truy vấn của bạn.",
             }),
         ).toBeInTheDocument();
         expect(screen.getByRole("link", { name: "Bắt đầu miễn phí" })).toHaveAttribute(
@@ -45,7 +45,9 @@ describe("CtaBanner", () => {
     it("chỉ có một câu mô tả ngắn", () => {
         renderWithProviders(<CtaBanner />);
 
-        expect(screen.getByText("Không cần cài database. Miễn phí.")).toBeInTheDocument();
+        expect(
+            screen.getByText("Viết, chạy và chấm SQL ngay trên trình duyệt, miễn phí."),
+        ).toBeInTheDocument();
         expect(screen.queryByRole("list")).not.toBeInTheDocument();
     });
 });

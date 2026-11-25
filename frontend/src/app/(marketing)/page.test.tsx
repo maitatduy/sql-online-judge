@@ -48,7 +48,7 @@ describe("LandingPage", () => {
             "Lộ trình SQL",
             "Contest sắp tới",
             "Top rating",
-            "Câu truy vấn đầu tiên chỉ mất 30 giây.",
+            "Database đã sẵn sàng, chỉ còn thiếu câu truy vấn của bạn.",
         ]);
     });
 });

@@ -4,6 +4,7 @@ export interface CurrentUser {
     id: string;
     username: string;
     displayName: string;
+    avatarUrl: string | null;
     role: Role;
     currentStreakDays: number;
 }

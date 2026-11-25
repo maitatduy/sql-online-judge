@@ -81,6 +81,7 @@ function newSessionUser(username: string): CurrentUser {
         username,
         displayName: username,
         role: "LEARNER",
+        avatarUrl: null,
         currentStreakDays: 0,
     };
 }

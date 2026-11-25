@@ -46,11 +46,14 @@ export function RoadmapStageSheet({ stage, index, count, onClose }: RoadmapStage
                         {stage.summary}
                     </DialogDescription>
                 </div>
-                <div className="flex flex-col gap-2 text-[15px] leading-relaxed">
-                    {stage.theory.map((paragraph) => (
-                        <p key={paragraph}>{paragraph}</p>
+                <ul
+                    aria-label="Lý thuyết"
+                    className="flex list-disc flex-col gap-1.5 pl-5 text-[15px] leading-relaxed marker:text-brand"
+                >
+                    {stage.theory.map((point) => (
+                        <li key={point}>{point}</li>
                     ))}
-                </div>
+                </ul>
                 <ul aria-label="Kiến thức con" className="flex flex-wrap gap-2">
                     {stage.subtopics.map((subtopic) => (
                         <li

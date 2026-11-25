@@ -47,7 +47,7 @@ export function TopBarAccount() {
                 aria-label="Hồ sơ của tôi"
                 className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full"
             >
-                <Avatar name={currentUser.displayName} />
+                <Avatar name={currentUser.displayName} src={currentUser.avatarUrl} />
             </Link>
             <Button
                 type="button"

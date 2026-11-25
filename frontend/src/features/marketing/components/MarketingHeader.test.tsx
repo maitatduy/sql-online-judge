@@ -107,4 +107,17 @@ describe("MarketingHeader", () => {
         expect(screen.queryByRole("link", { name: "Đăng nhập" })).not.toBeInTheDocument();
         expect(screen.queryByRole("link", { name: "Bắt đầu miễn phí" })).not.toBeInTheDocument();
     });
+
+    it("đăng xuất thì ẩn ngay các mục theo vai trò và hiện lại nút đăng nhập", async () => {
+        writeMockSession(ADMIN_SESSION_USER);
+        renderWithProviders(<MarketingHeader />);
+        const nav = screen.getByRole("navigation", { name: "Điều hướng chính" });
+        expect(await within(nav).findByRole("link", { name: "Quản trị" })).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Đăng xuất" }));
+
+        expect(await screen.findByRole("link", { name: "Đăng nhập" })).toBeInTheDocument();
+        expect(within(nav).queryByRole("link", { name: "Quản trị" })).not.toBeInTheDocument();
+        expect(within(nav).queryByRole("link", { name: "Ra đề" })).not.toBeInTheDocument();
+    });
 });
