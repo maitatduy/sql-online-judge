@@ -56,6 +56,7 @@ export const ADMIN_ROUTES = {
     contests: `${ROUTES.admin}/contests`,
     contest: (contestId: string) => `${ROUTES.admin}/contests/${encodeURIComponent(contestId)}`,
     judge: `${ROUTES.admin}/judge`,
+    submissions: `${ROUTES.admin}/submissions`,
     ai: `${ROUTES.admin}/ai`,
 } as const;
 
@@ -113,7 +114,7 @@ export const ADMIN_NAVIGATION_GROUPS: AdminNavigationGroup[] = [
     {
         title: "Hệ thống",
         items: [
-            { label: "Bài nộp", href: `${ROUTES.admin}/submissions`, icon: ListChecks },
+            { label: "Bài nộp", href: ADMIN_ROUTES.submissions, icon: ListChecks },
             {
                 label: "Máy chấm",
                 href: ADMIN_ROUTES.judge,
