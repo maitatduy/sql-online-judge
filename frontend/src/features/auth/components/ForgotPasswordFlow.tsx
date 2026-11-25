@@ -102,8 +102,8 @@ function ResetLinkSent({ email, onUseAnotherEmail }: ResetLinkSentProps) {
 
     return (
         <AuthStatusCard
-            icon={Mail}
             tone="brand"
+            headingAlign="center"
             title="Kiểm tra hộp thư"
             description={
                 <>

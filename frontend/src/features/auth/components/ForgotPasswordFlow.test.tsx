@@ -64,6 +64,16 @@ describe("ForgotPasswordFlow", () => {
         expect(screen.queryByTestId("auth-status-icon")).not.toBeInTheDocument();
     });
 
+    it("bước kiểm tra hộp thư cũng không có icon, tiêu đề căn giữa", async () => {
+        renderWithProviders(<ForgotPasswordFlow />);
+        submitEmail(EMAIL);
+
+        const heading = await screen.findByRole("heading", { level: 1, name: "Kiểm tra hộp thư" });
+
+        expect(heading.parentElement).toHaveClass("text-center");
+        expect(screen.queryByTestId("auth-status-icon")).not.toBeInTheDocument();
+    });
+
     it("cho dùng email khác bằng cách quay lại form", async () => {
         renderWithProviders(<ForgotPasswordFlow />);
         submitEmail(EMAIL);
