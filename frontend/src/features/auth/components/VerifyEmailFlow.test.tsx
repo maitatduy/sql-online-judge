@@ -177,4 +177,14 @@ describe("VerifyEmailFlow", () => {
         expect(screen.getByText(/email bạn đã đăng ký/)).toBeInTheDocument();
         expect(screen.queryByLabelText("Mã xác thực")).not.toBeInTheDocument();
     });
+
+    it("không có icon, tiêu đề căn giữa và chỉ một câu hướng dẫn ngắn", () => {
+        renderWithProviders(<VerifyEmailFlow />);
+
+        const heading = screen.getByRole("heading", { level: 1, name: "Xác thực email của bạn" });
+
+        expect(heading.parentElement).toHaveClass("text-center");
+        expect(screen.queryByTestId("auth-status-icon")).not.toBeInTheDocument();
+        expect(screen.getByText(/Mã dùng được 15 phút/)).toBeInTheDocument();
+    });
 });

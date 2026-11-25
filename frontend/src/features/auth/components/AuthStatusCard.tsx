@@ -24,7 +24,11 @@ export function AuthStatusCard({
 }: AuthStatusCardProps) {
     return (
         <div className="flex flex-col gap-5 rounded-xl border bg-card p-6 shadow-2xl sm:p-8">
-            {isBusy && <Spinner className="size-12 text-brand" />}
+            {isBusy && (
+                <Spinner
+                    className={cn("size-12 text-brand", headingAlign === "center" && "self-center")}
+                />
+            )}
             {!isBusy && Icon && (
                 <span
                     className={cn(
