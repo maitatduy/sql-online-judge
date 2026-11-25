@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { KeyRound, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -51,8 +51,8 @@ export function ForgotPasswordFlow() {
 
     return (
         <AuthStatusCard
-            icon={KeyRound}
             tone="brand"
+            headingAlign="center"
             title="Quên mật khẩu?"
             description="Nhập email đã đăng ký. Chúng tôi sẽ gửi một liên kết để bạn đặt mật khẩu mới, có hiệu lực trong 30 phút."
         >

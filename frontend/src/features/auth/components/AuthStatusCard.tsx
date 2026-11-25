@@ -8,6 +8,7 @@ interface AuthStatusCardProps {
     tone: "brand" | "destructive";
     title: string;
     description: React.ReactNode;
+    headingAlign?: "start" | "center";
     isBusy?: boolean;
     children?: React.ReactNode;
 }
@@ -17,6 +18,7 @@ export function AuthStatusCard({
     tone,
     title,
     description,
+    headingAlign = "start",
     isBusy = false,
     children,
 }: AuthStatusCardProps) {
@@ -35,7 +37,7 @@ export function AuthStatusCard({
                     <Icon aria-hidden="true" data-testid="auth-status-icon" className="size-6.5" />
                 </span>
             )}
-            <div>
+            <div className={cn(headingAlign === "center" && "text-center")}>
                 <h1 className="text-[26px] font-extrabold tracking-[-0.02em]">{title}</h1>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
             </div>
