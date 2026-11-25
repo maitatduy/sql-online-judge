@@ -23,7 +23,7 @@ export function AiShortcut() {
             className="size-11 text-ai hover:bg-ai-soft hover:text-ai"
         >
             <Link href={ROUTES.ai} aria-label="Trợ lý AI">
-                <Sparkles aria-hidden="true" className="size-4.5" />
+                <Sparkles aria-hidden="true" className="size-5.5" />
             </Link>
         </Button>
     );

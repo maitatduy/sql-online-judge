@@ -45,9 +45,9 @@ export function TopBarAccount() {
             <Link
                 href={ROUTES.dashboard}
                 title="Chuỗi ngày học"
-                className="hidden min-h-11 items-center gap-1 rounded-md px-2 font-bold text-streak hover:bg-streak/12 sm:inline-flex"
+                className="hidden min-h-11 items-center gap-1.5 rounded-md px-2.5 text-lg font-bold text-streak hover:bg-streak/12 sm:inline-flex"
             >
-                <Flame aria-hidden="true" className="size-4" />
+                <Flame aria-hidden="true" className="size-5.5" />
                 {formatNumber(streakDays ?? 0)}
                 <span className="sr-only"> ngày học liên tiếp</span>
             </Link>
