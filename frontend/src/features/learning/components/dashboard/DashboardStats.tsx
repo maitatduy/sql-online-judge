@@ -27,9 +27,7 @@ function submissionTiles(stats: SubmissionStats | undefined): StatTile[] {
         ];
     }
     const acceptanceRate =
-        stats.submissionCount === 0
-            ? 0
-            : (stats.acceptedCount / stats.submissionCount) * FULL_PERCENT;
+        stats.attemptCount === 0 ? 0 : (stats.solvedCount / stats.attemptCount) * FULL_PERCENT;
     return [
         {
             label: "Bài đã AC",
@@ -40,7 +38,7 @@ function submissionTiles(stats: SubmissionStats | undefined): StatTile[] {
         {
             label: "Tỉ lệ AC",
             value: formatPercent(acceptanceRate),
-            note: `${formatNumber(stats.submissionCount)} bài nộp`,
+            note: `${formatNumber(stats.attemptCount)} lần thử`,
         },
     ];
 }

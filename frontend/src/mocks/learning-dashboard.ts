@@ -8,8 +8,7 @@ import { buildProblemSummaries } from "./practice-fixtures";
 import { readMockSession } from "./session";
 
 export const MOCK_SUBMISSION_STATS: SubmissionStats = {
-    submissionCount: 20,
-    acceptedCount: 12,
+    attemptCount: 15,
     solvedCount: 9,
     solvedThisWeek: 2,
 };

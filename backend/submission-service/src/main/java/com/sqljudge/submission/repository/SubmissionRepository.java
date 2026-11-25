@@ -72,13 +72,24 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
             @Param("beforeId") UUID beforeId,
             Limit limit);
 
-    @Query("SELECT COUNT(s) FROM Submission s WHERE s.userId = :userId AND s.deletedAt IS NULL")
-    long countOwn(@Param("userId") UUID userId);
-
     @Query(
-            "SELECT COUNT(s) FROM Submission s WHERE s.userId = :userId AND s.deletedAt IS NULL"
-                    + " AND s.verdict = com.sqljudge.submission.entity.Verdict.AC")
-    long countOwnAccepted(@Param("userId") UUID userId);
+            value =
+                    """
+                    SELECT COUNT(DISTINCT s.problem_id, s.dialect, COALESCE(s.code_hash, s.id))
+                    FROM submissions s
+                    LEFT JOIN (
+                        SELECT problem_id, MIN(created_at) AS first_accepted_at
+                        FROM submissions
+                        WHERE user_id = UUID_TO_BIN(:userId) AND verdict = 'AC'
+                          AND deleted_at IS NULL
+                        GROUP BY problem_id) solved ON solved.problem_id = s.problem_id
+                    WHERE s.user_id = UUID_TO_BIN(:userId) AND s.status = 'COMPLETED'
+                      AND s.verdict <> 'SE' AND s.deleted_at IS NULL
+                      AND (solved.first_accepted_at IS NULL
+                           OR s.created_at <= solved.first_accepted_at)
+                    """,
+            nativeQuery = true)
+    long countOwnAttempts(@Param("userId") String userId);
 
     @Query(
             "SELECT new com.sqljudge.submission.repository.FirstSolveRow(s.problemId,"

@@ -96,8 +96,7 @@ export interface EnrolledCourse {
 }
 
 export interface SubmissionStats {
-    submissionCount: number;
-    acceptedCount: number;
+    attemptCount: number;
     solvedCount: number;
     solvedThisWeek: number;
 }
