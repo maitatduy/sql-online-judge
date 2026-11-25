@@ -126,4 +126,16 @@ describe("ResetPasswordFlow", () => {
             screen.getByRole("heading", { level: 1, name: "Liên kết đã hết hạn" }),
         ).toBeInTheDocument();
     });
+
+    it.each([
+        ["form", "reset-token", "Đặt mật khẩu mới"],
+        ["hết hạn", undefined, "Liên kết đã hết hạn"],
+    ])("trạng thái %s không có icon, tiêu đề căn giữa", (_, token, title) => {
+        renderWithProviders(<ResetPasswordFlow token={token} />);
+
+        const heading = screen.getByRole("heading", { level: 1, name: title });
+
+        expect(heading.parentElement).toHaveClass("text-center");
+        expect(screen.queryByTestId("auth-status-icon")).not.toBeInTheDocument();
+    });
 });

@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleAlert, CircleCheck, LockKeyhole } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -39,10 +38,10 @@ export function ResetPasswordFlow({ token }: ResetPasswordFlowProps) {
     if (step === "done") {
         return (
             <AuthStatusCard
-                icon={CircleCheck}
                 tone="brand"
+                headingAlign="center"
                 title="Đã đổi mật khẩu"
-                description="Bạn đã có thể đăng nhập bằng mật khẩu mới. Các phiên đăng nhập trên thiết bị khác đã được đăng xuất."
+                description="Đăng nhập bằng mật khẩu mới. Các thiết bị khác đã được đăng xuất."
             >
                 <Button asChild size="lg" className="h-12.5 text-[15px]">
                     <Link href={ROUTES.login}>Đăng nhập ngay</Link>
@@ -54,10 +53,10 @@ export function ResetPasswordFlow({ token }: ResetPasswordFlowProps) {
     if (step === "expired" || !token) {
         return (
             <AuthStatusCard
-                icon={CircleAlert}
                 tone="destructive"
+                headingAlign="center"
                 title="Liên kết đã hết hạn"
-                description="Liên kết đặt lại chỉ dùng được một lần và trong 30 phút. Hãy yêu cầu liên kết mới."
+                description="Liên kết chỉ dùng được một lần trong 30 phút. Hãy yêu cầu liên kết mới."
             >
                 <Button asChild size="lg" className="h-12.5 text-[15px]">
                     <Link href={ROUTES.forgotPassword}>Gửi liên kết mới</Link>
@@ -113,8 +112,8 @@ function NewPasswordForm({ token, onDone, onExpired }: NewPasswordFormProps) {
 
     return (
         <AuthStatusCard
-            icon={LockKeyhole}
             tone="brand"
+            headingAlign="center"
             title="Đặt mật khẩu mới"
             description="Sau khi đổi, mọi thiết bị đang đăng nhập sẽ bị đăng xuất."
         >
