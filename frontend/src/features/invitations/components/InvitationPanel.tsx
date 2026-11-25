@@ -1,6 +1,5 @@
 "use client";
 
-import { MailCheck } from "lucide-react";
 import Link from "next/link";
 
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -27,7 +26,8 @@ const CLOSED_TITLES: Record<Exclude<InvitationStatus, "PENDING">, string> = {
     ACCEPTED: "Lời mời đã được nhận",
 };
 
-const CLOSED_HINT = "Nếu vẫn cần quyền này, hãy nhờ quản trị viên gửi lời mời mới.";
+const CLOSED_HINT = "Cần quyền này thì nhờ quản trị viên gửi lời mời mới.";
+const ACTION_CLASS = "h-12.5 w-full text-[15px]";
 
 interface InvitationPanelProps {
     token: string;
@@ -39,18 +39,18 @@ export function InvitationPanel({ token }: InvitationPanelProps) {
     return (
         <main
             id={MAIN_CONTENT_ID}
-            className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10"
+            className="mx-auto flex w-full max-w-[460px] flex-1 flex-col justify-center px-4 py-10"
         >
-            <section className="flex flex-col gap-4 rounded-lg border bg-card p-6">
+            <section className="flex flex-col gap-5 rounded-xl border bg-card p-6 shadow-2xl sm:p-8">
                 {isPending ? (
                     <div
                         role="status"
                         aria-label="Đang tải lời mời"
-                        className="flex flex-col gap-3"
+                        className="flex flex-col items-center gap-3"
                     >
-                        <Skeleton className="h-6 w-3/4" />
-                        <Skeleton className="h-4" />
-                        <Skeleton className="h-9 w-40" />
+                        <Skeleton className="h-7 w-3/4" />
+                        <Skeleton className="h-4 w-2/3" />
+                        <Skeleton className="h-12 w-full" />
                     </div>
                 ) : null}
                 {error ? <InvitationError error={error} onRetry={() => void refetch()} /> : null}
@@ -65,7 +65,7 @@ function InvitationError({ error, onRetry }: { error: Error; onRetry: () => void
         return (
             <Message
                 title="Không tìm thấy lời mời"
-                text="Link có thể bị sai, hoặc quản trị viên đã gửi một link mới thay thế."
+                text="Link bị sai, hoặc đã có link mới thay thế."
             />
         );
     }
@@ -89,7 +89,7 @@ function InvitationBody({ token, invitation }: { token: string; invitation: Role
         return (
             <>
                 <Message title={`Bạn đã là ${roleLabel}`} text="Quyền mới đã có hiệu lực." />
-                <Button asChild className="self-start">
+                <Button asChild size="lg" className={ACTION_CLASS}>
                     <Link href={ROUTES.home}>Về trang chủ</Link>
                 </Button>
             </>
@@ -102,36 +102,31 @@ function InvitationBody({ token, invitation }: { token: string; invitation: Role
     const nextPath = ROUTES.invitation(token);
     return (
         <>
-            <MailCheck aria-hidden="true" className="size-8 text-brand" />
-            <div>
-                <h1 className="text-xl font-extrabold">
-                    {invitation.inviterUsername ?? "Quản trị viên"} mời bạn nhận vai trò {roleLabel}
-                </h1>
-                <p className="mt-1.5 text-sm text-muted-foreground">
-                    Lời mời gửi tới {invitation.maskedEmail}, hết hạn ngày{" "}
-                    {formatDate(invitation.expiresAt)}
-                </p>
-            </div>
+            <Message
+                title={`${invitation.inviterUsername ?? "Quản trị viên"} mời bạn làm ${roleLabel}`}
+                text={`Gửi tới ${invitation.maskedEmail}, hết hạn ngày ${formatDate(invitation.expiresAt)}.`}
+            />
             {acceptInvitation.error ? (
-                <p role="alert" className="text-sm text-destructive">
+                <p role="alert" className="text-center text-sm text-destructive">
                     {acceptErrorText(acceptInvitation.error, invitation.maskedEmail)}
                 </p>
             ) : null}
             {isUserPending ? null : currentUser ? (
                 <Button
                     type="button"
-                    className="self-start"
+                    size="lg"
+                    className={ACTION_CLASS}
                     disabled={acceptInvitation.isPending}
                     onClick={() => acceptInvitation.mutate()}
                 >
                     Nhận quyền
                 </Button>
             ) : (
-                <div className="flex flex-wrap gap-2">
-                    <Button asChild>
+                <div className="flex flex-col gap-2.5">
+                    <Button asChild size="lg" className={ACTION_CLASS}>
                         <Link href={ROUTES.loginWithNext(nextPath)}>Đăng nhập để nhận quyền</Link>
                     </Button>
-                    <Button asChild variant="outline">
+                    <Button asChild size="lg" variant="outline" className={ACTION_CLASS}>
                         <Link href={ROUTES.registerWithNext(nextPath)}>Đăng ký tài khoản</Link>
                     </Button>
                 </div>
@@ -142,16 +137,16 @@ function InvitationBody({ token, invitation }: { token: string; invitation: Role
 
 function acceptErrorText(error: Error, maskedEmail: string): string {
     if (error instanceof ApiRequestError && error.code === "INVITATION_EMAIL_MISMATCH") {
-        return `Lời mời này gửi tới ${maskedEmail}. Hãy đăng nhập đúng tài khoản đó để nhận quyền.`;
+        return `Lời mời này gửi tới ${maskedEmail}. Hãy đăng nhập đúng tài khoản đó.`;
     }
     return error.message;
 }
 
 function Message({ title, text }: { title: string; text: string }) {
     return (
-        <div>
-            <h1 className="text-xl font-extrabold">{title}</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">{text}</p>
+        <div className="text-center">
+            <h1 className="text-[26px] font-extrabold tracking-[-0.02em]">{title}</h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p>
         </div>
     );
 }

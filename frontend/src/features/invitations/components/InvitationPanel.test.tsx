@@ -21,9 +21,7 @@ describe("trang nhận lời mời", () => {
     it("chưa đăng nhập: hiện ai mời, vai trò, email đã che và lối vào đăng nhập hoặc đăng ký", async () => {
         renderPanel("loi-moi-dang-cho");
 
-        expect(
-            await screen.findByText("admin.huy mời bạn nhận vai trò Người ra đề"),
-        ).toBeInTheDocument();
+        expect(await screen.findByText("admin.huy mời bạn làm Người ra đề")).toBeInTheDocument();
         expect(screen.getByText(/vi\*\*\*@example\.com/)).toBeInTheDocument();
         expect(
             await screen.findByRole("link", { name: "Đăng nhập để nhận quyền" }),
@@ -53,7 +51,7 @@ describe("trang nhận lời mời", () => {
 
         expect(
             await screen.findByText(
-                "Lời mời này gửi tới vi***@example.com. Hãy đăng nhập đúng tài khoản đó để nhận quyền.",
+                "Lời mời này gửi tới vi***@example.com. Hãy đăng nhập đúng tài khoản đó.",
             ),
         ).toBeInTheDocument();
     });
@@ -74,5 +72,19 @@ describe("trang nhận lời mời", () => {
         renderPanel("khong-co");
 
         expect(await screen.findByText("Không tìm thấy lời mời")).toBeInTheDocument();
+    });
+
+    it("tiêu đề căn giữa và chỉ một câu thông tin ngắn", async () => {
+        renderPanel("loi-moi-dang-cho");
+
+        const heading = await screen.findByRole("heading", {
+            level: 1,
+            name: "admin.huy mời bạn làm Người ra đề",
+        });
+
+        expect(heading.parentElement).toHaveClass("text-center");
+        expect(
+            screen.getByText(/^Gửi tới vi\*\*\*@example\.com, hết hạn ngày/),
+        ).toBeInTheDocument();
     });
 });
