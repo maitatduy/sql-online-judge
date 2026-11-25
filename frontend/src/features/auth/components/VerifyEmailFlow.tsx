@@ -1,6 +1,5 @@
 "use client";
 
-import { CircleAlert, CircleCheck, Mail } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
@@ -70,13 +69,13 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
     if (step === "verified") {
         return (
             <AuthStatusCard
-                icon={CircleCheck}
                 tone="brand"
+                headingAlign="center"
                 title="Email đã được xác thực"
                 description={
                     <>
                         Tài khoản <strong className="text-foreground">{verifiedUsername}</strong> đã
-                        sẵn sàng. Bắt đầu học SQL cùng máy chấm tự động.
+                        sẵn sàng.
                     </>
                 }
             >
@@ -90,10 +89,10 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
     if (step === "invalid") {
         return (
             <AuthStatusCard
-                icon={CircleAlert}
                 tone="destructive"
+                headingAlign="center"
                 title="Mã không hợp lệ hoặc đã hết hạn"
-                description="Mã xác thực có hiệu lực 15 phút và chỉ dùng được một lần. Hãy gửi mã mới."
+                description="Mã chỉ dùng được một lần trong 15 phút. Hãy gửi mã mới."
             >
                 {email && <ResendCodeButton email={email} cooldownSeconds={0} />}
                 <Link href={ROUTES.login} className={LINK_CLASS}>
@@ -106,8 +105,8 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
     if (token && confirmLink.isError) {
         return (
             <AuthStatusCard
-                icon={CircleAlert}
                 tone="destructive"
+                headingAlign="center"
                 title="Chưa xác thực được email"
                 description={getFormErrorMessage(confirmLink.error)}
             >
@@ -125,8 +124,9 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
     if (token) {
         return (
             <AuthStatusCard
-                icon={Mail}
                 tone="brand"
+                headingAlign="center"
+                isBusy
                 title="Đang xác thực email"
                 description={<span role="status">Đang kiểm tra liên kết xác thực…</span>}
             />
@@ -135,20 +135,18 @@ export function VerifyEmailFlow({ token }: VerifyEmailFlowProps) {
 
     return (
         <AuthStatusCard
-            icon={Mail}
             tone="brand"
+            headingAlign="center"
             title="Xác thực email của bạn"
             description={
-                <>
-                    Chúng tôi vừa gửi mã 6 số tới{" "}
-                    {email ? (
-                        <strong className="text-foreground">{email}</strong>
-                    ) : (
-                        "email bạn đã đăng ký"
-                    )}
-                    . {email ? "Nhập mã bên dưới hoặc bấm" : "Bấm"} liên kết trong email. Mã có hiệu
-                    lực 15 phút.
-                </>
+                email ? (
+                    <>
+                        Nhập mã 6 số vừa gửi tới{" "}
+                        <strong className="text-foreground">{email}</strong>. Mã dùng được 15 phút.
+                    </>
+                ) : (
+                    "Bấm liên kết trong email bạn đã đăng ký. Liên kết dùng được 15 phút."
+                )
             }
         >
             {email && (
