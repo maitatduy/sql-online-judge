@@ -89,7 +89,8 @@ public class RoleInvitationAdminService {
                 invitation.getCreatedAt(),
                 invitation.getExpiresAt(),
                 invitation.getAcceptedAt(),
-                invitation.getRevokedAt());
+                invitation.getRevokedAt(),
+                invitation.getDeclinedAt());
     }
 
     private RoleInvitation lockInvitation(UUID invitationId) {
@@ -116,12 +117,13 @@ public class RoleInvitationAdminService {
                 row.id(),
                 row.email(),
                 row.role(),
-                InvitationStatus.of(row.acceptedAt(), row.revokedAt(), row.expiresAt(), now),
+                row.timeline().statusAt(now),
                 row.inviterUsername(),
                 row.invitedAt(),
                 row.expiresAt(),
                 row.acceptedAt(),
-                row.revokedAt());
+                row.revokedAt(),
+                row.declinedAt());
     }
 
     private static ConflictException notPending(String message) {

@@ -79,18 +79,25 @@ public class RoleInvitationAcceptanceService {
         return new AcceptInvitationResponse(invitee.getRole());
     }
 
+    @Transactional
+    public void decline(String token) {
+        RoleInvitation invitation =
+                roleInvitationRepository
+                        .findByTokenHashForUpdate(SecureTokens.sha256(token))
+                        .orElseThrow(RoleInvitationAcceptanceService::notFound);
+        Instant now = clock.instant();
+        InvitationStatus status = invitation.statusAt(now);
+        if (status == InvitationStatus.DECLINED) {
+            return;
+        }
+        requireOpen(status);
+        invitation.decline(now);
+        log.info("role_invitation_declined invitationId={}", invitation.getId());
+    }
+
     private static void requireAcceptable(RoleInvitation invitation, User invitee, Instant now) {
         InvitationStatus status = invitation.statusAt(now);
-        if (status == InvitationStatus.ACCEPTED) {
-            throw new ConflictException(
-                    ErrorCode.INVITATION_ALREADY_ACCEPTED, "Lời mời này đã được nhận");
-        }
-        if (status == InvitationStatus.REVOKED) {
-            throw new BusinessRuleException(ErrorCode.INVITATION_REVOKED, "Lời mời này đã bị huỷ");
-        }
-        if (status == InvitationStatus.EXPIRED) {
-            throw new BusinessRuleException(ErrorCode.INVITATION_EXPIRED, "Lời mời này đã hết hạn");
-        }
+        requireOpen(status);
         if (!EmailAddresses.normalize(invitee.getEmail()).equals(invitation.getEmail())) {
             throw new ForbiddenException(
                     ErrorCode.INVITATION_EMAIL_MISMATCH,
@@ -100,6 +107,23 @@ public class RoleInvitationAcceptanceService {
             throw new BusinessRuleException(
                     ErrorCode.INVITATION_NOT_APPLICABLE,
                     "Tài khoản quản trị không cần nhận lời mời này");
+        }
+    }
+
+    private static void requireOpen(InvitationStatus status) {
+        if (status == InvitationStatus.ACCEPTED) {
+            throw new ConflictException(
+                    ErrorCode.INVITATION_ALREADY_ACCEPTED, "Lời mời này đã được nhận");
+        }
+        if (status == InvitationStatus.REVOKED) {
+            throw new BusinessRuleException(ErrorCode.INVITATION_REVOKED, "Lời mời này đã bị huỷ");
+        }
+        if (status == InvitationStatus.DECLINED) {
+            throw new BusinessRuleException(
+                    ErrorCode.INVITATION_DECLINED, "Lời mời này đã bị từ chối");
+        }
+        if (status == InvitationStatus.EXPIRED) {
+            throw new BusinessRuleException(ErrorCode.INVITATION_EXPIRED, "Lời mời này đã hết hạn");
         }
     }
 

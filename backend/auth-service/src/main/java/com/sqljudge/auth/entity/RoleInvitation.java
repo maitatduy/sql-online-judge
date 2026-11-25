@@ -62,6 +62,9 @@ public class RoleInvitation extends BaseEntity {
     @Column(name = "revoked_at")
     private Instant revokedAt;
 
+    @Column(name = "declined_at")
+    private Instant declinedAt;
+
     public static RoleInvitation of(
             String email, Role role, String message, UUID invitedBy, InvitationLink link) {
         RoleInvitation invitation = new RoleInvitation();
@@ -75,7 +78,11 @@ public class RoleInvitation extends BaseEntity {
     }
 
     public InvitationStatus statusAt(Instant now) {
-        return InvitationStatus.of(acceptedAt, revokedAt, expiresAt, now);
+        return new InvitationTimeline(acceptedAt, revokedAt, declinedAt, expiresAt).statusAt(now);
+    }
+
+    public void decline(Instant now) {
+        declinedAt = now;
     }
 
     public void accept(UUID userId, Instant now) {

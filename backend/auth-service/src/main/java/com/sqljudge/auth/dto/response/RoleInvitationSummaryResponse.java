@@ -14,4 +14,5 @@ public record RoleInvitationSummaryResponse(
         Instant invitedAt,
         Instant expiresAt,
         Instant acceptedAt,
-        Instant revokedAt) {}
+        Instant revokedAt,
+        Instant declinedAt) {}
