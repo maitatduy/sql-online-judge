@@ -1,31 +1,18 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/shared/Logo";
-import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 
 import { MarketingAccount } from "./MarketingAccount";
-
-const NAV_LINKS = [
-    { label: "Lộ trình", href: ROUTES.learn },
-    { label: "Bài tập", href: ROUTES.problems },
-    { label: "Contest", href: ROUTES.contests },
-    { label: "Cộng đồng", href: ROUTES.community },
-];
+import { MarketingNav } from "./MarketingNav";
 
 export function MarketingHeader() {
     return (
-        <header className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-4.5">
+        <header className="mx-auto flex max-w-7xl items-center gap-x-4 px-4 py-4 sm:px-6 lg:gap-x-6">
             <Link href={ROUTES.home} className="inline-flex min-h-11 items-center">
                 <Logo />
             </Link>
-            <nav aria-label="Giới thiệu" className="hidden gap-1 md:flex">
-                {NAV_LINKS.map((link) => (
-                    <Button key={link.href} asChild variant="ghost">
-                        <Link href={link.href}>{link.label}</Link>
-                    </Button>
-                ))}
-            </nav>
+            <MarketingNav />
             <div className="ml-auto flex items-center gap-2">
                 <MarketingAccount />
             </div>

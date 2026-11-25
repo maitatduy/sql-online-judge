@@ -69,16 +69,16 @@ export function EditorPreview({
                     className="ml-auto shrink-0"
                 />
             </div>
-            <div className={cn("flex gap-3.5 overflow-x-auto py-4", sizeClasses.code)}>
+            <div className={cn("flex gap-3.5 py-4 max-sm:pl-4", sizeClasses.code)}>
                 <div
                     aria-hidden="true"
-                    className="w-9 shrink-0 text-right text-muted-foreground/60 select-none"
+                    className="w-9 shrink-0 text-right text-muted-foreground/60 select-none max-sm:hidden"
                 >
                     {lineNumbers.map((lineNumber) => (
                         <div key={lineNumber}>{lineNumber}</div>
                     ))}
                 </div>
-                <pre className="pr-4">
+                <pre className="min-w-0 pr-4 break-words whitespace-pre-wrap">
                     <code>{children}</code>
                 </pre>
             </div>

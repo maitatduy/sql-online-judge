@@ -1,11 +1,17 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import { EditorPreview } from "@/components/shared/EditorPreview";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 
@@ -23,6 +29,12 @@ export function RoadmapStageSheet({ stage, index, count, onClose }: RoadmapStage
     return (
         <Dialog open onOpenChange={(isOpen) => (isOpen ? undefined : onClose())}>
             <DialogContent className="top-0 right-0 left-auto h-dvh max-h-dvh w-full max-w-[560px] translate-x-0 translate-y-0 gap-5 rounded-none border-y-0 border-r-0">
+                <DialogClose asChild>
+                    <Button type="button" variant="ghost" className="-ml-2 min-h-11 self-start">
+                        <ArrowLeft aria-hidden="true" />
+                        Quay lại lộ trình
+                    </Button>
+                </DialogClose>
                 <div>
                     <p className="text-sm font-extrabold text-brand">
                         {`Chủ đề ${String(index + 1).padStart(2, "0")}`}
@@ -33,6 +45,11 @@ export function RoadmapStageSheet({ stage, index, count, onClose }: RoadmapStage
                     <DialogDescription className="mt-2 text-base">
                         {stage.summary}
                     </DialogDescription>
+                </div>
+                <div className="flex flex-col gap-2 text-[15px] leading-relaxed">
+                    {stage.theory.map((paragraph) => (
+                        <p key={paragraph}>{paragraph}</p>
+                    ))}
                 </div>
                 <ul aria-label="Kiến thức con" className="flex flex-wrap gap-2">
                     {stage.subtopics.map((subtopic) => (

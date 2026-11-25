@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
@@ -59,6 +59,20 @@ describe("RoadmapChart", () => {
             "href",
             "/problems?tag=join",
         );
+        expect(
+            within(sheet).getByText(/^INNER JOIN chỉ giữ cặp dòng khớp nhau/),
+        ).toBeInTheDocument();
+    });
+
+    it("nút quay lại đóng bảng chi tiết", async () => {
+        countsByTag();
+        renderWithProviders(<RoadmapChart />);
+
+        fireEvent.click(screen.getByRole("button", { name: /Gom nhóm/ }));
+        const sheet = await screen.findByRole("dialog", { name: "Gom nhóm" });
+        fireEvent.click(within(sheet).getByRole("button", { name: "Quay lại lộ trình" }));
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     });
 
     it("chủ đề chưa có bài thì mời xem danh sách bài", async () => {

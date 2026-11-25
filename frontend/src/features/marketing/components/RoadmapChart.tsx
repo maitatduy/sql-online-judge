@@ -61,7 +61,7 @@ export function RoadmapChart() {
 
     return (
         <section aria-labelledby={titleId} className="border-y bg-surface">
-            <div className="mx-auto max-w-5xl px-6 py-16 md:py-24">
+            <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <h2
@@ -88,7 +88,7 @@ export function RoadmapChart() {
                         </li>
                     </ul>
                 </div>
-                <ol className="relative mt-12">
+                <ol className="relative mx-auto mt-12 max-w-5xl">
                     <span
                         aria-hidden="true"
                         className="absolute top-0 bottom-0 left-5 w-1 rounded-full bg-brand/25 md:left-1/2 md:-translate-x-1/2"
