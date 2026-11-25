@@ -93,16 +93,13 @@ describe("MarketingHeader", () => {
         );
     });
 
-    it("đã đăng nhập thì vào thẳng luyện tập và thấy tài khoản của mình", async () => {
+    it("đã đăng nhập thì chỉ thấy tài khoản của mình, không có nút tiếp tục luyện tập", async () => {
         writeMockSession(DEMO_SESSION_USER);
 
         renderWithProviders(<MarketingHeader />);
 
-        expect(await screen.findByRole("link", { name: "Tiếp tục luyện tập" })).toHaveAttribute(
-            "href",
-            "/problems",
-        );
-        expect(screen.getByRole("link", { name: "Hồ sơ của tôi" })).toBeInTheDocument();
+        expect(await screen.findByRole("link", { name: "Hồ sơ của tôi" })).toBeInTheDocument();
+        expect(screen.queryByRole("link", { name: "Tiếp tục luyện tập" })).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Đăng xuất" })).toBeInTheDocument();
         expect(screen.queryByRole("link", { name: "Đăng nhập" })).not.toBeInTheDocument();
         expect(screen.queryByRole("link", { name: "Bắt đầu miễn phí" })).not.toBeInTheDocument();

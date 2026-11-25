@@ -15,14 +15,7 @@ export function MarketingAccount() {
     }
 
     if (currentUser) {
-        return (
-            <>
-                <Button asChild className="hidden sm:inline-flex">
-                    <Link href={ROUTES.problems}>Tiếp tục luyện tập</Link>
-                </Button>
-                <TopBarAccount />
-            </>
-        );
+        return <TopBarAccount />;
     }
 
     return (
