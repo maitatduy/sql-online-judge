@@ -1,9 +1,14 @@
 import { screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
 
 import MarketingLayout from "./layout";
+
+vi.mock("next/navigation", () => ({
+    usePathname: () => "/",
+    useRouter: () => ({ push: vi.fn() }),
+}));
 
 describe("MarketingLayout", () => {
     it("có vùng header và footer bao quanh nội dung", () => {

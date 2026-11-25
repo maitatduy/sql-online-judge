@@ -14,8 +14,13 @@ test.describe("đăng nhập từ trang giới thiệu", () => {
         await expect(page).toHaveURL("/");
 
         await page.goto(`/u/${MOCK_LEARNER.username}`);
-        await expect(page.getByRole("link", { name: "Hồ sơ của tôi" })).toBeVisible();
-        await expect(page.getByRole("button", { name: "Đăng xuất" })).toBeVisible();
+        const accountButton = page.getByRole("button", { name: "Tài khoản của tôi" });
+        await expect(accountButton).toBeVisible();
+        const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+        expect(pageWidth).toBeLessThanOrEqual(page.viewportSize()?.width ?? pageWidth);
+        await accountButton.click();
+        await expect(page.getByRole("menuitem", { name: "Hồ sơ của tôi" })).toBeVisible();
+        await expect(page.getByRole("menuitem", { name: "Đăng xuất" })).toBeVisible();
     });
 
     test("báo lỗi khi sai mật khẩu và giữ người dùng ở trang đăng nhập", async ({ page }) => {

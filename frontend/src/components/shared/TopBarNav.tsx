@@ -1,47 +1,92 @@
 "use client";
 
+import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
-import { ROUTES } from "@/lib/routes";
+import { Logo } from "@/components/shared/Logo";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { ACCOUNT_MENU_LINKS, isSectionOpen, siteLinksFor } from "@/lib/site-navigation";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
-    { label: "Học", href: ROUTES.learn },
-    { label: "Luyện tập", href: ROUTES.problems },
-    { label: "Contest", href: ROUTES.contests },
-    { label: "Cộng đồng", href: ROUTES.community },
-    { label: "Xếp hạng", href: ROUTES.leaderboard },
-];
-
-function isSectionOpen(pathname: string, sectionPath: string): boolean {
-    return pathname === sectionPath || pathname.startsWith(`${sectionPath}/`);
-}
+const MENU_ITEM_CLASS =
+    "flex min-h-12 w-full items-center rounded-md px-3 text-[17px] font-semibold hover:bg-surface-2";
 
 export function TopBarNav() {
     const pathname = usePathname();
+    const { data: currentUser } = useCurrentUser();
+    const [isMenuOpen, setMenuOpen] = useState(false);
+    const links = siteLinksFor(currentUser?.role);
+    const menuLinks = currentUser ? [...links, ...ACCOUNT_MENU_LINKS] : links;
 
     return (
-        <nav
-            aria-label="Điều hướng chính"
-            className="order-last flex w-full min-w-0 items-center overflow-x-auto md:order-none md:w-auto"
-        >
-            {NAV_LINKS.map((link) => {
-                const isOpen = isSectionOpen(pathname, link.href);
-                return (
-                    <Link
-                        key={link.href}
-                        href={link.href}
-                        aria-current={isOpen ? "page" : undefined}
-                        className={cn(
-                            "inline-flex h-11 shrink-0 items-center border-b-2 border-transparent px-3 font-medium whitespace-nowrap text-muted-foreground hover:text-foreground md:h-14",
-                            isOpen && "border-brand font-semibold text-foreground",
-                        )}
-                    >
-                        {link.label}
-                    </Link>
-                );
-            })}
-        </nav>
+        <>
+            <nav aria-label="Điều hướng chính" className="hidden gap-1 lg:flex">
+                {links.map((link) => {
+                    const isOpen = isSectionOpen(pathname, link.href);
+                    return (
+                        <Button
+                            key={link.href}
+                            asChild
+                            variant="ghost"
+                            className={cn(
+                                isOpen &&
+                                    "bg-brand-soft text-brand hover:bg-brand-soft hover:text-brand",
+                            )}
+                        >
+                            <Link href={link.href} aria-current={isOpen ? "page" : undefined}>
+                                {link.label}
+                            </Link>
+                        </Button>
+                    );
+                })}
+            </nav>
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Mở menu"
+                aria-haspopup="dialog"
+                className="order-last size-11 lg:hidden"
+                onClick={() => setMenuOpen(true)}
+            >
+                <Menu aria-hidden="true" className="size-5" />
+            </Button>
+            <Dialog open={isMenuOpen} onOpenChange={setMenuOpen}>
+                <DialogContent className="top-0 right-auto left-0 h-dvh max-h-dvh w-[min(320px,85vw)] translate-x-0 translate-y-0 gap-6 rounded-none border-y-0 border-l-0">
+                    <DialogTitle className="sr-only">Menu</DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Các trang chính của SQL Judge
+                    </DialogDescription>
+                    <Logo />
+                    <nav aria-label="Menu điện thoại">
+                        <ul className="flex flex-col">
+                            {menuLinks.map((link) => {
+                                const isOpen = isSectionOpen(pathname, link.href);
+                                return (
+                                    <li key={link.href}>
+                                        <Link
+                                            href={link.href}
+                                            aria-current={isOpen ? "page" : undefined}
+                                            onClick={() => setMenuOpen(false)}
+                                            className={cn(
+                                                MENU_ITEM_CLASS,
+                                                isOpen &&
+                                                    "bg-brand-soft text-brand hover:bg-brand-soft",
+                                            )}
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </nav>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
