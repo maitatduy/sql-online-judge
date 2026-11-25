@@ -4,7 +4,10 @@ import com.sqljudge.submission.entity.Dialect;
 import com.sqljudge.submission.entity.Submission;
 import com.sqljudge.submission.entity.SubmissionStatus;
 import com.sqljudge.submission.entity.Verdict;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +15,38 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface AdminSubmissionRepository extends JpaRepository<Submission, UUID> {
+
+    String ROW =
+            "SELECT new com.sqljudge.submission.repository.AdminSubmissionRow(s.id, s.userId,"
+                    + " s.problemId, s.problemNumber, s.problemSlug, s.problemTitle, s.contestId,"
+                    + " s.dialect, s.status, s.verdict, s.runtimeMs, s.createdAt)";
+
+    long countByStatusAndDeletedAtIsNull(SubmissionStatus status);
+
+    @Query(
+            "SELECT COUNT(s) FROM Submission s WHERE s.deletedAt IS NULL"
+                    + " AND s.status <> com.sqljudge.submission.entity.SubmissionStatus.COMPLETED"
+                    + " AND s.updatedAt < :stuckBefore")
+    long countStuck(@Param("stuckBefore") Instant stuckBefore);
+
+    long countByVerdictAndJudgedAtGreaterThanEqualAndDeletedAtIsNull(
+            Verdict verdict, Instant judgedFrom);
+
+    long countByStatusAndJudgedAtGreaterThanEqualAndDeletedAtIsNull(
+            SubmissionStatus status, Instant judgedFrom);
+
+    @Query(
+            ROW
+                    + " FROM Submission s WHERE s.deletedAt IS NULL AND ((s.status <>"
+                    + " com.sqljudge.submission.entity.SubmissionStatus.COMPLETED"
+                    + " AND s.updatedAt < :stuckBefore)"
+                    + " OR (s.verdict = com.sqljudge.submission.entity.Verdict.SE"
+                    + " AND s.judgedAt >= :errorsFrom))"
+                    + " ORDER BY s.id DESC")
+    List<AdminSubmissionRow> findNeedingAttention(
+            @Param("stuckBefore") Instant stuckBefore,
+            @Param("errorsFrom") Instant errorsFrom,
+            Limit limit);
 
     String MATCHING =
             " FROM Submission s WHERE s.deletedAt IS NULL"

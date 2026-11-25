@@ -23,7 +23,7 @@ const RESULTS: (Verdict | null)[] = ["AC", "WA", "AC", "RE", "TLE", null, "OM", 
 const DIALECTS: Dialect[] = ["POSTGRESQL", "MYSQL", "SQLITE"];
 const SUBMISSION_COUNT = 27;
 
-function buildSubmissions(now: Date): AdminSubmissionDetail[] {
+export function buildAdminSubmissions(now: Date): AdminSubmissionDetail[] {
     return Array.from({ length: SUBMISSION_COUNT }, (_, index) => {
         const user = USERS[index % USERS.length];
         const problem = PROBLEMS[index % PROBLEMS.length];
@@ -57,7 +57,7 @@ function buildSubmissions(now: Date): AdminSubmissionDetail[] {
     });
 }
 
-function toRow(submission: AdminSubmissionDetail): AdminSubmission {
+export function toAdminSubmissionRow(submission: AdminSubmissionDetail): AdminSubmission {
     return {
         id: submission.id,
         userId: submission.userId,
@@ -105,10 +105,10 @@ export const adminSubmissionHandlers: RequestHandler[] = [
         const query = new URL(request.url).searchParams;
         const page = Number(query.get("page") ?? 1);
         const size = Number(query.get("size") ?? DEFAULT_PAGE_SIZE);
-        const matching = buildSubmissions(new Date()).filter((submission) =>
+        const matching = buildAdminSubmissions(new Date()).filter((submission) =>
             matches(submission, query),
         );
-        const items = matching.slice((page - 1) * size, page * size).map(toRow);
+        const items = matching.slice((page - 1) * size, page * size).map(toAdminSubmissionRow);
         return HttpResponse.json({
             items,
             page,
@@ -123,7 +123,7 @@ export const adminSubmissionHandlers: RequestHandler[] = [
         if (!isAdmin()) {
             return forbidden();
         }
-        const submission = buildSubmissions(new Date()).find(
+        const submission = buildAdminSubmissions(new Date()).find(
             (candidate) => candidate.id === params.submissionId,
         );
         return submission
