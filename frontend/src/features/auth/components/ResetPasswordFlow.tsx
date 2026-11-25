@@ -17,7 +17,7 @@ import { resetPasswordSchema, type ResetPasswordFormValues } from "../schemas";
 import { AuthStatusCard } from "./AuthStatusCard";
 import { FormAlert } from "./FormAlert";
 import { PasswordField } from "./PasswordField";
-import { PasswordStrength } from "./PasswordStrength";
+import { PasswordChecklist } from "./PasswordChecklist";
 
 interface ResetPasswordFlowProps {
     token?: string;
@@ -131,7 +131,7 @@ function NewPasswordForm({ token, onDone, onExpired }: NewPasswordFormProps) {
                         error={errors.newPassword?.message}
                         {...register("newPassword")}
                     />
-                    <PasswordStrength password={newPassword} />
+                    <PasswordChecklist password={newPassword} />
                 </div>
                 <PasswordField
                     id="reset-confirm-password"

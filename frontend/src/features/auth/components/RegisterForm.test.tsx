@@ -151,25 +151,19 @@ describe("RegisterForm", () => {
         expect(screen.getByLabelText("Email")).not.toHaveAttribute("aria-invalid", "true");
     });
 
-    it("thanh độ mạnh cập nhật khi gõ mật khẩu", () => {
+    it("các ô có chữ gợi ý và không còn thanh độ mạnh mật khẩu", () => {
         renderWithProviders(<RegisterForm nextPath="/" />);
-        const meter = screen.getByRole("meter", { name: "Độ mạnh mật khẩu" });
 
-        expect(meter).toHaveAttribute("aria-valuenow", "0");
-        expect(meter).toHaveAttribute("aria-valuetext", "Chưa nhập");
-
-        fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "abcdefg1" } });
-
-        expect(meter).toHaveAttribute("aria-valuenow", "2");
-        expect(meter).toHaveAttribute("aria-valuemax", "4");
-        expect(meter).toHaveAttribute("aria-valuetext", "Trung bình");
-        expect(screen.getByText("Trung bình")).toBeInTheDocument();
-
-        fireEvent.change(screen.getByLabelText("Mật khẩu"), {
-            target: { value: "sql-judge-2026" },
-        });
-
-        expect(meter).toHaveAttribute("aria-valuetext", "Mạnh");
+        expect(screen.getByLabelText("Tên người dùng")).toHaveAttribute(
+            "placeholder",
+            "nguyenvana",
+        );
+        expect(screen.getByLabelText("Email")).toHaveAttribute(
+            "placeholder",
+            "nguyenvana@gmail.com",
+        );
+        expect(screen.getByLabelText("Mật khẩu")).toHaveAttribute("placeholder", "••••••••");
+        expect(screen.queryByRole("meter")).not.toBeInTheDocument();
     });
 
     it("liệt kê tiêu chí mật khẩu và đánh dấu tiêu chí đã đạt", () => {

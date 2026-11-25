@@ -16,7 +16,7 @@ import { registerSchema, type RegisterFormValues } from "../schemas";
 
 import { FormAlert } from "./FormAlert";
 import { PasswordField } from "./PasswordField";
-import { PasswordStrength } from "./PasswordStrength";
+import { PasswordChecklist } from "./PasswordChecklist";
 import { TextField } from "./TextField";
 import { UsernameAvailability } from "./UsernameAvailability";
 
@@ -69,6 +69,7 @@ export function RegisterForm({ nextPath }: RegisterFormProps) {
             <TextField
                 id="register-username"
                 label="Tên người dùng"
+                placeholder="nguyenvana"
                 icon={User}
                 autoComplete="username"
                 autoCapitalize="none"
@@ -79,6 +80,7 @@ export function RegisterForm({ nextPath }: RegisterFormProps) {
             />
             <TextField
                 id="register-email"
+                placeholder="nguyenvana@gmail.com"
                 label="Email"
                 icon={Mail}
                 type="email"
@@ -89,12 +91,13 @@ export function RegisterForm({ nextPath }: RegisterFormProps) {
             <div className="flex flex-col gap-2.5">
                 <PasswordField
                     id="register-password"
+                    placeholder="••••••••"
                     label="Mật khẩu"
                     autoComplete="new-password"
                     error={errors.password?.message}
                     {...register("password")}
                 />
-                <PasswordStrength password={password} />
+                <PasswordChecklist password={password} />
             </div>
             <div>
                 <label className="flex min-h-11 items-center gap-2.5 text-[13px] leading-normal md:min-h-0 md:items-start">
