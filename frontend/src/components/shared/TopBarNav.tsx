@@ -8,15 +8,21 @@ import { useState } from "react";
 import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { isSectionOpen, siteLinksFor } from "@/lib/site-navigation";
+import { ACCOUNT_MENU_LINKS, isSectionOpen, siteLinksFor } from "@/lib/site-navigation";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { useLogout } from "@/lib/useLogout";
 import { cn } from "@/lib/utils";
+
+const MENU_ITEM_CLASS =
+    "flex min-h-12 w-full items-center rounded-md px-3 text-[17px] font-semibold hover:bg-surface-2";
 
 export function TopBarNav() {
     const pathname = usePathname();
     const { data: currentUser } = useCurrentUser();
     const [isMenuOpen, setMenuOpen] = useState(false);
+    const logout = useLogout();
     const links = siteLinksFor(currentUser?.role);
+    const menuLinks = currentUser ? [...links, ...ACCOUNT_MENU_LINKS] : links;
 
     return (
         <>
@@ -60,7 +66,7 @@ export function TopBarNav() {
                     <Logo />
                     <nav aria-label="Menu điện thoại">
                         <ul className="flex flex-col">
-                            {links.map((link) => {
+                            {menuLinks.map((link) => {
                                 const isOpen = isSectionOpen(pathname, link.href);
                                 return (
                                     <li key={link.href}>
@@ -69,7 +75,7 @@ export function TopBarNav() {
                                             aria-current={isOpen ? "page" : undefined}
                                             onClick={() => setMenuOpen(false)}
                                             className={cn(
-                                                "flex min-h-12 items-center rounded-md px-3 text-[17px] font-semibold hover:bg-surface-2",
+                                                MENU_ITEM_CLASS,
                                                 isOpen &&
                                                     "bg-brand-soft text-brand hover:bg-brand-soft",
                                             )}
@@ -79,6 +85,21 @@ export function TopBarNav() {
                                     </li>
                                 );
                             })}
+                            {currentUser ? (
+                                <li>
+                                    <button
+                                        type="button"
+                                        disabled={logout.isPending}
+                                        onClick={() => {
+                                            setMenuOpen(false);
+                                            logout.mutate();
+                                        }}
+                                        className={cn(MENU_ITEM_CLASS, "text-muted-foreground")}
+                                    >
+                                        Đăng xuất
+                                    </button>
+                                </li>
+                            ) : null}
                         </ul>
                     </nav>
                 </DialogContent>

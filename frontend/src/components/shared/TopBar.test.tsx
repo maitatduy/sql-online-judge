@@ -84,6 +84,25 @@ describe("TopBar", () => {
         );
     });
 
+    it("đã đăng nhập thì menu điện thoại có trợ lý AI, thông báo và đăng xuất", async () => {
+        writeMockSession(DEMO_SESSION_USER);
+        renderWithProviders(<TopBar />);
+        await screen.findByRole("link", { name: "Hồ sơ của tôi" });
+
+        fireEvent.click(screen.getByRole("button", { name: "Mở menu" }));
+
+        const menu = await screen.findByRole("navigation", { name: "Menu điện thoại" });
+        expect(within(menu).getByRole("link", { name: "Trợ lý AI" })).toHaveAttribute(
+            "href",
+            "/ai",
+        );
+        expect(within(menu).getByRole("link", { name: "Thông báo" })).toHaveAttribute(
+            "href",
+            "/notifications",
+        );
+        expect(within(menu).getByRole("button", { name: "Đăng xuất" })).toBeInTheDocument();
+    });
+
     it("chưa đăng nhập thì có nút đăng nhập và đăng ký", async () => {
         renderWithProviders(<TopBar />);
 

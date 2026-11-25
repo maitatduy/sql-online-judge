@@ -15,8 +15,10 @@ export function TopBar() {
             </Link>
             <TopBarNav />
             <div className="ml-auto flex items-center gap-2">
-                <AiShortcut />
-                <NotificationBell />
+                <div className="hidden items-center gap-2 sm:flex">
+                    <AiShortcut />
+                    <NotificationBell />
+                </div>
                 <TopBarAccount />
             </div>
         </header>

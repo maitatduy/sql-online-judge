@@ -5,6 +5,7 @@ import { fillLoginForm, MOCK_LEARNER } from "./support/auth";
 test.describe("đăng nhập từ trang giới thiệu", () => {
     test("học viên đi từ landing tới đăng nhập và thấy tài khoản trên thanh trên cùng", async ({
         page,
+        isMobile,
     }) => {
         await page.goto("/");
         await page.getByRole("link", { name: "Đăng nhập" }).click();
@@ -15,6 +16,11 @@ test.describe("đăng nhập từ trang giới thiệu", () => {
 
         await page.goto(`/u/${MOCK_LEARNER.username}`);
         await expect(page.getByRole("link", { name: "Hồ sơ của tôi" })).toBeVisible();
+        const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+        expect(pageWidth).toBeLessThanOrEqual(page.viewportSize()?.width ?? pageWidth);
+        if (isMobile) {
+            await page.getByRole("button", { name: "Mở menu" }).click();
+        }
         await expect(page.getByRole("button", { name: "Đăng xuất" })).toBeVisible();
     });
 

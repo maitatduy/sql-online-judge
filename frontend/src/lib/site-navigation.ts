@@ -29,6 +29,11 @@ const ROLE_LINKS: Record<Role, SiteLink[]> = {
     ADMIN: [...STUDIO_LINKS, { label: "Quản trị", href: ROUTES.admin }],
 };
 
+export const ACCOUNT_MENU_LINKS: SiteLink[] = [
+    { label: "Trợ lý AI", href: ROUTES.ai },
+    { label: "Thông báo", href: ROUTES.notifications },
+];
+
 export function siteLinksFor(role: Role | undefined): SiteLink[] {
     return role ? [DASHBOARD_LINK, ...PUBLIC_LINKS, ...ROLE_LINKS[role]] : PUBLIC_LINKS;
 }

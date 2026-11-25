@@ -68,7 +68,7 @@ export function TopBarAccount() {
                 title="Đăng xuất"
                 disabled={logout.isPending}
                 onClick={() => logout.mutate()}
-                className="size-11 text-muted-foreground"
+                className="hidden size-11 text-muted-foreground sm:inline-flex"
             >
                 <LogOut aria-hidden="true" className="size-4.5" />
             </Button>
