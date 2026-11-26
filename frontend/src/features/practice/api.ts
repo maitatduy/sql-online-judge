@@ -7,6 +7,7 @@ import type {
     ContestProblemLink,
     ContestStatement,
     ContestTiming,
+    MyContestStanding,
     ProblemDetail,
     ProblemSubmissionsResponse,
     ProblemSummary,
@@ -63,6 +64,10 @@ export const practiceApi = {
         apiClient.get<ContestStatement>(contestProblemPath(slug, letter), { signal }),
     listContestProblems: (slug: string, signal?: AbortSignal) =>
         apiClient.get<ContestProblemLink[]>(`/api/contests/${encodeURIComponent(slug)}/problems`, {
+            signal,
+        }),
+    getMyContestStanding: (slug: string, signal?: AbortSignal) =>
+        apiClient.get<MyContestStanding>(`/api/contests/${encodeURIComponent(slug)}/standings/me`, {
             signal,
         }),
     getContestTiming: (slug: string, signal?: AbortSignal) =>

@@ -14,7 +14,7 @@ import { ApiRequestError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
 
 import { practiceApi } from "../api";
-import { useContestStatement } from "../hooks/useContestWorkspace";
+import { useContestStatement, useContestTiming } from "../hooks/useContestWorkspace";
 import type { ContestStatement } from "../types";
 import type { WorkspaceTarget } from "../workspace-target";
 import { ContestWorkspaceBar } from "./ContestWorkspaceBar";
@@ -29,15 +29,22 @@ interface ContestWorkspaceProps {
     letter: string;
 }
 
-function contestParentOf(slug: string): BreadcrumbItem {
-    return { label: "Contest", href: ROUTES.contest(slug) };
+function contestTrailOf(slug: string, title: string | undefined): BreadcrumbItem[] {
+    return [
+        { label: "Contest", href: ROUTES.contests },
+        { label: title ?? "Contest", href: ROUTES.contest(slug) },
+    ];
 }
 
-function contestTarget(slug: string, statement: ContestStatement): WorkspaceTarget {
+function contestTarget(
+    slug: string,
+    statement: ContestStatement,
+    trail: BreadcrumbItem[],
+): WorkspaceTarget {
     return {
         storageKey: `contest:${slug}:${statement.letter}`,
         heading: `${statement.letter}. ${statement.title}`,
-        parent: contestParentOf(slug),
+        trail,
         loginPath: ROUTES.contestProblem(slug, statement.letter),
         historyProblemId: null,
         startRun: (request) => practiceApi.startContestRun(slug, statement.letter, request),
@@ -60,6 +67,8 @@ function ContestLocked({ slug, message }: { slug: string; message: string }) {
 
 export function ContestWorkspace({ slug, letter }: ContestWorkspaceProps) {
     const { data: statement, error, isPending, refetch } = useContestStatement(slug, letter);
+    const { data: timing } = useContestTiming(slug);
+    const trail = contestTrailOf(slug, timing?.title);
     const status = error instanceof ApiRequestError ? error.status : null;
 
     if (status === NOT_FOUND) {
@@ -73,12 +82,12 @@ export function ContestWorkspace({ slug, letter }: ContestWorkspaceProps) {
                     <ProblemWorkspace
                         key={`${slug}:${statement.letter}`}
                         problem={statement}
-                        target={contestTarget(slug, statement)}
+                        target={contestTarget(slug, statement, trail)}
                         header={<ContestWorkspaceBar slug={slug} letter={statement.letter} />}
                     />
                 </ToastProvider>
             ) : null}
-            {!statement ? <WorkspaceHeader parent={contestParentOf(slug)} title={null} /> : null}
+            {!statement ? <WorkspaceHeader trail={trail} title={null} /> : null}
             {isPending ? (
                 <div role="status" aria-label="Đang tải đề bài" className="p-6">
                     <Skeleton className="h-40" />

@@ -36,7 +36,7 @@ describe("formatContestDay", () => {
         expect(formatContestDay("2026-10-17T12:30:00Z")).toEqual({
             weekday: "Thứ 7",
             day: "17",
-            month: "Th10",
+            month: "Tháng 10",
         });
         expect(formatContestDay("2026-10-17T17:30:00Z").weekday).toBe("CN");
     });

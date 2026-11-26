@@ -23,3 +23,14 @@ export function useContestTiming(slug: string) {
         queryFn: ({ signal }) => practiceApi.getContestTiming(slug, signal),
     });
 }
+
+const MY_STANDING_REFRESH_MS = 15_000;
+
+export function useMyContestStanding(slug: string) {
+    return useQuery({
+        queryKey: ["contest-my-standing", slug],
+        queryFn: ({ signal }) => practiceApi.getMyContestStanding(slug, signal),
+        refetchInterval: MY_STANDING_REFRESH_MS,
+        retry: false,
+    });
+}

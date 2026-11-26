@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ToastProvider } from "@/components/shared/ToastProvider";
 import { apiError } from "@/mocks/api-error";
 import { resetAdminContests } from "@/mocks/admin-contests";
-import { resetContestRegistrations } from "@/mocks/contests";
+import { registerForMockContest, resetContestRegistrations } from "@/mocks/contests";
 import { server } from "@/mocks/server";
 import { DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
@@ -77,6 +77,28 @@ describe("sảnh chờ contest", () => {
         expect(screen.getByRole("timer", { name: "Còn lại" })).toBeInTheDocument();
         const problems = within(await screen.findByRole("table", { name: "Bài trong contest" }));
         expect(problems.getByText("Lương cao nhất mỗi phòng ban")).toBeInTheDocument();
+    });
+
+    it("có breadcrumb về danh mục contest", async () => {
+        renderLobby("sql-cup-2");
+
+        const breadcrumb = within(screen.getByRole("navigation", { name: "Đường dẫn" }));
+        expect(await breadcrumb.findByText("SQL Cup 2")).toHaveAttribute("aria-current", "page");
+        expect(breadcrumb.getByRole("link", { name: "Contest" })).toHaveAttribute(
+            "href",
+            "/contests",
+        );
+    });
+
+    it("bảng đề tô màu bài đã AC và bài đã nộp sai của người thi", async () => {
+        writeMockSession(DEMO_SESSION_USER);
+        registerForMockContest("sql-cup-1", DEMO_SESSION_USER.id);
+        renderLobby("sql-cup-1");
+
+        const problems = within(await screen.findByRole("table", { name: "Bài trong contest" }));
+        const [, first, second] = problems.getAllByRole("row");
+        expect(await within(first).findByText("Đã AC")).toHaveClass("text-verdict-ac");
+        expect(within(second).getByText("Sai 2 lần")).toHaveClass("text-verdict-wa");
     });
 
     it("contest đã kết thúc không còn nút đăng ký", async () => {

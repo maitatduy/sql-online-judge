@@ -42,7 +42,7 @@ describe("màn thi contest", () => {
         writeMockSession(DEMO_SESSION_USER);
     });
 
-    it("hiện đề theo chữ cái, thanh chuyển bài, đồng hồ và link về sảnh chờ", async () => {
+    it("hiện đề theo chữ cái, thanh chuyển bài có màu kết quả, đồng hồ và breadcrumb", async () => {
         registerForMockContest(SLUG, DEMO_SESSION_USER.id);
         renderContestWorkspace();
 
@@ -51,14 +51,19 @@ describe("màn thi contest", () => {
         ).toBeInTheDocument();
         expect(screen.getByText("A. Lương cao nhất mỗi phòng ban")).toBeInTheDocument();
         const problems = within(screen.getByRole("navigation", { name: "Bài trong contest" }));
-        expect(await problems.findByRole("link", { name: "A" })).toHaveAttribute(
+        expect(await problems.findByRole("link", { name: "A, đã AC" })).toHaveAttribute(
             "aria-current",
             "page",
         );
         expect(await screen.findByRole("timer", { name: "Còn lại" })).toBeInTheDocument();
-        expect(await screen.findByRole("link", { name: "SQL Cup đang thi" })).toHaveAttribute(
+        const breadcrumb = within(screen.getByRole("navigation", { name: "Đường dẫn" }));
+        expect(await breadcrumb.findByRole("link", { name: "SQL Cup đang thi" })).toHaveAttribute(
             "href",
             "/contests/sql-cup-live",
+        );
+        expect(breadcrumb.getByRole("link", { name: "Contest" })).toHaveAttribute(
+            "href",
+            "/contests",
         );
         expect(screen.queryByRole("tab", { name: /Lịch sử nộp/ })).toBeNull();
     });

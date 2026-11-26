@@ -171,3 +171,14 @@ export interface ContestTiming {
     title: string;
     endAt: string;
 }
+
+export interface ContestProblemCell {
+    letter: string;
+    acceptedMinute: number | null;
+    wrongAttempts: number;
+    pendingAttempts: number;
+}
+
+export interface MyContestStanding {
+    cells: ContestProblemCell[];
+}

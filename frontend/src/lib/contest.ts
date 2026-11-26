@@ -33,3 +33,26 @@ export function formatRemaining(target: string, now: Date): string {
         .map((part) => String(part).padStart(2, "0"))
         .join(":");
 }
+
+export type ContestProblemStatus = "ACCEPTED" | "WRONG" | "PENDING";
+
+export interface ContestProblemAttempts {
+    acceptedMinute: number | null;
+    wrongAttempts: number;
+    pendingAttempts: number;
+}
+
+export function contestProblemStatusOf(
+    attempts: ContestProblemAttempts | undefined,
+): ContestProblemStatus | null {
+    if (!attempts) {
+        return null;
+    }
+    if (attempts.acceptedMinute !== null) {
+        return "ACCEPTED";
+    }
+    if (attempts.pendingAttempts > 0) {
+        return "PENDING";
+    }
+    return attempts.wrongAttempts > 0 ? "WRONG" : null;
+}

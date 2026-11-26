@@ -12,6 +12,9 @@ import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 import { useContestProblems } from "../hooks/useContests";
+import { useMyStanding } from "../hooks/useStandings";
+import type { StandingCell } from "../types";
+import { ProblemResult, resultRowClassOf } from "./ProblemResult";
 
 const HEADER_CLASS = "border-b px-4 py-2.5 text-left text-sm font-semibold text-muted-foreground";
 const NOT_REGISTERED = "CONTEST_NOT_REGISTERED";
@@ -37,6 +40,9 @@ export function ContestProblemTable({ slug }: ContestProblemTableProps) {
         isPending,
         refetch,
     } = useContestProblems(slug, currentUser !== undefined);
+    const { data: mine } = useMyStanding(slug, currentUser !== undefined);
+    const cellOf = (letter: string): StandingCell | undefined =>
+        mine?.cells.find((cell) => cell.letter === letter);
 
     if (!currentUser) {
         return <LockedProblems message="Đăng nhập để xem đề." />;
@@ -75,11 +81,17 @@ export function ContestProblemTable({ slug }: ContestProblemTableProps) {
                         <th scope="col" className={HEADER_CLASS}>
                             Độ khó
                         </th>
+                        <th scope="col" className={HEADER_CLASS}>
+                            Kết quả
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     {problems.map((problem) => (
-                        <tr key={problem.letter}>
+                        <tr
+                            key={problem.letter}
+                            className={resultRowClassOf(cellOf(problem.letter))}
+                        >
                             <td className="border-b px-4 py-3 text-lg font-extrabold">
                                 {problem.letter}
                             </td>
@@ -93,6 +105,9 @@ export function ContestProblemTable({ slug }: ContestProblemTableProps) {
                             </td>
                             <td className="border-b px-4 py-3">
                                 <DifficultyLabel difficulty={problem.difficulty} />
+                            </td>
+                            <td className="border-b px-4 py-3">
+                                <ProblemResult cell={cellOf(problem.letter)} />
                             </td>
                         </tr>
                     ))}

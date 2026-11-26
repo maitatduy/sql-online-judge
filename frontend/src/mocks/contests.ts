@@ -143,7 +143,11 @@ export const contestHandlers: RequestHandler[] = [
         return HttpResponse.json({
             solved: 1,
             penaltyMinutes: 65,
-            cells: cellsFor(contest, { acceptedMinute: 65, wrongAttempts: 0, pendingAttempts: 0 }),
+            cells: cellsFor(contest, {
+                acceptedMinute: 65,
+                wrongAttempts: 0,
+                pendingAttempts: 0,
+            }).map((cell, index) => (index === 1 ? { ...cell, wrongAttempts: 2 } : cell)),
         });
     }),
     http.get("*/api/contests/:slug/standings", async ({ params }) => {
@@ -231,9 +235,10 @@ export const contestHandlers: RequestHandler[] = [
     http.get("*/api/contests", async ({ request }) => {
         await delay();
         const phase = new URL(request.url).searchParams.get("phase") ?? "UPCOMING";
+        const viewer = readMockSession();
         const items = mockContests()
             .filter((contest) => contest.phase === phase)
-            .map(({ id, slug, title, startAt, endAt, durationMinutes, isRated }) => ({
+            .map(({ id, slug, title, startAt, endAt, durationMinutes, isRated, problems }) => ({
                 id,
                 slug,
                 title,
@@ -242,6 +247,10 @@ export const contestHandlers: RequestHandler[] = [
                 durationMinutes,
                 isRated,
                 phase,
+                problemCount: problems.length,
+                registrantCount: registrantsOf(id).size,
+                participantCount: registrantsOf(id).size,
+                isRegistered: viewer !== null && registrantsOf(id).has(viewer.id),
             }));
         return HttpResponse.json({
             items,
