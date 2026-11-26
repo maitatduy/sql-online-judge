@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -26,7 +27,9 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@TestPropertySource(properties = "spring.flyway.locations=classpath:db/migration,classpath:db/seed")
+@TestPropertySource(
+        properties =
+                "spring.flyway.locations=classpath:db/migration,classpath:db/content,classpath:db/seed")
 class DevSeedIntegrationTest {
 
     private static final String SEED_DATABASE = "dev_seed";
@@ -36,7 +39,6 @@ class DevSeedIntegrationTest {
 
     @Autowired private TestRestTemplate restTemplate;
     @Autowired private ObjectMapper objectMapper;
-    @Autowired private JdbcTemplate jdbcTemplate;
 
     @DynamicPropertySource
     static void useSeparateSeedDatabase(DynamicPropertyRegistry registry) throws SQLException {
@@ -62,19 +64,25 @@ class DevSeedIntegrationTest {
     }
 
     @Test
-    @DisplayName("Seed dev có khoá SQL cơ bản đã xuất bản với 2 chương và 4 bài giảng")
-    void seed_publishesBasicSqlCourse() throws Exception {
-        ResponseEntity<String> response =
+    @DisplayName("Seed dev ẩn khoá SQL cơ bản cũ, danh mục chỉ còn 6 khoá theo lộ trình")
+    void seed_replacesOldCourseWithRoadmapCourses() throws Exception {
+        ResponseEntity<String> oldCourse =
                 restTemplate.getForEntity("/api/courses/sql-co-ban", String.class);
+        ResponseEntity<String> catalog =
+                restTemplate.getForEntity("/api/courses?size=50", String.class);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        JsonNode course = objectMapper.readTree(response.getBody());
-        assertThat(course.get("lessonCount").asInt()).isEqualTo(4);
-        assertThat(course.get("chapters")).hasSize(2);
-        assertThat(course.get("chapters").get(0).get("lessons")).hasSize(2);
-        assertThat(course.get("chapters").get(1).get("lessons")).hasSize(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_cells", Long.class))
-                .isEqualTo(4);
+        assertThat(oldCourse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        JsonNode items = objectMapper.readTree(catalog.getBody()).get("items");
+        List<String> slugs = new ArrayList<>();
+        items.forEach(item -> slugs.add(item.get("slug").asText()));
+        assertThat(slugs)
+                .containsExactlyInAnyOrder(
+                        "sql-truy-van-co-ban",
+                        "sql-noi-bang",
+                        "sql-gom-nhom",
+                        "sql-truy-van-long",
+                        "sql-cte",
+                        "sql-window-function");
     }
 
     @Test
