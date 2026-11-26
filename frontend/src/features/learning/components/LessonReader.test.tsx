@@ -57,6 +57,25 @@ describe("LessonReader", () => {
         );
     });
 
+    it("đề cương là menu nhiều cấp: chương đang học mở sẵn, chương khác đóng và mở được", async () => {
+        renderLesson("chon-cot");
+
+        const outline = within(await screen.findByRole("navigation", { name: "Đề cương" }));
+        const current = outline.getByRole("button", { name: "Chương 1: Làm quen với SELECT" });
+        const other = outline.getByRole("button", { name: "Chương 2: Lọc và sắp xếp" });
+        expect(current).toHaveAttribute("aria-expanded", "true");
+        expect(other).toHaveAttribute("aria-expanded", "false");
+        expect(outline.queryByRole("link", { name: /Lọc dòng với WHERE/ })).not.toBeInTheDocument();
+
+        fireEvent.click(other);
+
+        expect(other).toHaveAttribute("aria-expanded", "true");
+        expect(outline.getByRole("link", { name: /Lọc dòng với WHERE/ })).toBeInTheDocument();
+        fireEvent.click(current);
+        expect(outline.queryByRole("link", { name: /SELECT là gì/ })).not.toBeInTheDocument();
+        expect(outline.queryByText(/\d+\/\d+ bài/)).not.toBeInTheDocument();
+    });
+
     it("có nút sang bài sau và không có bài trước ở bài đầu tiên", async () => {
         renderLesson("select-la-gi");
 
