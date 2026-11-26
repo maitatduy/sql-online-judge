@@ -1,5 +1,6 @@
 import type { Dialect } from "@/lib/dialect";
 import type { Difficulty } from "@/lib/difficulty";
+import type { Page } from "@/lib/pagination";
 import type { ResultSet } from "@/lib/result-set";
 import type { Verdict } from "@/lib/verdict";
 
@@ -154,10 +155,7 @@ export interface ProblemSubmissionSummary {
     submittedAt: string;
 }
 
-export interface ProblemSubmissionsResponse {
-    items: ProblemSubmissionSummary[];
-    nextCursor: string | null;
-}
+export type ProblemSubmissionsResponse = Page<ProblemSubmissionSummary>;
 
 export interface ContestStatement extends WorkspaceProblem {
     letter: string;

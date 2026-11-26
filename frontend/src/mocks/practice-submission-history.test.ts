@@ -28,7 +28,7 @@ describe("lịch sử nộp của một bài", () => {
             dialect: "POSTGRESQL",
             runtimeMs: 41,
         });
-        expect(page.nextCursor).toBeNull();
+        expect(page).toMatchObject({ page: 1, totalItems: 2, totalPages: 1 });
     });
 
     it("thêm bài vừa nộp vào đầu danh sách", async () => {
@@ -47,14 +47,15 @@ describe("lịch sử nộp của một bài", () => {
         );
     });
 
-    it("phân trang bằng cursor", async () => {
+    it("phân trang theo số trang", async () => {
         const firstPage = await listSubmissions(PROBLEM_ID, { size: 1 });
-        const secondPage = await listSubmissions(PROBLEM_ID, {
-            size: 1,
-            cursor: firstPage.nextCursor ?? "",
-        });
+        const secondPage = await listSubmissions(PROBLEM_ID, { size: 1, page: 2 });
 
+        expect(firstPage).toMatchObject({ page: 1, size: 1 });
+        expect(firstPage.totalItems).toBeGreaterThan(1);
+        expect(firstPage.totalPages).toBe(firstPage.totalItems);
         expect(firstPage.items).toHaveLength(1);
+        expect(secondPage.page).toBe(2);
         expect(secondPage.items[0].id).not.toBe(firstPage.items[0].id);
     });
 

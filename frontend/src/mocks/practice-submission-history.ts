@@ -87,16 +87,19 @@ export const practiceSubmissionHistoryHandlers: RequestHandler[] = [
             return apiError(404, "PROBLEM_NOT_FOUND", "Không tìm thấy bài tập");
         }
         const query = new URL(request.url).searchParams;
-        const startIndex = Number(query.get("cursor") ?? 0);
+        const page = Math.max(1, Number(query.get("page") ?? 1));
         const pageSize = Math.min(Number(query.get("size") ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
         const history = [
             ...listOwnSubmissions(user.id, problemId).map(summaryOf),
             ...seededHistory(user.id, problemId, new Date()),
         ].sort((first, second) => Date.parse(second.submittedAt) - Date.parse(first.submittedAt));
-        const endIndex = startIndex + pageSize;
+        const startIndex = (page - 1) * pageSize;
         const response: ProblemSubmissionsResponse = {
-            items: history.slice(startIndex, endIndex),
-            nextCursor: endIndex < history.length ? String(endIndex) : null,
+            items: history.slice(startIndex, startIndex + pageSize),
+            page,
+            size: pageSize,
+            totalItems: history.length,
+            totalPages: Math.ceil(history.length / pageSize),
         };
         return HttpResponse.json(response);
     }),

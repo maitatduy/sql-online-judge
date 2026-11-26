@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -56,21 +58,10 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
     Optional<Submission> findByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
 
     @Query(
-            HISTORY_SELECT
-                    + " WHERE s.userId = :userId AND s.problemId = :problemId"
-                    + " AND s.deletedAt IS NULL ORDER BY s.id DESC")
-    List<SubmissionSummaryResponse> findHistory(
-            @Param("userId") UUID userId, @Param("problemId") UUID problemId, Limit limit);
-
-    @Query(
-            HISTORY_SELECT
-                    + " WHERE s.userId = :userId AND s.problemId = :problemId"
-                    + " AND s.deletedAt IS NULL AND s.id < :beforeId ORDER BY s.id DESC")
-    List<SubmissionSummaryResponse> findHistoryBefore(
-            @Param("userId") UUID userId,
-            @Param("problemId") UUID problemId,
-            @Param("beforeId") UUID beforeId,
-            Limit limit);
+            value = HISTORY_SELECT + OWN_HISTORY_OF_PROBLEM + " ORDER BY s.id DESC",
+            countQuery = "SELECT COUNT(s) FROM Submission s" + OWN_HISTORY_OF_PROBLEM)
+    Page<SubmissionSummaryResponse> findHistory(
+            @Param("userId") UUID userId, @Param("problemId") UUID problemId, Pageable pageable);
 
     @Query(
             value =
@@ -111,6 +102,9 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
                     + " WHERE s.userId = :userId AND s.deletedAt IS NULL AND s.contestId IS NULL"
                     + " ORDER BY s.createdAt DESC, s.id DESC")
     List<RecentSubmissionResponse> findRecent(@Param("userId") UUID userId, Limit limit);
+
+    String OWN_HISTORY_OF_PROBLEM =
+            " WHERE s.userId = :userId AND s.problemId = :problemId AND s.deletedAt IS NULL";
 
     String HISTORY_SELECT =
             "SELECT new com.sqljudge.submission.dto.response.SubmissionSummaryResponse("

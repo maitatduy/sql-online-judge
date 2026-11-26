@@ -50,10 +50,14 @@ export const practiceApi = {
         apiClient.get<SubmissionCode>(`/api/submissions/${encodeURIComponent(submissionId)}/code`, {
             signal,
         }),
-    listProblemSubmissions: (problemId: string, cursor: string | undefined, signal?: AbortSignal) =>
+    listProblemSubmissions: (
+        problemId: string,
+        page: { page: number; size: number },
+        signal?: AbortSignal,
+    ) =>
         apiClient.get<ProblemSubmissionsResponse>(
             `/api/problems/${encodeURIComponent(problemId)}/submissions`,
-            { params: { cursor }, signal },
+            { params: page, signal },
         ),
     getContestStatement: (slug: string, letter: string, signal?: AbortSignal) =>
         apiClient.get<ContestStatement>(contestProblemPath(slug, letter), { signal }),

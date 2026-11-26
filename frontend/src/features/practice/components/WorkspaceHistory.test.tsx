@@ -87,24 +87,38 @@ describe("lịch sử nộp trong Workspace", () => {
         );
     });
 
-    it("tải thêm trang tiếp theo", async () => {
+    it("chia lịch sử thành trang, chuyển trang bằng nút Trang sau và Trang trước", async () => {
+        const requestedPages: string[] = [];
         server.use(
             http.get("*/api/problems/:problemId/submissions", ({ request }) => {
-                const cursor = new URL(request.url).searchParams.get("cursor");
-                return HttpResponse.json(
-                    cursor === "next"
-                        ? { items: [historyItem("second", { verdict: "TLE" })], nextCursor: null }
-                        : { items: [historyItem("first")], nextCursor: "next" },
-                );
+                const page = new URL(request.url).searchParams.get("page") ?? "1";
+                requestedPages.push(page);
+                const items =
+                    page === "2"
+                        ? [historyItem("second", { verdict: "TLE" })]
+                        : [historyItem("first")];
+                return HttpResponse.json({
+                    items,
+                    page: Number(page),
+                    size: 10,
+                    totalItems: 11,
+                    totalPages: 2,
+                });
             }),
         );
 
         const panel = await openHistory();
-        fireEvent.click(await panel.findByRole("button", { name: "Xem thêm" }));
+        expect(await panel.findByText("1-10 trong 11")).toBeInTheDocument();
+        expect(panel.getByRole("button", { name: "Trang trước" })).toBeDisabled();
+        fireEvent.click(panel.getByRole("button", { name: "Trang sau" }));
 
         expect(await panel.findByText("TLE")).toBeInTheDocument();
-        expect(panel.getByText("AC")).toBeInTheDocument();
-        expect(panel.queryByRole("button", { name: "Xem thêm" })).not.toBeInTheDocument();
+        expect(panel.queryByText("AC")).not.toBeInTheDocument();
+        expect(panel.getByText("Trang 2/2")).toBeInTheDocument();
+        expect(panel.getByRole("button", { name: "Trang sau" })).toBeDisabled();
+        fireEvent.click(panel.getByRole("button", { name: "Trang trước" }));
+        expect(await panel.findByText("AC")).toBeInTheDocument();
+        expect(requestedPages.slice(0, 2)).toEqual(["1", "2"]);
     });
 
     it("bấm Xem mã thì hiện mã của lần nộp đó, bấm lần nữa thì ẩn", async () => {

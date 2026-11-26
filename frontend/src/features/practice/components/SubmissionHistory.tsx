@@ -7,12 +7,12 @@ import Link from "next/link";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
-import { Button } from "@/components/ui/button";
 import { ApiRequestError, isUnauthenticatedError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
 
 import { useProblemSubmissions } from "../hooks/useProblemSubmissions";
 
+import { HistoryPager } from "./HistoryPager";
 import { SubmissionHistoryRow } from "./SubmissionHistoryRow";
 
 const SKELETON_ROW_COUNT = 4;
@@ -25,17 +25,11 @@ interface SubmissionHistoryProps {
 
 export function SubmissionHistory({ problemId, loginPath, now }: SubmissionHistoryProps) {
     const [mountedAt] = useState(() => new Date());
-    const {
-        submissions,
-        data,
-        error,
-        isPending,
-        isFetchNextPageError,
-        hasNextPage,
-        isFetchingNextPage,
-        fetchNextPage,
-        refetch,
-    } = useProblemSubmissions(problemId);
+    const [page, setPage] = useState(1);
+    const { data, error, isPending, isPlaceholderData, refetch } = useProblemSubmissions(
+        problemId,
+        page,
+    );
 
     if (isPending) {
         return (
@@ -74,7 +68,7 @@ export function SubmissionHistory({ problemId, loginPath, now }: SubmissionHisto
         );
     }
 
-    if (submissions.length === 0) {
+    if (!data || data.items.length === 0) {
         return <EmptyState title="Bạn chưa nộp bài này lần nào." className="m-6" />;
     }
 
@@ -91,7 +85,7 @@ export function SubmissionHistory({ problemId, loginPath, now }: SubmissionHisto
                     </tr>
                 </thead>
                 <tbody>
-                    {submissions.map((submission) => (
+                    {data.items.map((submission) => (
                         <SubmissionHistoryRow
                             key={submission.id}
                             submission={submission}
@@ -100,24 +94,7 @@ export function SubmissionHistory({ problemId, loginPath, now }: SubmissionHisto
                     ))}
                 </tbody>
             </table>
-            {hasNextPage ? (
-                <div className="flex flex-col items-center gap-2 pt-3">
-                    {isFetchNextPageError ? (
-                        <p role="alert" className="text-[13px] text-destructive">
-                            Không tải thêm được lịch sử nộp, hãy thử lại
-                        </p>
-                    ) : null}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={isFetchingNextPage}
-                        onClick={() => void fetchNextPage()}
-                    >
-                        Xem thêm
-                    </Button>
-                </div>
-            ) : null}
+            <HistoryPager result={data} isLoading={isPlaceholderData} onPageChange={setPage} />
         </div>
     );
 }
