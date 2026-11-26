@@ -46,16 +46,18 @@ public class CommentWriter {
         UUID authorId = SecurityUtils.requireCurrentUser().id();
         Post post = thread.postId() == null ? null : openPost(thread.postId());
         UUID recipientId = post == null ? null : post.getAuthorId();
+        UUID rootId = null;
         if (request.parentId() != null) {
             Comment parent = liveComment(request.parentId());
-            if (parent.isReply() || !parent.thread().equals(thread)) {
-                throw invalidTarget("Chỉ trả lời được bình luận gốc trong cùng chủ đề");
+            if (!parent.thread().equals(thread)) {
+                throw invalidTarget("Chỉ trả lời được bình luận trong cùng chủ đề");
             }
+            rootId = parent.rootId();
             recipientId = parent.getAuthorId();
         }
         Comment comment =
                 commentRepository.save(
-                        Comment.write(thread, request.parentId(), authorId, request.body().trim()));
+                        Comment.write(thread, rootId, authorId, request.body().trim()));
         if (contestLocked) {
             comment.hide(HiddenReason.CONTEST);
         }

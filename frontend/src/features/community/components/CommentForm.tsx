@@ -12,15 +12,22 @@ import type { CommentThread } from "../types";
 interface CommentFormProps {
     thread: CommentThread;
     parentId?: string;
+    initialBody?: string;
     placeholder: string;
     onDone?: () => void;
 }
 
-export function CommentForm({ thread, parentId, placeholder, onDone }: CommentFormProps) {
+export function CommentForm({
+    thread,
+    parentId,
+    initialBody = "",
+    placeholder,
+    onDone,
+}: CommentFormProps) {
     const showToast = useToast();
     const fieldId = useId();
     const write = useCommunityMutation(communityApi.writeComment);
-    const [body, setBody] = useState("");
+    const [body, setBody] = useState(initialBody);
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();

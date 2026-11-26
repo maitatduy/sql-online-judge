@@ -109,8 +109,9 @@ class CommentVoteApiIntegrationTest extends ContainerSupport {
 
     @Test
     @DisplayName(
-            "Không trả lời được trả lời, phải gắn đúng một chủ đề, thảo luận theo bài tập đọc được")
-    void commentTargets_areValidated() {
+            "Trả lời một câu trả lời thì nằm cùng nhóm dưới bình luận gốc và báo cho người được"
+                    + " trả lời")
+    void replyToReply_joinsRootThreadAndNotifiesReplyAuthor() {
         String rootId = comment("{\"postId\": \"" + postId + "\", \"body\": \"Gốc\"}", READER);
         String replyId =
                 comment(
@@ -120,20 +121,35 @@ class CommentVoteApiIntegrationTest extends ContainerSupport {
                                 + rootId
                                 + "\", \"body\": \"Trả lời\"}",
                         AUTHOR);
+        jdbcTemplate.update("DELETE FROM outbox_events");
+
+        comment(
+                "{\"postId\": \""
+                        + postId
+                        + "\", \"parentId\": \""
+                        + replyId
+                        + "\", \"body\": \"@trang.hoang đồng ý\"}",
+                READER);
+
+        DocumentContext page = JsonPath.parse(get(COMMENTS + "?postId=" + postId, null).getBody());
+        assertThat(page.read("$.items[*].id", List.class)).containsExactly(rootId);
+        assertThat(page.read("$.items[0].replies[*].body", List.class))
+                .containsExactly("Trả lời", "@trang.hoang đồng ý");
+        assertThat(page.read("$.items[0].replies[1].parentId", String.class)).isEqualTo(rootId);
+        assertThat(
+                        jdbcTemplate.queryForList(
+                                "SELECT payload FROM outbox_events WHERE topic = ?",
+                                String.class,
+                                "sqljudge.community.commented"))
+                .singleElement()
+                .satisfies(payload -> assertThat(payload).contains(AUTHOR_ID.toString()));
+    }
+
+    @Test
+    @DisplayName("Phải gắn đúng một chủ đề, thảo luận theo bài tập đọc được")
+    void commentTargets_areValidated() {
         String problemId = UUID.randomUUID().toString();
 
-        assertThat(
-                        code(
-                                send(
-                                        HttpMethod.POST,
-                                        COMMENTS,
-                                        "{\"postId\": \""
-                                                + postId
-                                                + "\", \"parentId\": \""
-                                                + replyId
-                                                + "\", \"body\": \"x\"}",
-                                        READER)))
-                .isEqualTo("INVALID_COMMENT_TARGET");
         assertThat(code(send(HttpMethod.POST, COMMENTS, "{\"body\": \"x\"}", READER)))
                 .isEqualTo("INVALID_COMMENT_TARGET");
         comment(

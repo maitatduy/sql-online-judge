@@ -69,6 +69,32 @@ describe("chi tiết bài viết", () => {
         expect(liked).toHaveClass("text-like");
     });
 
+    it("trả lời một câu trả lời thì gắn @tên và nằm cùng nhóm dưới bình luận gốc", async () => {
+        writeMockSession(DEMO_SESSION_USER);
+        renderPost();
+        fireEvent.change(await screen.findByLabelText("Viết bình luận… hỗ trợ Markdown"), {
+            target: { value: "Gốc" },
+        });
+        fireEvent.click(screen.getByRole("button", { name: "Gửi" }));
+        fireEvent.click(await screen.findByRole("button", { name: "Trả lời" }));
+        fireEvent.change(screen.getByLabelText("Trả lời minh.anh"), {
+            target: { value: "Cấp hai" },
+        });
+        fireEvent.click(screen.getAllByRole("button", { name: "Gửi" })[1]);
+        await screen.findByText("Cấp hai", { selector: "p" });
+
+        fireEvent.click(screen.getAllByRole("button", { name: "Trả lời" })[1]);
+        const replyField = screen.getByLabelText("Trả lời minh.anh");
+        expect(replyField).toHaveValue("@minh.anh ");
+        fireEvent.change(replyField, { target: { value: "@minh.anh cấp ba" } });
+        fireEvent.click(screen.getAllByRole("button", { name: "Gửi" })[1]);
+
+        const nested = await screen.findByText("@minh.anh cấp ba", { selector: "p" });
+        const replies = screen.getByText("Cấp hai", { selector: "p" }).closest("ul");
+        expect(replies).toContainElement(nested);
+        expect(replies?.querySelectorAll("ul")).toHaveLength(0);
+    });
+
     it("bài không tồn tại thì báo không tìm thấy", async () => {
         renderPost("missing");
 

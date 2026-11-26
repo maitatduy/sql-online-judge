@@ -75,7 +75,7 @@ export function CommentView({ comment, thread, viewerId, now }: CommentViewProps
                         />
                         {formatNumber(comment.voteScore)}
                     </button>
-                    {!isReply && viewerId ? (
+                    {viewerId ? (
                         <button
                             type="button"
                             className={ACTION_CLASS}
@@ -112,6 +112,7 @@ export function CommentView({ comment, thread, viewerId, now }: CommentViewProps
                     <CommentForm
                         thread={thread}
                         parentId={comment.id}
+                        initialBody={isReply ? `@${author} ` : undefined}
                         placeholder={`Trả lời ${author}`}
                         onDone={() => setIsReplying(false)}
                     />

@@ -360,11 +360,12 @@ export const communityHandlers: RequestHandler[] = [
             body: string;
         };
         const now = new Date().toISOString();
+        const parent = comments.find((comment) => comment.id === body.parentId);
         comments.push({
             id: crypto.randomUUID(),
             postId: body.postId ?? null,
             problemId: body.problemId ?? null,
-            parentId: body.parentId ?? null,
+            parentId: parent ? (parent.parentId ?? parent.id) : null,
             authorId: session.id,
             authorUsername: session.username,
             body: body.body,
