@@ -9,4 +9,4 @@ import java.util.UUID;
 public record VoteRequest(
         @NotNull(message = "Chọn đối tượng") VoteTarget targetType,
         @NotNull(message = "Chọn đối tượng") UUID targetId,
-        @Min(value = -1, message = "Chỉ nhận -1, 0 hoặc 1") @Max(value = 1, message = "Chỉ nhận -1, 0 hoặc 1") int value) {}
+        @Min(value = 0, message = "Chỉ nhận thả tim hoặc bỏ tim") @Max(value = 1, message = "Chỉ nhận thả tim hoặc bỏ tim") int value) {}

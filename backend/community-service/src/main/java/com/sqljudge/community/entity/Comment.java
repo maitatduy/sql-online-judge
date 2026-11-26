@@ -76,6 +76,10 @@ public class Comment extends BaseEntity {
         return new CommentThread(postId, problemId);
     }
 
+    public UUID rootId() {
+        return isReply() ? parentId : getId();
+    }
+
     public boolean isReply() {
         return parentId != null;
     }

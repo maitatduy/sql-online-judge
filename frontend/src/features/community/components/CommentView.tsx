@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronUp } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useState } from "react";
 
 import { Avatar } from "@/components/shared/Avatar";
@@ -33,13 +33,15 @@ export function CommentView({ comment, thread, viewerId, now }: CommentViewProps
     const author = comment.authorUsername ?? "Người dùng";
     const isReply = comment.parentId !== null;
 
-    const upvote = () => {
+    const isLiked = comment.myVote === 1;
+
+    const toggleLike = () => {
         if (!viewerId) {
-            showToast("Đăng nhập để vote.", "error");
+            showToast("Đăng nhập để thả tim.", "error");
             return;
         }
         vote.mutate(
-            { targetType: "COMMENT", targetId: comment.id, value: comment.myVote === 1 ? 0 : 1 },
+            { targetType: "COMMENT", targetId: comment.id, value: isLiked ? 0 : 1 },
             { onError: (error) => showToast(error.message, "error") },
         );
     };
@@ -58,19 +60,22 @@ export function CommentView({ comment, thread, viewerId, now }: CommentViewProps
                 <div className="flex flex-wrap items-center gap-4">
                     <button
                         type="button"
-                        aria-label="Vote lên bình luận"
-                        aria-pressed={comment.myVote === 1}
-                        onClick={upvote}
+                        aria-label={`Thả tim bình luận, ${formatNumber(comment.voteScore)} tim`}
+                        aria-pressed={isLiked}
+                        onClick={toggleLike}
                         className={cn(
                             ACTION_CLASS,
                             "inline-flex items-center gap-1",
-                            comment.myVote === 1 ? "text-brand" : null,
+                            isLiked ? "text-like hover:text-like" : null,
                         )}
                     >
-                        <ChevronUp aria-hidden="true" className="size-4" />
+                        <Heart
+                            aria-hidden="true"
+                            className={cn("size-4", isLiked ? "fill-current" : null)}
+                        />
                         {formatNumber(comment.voteScore)}
                     </button>
-                    {!isReply && viewerId ? (
+                    {viewerId ? (
                         <button
                             type="button"
                             className={ACTION_CLASS}
@@ -107,6 +112,7 @@ export function CommentView({ comment, thread, viewerId, now }: CommentViewProps
                     <CommentForm
                         thread={thread}
                         parentId={comment.id}
+                        initialBody={isReply ? `@${author} ` : undefined}
                         placeholder={`Trả lời ${author}`}
                         onDone={() => setIsReplying(false)}
                     />

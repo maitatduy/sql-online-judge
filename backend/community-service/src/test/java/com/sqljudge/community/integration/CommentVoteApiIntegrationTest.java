@@ -109,8 +109,9 @@ class CommentVoteApiIntegrationTest extends ContainerSupport {
 
     @Test
     @DisplayName(
-            "Không trả lời được trả lời, phải gắn đúng một chủ đề, thảo luận theo bài tập đọc được")
-    void commentTargets_areValidated() {
+            "Trả lời một câu trả lời thì nằm cùng nhóm dưới bình luận gốc và báo cho người được"
+                    + " trả lời")
+    void replyToReply_joinsRootThreadAndNotifiesReplyAuthor() {
         String rootId = comment("{\"postId\": \"" + postId + "\", \"body\": \"Gốc\"}", READER);
         String replyId =
                 comment(
@@ -120,20 +121,35 @@ class CommentVoteApiIntegrationTest extends ContainerSupport {
                                 + rootId
                                 + "\", \"body\": \"Trả lời\"}",
                         AUTHOR);
+        jdbcTemplate.update("DELETE FROM outbox_events");
+
+        comment(
+                "{\"postId\": \""
+                        + postId
+                        + "\", \"parentId\": \""
+                        + replyId
+                        + "\", \"body\": \"@trang.hoang đồng ý\"}",
+                READER);
+
+        DocumentContext page = JsonPath.parse(get(COMMENTS + "?postId=" + postId, null).getBody());
+        assertThat(page.read("$.items[*].id", List.class)).containsExactly(rootId);
+        assertThat(page.read("$.items[0].replies[*].body", List.class))
+                .containsExactly("Trả lời", "@trang.hoang đồng ý");
+        assertThat(page.read("$.items[0].replies[1].parentId", String.class)).isEqualTo(rootId);
+        assertThat(
+                        jdbcTemplate.queryForList(
+                                "SELECT payload FROM outbox_events WHERE topic = ?",
+                                String.class,
+                                "sqljudge.community.commented"))
+                .singleElement()
+                .satisfies(payload -> assertThat(payload).contains(AUTHOR_ID.toString()));
+    }
+
+    @Test
+    @DisplayName("Phải gắn đúng một chủ đề, thảo luận theo bài tập đọc được")
+    void commentTargets_areValidated() {
         String problemId = UUID.randomUUID().toString();
 
-        assertThat(
-                        code(
-                                send(
-                                        HttpMethod.POST,
-                                        COMMENTS,
-                                        "{\"postId\": \""
-                                                + postId
-                                                + "\", \"parentId\": \""
-                                                + replyId
-                                                + "\", \"body\": \"x\"}",
-                                        READER)))
-                .isEqualTo("INVALID_COMMENT_TARGET");
         assertThat(code(send(HttpMethod.POST, COMMENTS, "{\"body\": \"x\"}", READER)))
                 .isEqualTo("INVALID_COMMENT_TARGET");
         comment(
@@ -154,10 +170,9 @@ class CommentVoteApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
-    @DisplayName("Vote lên, đổi chiều, bỏ vote cập nhật đúng điểm; người nhận vote vào top tuần")
+    @DisplayName("Thả tim, bỏ tim cập nhật đúng số tim; người nhận tim vào top tuần")
     void votes_updateScoreAndContributors() {
         assertThat(vote("POST", postId, 1, READER)).isEqualTo(1);
-        assertThat(vote("POST", postId, -1, READER)).isEqualTo(-1);
         assertThat(vote("POST", postId, 0, READER)).isZero();
         String rootId = comment("{\"postId\": \"" + postId + "\", \"body\": \"Hay\"}", READER);
         assertThat(vote("COMMENT", rootId, 1, AUTHOR)).isEqualTo(1);
@@ -172,6 +187,35 @@ class CommentVoteApiIntegrationTest extends ContainerSupport {
                         JsonPath.parse(get(COMMENTS + "?postId=" + postId, AUTHOR).getBody())
                                 .read("$.items[0].myVote", Integer.class))
                 .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Bài viết và bình luận chỉ nhận thả tim hoặc bỏ tim, vote xuống trả 400")
+    void downvote_rejectedForPostsAndComments() {
+        String rootId = comment("{\"postId\": \"" + postId + "\", \"body\": \"Hay\"}", READER);
+        vote("COMMENT", rootId, 1, AUTHOR);
+
+        for (String[] target : new String[][] {{"COMMENT", rootId}, {"POST", postId}}) {
+            ResponseEntity<String> downvote =
+                    send(
+                            HttpMethod.PUT,
+                            "/api/community/votes",
+                            "{\"targetType\": \""
+                                    + target[0]
+                                    + "\", \"targetId\": \""
+                                    + target[1]
+                                    + "\", \"value\": -1}",
+                            AUTHOR);
+
+            assertThat(downvote.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(JsonPath.parse(downvote.getBody()).read("$.errors[0].field", String.class))
+                    .isEqualTo("value");
+        }
+        assertThat(
+                        JsonPath.parse(get(COMMENTS + "?postId=" + postId, AUTHOR).getBody())
+                                .read("$.items[0].voteScore", Integer.class))
+                .isEqualTo(1);
+        assertThat(postField("$.voteScore", AUTHOR)).isZero();
     }
 
     @Test
