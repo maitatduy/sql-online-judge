@@ -9,7 +9,7 @@ INSERT INTO courses (id, slug, author_id, status, published_revision_id, draft_r
 AS content ON DUPLICATE KEY UPDATE slug = content.slug;
 
 INSERT INTO course_revisions (id, course_id, status, title, summary, difficulty, estimated_minutes, lesson_count, submitted_at, published_at, created_at, updated_at) VALUES
-    (UUID_TO_BIN('01a1e003-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e003-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 3: Gom nhóm', 'Biến dữ liệu chi tiết thành báo cáo: hàm tổng hợp COUNT, SUM, AVG, MIN, MAX và cách chúng xử lý NULL, GROUP BY một và nhiều cột, gom theo tháng, HAVING, đếm có điều kiện, gom nhóm sau JOIN và đếm số 0 bằng LEFT JOIN.', 'MEDIUM', 153, 13, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
+    (UUID_TO_BIN('01a1e003-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e003-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 3: Gom nhóm', 'Biến dữ liệu chi tiết thành báo cáo.\n- COUNT, SUM, AVG, MIN, MAX và cách chúng xử lý NULL\n- GROUP BY một và nhiều cột, gom theo tháng và theo phân khúc\n- Lọc nhóm với HAVING, phân biệt với WHERE\n- Đếm và cộng có điều kiện bằng CASE và FILTER\n- Gom nhóm sau JOIN, đếm cả số 0 bằng LEFT JOIN', 'MEDIUM', 153, 13, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
 AS content ON DUPLICATE KEY UPDATE title = content.title, summary = content.summary, difficulty = content.difficulty,
     estimated_minutes = content.estimated_minutes, lesson_count = content.lesson_count;
 

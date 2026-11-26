@@ -5,7 +5,8 @@ export const LEARNING_COURSES: readonly CourseDetail[] = [
         id: "01a1d2c0-0000-7000-8000-000000000001",
         slug: "sql-co-ban",
         title: "SQL cơ bản",
-        summary: "Chọn cột, lọc dòng và sắp xếp kết quả.",
+        summary:
+            "Chọn cột, lọc dòng và sắp xếp kết quả.\n- Đọc dữ liệu bằng SELECT\n- Lọc dòng với WHERE\n- Sắp xếp với ORDER BY",
         difficulty: "EASY",
         lessonCount: 4,
         estimatedMinutes: 40,

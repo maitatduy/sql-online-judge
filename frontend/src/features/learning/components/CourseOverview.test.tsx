@@ -73,6 +73,18 @@ describe("CourseOverview", () => {
         );
     });
 
+    it("hiện câu giới thiệu và các ý sẽ học dạng gạch đầu dòng", async () => {
+        renderWithProviders(<CourseOverview slug="sql-co-ban" />);
+
+        expect(await screen.findByText("Chọn cột, lọc dòng và sắp xếp kết quả.")).toBeVisible();
+        const points = within(screen.getByRole("list", { name: "Bạn sẽ học" }));
+        expect(points.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
+            "Đọc dữ liệu bằng SELECT",
+            "Lọc dòng với WHERE",
+            "Sắp xếp với ORDER BY",
+        ]);
+    });
+
     it("có breadcrumb về trang chủ và danh mục khoá học", async () => {
         renderWithProviders(<CourseOverview slug="sql-co-ban" />);
 

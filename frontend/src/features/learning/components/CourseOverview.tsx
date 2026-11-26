@@ -13,6 +13,7 @@ import { ApiRequestError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
+import { courseSummaryPartsOf } from "../course-summary";
 import { useCourse } from "../hooks/useCourse";
 import { useCourseProgress } from "../hooks/useCourseProgress";
 import type { CourseDetail } from "../types";
@@ -73,6 +74,7 @@ function CourseContent({ course }: { course: CourseDetail }) {
     const { data: progress } = useCourseProgress(course.slug, currentUser !== undefined);
     const startSlug = firstLessonSlug(course);
     const completedKeys = new Set(progress?.completedLessonKeys);
+    const summary = courseSummaryPartsOf(course.summary);
     const isLearning = progress !== undefined && (progress.enrolled || completedKeys.size > 0);
     const action = !isLearning
         ? { label: "Bắt đầu học", slug: startSlug }
@@ -89,38 +91,46 @@ function CourseContent({ course }: { course: CourseDetail }) {
                     { label: course.title },
                 ]}
             />
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start">
-                <section className="flex flex-col gap-3 rounded-lg border bg-card p-6 lg:sticky lg:top-20">
-                    <h1 className="text-[22px] font-extrabold tracking-tight">{course.title}</h1>
-                    <p className="text-muted-foreground">{course.summary}</p>
-                    <CourseMeta
-                        label="Thông tin khoá học"
-                        difficulty={course.difficulty}
-                        chapterCount={course.chapters.length}
-                        lessonCount={course.lessonCount}
-                        estimatedMinutes={course.estimatedMinutes}
-                    />
-                    {isLearning ? (
-                        <CourseProgressBar
-                            completedCount={completedKeys.size}
-                            lessonCount={progress.lessonCount}
-                        />
-                    ) : null}
-                    {action.slug ? (
-                        <Button asChild className="mt-1 self-start">
-                            <Link href={ROUTES.lesson(course.slug, action.slug)}>
-                                {action.label}
-                                <ArrowRight aria-hidden="true" />
-                            </Link>
-                        </Button>
-                    ) : null}
-                </section>
-                <CourseOutline
-                    courseSlug={course.slug}
-                    chapters={course.chapters}
-                    completedLessonKeys={completedKeys}
+            <section className="flex flex-col gap-3 rounded-lg border bg-card p-6">
+                <h1 className="text-[22px] font-extrabold tracking-tight">{course.title}</h1>
+                <p className="text-muted-foreground">{summary.intro}</p>
+                {summary.points.length > 0 ? (
+                    <ul
+                        aria-label="Bạn sẽ học"
+                        className="grid list-disc gap-x-10 gap-y-1.5 pl-5 marker:text-brand md:grid-cols-2"
+                    >
+                        {summary.points.map((point) => (
+                            <li key={point}>{point}</li>
+                        ))}
+                    </ul>
+                ) : null}
+                <CourseMeta
+                    label="Thông tin khoá học"
+                    difficulty={course.difficulty}
+                    chapterCount={course.chapters.length}
+                    lessonCount={course.lessonCount}
+                    estimatedMinutes={course.estimatedMinutes}
                 />
-            </div>
+                {isLearning ? (
+                    <CourseProgressBar
+                        completedCount={completedKeys.size}
+                        lessonCount={progress.lessonCount}
+                    />
+                ) : null}
+                {action.slug ? (
+                    <Button asChild className="mt-1 self-start">
+                        <Link href={ROUTES.lesson(course.slug, action.slug)}>
+                            {action.label}
+                            <ArrowRight aria-hidden="true" />
+                        </Link>
+                    </Button>
+                ) : null}
+            </section>
+            <CourseOutline
+                courseSlug={course.slug}
+                chapters={course.chapters}
+                completedLessonKeys={completedKeys}
+            />
         </>
     );
 }

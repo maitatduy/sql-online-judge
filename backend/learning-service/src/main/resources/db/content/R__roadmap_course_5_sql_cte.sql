@@ -9,7 +9,7 @@ INSERT INTO courses (id, slug, author_id, status, published_revision_id, draft_r
 AS content ON DUPLICATE KEY UPDATE slug = content.slug;
 
 INSERT INTO course_revisions (id, course_id, status, title, summary, difficulty, estimated_minutes, lesson_count, submitted_at, published_at, created_at, updated_at) VALUES
-    (UUID_TO_BIN('01a1e005-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e005-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 5: CTE và truy vấn đệ quy', 'Đặt tên cho từng bước của truy vấn bằng WITH: CTE cơ bản, nhiều CTE nối nhau, giải bài toán báo cáo nhiều bước, rồi WITH RECURSIVE để sinh dãy số, dãy tháng, duyệt cây danh mục và sơ đồ tổ chức nhiều cấp.', 'MEDIUM', 129, 10, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
+    (UUID_TO_BIN('01a1e005-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e005-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 5: CTE và truy vấn đệ quy', 'Đặt tên cho từng bước của truy vấn bằng WITH.\n- CTE cơ bản và nhiều CTE nối tiếp\n- Giải bài toán báo cáo nhiều bước\n- WITH RECURSIVE sinh dãy số và dãy tháng\n- Duyệt cây danh mục và sơ đồ tổ chức nhiều cấp', 'MEDIUM', 129, 10, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
 AS content ON DUPLICATE KEY UPDATE title = content.title, summary = content.summary, difficulty = content.difficulty,
     estimated_minutes = content.estimated_minutes, lesson_count = content.lesson_count;
 

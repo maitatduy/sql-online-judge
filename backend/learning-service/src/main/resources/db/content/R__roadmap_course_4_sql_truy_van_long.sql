@@ -9,7 +9,7 @@ INSERT INTO courses (id, slug, author_id, status, published_revision_id, draft_r
 AS content ON DUPLICATE KEY UPDATE slug = content.slug;
 
 INSERT INTO course_revisions (id, course_id, status, title, summary, difficulty, estimated_minutes, lesson_count, submitted_at, published_at, created_at, updated_at) VALUES
-    (UUID_TO_BIN('01a1e004-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e004-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 4: Truy vấn lồng', 'Dùng kết quả của một truy vấn bên trong truy vấn khác: subquery một giá trị, IN và bẫy NULL của NOT IN, ANY và ALL, subquery tương quan, EXISTS và NOT EXISTS, bảng dẫn xuất trong FROM, và cách chọn giữa JOIN, subquery và EXISTS.', 'MEDIUM', 130, 11, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
+    (UUID_TO_BIN('01a1e004-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e004-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 4: Truy vấn lồng', 'Dùng kết quả của một truy vấn bên trong truy vấn khác.\n- Subquery trả một giá trị trong WHERE và SELECT\n- IN, NOT IN và bẫy NULL, so sánh với ANY và ALL\n- Subquery tương quan, EXISTS và NOT EXISTS\n- Bảng dẫn xuất: tính trước, lọc sau\n- Chọn giữa JOIN, subquery và EXISTS', 'MEDIUM', 130, 11, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
 AS content ON DUPLICATE KEY UPDATE title = content.title, summary = content.summary, difficulty = content.difficulty,
     estimated_minutes = content.estimated_minutes, lesson_count = content.lesson_count;
 

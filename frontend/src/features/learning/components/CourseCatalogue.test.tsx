@@ -35,6 +35,8 @@ describe("CourseCatalogue", () => {
         expect(card.getByText("Dễ")).toHaveClass("text-difficulty-easy");
         expect(card.getByText("4 bài")).toBeInTheDocument();
         expect(card.getByText("40 phút")).toBeInTheDocument();
+        expect(card.getByText("Chọn cột, lọc dòng và sắp xếp kết quả.")).toBeInTheDocument();
+        expect(card.queryByText(/Đọc dữ liệu bằng SELECT/)).not.toBeInTheDocument();
     });
 
     it("có breadcrumb về trang chủ", async () => {
