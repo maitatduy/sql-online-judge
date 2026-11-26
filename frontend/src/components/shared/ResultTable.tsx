@@ -31,7 +31,7 @@ export function ResultTable({ label, result, rowMarks }: ResultTableProps) {
     return (
         <div className="overflow-hidden rounded-lg border">
             <div className="overflow-x-auto">
-                <table aria-label={label} className="w-full border-collapse font-mono text-[13px]">
+                <table aria-label={label} className="w-full border-collapse font-mono text-sm">
                     <thead className="bg-surface text-muted-foreground">
                         <tr>
                             {hasMarks ? (
@@ -70,7 +70,7 @@ export function ResultTable({ label, result, rowMarks }: ResultTableProps) {
                                         <td
                                             className={cn(
                                                 CELL_CLASS,
-                                                "font-sans text-xs font-semibold",
+                                                "font-sans text-[13px] font-semibold",
                                                 appearance?.textClass,
                                             )}
                                         >
@@ -89,7 +89,7 @@ export function ResultTable({ label, result, rowMarks }: ResultTableProps) {
                 </table>
             </div>
             {result.isTruncated ? (
-                <p className="border-t px-3 py-1.5 text-xs text-muted-foreground">
+                <p className="border-t px-3 py-1.5 text-[13px] text-muted-foreground">
                     {`Chỉ hiện ${formatNumber(result.rows.length)} dòng đầu.`}
                 </p>
             ) : null}

@@ -1,3 +1,4 @@
+import { BookOpenCheck, MessagesSquare, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 
 import { ProblemAssistantTab } from "@/features/ai/components/ProblemAssistantTab";
@@ -23,16 +24,19 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
                 {
                     value: "assistant",
                     label: "Trợ lý AI",
+                    icon: <Sparkles aria-hidden="true" className="text-ai" />,
                     content: <ProblemAssistantTab problemSlug={problemSlug} />,
                 },
                 {
                     value: "solutions",
                     label: "Lời giải",
+                    icon: <BookOpenCheck aria-hidden="true" />,
                     content: <ProblemSolutionsTab problemSlug={problemSlug} />,
                 },
                 {
                     value: "discussion",
                     label: "Thảo luận",
+                    icon: <MessagesSquare aria-hidden="true" />,
                     content: <ProblemDiscussionTab problemSlug={problemSlug} />,
                 },
             ]}

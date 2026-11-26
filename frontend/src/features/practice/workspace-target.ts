@@ -13,6 +13,7 @@ import type {
 export interface WorkspaceExtraTab {
     value: string;
     label: string;
+    icon: ReactNode;
     content: ReactNode;
 }
 

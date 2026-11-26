@@ -34,7 +34,7 @@ test.describe("luyện tập với backend thật", () => {
         expect((await detail).status()).toBe(200);
         await expect(page.getByRole("heading", { level: 1, name: PROBLEM_TITLE })).toBeVisible();
         await expect(
-            page.getByRole("table", { name: "Ví dụ kết quả mong đợi" }).getByRole("row"),
+            page.getByRole("table", { name: "Kết quả mong đợi của ví dụ 1" }).getByRole("row"),
         ).toHaveCount(4);
         await expect(page.getByText("Giới hạn thời gian 2 giây, 1 testcase ẩn.")).toBeVisible();
 

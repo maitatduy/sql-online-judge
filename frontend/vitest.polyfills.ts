@@ -13,3 +13,20 @@ Object.entries(missingStreamGlobals).forEach(([name, value]) => {
         Object.defineProperty(globalThis, name, { value, configurable: true, writable: true });
     }
 });
+
+if (typeof window !== "undefined" && !("matchMedia" in window)) {
+    Object.defineProperty(window, "matchMedia", {
+        configurable: true,
+        writable: true,
+        value: (query: string): MediaQueryList => ({
+            matches: false,
+            media: query,
+            onchange: null,
+            addEventListener: () => undefined,
+            removeEventListener: () => undefined,
+            addListener: () => undefined,
+            removeListener: () => undefined,
+            dispatchEvent: () => false,
+        }),
+    });
+}

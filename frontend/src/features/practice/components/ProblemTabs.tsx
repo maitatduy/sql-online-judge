@@ -1,8 +1,7 @@
-import { Database, History } from "lucide-react";
+import { Database, FileText, History } from "lucide-react";
 import { useState } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 
 import type { WorkspaceProblem } from "../types";
 import type { WorkspaceTarget } from "../workspace-target";
@@ -13,8 +12,13 @@ import { SubmissionHistory } from "./SubmissionHistory";
 interface ProblemTabsProps {
     problem: WorkspaceProblem;
     target: WorkspaceTarget;
-    id: string;
-    className?: string;
+}
+
+interface PanelTab {
+    value: string;
+    label: string;
+    icon: React.ReactNode;
+    content: React.ReactNode;
 }
 
 const DEFAULT_TAB = "statement";
@@ -29,52 +33,65 @@ function initialTab(target: WorkspaceTarget): string {
     return requested && isKnown ? requested : DEFAULT_TAB;
 }
 
-export function ProblemTabs({ problem, target, id, className }: ProblemTabsProps) {
+function tabsOf(problem: WorkspaceProblem, target: WorkspaceTarget): PanelTab[] {
+    const history: PanelTab[] = target.historyProblemId
+        ? [
+              {
+                  value: "history",
+                  label: "Lịch sử nộp",
+                  icon: <History aria-hidden="true" />,
+                  content: (
+                      <SubmissionHistory
+                          problemId={target.historyProblemId}
+                          loginPath={target.loginPath}
+                      />
+                  ),
+              },
+          ]
+        : [];
+    return [
+        {
+            value: "statement",
+            label: "Đề bài",
+            icon: <FileText aria-hidden="true" />,
+            content: <ProblemStatement problem={problem} meta={target.statementMeta} />,
+        },
+        {
+            value: "schema",
+            label: "Schema",
+            icon: <Database aria-hidden="true" />,
+            content: <SchemaPanel tables={problem.schema} />,
+        },
+        ...history,
+        ...(target.extraTabs ?? []),
+    ];
+}
+
+export function ProblemTabs({ problem, target }: ProblemTabsProps) {
     const [defaultTab] = useState(() => initialTab(target));
+    const tabs = tabsOf(problem, target);
 
     return (
         <Tabs
-            id={id}
             defaultValue={defaultTab}
             aria-label="Đề bài và schema"
-            className={cn(
-                "min-h-0 max-lg:flex-1 lg:w-[38%] lg:min-w-[420px] lg:border-r",
-                className,
-            )}
+            className="@container/tabs h-full min-h-0 flex-1"
         >
-            <TabsList className="overflow-x-auto">
-                <TabsTrigger value="statement">Đề bài</TabsTrigger>
-                <TabsTrigger value="schema">
-                    <Database aria-hidden="true" />
-                    Schema
-                </TabsTrigger>
-                {target.historyProblemId ? (
-                    <TabsTrigger value="history">
-                        <History aria-hidden="true" />
-                        Lịch sử nộp
-                    </TabsTrigger>
-                ) : null}
-                {target.extraTabs?.map((tab) => (
-                    <TabsTrigger key={tab.value} value={tab.value}>
-                        {tab.label}
+            <TabsList className="gap-0.5 px-1">
+                {tabs.map((tab) => (
+                    <TabsTrigger
+                        key={tab.value}
+                        value={tab.value}
+                        aria-label={tab.label}
+                        title={tab.label}
+                        className="h-10 shrink-0 gap-1.5 px-2.5 text-[13px] [&_svg]:size-4"
+                    >
+                        {tab.icon}
+                        <span className="hidden @[46rem]/tabs:inline">{tab.label}</span>
                     </TabsTrigger>
                 ))}
             </TabsList>
-            <TabsContent value="statement" className="overflow-y-auto">
-                <ProblemStatement problem={problem} meta={target.statementMeta} />
-            </TabsContent>
-            <TabsContent value="schema" className="overflow-y-auto">
-                <SchemaPanel tables={problem.schema} />
-            </TabsContent>
-            {target.historyProblemId ? (
-                <TabsContent value="history" className="overflow-y-auto">
-                    <SubmissionHistory
-                        problemId={target.historyProblemId}
-                        loginPath={target.loginPath}
-                    />
-                </TabsContent>
-            ) : null}
-            {target.extraTabs?.map((tab) => (
+            {tabs.map((tab) => (
                 <TabsContent key={tab.value} value={tab.value} className="overflow-y-auto">
                     {tab.content}
                 </TabsContent>

@@ -129,6 +129,15 @@ describe("nộp bài trong Workspace", () => {
         expect(idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
     });
 
+    it("không đếm vượt tổng khi đã chấm xong testcase cuối mà chưa có verdict", async () => {
+        judgeAs(submissionOf({ status: "JUDGING", verdict: null, judgedTestcases: 3 }));
+
+        const panel = await submitCode();
+
+        expect(await panel.findByText("Đang chấm testcase 3/3…")).toBeInTheDocument();
+        expect(panel.queryByText("Đang chấm testcase 4/3…")).not.toBeInTheDocument();
+    });
+
     it("hiện AC với số testcase và thời gian chạy", async () => {
         judgeAs(submissionOf({}));
 

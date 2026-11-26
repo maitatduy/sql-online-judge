@@ -1,3 +1,4 @@
+import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
 import { TopicTag } from "@/components/shared/TopicTag";
 import { formatNumber, formatPercent } from "@/lib/format";
 
@@ -7,15 +8,41 @@ interface ProblemStatementMetaProps {
     problem: ProblemDetail;
 }
 
+const STAT_CLASS = "flex items-baseline gap-1.5";
+const LABEL_CLASS = "text-muted-foreground";
+const VALUE_CLASS = "font-bold";
+
 export function ProblemStatementMeta({ problem }: ProblemStatementMetaProps) {
     return (
-        <>
-            {problem.tags.map((tag) => (
-                <TopicTag key={tag.slug} slug={tag.slug} name={tag.name} />
-            ))}
-            <span className="ml-1 text-xs text-muted-foreground">
-                {`AC ${formatPercent(problem.acceptanceRate)}, ${formatNumber(problem.solvedCount)} người giải`}
-            </span>
-        </>
+        <div className="flex flex-col gap-3">
+            <dl className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                <div className="flex items-center">
+                    <dt className="sr-only">Độ khó</dt>
+                    <dd>
+                        <DifficultyLabel
+                            difficulty={problem.difficulty}
+                            className="rounded-full bg-surface-2 px-3 py-1"
+                        />
+                    </dd>
+                </div>
+                <div className={STAT_CLASS}>
+                    <dt className={LABEL_CLASS}>Tỉ lệ AC</dt>
+                    <dd className={VALUE_CLASS}>{formatPercent(problem.acceptanceRate)}</dd>
+                </div>
+                <div className={STAT_CLASS}>
+                    <dt className={LABEL_CLASS}>Người giải</dt>
+                    <dd className={VALUE_CLASS}>{formatNumber(problem.solvedCount)}</dd>
+                </div>
+            </dl>
+            {problem.tags.length > 0 ? (
+                <ul aria-label="Chủ đề" className="flex flex-wrap gap-1.5">
+                    {problem.tags.map((tag) => (
+                        <li key={tag.slug}>
+                            <TopicTag slug={tag.slug} name={tag.name} className="text-[13px]" />
+                        </li>
+                    ))}
+                </ul>
+            ) : null}
+        </div>
     );
 }

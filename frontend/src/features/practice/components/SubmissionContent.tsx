@@ -18,9 +18,10 @@ interface SubmissionContentProps {
 function JudgingProgress({ submission }: { submission: Submission | null }) {
     const judged = submission?.judgedTestcases ?? 0;
     const total = submission?.totalTestcases ?? 0;
+    const current = Math.min(judged + 1, total);
     const label =
         submission?.status === "JUDGING"
-            ? `Đang chấm testcase ${judged + 1}/${total}…`
+            ? `Đang chấm testcase ${current}/${total}…`
             : "Đang chờ máy chấm…";
 
     return (
@@ -78,7 +79,7 @@ export function SubmissionContent({
         return <SubmissionVerdict problem={problem} submission={submission} />;
     }
     return (
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-[15px] text-muted-foreground">
             Bấm Submit để nộp bài. Bài nộp được chấm trên mọi testcase, kể cả testcase ẩn.
         </p>
     );

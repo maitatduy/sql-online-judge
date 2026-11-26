@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import type { CompletionSchema } from "@/lib/sql-completion";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 import { cn } from "@/lib/utils";
 
 import { useCodeRun } from "../hooks/useCodeRun";
@@ -19,6 +20,9 @@ import { SubmissionContent } from "./SubmissionContent";
 import { WorkspaceActions } from "./WorkspaceActions";
 import { type WorkspaceArea, WorkspaceAreaTabs, workspaceAreaId } from "./WorkspaceAreaTabs";
 import { WorkspaceHeader } from "./WorkspaceHeader";
+import { WorkspaceSplitLayout } from "./WorkspaceSplitLayout";
+
+const DESKTOP_QUERY = "(min-width: 1024px)";
 
 interface ProblemWorkspaceProps {
     problem: WorkspaceProblem;
@@ -46,12 +50,9 @@ export function ProblemWorkspace({ problem, target, header }: ProblemWorkspacePr
         }),
         [problem.schema],
     );
+    const isDesktop = useMediaQuery(DESKTOP_QUERY);
     const latestVerdict =
         judging.submission?.status === "COMPLETED" ? judging.submission.verdict : null;
-
-    function visibleOnNarrowWhen(area: WorkspaceArea): string | false {
-        return activeArea !== area && "max-lg:hidden";
-    }
 
     function handleRun() {
         setResultTab("run");
@@ -69,6 +70,51 @@ export function ProblemWorkspace({ problem, target, header }: ProblemWorkspacePr
         }
     }
 
+    function narrowAreaClass(area: WorkspaceArea): string {
+        return cn("flex min-h-0 flex-1 flex-col", activeArea !== area && "hidden");
+    }
+
+    const problemPane = <ProblemTabs problem={problem} target={target} />;
+    const editorPane = (
+        <EditorPanel
+            dialects={problem.dialects}
+            dialect={dialect}
+            engineVersions={problem.engineVersions}
+            onDialectChange={chooseDialect}
+            code={code}
+            schema={completionSchema}
+            savedAt={savedAt}
+            onChange={changeCode}
+            onReset={resetToStarter}
+        />
+    );
+    const resultPane = (
+        <ResultPanel
+            activeTab={resultTab}
+            onTabChange={setResultTab}
+            runContent={
+                <RunContent
+                    problem={problem}
+                    loginPath={target.loginPath}
+                    run={codeRun.run}
+                    isRunning={codeRun.isRunning}
+                    error={codeRun.error}
+                    onRetry={handleRun}
+                />
+            }
+            submissionContent={
+                <SubmissionContent
+                    problem={problem}
+                    loginPath={target.loginPath}
+                    submission={judging.submission}
+                    isJudging={judging.isJudging}
+                    error={judging.error}
+                    onRetry={handleSubmit}
+                />
+            }
+        />
+    );
+
     return (
         <>
             <WorkspaceHeader parent={target.parent} title={target.heading}>
@@ -80,68 +126,32 @@ export function ProblemWorkspace({ problem, target, header }: ProblemWorkspacePr
                 />
             </WorkspaceHeader>
             {header}
-            <WorkspaceAreaTabs
-                activeArea={activeArea}
-                onAreaChange={setActiveArea}
-                resultVerdict={latestVerdict}
-            />
-            <div className="flex min-h-0 flex-1 flex-col max-lg:pb-[68px] lg:flex-row">
-                <ProblemTabs
-                    problem={problem}
-                    target={target}
-                    id={workspaceAreaId("problem")}
-                    className={cn(visibleOnNarrowWhen("problem"))}
+            {isDesktop ? null : (
+                <WorkspaceAreaTabs
+                    activeArea={activeArea}
+                    onAreaChange={setActiveArea}
+                    resultVerdict={latestVerdict}
                 />
-                <div
-                    className={cn(
-                        "flex min-h-0 min-w-0 flex-1 flex-col",
-                        activeArea === "problem" && "max-lg:hidden",
-                    )}
-                >
-                    <div
-                        id={workspaceAreaId("code")}
-                        className={cn("flex min-h-0 flex-1 flex-col", visibleOnNarrowWhen("code"))}
-                    >
-                        <EditorPanel
-                            dialects={problem.dialects}
-                            dialect={dialect}
-                            engineVersions={problem.engineVersions}
-                            onDialectChange={chooseDialect}
-                            code={code}
-                            schema={completionSchema}
-                            savedAt={savedAt}
-                            onChange={changeCode}
-                            onReset={resetToStarter}
-                        />
+            )}
+            {isDesktop ? (
+                <WorkspaceSplitLayout
+                    problemPane={problemPane}
+                    editorPane={editorPane}
+                    resultPane={resultPane}
+                />
+            ) : (
+                <div className="flex min-h-0 flex-1 flex-col pb-[68px]">
+                    <div id={workspaceAreaId("problem")} className={narrowAreaClass("problem")}>
+                        {problemPane}
                     </div>
-                    <ResultPanel
-                        id={workspaceAreaId("result")}
-                        className={cn(visibleOnNarrowWhen("result"))}
-                        activeTab={resultTab}
-                        onTabChange={setResultTab}
-                        runContent={
-                            <RunContent
-                                problem={problem}
-                                loginPath={target.loginPath}
-                                run={codeRun.run}
-                                isRunning={codeRun.isRunning}
-                                error={codeRun.error}
-                                onRetry={handleRun}
-                            />
-                        }
-                        submissionContent={
-                            <SubmissionContent
-                                problem={problem}
-                                loginPath={target.loginPath}
-                                submission={judging.submission}
-                                isJudging={judging.isJudging}
-                                error={judging.error}
-                                onRetry={handleSubmit}
-                            />
-                        }
-                    />
+                    <div id={workspaceAreaId("code")} className={narrowAreaClass("code")}>
+                        {editorPane}
+                    </div>
+                    <div id={workspaceAreaId("result")} className={narrowAreaClass("result")}>
+                        {resultPane}
+                    </div>
                 </div>
-            </div>
+            )}
         </>
     );
 }
