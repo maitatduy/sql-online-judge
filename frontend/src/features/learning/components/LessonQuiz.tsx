@@ -1,20 +1,20 @@
 "use client";
 
-import { CircleCheck, CircleX } from "lucide-react";
-import { useState } from "react";
+import { CircleCheck, CircleX, ListChecks } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { formatNumber } from "@/lib/format";
 
+import { useQuizAnswers } from "../hooks/useQuizAnswers";
 import { useSubmitQuiz } from "../hooks/useSubmitQuiz";
 import type { QuizQuestion } from "../types";
 
 interface LessonQuizProps {
     courseSlug: string;
     lessonSlug: string;
+    lessonKey: string;
     questions: QuizQuestion[];
 }
-
-type Choices = Record<string, string[]>;
 
 function toggled(selected: string[], optionKey: string, multiple: boolean): string[] {
     if (!multiple) {
@@ -25,25 +25,16 @@ function toggled(selected: string[], optionKey: string, multiple: boolean): stri
         : [...selected, optionKey];
 }
 
-export function LessonQuiz({ courseSlug, lessonSlug, questions }: LessonQuizProps) {
-    const [choices, setChoices] = useState<Choices>({});
-    const [verdicts, setVerdicts] = useState<Record<string, boolean>>({});
+export function LessonQuiz({ courseSlug, lessonSlug, lessonKey, questions }: LessonQuizProps) {
+    const { choices, verdicts, choose: recordChoice, recordVerdicts } = useQuizAnswers(lessonKey);
     const submitQuiz = useSubmitQuiz(courseSlug, lessonSlug);
     const hasChoice = Object.values(choices).some((selected) => selected.length > 0);
+    const isAllCorrect = questions.every((question) => verdicts[question.questionKey] === true);
 
     function choose(question: QuizQuestion, optionKey: string) {
-        setChoices((current) => ({
-            ...current,
-            [question.questionKey]: toggled(
-                current[question.questionKey] ?? [],
-                optionKey,
-                question.multiple,
-            ),
-        }));
-        setVerdicts((current) =>
-            Object.fromEntries(
-                Object.entries(current).filter(([key]) => key !== question.questionKey),
-            ),
+        recordChoice(
+            question.questionKey,
+            toggled(choices[question.questionKey] ?? [], optionKey, question.multiple),
         );
     }
 
@@ -56,7 +47,7 @@ export function LessonQuiz({ courseSlug, lessonSlug, questions }: LessonQuizProp
             })),
             {
                 onSuccess: (result) =>
-                    setVerdicts(
+                    recordVerdicts(
                         Object.fromEntries(
                             result.results.map((item) => [item.questionKey, item.correct]),
                         ),
@@ -71,7 +62,22 @@ export function LessonQuiz({ courseSlug, lessonSlug, questions }: LessonQuizProp
             onSubmit={submit}
             className="flex flex-col gap-5 rounded-lg border bg-card p-5"
         >
-            <h2 className="text-base font-bold">Kiểm tra nhanh</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
+                <h2 className="inline-flex items-center gap-2 text-base font-bold">
+                    <ListChecks aria-hidden="true" className="size-5 text-brand" />
+                    Kiểm tra nhanh
+                </h2>
+                {isAllCorrect ? (
+                    <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand">
+                        <CircleCheck aria-hidden="true" className="size-4" />
+                        Đã trả lời đúng tất cả
+                    </span>
+                ) : (
+                    <span className="text-[13px] text-muted-foreground">
+                        {`${formatNumber(questions.length)} câu`}
+                    </span>
+                )}
+            </div>
             {questions.map((question) => (
                 <QuizQuestionField
                     key={question.questionKey}

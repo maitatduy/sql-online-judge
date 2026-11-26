@@ -111,7 +111,7 @@ describe("LessonReader", () => {
         ).not.toBeInTheDocument();
         const outline = within(screen.getByRole("navigation", { name: "Đề cương" }));
         expect(
-            outline.getByRole("link", { name: /Chọn cột và đặt bí danh.*Đã hoàn thành/ }),
+            outline.getByRole("link", { name: /Đã hoàn thànhs*Chọn cột và đặt bí danh/ }),
         ).toBeInTheDocument();
     });
 
@@ -169,6 +169,37 @@ describe("LessonReader", () => {
         expect(
             await within(screen.getByRole("main")).findByText("Đã hoàn thành"),
         ).toBeInTheDocument();
-        expect(screen.queryByRole("form", { name: "Câu hỏi" })).not.toBeInTheDocument();
+        const quiz = within(screen.getByRole("form", { name: "Câu hỏi" }));
+        expect(quiz.getByRole("radio", { name: "Lấy mọi cột của bảng" })).toBeChecked();
+        expect(quiz.getByText("Đúng")).toBeInTheDocument();
+    });
+
+    it("mở lại bài đã trả lời đúng vẫn thấy lựa chọn và kết quả", async () => {
+        const first = renderLesson("select-la-gi");
+        fireEvent.click(await screen.findByRole("radio", { name: "Lấy mọi cột của bảng" }));
+        fireEvent.click(screen.getByRole("button", { name: "Nộp bài" }));
+        await within(screen.getByRole("main")).findByText("Đã hoàn thành");
+        first.unmount();
+
+        renderLesson("select-la-gi");
+
+        const quiz = within(await screen.findByRole("form", { name: "Câu hỏi" }));
+        expect(quiz.getByRole("radio", { name: "Lấy mọi cột của bảng" })).toBeChecked();
+        expect(quiz.getByText("Đúng")).toBeInTheDocument();
+    });
+
+    it("có breadcrumb tới trang chủ, danh mục và trang khoá học", async () => {
+        renderLesson("select-la-gi");
+
+        const breadcrumb = within(screen.getByRole("navigation", { name: "Đường dẫn" }));
+        expect(await breadcrumb.findByRole("link", { name: "SQL cơ bản" })).toHaveAttribute(
+            "href",
+            "/learn/sql-co-ban",
+        );
+        expect(breadcrumb.getByRole("link", { name: "Khoá học" })).toHaveAttribute(
+            "href",
+            "/learn",
+        );
+        expect(breadcrumb.getByText("SELECT là gì")).toHaveAttribute("aria-current", "page");
     });
 });
