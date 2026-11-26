@@ -1,8 +1,10 @@
 import Link from "next/link";
 
 import { Skeleton } from "@/components/shared/Skeleton";
+import { topicFillClassOf } from "@/components/shared/TopicTag";
 import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
+import { cn } from "@/lib/utils";
 
 import type { TopicProgress } from "../../types";
 import { DashboardSection } from "./DashboardSection";
@@ -53,7 +55,10 @@ export function TopicSkillsSection({ topics }: TopicSkillsSectionProps) {
                                 className="h-2 overflow-hidden rounded-full bg-surface-2"
                             >
                                 <div
-                                    className="h-full rounded-full bg-brand"
+                                    className={cn(
+                                        "h-full rounded-full",
+                                        topicFillClassOf(topic.slug),
+                                    )}
                                     style={{
                                         width: `${topic.total === 0 ? 0 : (topic.solved / topic.total) * FULL_PERCENT}%`,
                                     }}

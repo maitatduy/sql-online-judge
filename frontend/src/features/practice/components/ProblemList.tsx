@@ -2,12 +2,14 @@
 
 import { Search } from "lucide-react";
 
+import { Breadcrumb } from "@/components/shared/Breadcrumb";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Pagination } from "@/components/shared/Pagination";
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
+import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 import { useProblemFilters } from "../hooks/useProblemFilters";
@@ -29,9 +31,11 @@ export function ProblemList() {
             id={MAIN_CONTENT_ID}
             className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pt-7 pb-16 md:px-6"
         >
-            <div>
+            <div className="flex flex-col gap-2">
+                <Breadcrumb
+                    items={[{ label: "Trang chủ", href: ROUTES.home }, { label: "Luyện tập" }]}
+                />
                 <h1 className="text-[22px] font-extrabold tracking-tight">Luyện tập</h1>
-                <p className="mt-1 text-muted-foreground">Chấm tự động với testcase ẩn</p>
             </div>
             <section aria-label="Bài tập" className="overflow-hidden rounded-lg border bg-card">
                 <ProblemFilters

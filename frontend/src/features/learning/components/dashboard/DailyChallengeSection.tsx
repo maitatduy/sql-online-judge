@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { ROUTES } from "@/lib/routes";
+import { TopicTag } from "@/components/shared/TopicTag";
 
 import type { SuggestedProblem } from "../../types";
 import { DashboardSection } from "./DashboardSection";
@@ -38,9 +39,10 @@ export function DailyChallengeSection({ problems }: DailyChallengeSectionProps) 
                         <span className="flex items-center gap-2 text-sm">
                             <DifficultyLabel difficulty={featured.difficulty} />
                             {featured.tags[0] ? (
-                                <span className="text-muted-foreground">
-                                    {featured.tags[0].name}
-                                </span>
+                                <TopicTag
+                                    slug={featured.tags[0].slug}
+                                    name={featured.tags[0].name}
+                                />
                             ) : null}
                         </span>
                     </span>
@@ -61,9 +63,11 @@ export function DailyChallengeSection({ problems }: DailyChallengeSectionProps) 
                                 />
                                 <span className="min-w-0 flex-1 truncate">{`#${problem.number} ${problem.title}`}</span>
                                 {problem.tags[0] ? (
-                                    <span className="shrink-0 rounded-full bg-surface-2 px-2.5 py-0.5 text-sm text-muted-foreground">
-                                        {problem.tags[0].name}
-                                    </span>
+                                    <TopicTag
+                                        slug={problem.tags[0].slug}
+                                        name={problem.tags[0].name}
+                                        className="shrink-0"
+                                    />
                                 ) : null}
                             </Link>
                         </li>

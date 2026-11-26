@@ -105,6 +105,15 @@
     --avatar-7: #15803d;
     --avatar-8: #c2410c;
 
+    --topic-1: #1d4ed8;
+    --topic-2: #0f766e;
+    --topic-3: #6d28d9;
+    --topic-4: #be185d;
+    --topic-5: #b45309;
+    --topic-6: #15803d;
+    --topic-7: #c2410c;
+    --topic-8: #0e7490;
+
     --violation-severe: #c81e1e;
     --violation-minor: #9a5b05;
 
@@ -213,6 +222,15 @@
     --avatar-6: #475569;
     --avatar-7: #15803d;
     --avatar-8: #c2410c;
+
+    --topic-1: #93c5fd;
+    --topic-2: #5eead4;
+    --topic-3: #c4b5fd;
+    --topic-4: #f9a8d4;
+    --topic-5: #fcd34d;
+    --topic-6: #86efac;
+    --topic-7: #fdba74;
+    --topic-8: #67e8f9;
 
     --violation-severe: #f87171;
     --violation-minor: #facc15;
@@ -349,6 +367,15 @@
     --color-avatar-6: var(--avatar-6);
     --color-avatar-7: var(--avatar-7);
     --color-avatar-8: var(--avatar-8);
+
+    --color-topic-1: var(--topic-1);
+    --color-topic-2: var(--topic-2);
+    --color-topic-3: var(--topic-3);
+    --color-topic-4: var(--topic-4);
+    --color-topic-5: var(--topic-5);
+    --color-topic-6: var(--topic-6);
+    --color-topic-7: var(--topic-7);
+    --color-topic-8: var(--topic-8);
 
     --color-violation-severe: var(--violation-severe);
     --color-violation-minor: var(--violation-minor);

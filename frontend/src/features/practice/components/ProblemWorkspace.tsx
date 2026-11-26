@@ -71,7 +71,7 @@ export function ProblemWorkspace({ problem, target, header }: ProblemWorkspacePr
 
     return (
         <>
-            <WorkspaceHeader title={target.heading}>
+            <WorkspaceHeader parent={target.parent} title={target.heading}>
                 <WorkspaceActions
                     isRunning={codeRun.isRunning}
                     isJudging={judging.isJudging}

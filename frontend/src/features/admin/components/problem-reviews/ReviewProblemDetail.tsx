@@ -8,6 +8,7 @@ import { Markdown } from "@/components/shared/Markdown";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { ApiRequestError } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
+import { TopicTag } from "@/components/shared/TopicTag";
 
 import { useReviewAnswerCheck, useReviewProblem } from "../../hooks/useProblemReviews";
 import {
@@ -57,11 +58,9 @@ export function ReviewProblemDetail({ problemId }: ReviewProblemDetailProps) {
                                 {problem.dataset ? (
                                     <span>Database: {problem.dataset.name}</span>
                                 ) : null}
-                                {problem.tags.length > 0 ? (
-                                    <span>
-                                        Chủ đề: {problem.tags.map((tag) => tag.name).join(", ")}
-                                    </span>
-                                ) : null}
+                                {problem.tags.map((tag) => (
+                                    <TopicTag key={tag.slug} slug={tag.slug} name={tag.name} />
+                                ))}
                             </p>
                         </div>
                         <Link

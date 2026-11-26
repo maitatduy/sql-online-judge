@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import { LockKeyhole } from "lucide-react";
 
+import type { BreadcrumbItem } from "@/components/shared/Breadcrumb";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { ToastProvider } from "@/components/shared/ToastProvider";
@@ -28,10 +29,15 @@ interface ContestWorkspaceProps {
     letter: string;
 }
 
+function contestParentOf(slug: string): BreadcrumbItem {
+    return { label: "Contest", href: ROUTES.contest(slug) };
+}
+
 function contestTarget(slug: string, statement: ContestStatement): WorkspaceTarget {
     return {
         storageKey: `contest:${slug}:${statement.letter}`,
         heading: `${statement.letter}. ${statement.title}`,
+        parent: contestParentOf(slug),
         loginPath: ROUTES.contestProblem(slug, statement.letter),
         historyProblemId: null,
         startRun: (request) => practiceApi.startContestRun(slug, statement.letter, request),
@@ -72,7 +78,7 @@ export function ContestWorkspace({ slug, letter }: ContestWorkspaceProps) {
                     />
                 </ToastProvider>
             ) : null}
-            {!statement ? <WorkspaceHeader title={null} /> : null}
+            {!statement ? <WorkspaceHeader parent={contestParentOf(slug)} title={null} /> : null}
             {isPending ? (
                 <div role="status" aria-label="Đang tải đề bài" className="p-6">
                     <Skeleton className="h-40" />

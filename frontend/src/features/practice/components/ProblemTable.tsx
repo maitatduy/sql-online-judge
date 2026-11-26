@@ -4,6 +4,7 @@ import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-tab
 import Link from "next/link";
 
 import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
+import { TopicTag } from "@/components/shared/TopicTag";
 import { formatNumber, formatPercent } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -40,12 +41,7 @@ const PROBLEM_COLUMNS = [
         cell: (info) => (
             <span className="flex flex-wrap gap-1">
                 {info.getValue().map((tag) => (
-                    <span
-                        key={tag.slug}
-                        className="rounded-sm bg-surface-2 px-1.5 py-0.5 text-xs text-muted-foreground"
-                    >
-                        {tag.name}
-                    </span>
+                    <TopicTag key={tag.slug} slug={tag.slug} name={tag.name} />
                 ))}
             </span>
         ),

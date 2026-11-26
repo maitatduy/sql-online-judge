@@ -64,6 +64,20 @@ describe("Workspace", () => {
         ).toBeInTheDocument();
     });
 
+    it("header có breadcrumb Luyện tập dẫn về danh sách bài, kèm tên bài", async () => {
+        await renderWorkspace();
+
+        const breadcrumb = within(screen.getByRole("navigation", { name: "Đường dẫn" }));
+        expect(breadcrumb.getByRole("link", { name: "Luyện tập" })).toHaveAttribute(
+            "href",
+            "/problems",
+        );
+        expect(breadcrumb.getByText(/Lương cao nhất mỗi phòng ban$/)).toHaveAttribute(
+            "aria-current",
+            "page",
+        );
+    });
+
     it("hiện ví dụ kết quả mong đợi và các ràng buộc của bài", async () => {
         await renderWorkspace();
         const statement = within(screen.getByRole("tabpanel", { name: "Đề bài" }));
