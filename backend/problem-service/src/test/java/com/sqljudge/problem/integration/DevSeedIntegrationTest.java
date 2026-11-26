@@ -162,8 +162,13 @@ class DevSeedIntegrationTest {
         assertThat(count("SELECT COUNT(*) FROM problems")).isEqualTo(1);
         assertThat(count("SELECT COUNT(*) FROM tags")).isEqualTo(8);
         assertThat(count("SELECT COUNT(*) FROM testcases")).isEqualTo(2);
-        assertThat(count("SELECT COUNT(*) FROM datasets")).isEqualTo(1);
-        assertThat(count("SELECT COUNT(*) FROM dataset_variants")).isEqualTo(2);
+        assertThat(count("SELECT COUNT(*) FROM datasets WHERE slug = 'cong-ty'")).isEqualTo(1);
+        assertThat(
+                        count(
+                                "SELECT COUNT(*) FROM dataset_variants v JOIN dataset_versions dv"
+                                        + " ON dv.id = v.version_id JOIN datasets d ON d.id ="
+                                        + " dv.dataset_id WHERE d.slug = 'cong-ty'"))
+                .isEqualTo(2);
     }
 
     @Test
