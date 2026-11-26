@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronDown, Circle, CircleCheck } from "lucide-react";
 import Link from "next/link";
 import { useId, useState } from "react";
 
@@ -15,46 +15,32 @@ interface LessonOutlineNavProps {
     completedLessonKeys?: ReadonlySet<string>;
 }
 
-function firstNumbersOf(chapters: ChapterOutline[]): number[] {
-    let next = 1;
-    return chapters.map((chapter) => {
-        const first = next;
-        next += chapter.lessons.length;
-        return first;
-    });
-}
-
 export function LessonOutlineNav({
     course,
     currentSlug,
     completedLessonKeys,
 }: LessonOutlineNavProps) {
     const [toggled, setToggled] = useState<Record<string, boolean>>({});
-    const firstNumbers = firstNumbersOf(course.chapters);
 
     function isOpen(chapter: ChapterOutline): boolean {
         return toggled[chapter.id] ?? chapter.lessons.some((lesson) => lesson.slug === currentSlug);
     }
 
     return (
-        <nav
-            aria-label="Đề cương"
-            className="flex max-h-[calc(100vh-6rem)] flex-col overflow-hidden rounded-lg border bg-card"
-        >
+        <nav aria-label="Đề cương" className="flex flex-col">
             <Link
                 href={ROUTES.course(course.slug)}
-                className="border-b px-4 py-3 text-[15px] leading-snug font-bold hover:text-brand"
+                className="border-b px-5 py-4 text-[15px] leading-snug font-bold hover:text-brand"
             >
                 {course.title}
             </Link>
-            <ol className="flex flex-col gap-1 overflow-y-auto p-2">
+            <ol className="flex flex-col">
                 {course.chapters.map((chapter, chapterIndex) => (
                     <OutlineChapter
                         key={chapter.id}
                         courseSlug={course.slug}
                         chapter={chapter}
                         chapterNumber={chapterIndex + 1}
-                        firstLessonNumber={firstNumbers[chapterIndex]}
                         currentSlug={currentSlug}
                         completedLessonKeys={completedLessonKeys}
                         isOpen={isOpen(chapter)}
@@ -75,7 +61,6 @@ interface OutlineChapterProps {
     courseSlug: string;
     chapter: ChapterOutline;
     chapterNumber: number;
-    firstLessonNumber: number;
     currentSlug: string;
     completedLessonKeys?: ReadonlySet<string>;
     isOpen: boolean;
@@ -86,7 +71,6 @@ function OutlineChapter({
     courseSlug,
     chapter,
     chapterNumber,
-    firstLessonNumber,
     currentSlug,
     completedLessonKeys,
     isOpen,
@@ -95,58 +79,72 @@ function OutlineChapter({
     const lessonsId = useId();
 
     return (
-        <li>
+        <li className="border-b">
             <button
                 type="button"
                 aria-expanded={isOpen}
                 aria-controls={lessonsId}
                 onClick={onToggle}
-                className="flex w-full items-start gap-1.5 rounded-md px-2 py-2 text-left text-[13px] font-semibold transition-colors hover:bg-surface-2"
+                className="flex w-full items-start justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-surface-2"
             >
-                <ChevronRight
+                <span className="flex min-w-0 flex-col gap-0.5">
+                    <span className="text-[13px] font-semibold text-muted-foreground">
+                        {`Chương ${chapterNumber}`}
+                        <span className="sr-only">:</span>
+                    </span>{" "}
+                    <span className="text-[15px] leading-snug font-bold">{chapter.title}</span>
+                </span>
+                <ChevronDown
                     aria-hidden="true"
                     className={cn(
-                        "mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform",
-                        isOpen && "rotate-90",
+                        "mt-1 size-5 shrink-0 text-muted-foreground transition-transform",
+                        isOpen && "rotate-180",
                     )}
                 />
-                <span>
-                    <span className="text-brand">{`Chương ${chapterNumber}:`}</span> {chapter.title}
-                </span>
             </button>
             {isOpen ? (
-                <ol id={lessonsId} className="ml-4 flex flex-col border-l py-1 pl-2">
-                    {chapter.lessons.map((lesson, lessonIndex) => {
+                <ol id={lessonsId} className="flex flex-col pb-2">
+                    {chapter.lessons.map((lesson) => {
                         const isCurrent = lesson.slug === currentSlug;
-                        const isCompleted = completedLessonKeys?.has(lesson.lessonKey);
+                        const isCompleted = completedLessonKeys?.has(lesson.lessonKey) === true;
                         return (
                             <li key={lesson.lessonKey}>
                                 <Link
                                     href={ROUTES.lesson(courseSlug, lesson.slug)}
                                     aria-current={isCurrent ? "page" : undefined}
                                     className={cn(
-                                        "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[14px] transition-colors hover:bg-surface-2",
-                                        isCurrent && "bg-brand-soft font-semibold text-brand",
+                                        "flex items-start gap-3 border-l-[3px] border-transparent py-2.5 pr-5 pl-[17px] transition-colors hover:bg-surface-2",
+                                        isCurrent && "border-brand bg-brand-soft",
                                     )}
                                 >
-                                    <span
-                                        className={cn(
-                                            "inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
-                                            isCompleted
-                                                ? "bg-brand text-primary-foreground"
-                                                : "bg-surface-2 text-muted-foreground",
-                                        )}
-                                    >
-                                        {isCompleted ? (
-                                            <>
-                                                <Check aria-hidden="true" className="size-3" />
-                                                <span className="sr-only">Đã hoàn thành</span>
-                                            </>
-                                        ) : (
-                                            firstLessonNumber + lessonIndex
-                                        )}
+                                    {isCompleted ? (
+                                        <>
+                                            <CircleCheck
+                                                aria-hidden="true"
+                                                className="mt-0.5 size-[18px] shrink-0 fill-brand text-card"
+                                            />
+                                            <span className="sr-only">Đã hoàn thành</span>
+                                        </>
+                                    ) : (
+                                        <Circle
+                                            aria-hidden="true"
+                                            className="mt-0.5 size-[18px] shrink-0 text-muted-foreground"
+                                        />
+                                    )}
+                                    <span className="flex min-w-0 flex-col gap-0.5">
+                                        <span
+                                            className={cn(
+                                                "text-[14px] leading-snug",
+                                                isCurrent && "font-semibold",
+                                            )}
+                                        >
+                                            {lesson.title}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 text-[12px] text-muted-foreground">
+                                            <BookOpen aria-hidden="true" className="size-3.5" />
+                                            Bài đọc
+                                        </span>
                                     </span>
-                                    <span className="min-w-0 flex-1">{lesson.title}</span>
                                 </Link>
                             </li>
                         );
