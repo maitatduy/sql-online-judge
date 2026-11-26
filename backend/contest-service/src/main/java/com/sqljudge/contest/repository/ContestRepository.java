@@ -2,6 +2,7 @@ package com.sqljudge.contest.repository;
 
 import com.sqljudge.contest.entity.Contest;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -58,4 +59,10 @@ public interface ContestRepository extends JpaRepository<Contest, UUID> {
             "SELECT c FROM Contest c WHERE c.rated = true AND c.finalizedAt IS NOT NULL"
                     + " AND c.ratingAppliedAt IS NULL")
     List<Contest> findDueForRating();
+
+    @Query(
+            "SELECT new com.sqljudge.contest.repository.ContestCount(p.contest.id, COUNT(p))"
+                    + " FROM ContestProblem p WHERE p.contest.id IN :contestIds"
+                    + " GROUP BY p.contest.id")
+    List<ContestCount> countProblemsByContestIds(@Param("contestIds") Collection<UUID> contestIds);
 }
