@@ -8,6 +8,7 @@ import type {
     CourseSummary,
     EnrolledCourse,
     Lesson,
+    LessonCell,
     LessonRun,
     QuizAnswer,
     QuizResult,
@@ -20,9 +21,12 @@ import type {
 } from "./types";
 
 export const learningApi = {
-    listCourses: (difficulty: Difficulty | undefined, signal?: AbortSignal) =>
+    listCourses: (
+        query: { difficulty: Difficulty | undefined; page: number; size: number },
+        signal?: AbortSignal,
+    ) =>
         apiClient.get<Page<CourseSummary>>("/api/courses", {
-            params: { difficulty },
+            params: query,
             signal,
         }),
     getCourse: (slug: string, signal?: AbortSignal) =>
@@ -40,10 +44,11 @@ export const learningApi = {
         apiClient.post<CourseProgress>(
             `/api/courses/${encodeURIComponent(courseSlug)}/lessons/${encodeURIComponent(lessonSlug)}/completion`,
         ),
-    startLessonRun: (cellKey: string, sql: string) =>
-        apiClient.post<{ runId: string }>(`/api/lesson-cells/${encodeURIComponent(cellKey)}/runs`, {
-            sql,
-        }),
+    startLessonRun: (cellKey: string, run: { sql: string; dialect: LessonCell["dialect"] }) =>
+        apiClient.post<{ runId: string }>(
+            `/api/lesson-cells/${encodeURIComponent(cellKey)}/runs`,
+            run,
+        ),
     getLessonRun: (runId: string, signal?: AbortSignal) =>
         apiClient.get<LessonRun>(`/api/lesson-runs/${encodeURIComponent(runId)}`, { signal }),
     submitQuiz: (courseSlug: string, lessonSlug: string, answers: QuizAnswer[]) =>

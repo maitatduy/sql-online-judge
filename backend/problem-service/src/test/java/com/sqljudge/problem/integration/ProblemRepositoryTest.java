@@ -18,6 +18,7 @@ import com.sqljudge.problem.repository.ProblemRepository;
 import com.sqljudge.problem.repository.TagRepository;
 import jakarta.persistence.EntityManager;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,11 @@ class ProblemRepositoryTest extends ContainerSupport {
     @Autowired private EntityManager entityManager;
 
     @Autowired private JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void startWithoutDatasets() {
+        jdbcTemplate.update("DELETE FROM datasets");
+    }
 
     @Test
     @DisplayName("Lưu bài đã xuất bản cùng revision, dataset, testcase, đáp án và đọc lại đủ")

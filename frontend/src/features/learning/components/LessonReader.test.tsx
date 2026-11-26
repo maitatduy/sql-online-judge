@@ -39,7 +39,7 @@ describe("LessonReader", () => {
             await screen.findByRole("heading", { level: 1, name: "Chọn cột và đặt bí danh" }),
         ).toBeInTheDocument();
         expect(
-            within(screen.getByRole("main")).getByText("Làm quen với SELECT"),
+            within(screen.getByRole("main")).getByText(/Làm quen với SELECT/),
         ).toBeInTheDocument();
         expect(screen.getByText("SELECT name, salary FROM employees;")).toBeInTheDocument();
     });
@@ -55,6 +55,25 @@ describe("LessonReader", () => {
         expect(outline.getByRole("link", { name: /SELECT là gì/ })).not.toHaveAttribute(
             "aria-current",
         );
+    });
+
+    it("đề cương là menu nhiều cấp: chương đang học mở sẵn, chương khác đóng và mở được", async () => {
+        renderLesson("chon-cot");
+
+        const outline = within(await screen.findByRole("navigation", { name: "Đề cương" }));
+        const current = outline.getByRole("button", { name: "Chương 1: Làm quen với SELECT" });
+        const other = outline.getByRole("button", { name: "Chương 2: Lọc và sắp xếp" });
+        expect(current).toHaveAttribute("aria-expanded", "true");
+        expect(other).toHaveAttribute("aria-expanded", "false");
+        expect(outline.queryByRole("link", { name: /Lọc dòng với WHERE/ })).not.toBeInTheDocument();
+
+        fireEvent.click(other);
+
+        expect(other).toHaveAttribute("aria-expanded", "true");
+        expect(outline.getByRole("link", { name: /Lọc dòng với WHERE/ })).toBeInTheDocument();
+        fireEvent.click(current);
+        expect(outline.queryByRole("link", { name: /SELECT là gì/ })).not.toBeInTheDocument();
+        expect(outline.queryByText(/\d+\/\d+ bài/)).not.toBeInTheDocument();
     });
 
     it("có nút sang bài sau và không có bài trước ở bài đầu tiên", async () => {
@@ -111,7 +130,7 @@ describe("LessonReader", () => {
         ).not.toBeInTheDocument();
         const outline = within(screen.getByRole("navigation", { name: "Đề cương" }));
         expect(
-            outline.getByRole("link", { name: /Chọn cột và đặt bí danh.*Đã hoàn thành/ }),
+            outline.getByRole("link", { name: /Đã hoàn thànhs*Chọn cột và đặt bí danh/ }),
         ).toBeInTheDocument();
     });
 
@@ -169,6 +188,37 @@ describe("LessonReader", () => {
         expect(
             await within(screen.getByRole("main")).findByText("Đã hoàn thành"),
         ).toBeInTheDocument();
-        expect(screen.queryByRole("form", { name: "Câu hỏi" })).not.toBeInTheDocument();
+        const quiz = within(screen.getByRole("form", { name: "Câu hỏi" }));
+        expect(quiz.getByRole("radio", { name: "Lấy mọi cột của bảng" })).toBeChecked();
+        expect(quiz.getByText("Đúng")).toBeInTheDocument();
+    });
+
+    it("mở lại bài đã trả lời đúng vẫn thấy lựa chọn và kết quả", async () => {
+        const first = renderLesson("select-la-gi");
+        fireEvent.click(await screen.findByRole("radio", { name: "Lấy mọi cột của bảng" }));
+        fireEvent.click(screen.getByRole("button", { name: "Nộp bài" }));
+        await within(screen.getByRole("main")).findByText("Đã hoàn thành");
+        first.unmount();
+
+        renderLesson("select-la-gi");
+
+        const quiz = within(await screen.findByRole("form", { name: "Câu hỏi" }));
+        expect(quiz.getByRole("radio", { name: "Lấy mọi cột của bảng" })).toBeChecked();
+        expect(quiz.getByText("Đúng")).toBeInTheDocument();
+    });
+
+    it("có breadcrumb tới trang chủ, danh mục và trang khoá học", async () => {
+        renderLesson("select-la-gi");
+
+        const breadcrumb = within(screen.getByRole("navigation", { name: "Đường dẫn" }));
+        expect(await breadcrumb.findByRole("link", { name: "SQL cơ bản" })).toHaveAttribute(
+            "href",
+            "/learn/sql-co-ban",
+        );
+        expect(breadcrumb.getByRole("link", { name: "Khoá học" })).toHaveAttribute(
+            "href",
+            "/learn",
+        );
+        expect(breadcrumb.getByText("SELECT là gì")).toHaveAttribute("aria-current", "page");
     });
 });

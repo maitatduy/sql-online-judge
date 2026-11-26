@@ -62,14 +62,39 @@ describe("CourseOverview", () => {
         expect(
             await screen.findByRole("heading", { level: 1, name: "SQL cơ bản" }),
         ).toBeInTheDocument();
-        expect(screen.getByText("Dễ")).toHaveClass("text-difficulty-easy");
-        expect(screen.getByText("2 chương")).toBeInTheDocument();
-        expect(screen.getByText("4 bài")).toBeInTheDocument();
-        expect(screen.getByText("40 phút")).toBeInTheDocument();
+        const facts = within(screen.getByRole("list", { name: "Thông tin khoá học" }));
+        expect(facts.getByText("Dễ")).toHaveClass("text-difficulty-easy");
+        expect(facts.getByText("2 chương")).toBeInTheDocument();
+        expect(facts.getByText("4 bài")).toBeInTheDocument();
+        expect(facts.getByText("40 phút")).toBeInTheDocument();
         expect(screen.getByRole("link", { name: "Bắt đầu học" })).toHaveAttribute(
             "href",
             "/learn/sql-co-ban/select-la-gi",
         );
+    });
+
+    it("hiện câu giới thiệu và các ý sẽ học dạng gạch đầu dòng", async () => {
+        renderWithProviders(<CourseOverview slug="sql-co-ban" />);
+
+        expect(await screen.findByText("Chọn cột, lọc dòng và sắp xếp kết quả.")).toBeVisible();
+        const points = within(screen.getByRole("list", { name: "Bạn sẽ học" }));
+        expect(points.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
+            "Đọc dữ liệu bằng SELECT",
+            "Lọc dòng với WHERE",
+            "Sắp xếp với ORDER BY",
+        ]);
+    });
+
+    it("có breadcrumb về trang chủ và danh mục khoá học", async () => {
+        renderWithProviders(<CourseOverview slug="sql-co-ban" />);
+
+        const breadcrumb = within(await screen.findByRole("navigation", { name: "Đường dẫn" }));
+        expect(breadcrumb.getByRole("link", { name: "Trang chủ" })).toHaveAttribute("href", "/");
+        expect(breadcrumb.getByRole("link", { name: "Khoá học" })).toHaveAttribute(
+            "href",
+            "/learn",
+        );
+        expect(breadcrumb.getByText("SQL cơ bản")).toHaveAttribute("aria-current", "page");
     });
 
     it("liệt kê chương và bài theo thứ tự, mỗi bài dẫn tới trang bài giảng", async () => {
@@ -78,8 +103,8 @@ describe("CourseOverview", () => {
         const outline = within(await screen.findByRole("list", { name: "Đề cương" }));
         const chapters = outline.getAllByRole("heading", { level: 2 });
         expect(chapters.map((chapter) => chapter.textContent)).toEqual([
-            "Làm quen với SELECT",
-            "Lọc và sắp xếp",
+            "Chương 1: Làm quen với SELECT",
+            "Chương 2: Lọc và sắp xếp",
         ]);
         const lessonLinks = outline.getAllByRole("link");
         expect(lessonLinks.map((link) => link.textContent)).toEqual([

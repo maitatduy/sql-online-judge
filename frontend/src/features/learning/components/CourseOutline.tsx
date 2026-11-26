@@ -16,9 +16,12 @@ export function CourseOutline({ courseSlug, chapters, completedLessonKeys }: Cou
 
     return (
         <ol aria-label="Đề cương" className="flex flex-col gap-4">
-            {chapters.map((chapter) => (
+            {chapters.map((chapter, chapterIndex) => (
                 <li key={chapter.id} className="rounded-lg border bg-card">
-                    <h2 className="border-b px-5 py-3 text-base font-bold">{chapter.title}</h2>
+                    <h2 className="border-b px-5 py-3 text-base font-bold">
+                        <span className="text-brand">{`Chương ${chapterIndex + 1}: `}</span>
+                        {chapter.title}
+                    </h2>
                     <ol className="divide-y">
                         {chapter.lessons.map((lesson) => {
                             lessonNumber += 1;

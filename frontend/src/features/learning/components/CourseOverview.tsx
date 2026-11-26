@@ -3,7 +3,7 @@
 import { ArrowRight, SearchX } from "lucide-react";
 import Link from "next/link";
 
-import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
+import { Breadcrumb } from "@/components/shared/Breadcrumb";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
@@ -13,6 +13,7 @@ import { ApiRequestError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/routes";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
+import { courseSummaryPartsOf } from "../course-summary";
 import { useCourse } from "../hooks/useCourse";
 import { useCourseProgress } from "../hooks/useCourseProgress";
 import type { CourseDetail } from "../types";
@@ -35,7 +36,7 @@ export function CourseOverview({ slug }: CourseOverviewProps) {
     return (
         <main
             id={MAIN_CONTENT_ID}
-            className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pt-7 pb-16 md:px-6"
+            className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pt-7 pb-16 md:px-6"
         >
             {isPending ? (
                 <div role="status" aria-label="Đang tải khoá học" className="flex flex-col gap-3">
@@ -73,6 +74,7 @@ function CourseContent({ course }: { course: CourseDetail }) {
     const { data: progress } = useCourseProgress(course.slug, currentUser !== undefined);
     const startSlug = firstLessonSlug(course);
     const completedKeys = new Set(progress?.completedLessonKeys);
+    const summary = courseSummaryPartsOf(course.summary);
     const isLearning = progress !== undefined && (progress.enrolled || completedKeys.size > 0);
     const action = !isLearning
         ? { label: "Bắt đầu học", slug: startSlug }
@@ -82,11 +84,29 @@ function CourseContent({ course }: { course: CourseDetail }) {
 
     return (
         <>
-            <section className="flex flex-col gap-3">
-                <DifficultyLabel difficulty={course.difficulty} className="text-[12px]" />
+            <Breadcrumb
+                items={[
+                    { label: "Trang chủ", href: ROUTES.home },
+                    { label: "Khoá học", href: ROUTES.learn },
+                    { label: course.title },
+                ]}
+            />
+            <section className="flex flex-col gap-3 rounded-lg border bg-card p-6">
                 <h1 className="text-[22px] font-extrabold tracking-tight">{course.title}</h1>
-                <p className="text-muted-foreground">{course.summary}</p>
+                <p className="text-muted-foreground">{summary.intro}</p>
+                {summary.points.length > 0 ? (
+                    <ul
+                        aria-label="Bạn sẽ học"
+                        className="grid list-disc gap-x-10 gap-y-1.5 pl-5 marker:text-brand md:grid-cols-2"
+                    >
+                        {summary.points.map((point) => (
+                            <li key={point}>{point}</li>
+                        ))}
+                    </ul>
+                ) : null}
                 <CourseMeta
+                    label="Thông tin khoá học"
+                    difficulty={course.difficulty}
                     chapterCount={course.chapters.length}
                     lessonCount={course.lessonCount}
                     estimatedMinutes={course.estimatedMinutes}

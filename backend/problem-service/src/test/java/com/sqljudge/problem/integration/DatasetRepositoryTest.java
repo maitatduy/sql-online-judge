@@ -14,6 +14,7 @@ import com.sqljudge.problem.entity.DatasetVersion;
 import com.sqljudge.problem.entity.LogicalType;
 import com.sqljudge.problem.repository.DatasetRepository;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,11 @@ class DatasetRepositoryTest extends ContainerSupport {
     @Autowired private EntityManager entityManager;
 
     @Autowired private JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void startWithoutDatasets() {
+        jdbcTemplate.update("DELETE FROM datasets");
+    }
 
     @Test
     @DisplayName("Lưu dataset cùng phiên bản, schema và bộ dữ liệu rồi đọc lại đủ")

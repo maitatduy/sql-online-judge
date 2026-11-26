@@ -9,7 +9,7 @@ INSERT INTO courses (id, slug, author_id, status, published_revision_id, draft_r
 AS content ON DUPLICATE KEY UPDATE slug = content.slug;
 
 INSERT INTO course_revisions (id, course_id, status, title, summary, difficulty, estimated_minutes, lesson_count, submitted_at, published_at, created_at, updated_at) VALUES
-    (UUID_TO_BIN('01a1e001-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e001-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 1: Truy vấn cơ bản', 'Chặng đầu của lộ trình SQL: đọc dữ liệu bằng SELECT, lọc dòng với WHERE, xử lý NULL, sắp xếp, giới hạn kết quả và biến đổi giá trị bằng CASE, hàm chuỗi, hàm ngày. Mọi ví dụ chạy trên database Cửa hàng.', 'EASY', 183, 16, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
+    (UUID_TO_BIN('01a1e001-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e001-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 1: Truy vấn cơ bản', 'Chặng đầu của lộ trình SQL, mọi ví dụ chạy trên database Cửa hàng.\n- Đọc dữ liệu bằng SELECT, đặt bí danh, loại trùng với DISTINCT\n- Lọc dòng với WHERE, AND, OR, NOT, IN, BETWEEN, LIKE\n- Hiểu NULL, dùng IS NULL và COALESCE\n- Sắp xếp và phân trang với ORDER BY, LIMIT, OFFSET\n- Biến đổi giá trị bằng CASE, hàm chuỗi và hàm ngày', 'EASY', 183, 16, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
 AS content ON DUPLICATE KEY UPDATE title = content.title, summary = content.summary, difficulty = content.difficulty,
     estimated_minutes = content.estimated_minutes, lesson_count = content.lesson_count;
 

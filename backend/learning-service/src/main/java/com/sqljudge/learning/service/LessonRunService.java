@@ -6,6 +6,7 @@ import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.learning.dto.request.StartLessonRunRequest;
 import com.sqljudge.learning.dto.response.LessonRunAcceptedResponse;
 import com.sqljudge.learning.dto.response.LessonRunResponse;
+import com.sqljudge.learning.entity.Dialect;
 import com.sqljudge.learning.entity.LessonCell;
 import com.sqljudge.learning.entity.LessonRun;
 import com.sqljudge.learning.entity.LessonRun.RunCompletion;
@@ -40,7 +41,8 @@ public class LessonRunService {
                                                 "Không tìm thấy ô SQL"));
         LessonRun run =
                 lessonRunWriter.create(
-                        LessonRun.pending(userId, cellKey, cell.getDialect(), request.sql()), cell);
+                        LessonRun.pending(userId, cellKey, dialectOf(request, cell), request.sql()),
+                        cell);
         log.info(
                 "lesson_run_requested runId={} cellKey={} sqlLength={}",
                 run.getId(),
@@ -68,5 +70,9 @@ public class LessonRunService {
                 .ifPresentOrElse(
                         run -> run.complete(completion, clock.instant()),
                         () -> log.warn("lesson_run_result_unknown_run runId={}", runId));
+    }
+
+    private static Dialect dialectOf(StartLessonRunRequest request, LessonCell cell) {
+        return request.dialect() == null ? cell.getDialect() : request.dialect();
     }
 }

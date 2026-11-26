@@ -83,6 +83,33 @@ class LessonRunApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Chọn MySQL hoặc SQLite thì job chạy trên hệ đó, dialect lạ trả 400")
+    void start_chosenDialect_isSentToJudge() throws Exception {
+        ResponseEntity<String> mysql =
+                exchange(
+                        HttpMethod.POST,
+                        "/api/lesson-cells/" + cellKey + "/runs",
+                        "{\"sql\":" + quoted(SQL) + ",\"dialect\":\"MYSQL\"}",
+                        TestJwts.learnerToken());
+        ResponseEntity<String> unknown =
+                exchange(
+                        HttpMethod.POST,
+                        "/api/lesson-cells/" + cellKey + "/runs",
+                        "{\"sql\":" + quoted(SQL) + ",\"dialect\":\"ORACLE\"}",
+                        TestJwts.learnerToken());
+
+        assertThat(mysql.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        JsonNode job =
+                objectMapper.readTree(
+                        jdbcTemplate.queryForObject(
+                                "SELECT payload FROM outbox_events", String.class));
+        assertThat(job.get("dialect").asText()).isEqualTo("MYSQL");
+        assertThat(jdbcTemplate.queryForObject("SELECT dialect FROM lesson_runs", String.class))
+                .isEqualTo("MYSQL");
+        assertThat(unknown.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     @DisplayName("Kết quả từ máy chấm được lưu một lần, lần gửi lại bị bỏ qua")
     void complete_storesResultOnce() throws Exception {
         String runId =

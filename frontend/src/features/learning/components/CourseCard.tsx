@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
 import { ROUTES } from "@/lib/routes";
 
+import { courseSummaryPartsOf } from "../course-summary";
 import type { CourseSummary } from "../types";
 import { CourseMeta } from "./CourseMeta";
 
@@ -22,7 +23,9 @@ export function CourseCard({ course }: CourseCardProps) {
                     {course.title}
                 </Link>
             </h2>
-            <p className="line-clamp-2 text-[13px] text-muted-foreground">{course.summary}</p>
+            <p className="line-clamp-2 text-[13px] text-muted-foreground">
+                {courseSummaryPartsOf(course.summary).intro}
+            </p>
             <CourseMeta
                 lessonCount={course.lessonCount}
                 estimatedMinutes={course.estimatedMinutes}

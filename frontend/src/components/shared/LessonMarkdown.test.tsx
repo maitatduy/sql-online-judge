@@ -9,7 +9,7 @@ describe("LessonMarkdown", () => {
 
         const heading = screen.getByRole("heading", { level: 2, name: "Đánh số dòng" });
         const wrapper = heading.parentElement;
-        expect(wrapper).toHaveClass("[&_h2]:text-lg", "[&_pre]:bg-surface-2");
+        expect(wrapper).toHaveClass("[&_h2]:text-xl", "[&_pre]:bg-surface-2");
         expect(screen.getByText("SELECT 1;").closest("pre")).not.toBeNull();
     });
 });

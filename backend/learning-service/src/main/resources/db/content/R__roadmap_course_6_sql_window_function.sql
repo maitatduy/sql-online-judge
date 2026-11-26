@@ -9,7 +9,7 @@ INSERT INTO courses (id, slug, author_id, status, published_revision_id, draft_r
 AS content ON DUPLICATE KEY UPDATE slug = content.slug;
 
 INSERT INTO course_revisions (id, course_id, status, title, summary, difficulty, estimated_minutes, lesson_count, submitted_at, published_at, created_at, updated_at) VALUES
-    (UUID_TO_BIN('01a1e006-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e006-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 6: Window function', 'Chặng cuối của lộ trình: tính trên một khung dòng mà vẫn giữ nguyên từng dòng. OVER và PARTITION BY, ROW_NUMBER, RANK, DENSE_RANK, top N mỗi nhóm, LAG và LEAD để so với dòng trước sau, tổng cộng dồn, trung bình trượt và tỉ trọng trong nhóm.', 'HARD', 153, 12, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
+    (UUID_TO_BIN('01a1e006-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e006-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 6: Window function', 'Chặng cuối: tính trên một khung dòng mà vẫn giữ nguyên từng dòng.\n- OVER và PARTITION BY\n- Xếp hạng với ROW_NUMBER, RANK, DENSE_RANK và top N mỗi nhóm\n- So với dòng trước, dòng sau bằng LAG và LEAD\n- Tổng cộng dồn, trung bình trượt và tỉ trọng trong nhóm', 'HARD', 153, 12, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
 AS content ON DUPLICATE KEY UPDATE title = content.title, summary = content.summary, difficulty = content.difficulty,
     estimated_minutes = content.estimated_minutes, lesson_count = content.lesson_count;
 

@@ -2,13 +2,15 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { learningApi } from "../api";
+import type { LessonCell } from "../types";
 
 const RUN_POLL_INTERVAL_MS = 1000;
 
 export function useLessonRun(cellKey: string) {
     const [runId, setRunId] = useState<string | null>(null);
     const start = useMutation({
-        mutationFn: (sql: string) => learningApi.startLessonRun(cellKey, sql),
+        mutationFn: (request: { sql: string; dialect: LessonCell["dialect"] }) =>
+            learningApi.startLessonRun(cellKey, request),
         onMutate: () => setRunId(null),
         onSuccess: (accepted) => setRunId(accepted.runId),
     });

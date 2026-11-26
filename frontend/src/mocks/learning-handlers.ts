@@ -51,20 +51,23 @@ function summaryOf(course: CourseDetail): CourseSummary {
 export const learningHandlers: RequestHandler[] = [
     http.get("*/api/courses", async ({ request }) => {
         await delay(150);
-        const difficulty = new URL(request.url).searchParams.get("difficulty");
+        const query = new URL(request.url).searchParams;
+        const difficulty = query.get("difficulty");
+        const pageNumber = Math.max(1, Number(query.get("page") ?? 1));
+        const size = Math.min(Number(query.get("size") ?? PAGE_SIZE), PAGE_SIZE);
         if (difficulty !== null && !(DIFFICULTIES as readonly string[]).includes(difficulty)) {
             return validationFailed({ field: "difficulty", message: "Độ khó không hợp lệ" });
         }
-        const items = [...LEARNING_COURSES]
+        const matching = [...LEARNING_COURSES]
             .filter((course) => difficulty === null || course.difficulty === difficulty)
             .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt))
             .map(summaryOf);
         const page: Page<CourseSummary> = {
-            items,
-            page: 1,
-            size: PAGE_SIZE,
-            totalItems: items.length,
-            totalPages: items.length === 0 ? 0 : 1,
+            items: matching.slice((pageNumber - 1) * size, pageNumber * size),
+            page: pageNumber,
+            size,
+            totalItems: matching.length,
+            totalPages: Math.ceil(matching.length / size),
         };
         return HttpResponse.json(page);
     }),

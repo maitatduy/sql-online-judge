@@ -9,7 +9,7 @@ INSERT INTO courses (id, slug, author_id, status, published_revision_id, draft_r
 AS content ON DUPLICATE KEY UPDATE slug = content.slug;
 
 INSERT INTO course_revisions (id, course_id, status, title, summary, difficulty, estimated_minutes, lesson_count, submitted_at, published_at, created_at, updated_at) VALUES
-    (UUID_TO_BIN('01a1e002-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e002-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 2: Nối bảng', 'Kết hợp dữ liệu từ nhiều bảng: khoá chính và khoá ngoại, INNER JOIN, LEFT JOIN, tìm dòng không khớp, bẫy đặt điều kiện trong ON và WHERE, SELF JOIN, CROSS JOIN và hiện tượng nhân dòng khi nối.', 'EASY', 152, 13, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
+    (UUID_TO_BIN('01a1e002-0000-7000-8000-200000000001'), UUID_TO_BIN('01a1e002-0000-7000-8000-100000000001'), 'PUBLISHED', 'SQL 2: Nối bảng', 'Kết hợp dữ liệu từ nhiều bảng qua khoá chính và khoá ngoại.\n- INNER JOIN và nối nhiều bảng liên tiếp\n- LEFT JOIN và tìm dòng không có cặp\n- Bẫy đặt điều kiện trong ON hay trong WHERE\n- RIGHT JOIN, FULL JOIN, SELF JOIN, CROSS JOIN\n- Nhận ra và tránh hiện tượng nhân dòng khi nối', 'EASY', 152, 13, '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000', '2026-11-26 00:00:00.000000')
 AS content ON DUPLICATE KEY UPDATE title = content.title, summary = content.summary, difficulty = content.difficulty,
     estimated_minutes = content.estimated_minutes, lesson_count = content.lesson_count;
 
