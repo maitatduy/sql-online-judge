@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronUp, Lock, MessageSquare, PenLine } from "lucide-react";
+import { Heart, Lock, MessageSquare, PenLine } from "lucide-react";
 import Link from "next/link";
 
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -84,13 +84,13 @@ function CommunitySolutions({ problemSlug }: ProblemSolutionsTabProps) {
                             </Link>
                             <p className="flex items-center gap-3 text-sm text-muted-foreground">
                                 <span>{post.authorUsername ?? "Người dùng"}</span>
-                                <span className="inline-flex items-center gap-0.5">
-                                    <ChevronUp aria-hidden="true" className="size-4" />
-                                    {formatNumber(post.voteScore)}
+                                <span className="inline-flex items-center gap-1">
+                                    <Heart aria-hidden="true" className="size-4 text-like" />
+                                    {`${formatNumber(post.voteScore)} tim`}
                                 </span>
                                 <span className="inline-flex items-center gap-1">
-                                    <MessageSquare aria-hidden="true" className="size-3.5" />
-                                    {formatNumber(post.commentCount)}
+                                    <MessageSquare aria-hidden="true" className="size-4" />
+                                    {`${formatNumber(post.commentCount)} bình luận`}
                                 </span>
                             </p>
                         </li>
