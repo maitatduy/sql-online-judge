@@ -46,9 +46,12 @@ describe("chi tiết bài viết", () => {
         renderPost();
 
         await screen.findByRole("button", { name: "Báo cáo bài viết" });
-        const upvote = screen.getByRole("button", { name: "Vote lên" });
-        fireEvent.click(upvote);
-        await waitFor(() => expect(upvote).toHaveAttribute("aria-pressed", "true"));
+        expect(screen.queryByRole("button", { name: /Vote/ })).not.toBeInTheDocument();
+        const like = screen.getByRole("button", { name: /^Thả tim bài viết, [0-9]+ tim$/ });
+        expect(like).toHaveAttribute("aria-pressed", "false");
+        fireEvent.click(like);
+        await waitFor(() => expect(like).toHaveAttribute("aria-pressed", "true"));
+        expect(like).toHaveClass("text-like");
 
         fireEvent.click(screen.getByRole("button", { name: "Lưu bài" }));
         expect(await screen.findByRole("button", { name: "Bỏ lưu bài" })).toBeVisible();

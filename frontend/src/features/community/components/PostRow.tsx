@@ -25,7 +25,7 @@ export function PostRow({ post, now }: PostRowProps) {
             >
                 <div className="flex w-14 shrink-0 flex-col items-center gap-1.5 pt-0.5">
                     <span className="text-lg font-extrabold">{formatNumber(post.voteScore)}</span>
-                    <span className="text-xs text-muted-foreground">vote</span>
+                    <span className="text-xs text-muted-foreground">tim</span>
                     <span
                         className={cn(
                             "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-semibold",

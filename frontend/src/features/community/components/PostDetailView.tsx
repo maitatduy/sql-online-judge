@@ -27,7 +27,7 @@ import { DiscussionSummary } from "./DiscussionSummary";
 import { PostAuthorActions } from "./PostAuthorActions";
 import { PostBody } from "./PostBody";
 import { ReportDialog } from "./ReportDialog";
-import { VoteControls } from "./VoteControls";
+import { LikeButton } from "./LikeButton";
 
 const NOT_FOUND_STATUS = 404;
 
@@ -103,11 +103,10 @@ function PostArticle({ post }: { post: PostDetail }) {
             </nav>
             <article className="flex gap-5 rounded-lg border bg-card p-5 sm:p-6">
                 <div className="flex flex-col items-center gap-3">
-                    <VoteControls
-                        targetType="POST"
-                        targetId={post.id}
-                        score={post.voteScore}
-                        myVote={post.myVote}
+                    <LikeButton
+                        postId={post.id}
+                        likeCount={post.voteScore}
+                        isLiked={post.myVote === 1}
                         isSignedIn={isSignedIn}
                     />
                     <Button
