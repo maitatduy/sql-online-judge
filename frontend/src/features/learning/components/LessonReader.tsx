@@ -50,32 +50,35 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
     }, [isUnauthenticated, pathname, router]);
 
     return (
-        <div className="flex w-full">
-            <aside className="hidden w-80 shrink-0 border-r bg-card lg:block">
-                <div className="sticky top-0 h-screen overflow-y-auto">
-                    {course ? (
-                        <LessonOutlineNav
-                            course={course}
-                            currentSlug={lessonSlug}
-                            completedLessonKeys={completedKeys}
-                        />
-                    ) : null}
-                </div>
-            </aside>
-            <div className="min-h-screen min-w-0 flex-1 bg-card">
-                <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 pt-6 pb-20 md:px-10">
-                    <Breadcrumb
-                        items={[
-                            { label: "Trang chủ", href: ROUTES.home },
-                            { label: "Khoá học", href: ROUTES.learn },
-                            {
-                                label: lesson?.courseTitle ?? course?.title ?? "Khoá học",
-                                href: ROUTES.course(courseSlug),
-                            },
-                            ...(lesson ? [{ label: lesson.title }] : []),
-                        ]}
-                    />
-                    <main id={MAIN_CONTENT_ID} className="flex min-w-0 flex-col gap-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pt-6 pb-20 md:px-6">
+            <Breadcrumb
+                items={[
+                    { label: "Trang chủ", href: ROUTES.home },
+                    { label: "Khoá học", href: ROUTES.learn },
+                    {
+                        label: lesson?.courseTitle ?? course?.title ?? "Khoá học",
+                        href: ROUTES.course(courseSlug),
+                    },
+                    ...(lesson ? [{ label: lesson.title }] : []),
+                ]}
+            />
+            <div className="flex items-start gap-6">
+                <aside className="sticky top-6 hidden w-80 shrink-0 lg:block">
+                    <div className="max-h-[calc(100vh-3rem)] overflow-y-auto rounded-lg border bg-card">
+                        {course ? (
+                            <LessonOutlineNav
+                                course={course}
+                                currentSlug={lessonSlug}
+                                completedLessonKeys={completedKeys}
+                            />
+                        ) : null}
+                    </div>
+                </aside>
+                <div className="min-w-0 flex-1 rounded-lg border bg-card px-5 py-8 md:px-12">
+                    <main
+                        id={MAIN_CONTENT_ID}
+                        className="mx-auto flex min-w-0 max-w-3xl flex-col gap-8"
+                    >
                         {isPending || isUnauthenticated ? (
                             <div
                                 role="status"
