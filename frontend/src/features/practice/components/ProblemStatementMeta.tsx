@@ -8,18 +8,21 @@ interface ProblemStatementMetaProps {
     problem: ProblemDetail;
 }
 
-const STAT_CLASS = "flex flex-col gap-1 px-4 py-3";
-const LABEL_CLASS = "text-[13px] text-muted-foreground";
-const VALUE_CLASS = "text-lg font-extrabold";
+const STAT_CLASS = "flex items-baseline gap-1.5";
+const LABEL_CLASS = "text-muted-foreground";
+const VALUE_CLASS = "font-bold";
 
 export function ProblemStatementMeta({ problem }: ProblemStatementMetaProps) {
     return (
         <div className="flex flex-col gap-3">
-            <dl className="grid grid-cols-3 divide-x rounded-lg border bg-card">
-                <div className={STAT_CLASS}>
-                    <dt className={LABEL_CLASS}>Độ khó</dt>
+            <dl className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                <div className="flex items-center">
+                    <dt className="sr-only">Độ khó</dt>
                     <dd>
-                        <DifficultyLabel difficulty={problem.difficulty} className={VALUE_CLASS} />
+                        <DifficultyLabel
+                            difficulty={problem.difficulty}
+                            className="rounded-full bg-surface-2 px-3 py-1"
+                        />
                     </dd>
                 </div>
                 <div className={STAT_CLASS}>

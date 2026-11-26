@@ -79,26 +79,30 @@ describe("Workspace", () => {
         );
     });
 
-    it("chia đề thành Đề bài, Dữ liệu vào, Kết quả cần trả về, Điều kiện và Chú ý", async () => {
+    it("trình bày đề kiểu LeetCode: bảng, yêu cầu, ví dụ và ràng buộc", async () => {
         await renderWorkspace();
         const statement = within(screen.getByRole("tabpanel", { name: "Đề bài" }));
 
-        const input = within(statement.getByRole("region", { name: "Dữ liệu vào" }));
-        expect(input.getByText("employees")).toBeInTheDocument();
-        const output = within(statement.getByRole("region", { name: "Kết quả cần trả về" }));
-        const example = within(output.getByRole("table", { name: "Ví dụ kết quả mong đợi" }));
-        expect(example.getAllByRole("row")).toHaveLength(5);
-        const conditions = within(statement.getByRole("region", { name: "Điều kiện" }));
-        expect(conditions.getByText("Câu lệnh được dùng").nextElementSibling).toHaveTextContent(
-            "SELECT, WITH",
-        );
-        expect(conditions.getByText("Giới hạn thời gian").nextElementSibling).toHaveTextContent(
-            "2 giây mỗi testcase",
-        );
-        expect(conditions.getByText("Testcase ẩn").nextElementSibling).toHaveTextContent("2");
-        const notes = within(statement.getByRole("region", { name: "Chú ý" }));
-        expect(notes.getByText(/Bắt buộc đúng thứ tự dòng/)).toBeInTheDocument();
-        expect(notes.getByText("Mỗi lần nộp chỉ gồm một câu truy vấn.")).toBeInTheDocument();
+        const tables = within(statement.getByRole("region", { name: "Cấu trúc bảng" }));
+        const employees = within(tables.getByRole("table", { name: "Cột của bảng employees" }));
+        expect(employees.getByRole("row", { name: "department_id INTEGER" })).toBeInTheDocument();
+        expect(
+            tables.getByText("department_id là khoá ngoại tham chiếu tới departments.id."),
+        ).toBeInTheDocument();
+        const example = within(statement.getByRole("region", { name: "Ví dụ 1" }));
+        expect(
+            within(
+                example.getByRole("table", { name: "Kết quả mong đợi của ví dụ 1" }),
+            ).getAllByRole("row"),
+        ).toHaveLength(5);
+        const constraints = within(statement.getByRole("region", { name: "Ràng buộc" }));
+        expect(constraints.getByText("Câu lệnh được dùng: SELECT, WITH.")).toBeInTheDocument();
+        expect(
+            constraints.getByText("Giới hạn thời gian: 2 giây mỗi testcase."),
+        ).toBeInTheDocument();
+        expect(constraints.getByText("Số testcase ẩn: 2.")).toBeInTheDocument();
+        expect(constraints.getByText(/Bắt buộc đúng thứ tự dòng/)).toBeInTheDocument();
+        expect(constraints.getByText("Mỗi lần nộp chỉ gồm một câu truy vấn.")).toBeInTheDocument();
     });
 
     it("cho xem schema: bảng, cột, kiểu, khoá chính, khoá ngoại", async () => {
