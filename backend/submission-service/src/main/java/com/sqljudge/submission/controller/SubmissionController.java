@@ -1,10 +1,11 @@
 package com.sqljudge.submission.controller;
 
+import com.sqljudge.common.web.PageResponse;
 import com.sqljudge.submission.dto.request.SubmitSolutionRequest;
 import com.sqljudge.submission.dto.response.SubmissionAcceptedResponse;
 import com.sqljudge.submission.dto.response.SubmissionCodeResponse;
-import com.sqljudge.submission.dto.response.SubmissionPageResponse;
 import com.sqljudge.submission.dto.response.SubmissionResponse;
+import com.sqljudge.submission.dto.response.SubmissionSummaryResponse;
 import com.sqljudge.submission.service.SubmissionQueryService;
 import com.sqljudge.submission.service.SubmissionService;
 import com.sqljudge.submission.service.SubmissionService.ContestProblemRef;
@@ -77,15 +78,15 @@ public class SubmissionController {
 
     @GetMapping("/api/problems/{problemId}/submissions")
     @Operation(summary = "Lịch sử bài nộp của chính mình cho một bài, mới nhất trước")
-    @ApiResponse(responseCode = "200", description = "Một trang lịch sử kèm cursor trang sau")
-    @ApiResponse(responseCode = "400", description = "Cursor hỏng hoặc kích thước trang sai")
+    @ApiResponse(responseCode = "200", description = "Một trang lịch sử kèm tổng số bài nộp")
+    @ApiResponse(responseCode = "400", description = "Số trang hoặc kích thước trang sai")
     @ApiResponse(responseCode = "401", description = "Chưa đăng nhập")
-    public SubmissionPageResponse history(
+    public PageResponse<SubmissionSummaryResponse> history(
             @PathVariable UUID problemId,
-            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "Phải từ 1 trở lên") int page,
             @RequestParam(defaultValue = "20")
                     @Min(value = 1, message = "Phải từ 1 đến 100") @Max(value = MAX_PAGE_SIZE, message = "Phải từ 1 đến 100") int size) {
-        return submissionQueryService.history(problemId, cursor, size);
+        return submissionQueryService.history(problemId, page, size);
     }
 
     @GetMapping("/api/submissions/{submissionId}")

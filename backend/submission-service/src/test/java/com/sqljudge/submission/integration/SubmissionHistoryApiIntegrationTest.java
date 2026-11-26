@@ -42,9 +42,9 @@ class SubmissionHistoryApiIntegrationTest extends ContainerSupport {
 
     @Test
     @DisplayName(
-            "Lịch sử chỉ gồm bài nộp của chính mình cho bài này, mới nhất trước, phân trang bằng"
-                    + " cursor")
-    void history_ownSubmissionsNewestFirst_pagedByCursor() {
+            "Lịch sử chỉ gồm bài nộp của chính mình cho bài này, mới nhất trước, phân trang theo"
+                    + " trang")
+    void history_ownSubmissionsNewestFirst_pagedByPage() {
         UUID oldest = store(TestJwts.LEARNER_ID, PROBLEM_ID, "WA");
         store(UUID.randomUUID(), PROBLEM_ID, "AC");
         store(TestJwts.LEARNER_ID, UUID.randomUUID(), "AC");
@@ -67,14 +67,15 @@ class SubmissionHistoryApiIntegrationTest extends ContainerSupport {
         assertThat(firstPage.read("$.items[0].runtimeMs", Integer.class)).isEqualTo(15);
         assertThat(firstPage.read("$.items[0].submittedAt", String.class)).isNotBlank();
         assertThat(first.getBody()).doesNotContain("SELECT 1");
-        String cursor = firstPage.read("$.nextCursor", String.class);
-        assertThat(cursor).isNotBlank();
+        assertThat(firstPage.read("$.page", Integer.class)).isEqualTo(1);
+        assertThat(firstPage.read("$.size", Integer.class)).isEqualTo(2);
+        assertThat(firstPage.read("$.totalItems", Integer.class)).isEqualTo(3);
+        assertThat(firstPage.read("$.totalPages", Integer.class)).isEqualTo(2);
 
         DocumentContext secondPage =
-                JsonPath.parse(
-                        history("?size=2&cursor=" + cursor, TestJwts.learnerToken()).getBody());
+                JsonPath.parse(history("?size=2&page=2", TestJwts.learnerToken()).getBody());
         assertThat(secondPage.read("$.items[*].id", List.class)).containsExactly(oldest.toString());
-        assertThat(secondPage.read("$.nextCursor", String.class)).isNull();
+        assertThat(secondPage.read("$.page", Integer.class)).isEqualTo(2);
     }
 
     @Test
@@ -83,16 +84,15 @@ class SubmissionHistoryApiIntegrationTest extends ContainerSupport {
         DocumentContext page = JsonPath.parse(history("", TestJwts.learnerToken()).getBody());
 
         assertThat(page.read("$.items", List.class)).isEmpty();
-        assertThat(page.read("$.nextCursor", String.class)).isNull();
+        assertThat(page.read("$.totalItems", Integer.class)).isZero();
+        assertThat(page.read("$.totalPages", Integer.class)).isZero();
     }
 
     @Test
-    @DisplayName("Cursor hỏng hoặc kích thước trang sai trả 400, chưa đăng nhập trả 401")
+    @DisplayName("Số trang hoặc kích thước trang sai trả 400, chưa đăng nhập trả 401")
     void history_invalidParametersOrAnonymous_isRejected() {
-        ResponseEntity<String> badCursor = history("?cursor=khong-hop-le", TestJwts.learnerToken());
-        assertThat(badCursor.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(JsonPath.parse(badCursor.getBody()).read("$.errors[0].field", String.class))
-                .isEqualTo("cursor");
+        assertThat(history("?page=0", TestJwts.learnerToken()).getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(history("?size=0", TestJwts.learnerToken()).getStatusCode())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(history("?size=101", TestJwts.learnerToken()).getStatusCode())
