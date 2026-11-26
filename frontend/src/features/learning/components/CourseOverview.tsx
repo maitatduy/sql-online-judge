@@ -3,7 +3,7 @@
 import { ArrowRight, SearchX } from "lucide-react";
 import Link from "next/link";
 
-import { DifficultyLabel } from "@/components/shared/DifficultyLabel";
+import { Breadcrumb } from "@/components/shared/Breadcrumb";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/shared/Skeleton";
@@ -35,7 +35,7 @@ export function CourseOverview({ slug }: CourseOverviewProps) {
     return (
         <main
             id={MAIN_CONTENT_ID}
-            className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pt-7 pb-16 md:px-6"
+            className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pt-7 pb-16 md:px-6"
         >
             {isPending ? (
                 <div role="status" aria-label="Đang tải khoá học" className="flex flex-col gap-3">
@@ -82,35 +82,45 @@ function CourseContent({ course }: { course: CourseDetail }) {
 
     return (
         <>
-            <section className="flex flex-col gap-3">
-                <DifficultyLabel difficulty={course.difficulty} className="text-[12px]" />
-                <h1 className="text-[22px] font-extrabold tracking-tight">{course.title}</h1>
-                <p className="text-muted-foreground">{course.summary}</p>
-                <CourseMeta
-                    chapterCount={course.chapters.length}
-                    lessonCount={course.lessonCount}
-                    estimatedMinutes={course.estimatedMinutes}
-                />
-                {isLearning ? (
-                    <CourseProgressBar
-                        completedCount={completedKeys.size}
-                        lessonCount={progress.lessonCount}
-                    />
-                ) : null}
-                {action.slug ? (
-                    <Button asChild className="mt-1 self-start">
-                        <Link href={ROUTES.lesson(course.slug, action.slug)}>
-                            {action.label}
-                            <ArrowRight aria-hidden="true" />
-                        </Link>
-                    </Button>
-                ) : null}
-            </section>
-            <CourseOutline
-                courseSlug={course.slug}
-                chapters={course.chapters}
-                completedLessonKeys={completedKeys}
+            <Breadcrumb
+                items={[
+                    { label: "Trang chủ", href: ROUTES.home },
+                    { label: "Khoá học", href: ROUTES.learn },
+                    { label: course.title },
+                ]}
             />
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start">
+                <section className="flex flex-col gap-3 rounded-lg border bg-card p-6 lg:sticky lg:top-20">
+                    <h1 className="text-[22px] font-extrabold tracking-tight">{course.title}</h1>
+                    <p className="text-muted-foreground">{course.summary}</p>
+                    <CourseMeta
+                        label="Thông tin khoá học"
+                        difficulty={course.difficulty}
+                        chapterCount={course.chapters.length}
+                        lessonCount={course.lessonCount}
+                        estimatedMinutes={course.estimatedMinutes}
+                    />
+                    {isLearning ? (
+                        <CourseProgressBar
+                            completedCount={completedKeys.size}
+                            lessonCount={progress.lessonCount}
+                        />
+                    ) : null}
+                    {action.slug ? (
+                        <Button asChild className="mt-1 self-start">
+                            <Link href={ROUTES.lesson(course.slug, action.slug)}>
+                                {action.label}
+                                <ArrowRight aria-hidden="true" />
+                            </Link>
+                        </Button>
+                    ) : null}
+                </section>
+                <CourseOutline
+                    courseSlug={course.slug}
+                    chapters={course.chapters}
+                    completedLessonKeys={completedKeys}
+                />
+            </div>
         </>
     );
 }
