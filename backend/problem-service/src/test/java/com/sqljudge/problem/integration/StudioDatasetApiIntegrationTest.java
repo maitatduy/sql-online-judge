@@ -54,6 +54,7 @@ class StudioDatasetApiIntegrationTest extends ContainerSupport {
 
     @BeforeEach
     void createDataset() {
+        jdbcTemplate.update("DELETE FROM datasets");
         ResponseEntity<String> created =
                 send(
                         HttpMethod.POST,

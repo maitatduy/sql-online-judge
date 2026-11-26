@@ -65,6 +65,7 @@ class StudioDatasetVariantApiIntegrationTest extends ContainerSupport {
 
     @BeforeEach
     void createDatasetWithVariant() {
+        jdbcTemplate.update("DELETE FROM datasets");
         datasetId =
                 JsonPath.parse(
                                 send(HttpMethod.POST, PATH, SETTER, "{\"name\":\"Công ty\"}")
