@@ -37,6 +37,45 @@ describe("CourseCatalogue", () => {
         expect(card.getByText("40 phút")).toBeInTheDocument();
     });
 
+    it("có breadcrumb về trang chủ", async () => {
+        renderWithProviders(<CourseCatalogue />);
+
+        const breadcrumb = within(await screen.findByRole("navigation", { name: "Đường dẫn" }));
+        expect(breadcrumb.getByRole("link", { name: "Trang chủ" })).toHaveAttribute("href", "/");
+        expect(breadcrumb.getByText("Khoá học")).toHaveAttribute("aria-current", "page");
+    });
+
+    it("chia khoá học thành trang theo URL, giữ bộ lọc khi sang trang", async () => {
+        const requested: string[] = [];
+        server.use(
+            http.get("*/api/courses", ({ request }) => {
+                const params = new URL(request.url).searchParams;
+                requested.push(params.toString());
+                return HttpResponse.json({
+                    items: [],
+                    page: Number(params.get("page")),
+                    size: Number(params.get("size")),
+                    totalItems: 14,
+                    totalPages: 3,
+                });
+            }),
+        );
+        visit("/learn?difficulty=EASY&page=2");
+        renderWithProviders(<CourseCatalogue />);
+
+        const navigation = within(await screen.findByRole("navigation", { name: "Phân trang" }));
+        expect(requested[0]).toBe("difficulty=EASY&page=2&size=6");
+        expect(screen.getByText("7-12 trong 14 khoá học")).toBeInTheDocument();
+        expect(navigation.getByRole("link", { name: "Trang 3" })).toHaveAttribute(
+            "href",
+            "/learn?difficulty=EASY&page=3",
+        );
+        expect(navigation.getByRole("link", { name: "Trang 1" })).toHaveAttribute(
+            "href",
+            "/learn?difficulty=EASY",
+        );
+    });
+
     it("lọc theo độ khó và ghi lựa chọn lên URL", async () => {
         renderWithProviders(<CourseCatalogue />);
         await cardOf("SQL cơ bản");
@@ -48,6 +87,16 @@ describe("CourseCatalogue", () => {
         );
         expect(screen.getByRole("heading", { name: "JOIN thực chiến" })).toBeInTheDocument();
         expect(window.location.search).toBe("?difficulty=MEDIUM");
+    });
+
+    it("đổi độ khó thì quay về trang 1", async () => {
+        visit("/learn?page=2");
+        renderWithProviders(<CourseCatalogue />);
+        await screen.findByRole("radio", { name: "Trung bình" });
+
+        fireEvent.click(screen.getByRole("radio", { name: "Trung bình" }));
+
+        await waitFor(() => expect(window.location.search).toBe("?difficulty=MEDIUM"));
         expect(screen.getByRole("radio", { name: "Trung bình" })).toBeChecked();
     });
 

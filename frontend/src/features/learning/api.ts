@@ -20,9 +20,12 @@ import type {
 } from "./types";
 
 export const learningApi = {
-    listCourses: (difficulty: Difficulty | undefined, signal?: AbortSignal) =>
+    listCourses: (
+        query: { difficulty: Difficulty | undefined; page: number; size: number },
+        signal?: AbortSignal,
+    ) =>
         apiClient.get<Page<CourseSummary>>("/api/courses", {
-            params: { difficulty },
+            params: query,
             signal,
         }),
     getCourse: (slug: string, signal?: AbortSignal) =>
