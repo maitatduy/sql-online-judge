@@ -60,6 +60,13 @@ describe("chi tiết bài viết", () => {
 
         expect(await screen.findByText("Dùng COUNT(cột) thay vì COUNT(*)")).toBeVisible();
         expect(await screen.findByRole("heading", { name: "1 bình luận" })).toBeVisible();
+
+        const heart = screen.getByRole("button", { name: "Thả tim bình luận, 0 tim" });
+        expect(heart).toHaveAttribute("aria-pressed", "false");
+        fireEvent.click(heart);
+        const liked = await screen.findByRole("button", { name: "Thả tim bình luận, 1 tim" });
+        expect(liked).toHaveAttribute("aria-pressed", "true");
+        expect(liked).toHaveClass("text-like");
     });
 
     it("bài không tồn tại thì báo không tìm thấy", async () => {

@@ -24,6 +24,7 @@ Trong component chỉ dùng class token (`bg-brand`, `text-verdict-wa`) hoặc `
 | Độ khó | `difficulty-easy`, `-medium`, `-hard` | **Chỉ** độ khó của bài tập |
 | Cú pháp SQL | `syntax-keyword`, `-function`, `-string`, `-number`, `-comment` | Tô màu code |
 | Chuỗi ngày | `streak` | Bộ đếm chuỗi ngày học, huy hiệu chuỗi ngày |
+| Thả tim | `like` | **Chỉ** nút tim và số tim của bình luận |
 | Heatmap hoạt động | `heat-low`, `heat-mid`, `heat-peak` | Mức 1, 2, 4 của lịch hoạt động (mức 0 dùng `surface-2`, mức 3 dùng `brand`) |
 | Biểu đồ | `chart-1` | Màu đường và vùng tô của biểu đồ; đường gióng và nhãn phụ dùng `text-muted` |
 | Tăng giảm | `trend-up`, `trend-down` | Mức thay đổi của một chỉ số (rating tăng, giảm) |

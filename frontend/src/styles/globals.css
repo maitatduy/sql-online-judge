@@ -15,6 +15,7 @@
     --ai: #6d28d9;
     --ai-soft: #f3eeff;
     --streak: #c2410c;
+    --like: #e11d48;
     --heat-low: #bfd3fb;
     --heat-mid: #7aa5f6;
     --heat-peak: #1e3a8a;
@@ -133,6 +134,7 @@
     --ai: #a78bfa;
     --ai-soft: #1d1733;
     --streak: #fb923c;
+    --like: #fb7185;
     --heat-low: #1e3a8a;
     --heat-mid: #2563eb;
     --heat-peak: #bfdbfe;
@@ -278,6 +280,7 @@
     --color-ai: var(--ai);
     --color-ai-soft: var(--ai-soft);
     --color-streak: var(--streak);
+    --color-like: var(--like);
     --color-heat-low: var(--heat-low);
     --color-heat-mid: var(--heat-mid);
     --color-heat-peak: var(--heat-peak);

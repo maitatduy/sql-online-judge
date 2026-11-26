@@ -404,6 +404,11 @@ export const communityHandlers: RequestHandler[] = [
             targetId: string;
             value: number;
         };
+        if (vote.targetType === "COMMENT" && vote.value < 0) {
+            return apiError(400, "VALIDATION_FAILED", "Dữ liệu gửi lên không hợp lệ", {
+                errors: [{ field: "value", message: "Bình luận chỉ nhận thả tim hoặc bỏ tim" }],
+            });
+        }
         const result = voteOn(vote.targetType, vote.targetId, userId, vote.value);
         return result
             ? HttpResponse.json(result)

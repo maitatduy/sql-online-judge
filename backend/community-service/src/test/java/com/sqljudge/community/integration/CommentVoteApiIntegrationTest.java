@@ -175,6 +175,30 @@ class CommentVoteApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName("Bình luận chỉ nhận thả tim hoặc bỏ tim, vote xuống trả 400 và không đổi số tim")
+    void commentVote_downvoteRejected() {
+        String rootId = comment("{\"postId\": \"" + postId + "\", \"body\": \"Hay\"}", READER);
+        vote("COMMENT", rootId, 1, AUTHOR);
+
+        ResponseEntity<String> downvote =
+                send(
+                        HttpMethod.PUT,
+                        "/api/community/votes",
+                        "{\"targetType\": \"COMMENT\", \"targetId\": \""
+                                + rootId
+                                + "\", \"value\": -1}",
+                        AUTHOR);
+
+        assertThat(downvote.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(JsonPath.parse(downvote.getBody()).read("$.errors[0].field", String.class))
+                .isEqualTo("value");
+        assertThat(
+                        JsonPath.parse(get(COMMENTS + "?postId=" + postId, AUTHOR).getBody())
+                                .read("$.items[0].voteScore", Integer.class))
+                .isEqualTo(1);
+    }
+
+    @Test
     @DisplayName("Lưu bài thì hiện ở tab Đã lưu, bỏ lưu thì biến mất")
     void bookmarks_feedSavedTab() {
         assertThat(

@@ -1,5 +1,6 @@
 package com.sqljudge.community.service;
 
+import com.sqljudge.common.exception.InvalidFieldException;
 import com.sqljudge.common.security.SecurityUtils;
 import com.sqljudge.community.dto.request.VoteRequest;
 import com.sqljudge.community.dto.response.VoteResponse;
@@ -33,6 +34,9 @@ public class VoteService {
                             .orElseThrow(PostErrors::notFound);
             post.addVotes(change(request, post.getAuthorId(), userId));
             return new VoteResponse(post.getVoteScore(), request.value());
+        }
+        if (request.value() < 0) {
+            throw new InvalidFieldException("value", "Bình luận chỉ nhận thả tim hoặc bỏ tim");
         }
         Comment comment = commentWriter.liveComment(request.targetId());
         comment.addVotes(change(request, comment.getAuthorId(), userId));
