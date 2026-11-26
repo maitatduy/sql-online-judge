@@ -84,7 +84,7 @@ export function ProblemTabs({ problem, target }: ProblemTabsProps) {
                         value={tab.value}
                         aria-label={tab.label}
                         title={tab.label}
-                        className="h-11 shrink-0 gap-2 px-3 text-[15px] [&_svg]:size-[18px]"
+                        className="h-10 shrink-0 gap-1.5 px-2.5 text-sm [&_svg]:size-4"
                     >
                         {tab.icon}
                         <span className="hidden @[46rem]/tabs:inline">{tab.label}</span>
