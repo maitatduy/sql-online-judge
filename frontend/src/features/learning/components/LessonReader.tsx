@@ -1,6 +1,6 @@
 "use client";
 
-import { SearchX } from "lucide-react";
+import { BookOpen, SearchX, SquareTerminal } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -62,8 +62,8 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
                     ) : null}
                 </div>
             </aside>
-            <div className="min-w-0 flex-1 px-4 pt-7 pb-16 md:px-8">
-                <div className="mx-auto flex max-w-5xl flex-col gap-5">
+            <div className="min-h-screen min-w-0 flex-1 bg-card">
+                <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 pt-6 pb-20 md:px-10">
                     <Breadcrumb
                         items={[
                             { label: "Trang chủ", href: ROUTES.home },
@@ -75,10 +75,7 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
                             ...(lesson ? [{ label: lesson.title }] : []),
                         ]}
                     />
-                    <main
-                        id={MAIN_CONTENT_ID}
-                        className="flex min-w-0 flex-col gap-6 rounded-lg border bg-card p-5 md:p-8"
-                    >
+                    <main id={MAIN_CONTENT_ID} className="flex min-w-0 flex-col gap-8">
                         {isPending || isUnauthenticated ? (
                             <div
                                 role="status"
@@ -113,26 +110,48 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
                         ) : null}
                         {lesson ? (
                             <>
-                                <header className="flex flex-col gap-2 border-b pb-5">
-                                    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
+                                <header className="flex flex-col gap-3">
+                                    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] font-semibold text-muted-foreground">
+                                        <BookOpen aria-hidden="true" className="size-4" />
+                                        <span>Bài đọc</span>
+                                        <span aria-hidden="true">-</span>
+                                        <span>
+                                            {position
+                                                ? `Chương ${formatNumber(position.chapterNumber)}: ${lesson.chapterTitle}`
+                                                : lesson.chapterTitle}
+                                        </span>
                                         {position ? (
-                                            <span className="rounded-full bg-brand-soft px-2.5 py-0.5 font-semibold text-brand">
-                                                {`Chương ${formatNumber(position.chapterNumber)}`}
-                                            </span>
-                                        ) : null}
-                                        <span>{lesson.chapterTitle}</span>
-                                        {position ? (
-                                            <span>{`Bài ${formatNumber(position.lessonNumber)}/${formatNumber(position.lessonCount)}`}</span>
+                                            <>
+                                                <span aria-hidden="true">-</span>
+                                                <span>{`Bài ${formatNumber(position.lessonNumber)}/${formatNumber(position.lessonCount)}`}</span>
+                                            </>
                                         ) : null}
                                     </p>
-                                    <h1 className="text-[26px] leading-tight font-extrabold tracking-tight">
+                                    <h1 className="text-[32px] leading-tight font-extrabold tracking-tight">
                                         {lesson.title}
                                     </h1>
                                 </header>
                                 <LessonMarkdown>{lesson.body}</LessonMarkdown>
-                                {lesson.cells.map((cell) => (
-                                    <LessonSqlCell key={cell.cellKey} cell={cell} />
-                                ))}
+                                {lesson.cells.length > 0 ? (
+                                    <section
+                                        aria-labelledby="lesson-practice"
+                                        className="flex flex-col gap-3"
+                                    >
+                                        <h2
+                                            id="lesson-practice"
+                                            className="inline-flex items-center gap-2 text-xl font-bold"
+                                        >
+                                            <SquareTerminal
+                                                aria-hidden="true"
+                                                className="size-5 text-brand"
+                                            />
+                                            Thực hành
+                                        </h2>
+                                        {lesson.cells.map((cell) => (
+                                            <LessonSqlCell key={cell.cellKey} cell={cell} />
+                                        ))}
+                                    </section>
+                                ) : null}
                                 {progress && lesson.questions.length > 0 ? (
                                     <LessonQuiz
                                         courseSlug={courseSlug}
@@ -141,19 +160,23 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
                                         questions={lesson.questions}
                                     />
                                 ) : null}
-                                {progress && (lesson.questions.length === 0 || isCompleted) ? (
-                                    <LessonCompletion
-                                        courseSlug={courseSlug}
-                                        lessonSlug={lessonSlug}
-                                        isCompleted={isCompleted}
-                                    />
-                                ) : null}
-                                {course ? (
-                                    <LessonPager
-                                        courseSlug={courseSlug}
-                                        neighbours={neighboursOf(course.chapters, lessonSlug)}
-                                    />
-                                ) : null}
+                                <footer className="flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+                                    {progress && (lesson.questions.length === 0 || isCompleted) ? (
+                                        <LessonCompletion
+                                            courseSlug={courseSlug}
+                                            lessonSlug={lessonSlug}
+                                            isCompleted={isCompleted}
+                                        />
+                                    ) : (
+                                        <span />
+                                    )}
+                                    {course ? (
+                                        <LessonPager
+                                            courseSlug={courseSlug}
+                                            neighbours={neighboursOf(course.chapters, lessonSlug)}
+                                        />
+                                    ) : null}
+                                </footer>
                             </>
                         ) : null}
                     </main>

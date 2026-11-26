@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 
 import type { LessonNeighbours } from "../lesson-navigation";
@@ -12,33 +13,23 @@ interface LessonPagerProps {
 
 export function LessonPager({ courseSlug, neighbours: { previous, next } }: LessonPagerProps) {
     return (
-        <div className="grid grid-cols-2 gap-3 border-t pt-5">
+        <nav aria-label="Chuyển bài" className="flex flex-wrap items-center gap-2">
             {previous ? (
-                <Link
-                    href={ROUTES.lesson(courseSlug, previous.slug)}
-                    className="flex flex-col gap-0.5 rounded-lg border bg-card px-4 py-3 transition-colors hover:border-brand"
-                >
-                    <span className="inline-flex items-center gap-1 text-[12px] text-muted-foreground">
-                        <ArrowLeft aria-hidden="true" className="size-3.5" />
+                <Button asChild variant="outline">
+                    <Link href={ROUTES.lesson(courseSlug, previous.slug)} title={previous.title}>
+                        <ArrowLeft aria-hidden="true" />
                         Bài trước
-                    </span>
-                    <span className="truncate font-semibold">{previous.title}</span>
-                </Link>
-            ) : (
-                <span />
-            )}
-            {next ? (
-                <Link
-                    href={ROUTES.lesson(courseSlug, next.slug)}
-                    className="col-start-2 flex flex-col items-end gap-0.5 rounded-lg border bg-card px-4 py-3 text-right transition-colors hover:border-brand"
-                >
-                    <span className="inline-flex items-center gap-1 text-[12px] text-muted-foreground">
-                        Bài sau
-                        <ArrowRight aria-hidden="true" className="size-3.5" />
-                    </span>
-                    <span className="max-w-full truncate font-semibold">{next.title}</span>
-                </Link>
+                    </Link>
+                </Button>
             ) : null}
-        </div>
+            {next ? (
+                <Button asChild>
+                    <Link href={ROUTES.lesson(courseSlug, next.slug)} title={next.title}>
+                        Bài sau
+                        <ArrowRight aria-hidden="true" />
+                    </Link>
+                </Button>
+            ) : null}
+        </nav>
     );
 }

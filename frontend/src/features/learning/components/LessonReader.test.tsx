@@ -39,7 +39,7 @@ describe("LessonReader", () => {
             await screen.findByRole("heading", { level: 1, name: "Chọn cột và đặt bí danh" }),
         ).toBeInTheDocument();
         expect(
-            within(screen.getByRole("main")).getByText("Làm quen với SELECT"),
+            within(screen.getByRole("main")).getByText(/Làm quen với SELECT/),
         ).toBeInTheDocument();
         expect(screen.getByText("SELECT name, salary FROM employees;")).toBeInTheDocument();
     });
