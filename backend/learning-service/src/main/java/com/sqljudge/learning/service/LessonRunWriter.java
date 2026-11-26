@@ -37,7 +37,7 @@ class LessonRunWriter {
                         cell.getDatasetVersionId(),
                         cell.getDatasetVariantId(),
                         cell.getDatasetChecksum(),
-                        cell.getDialect(),
+                        run.getDialect(),
                         run.getSql(),
                         TIME_LIMIT_MS));
         return run;
