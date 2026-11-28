@@ -42,7 +42,7 @@ describe("màn thi contest", () => {
         writeMockSession(DEMO_SESSION_USER);
     });
 
-    it("hiện đề theo chữ cái, thanh chuyển bài, đồng hồ và link về sảnh chờ", async () => {
+    it("hiện đề theo chữ cái, thanh chuyển bài có màu kết quả, đồng hồ và breadcrumb", async () => {
         registerForMockContest(SLUG, DEMO_SESSION_USER.id);
         renderContestWorkspace();
 
@@ -51,14 +51,19 @@ describe("màn thi contest", () => {
         ).toBeInTheDocument();
         expect(screen.getByText("A. Lương cao nhất mỗi phòng ban")).toBeInTheDocument();
         const problems = within(screen.getByRole("navigation", { name: "Bài trong contest" }));
-        expect(await problems.findByRole("link", { name: "A" })).toHaveAttribute(
+        expect(await problems.findByRole("link", { name: "A, đã AC" })).toHaveAttribute(
             "aria-current",
             "page",
         );
         expect(await screen.findByRole("timer", { name: "Còn lại" })).toBeInTheDocument();
-        expect(await screen.findByRole("link", { name: "SQL Cup đang thi" })).toHaveAttribute(
+        const breadcrumb = within(screen.getByRole("navigation", { name: "Đường dẫn" }));
+        expect(await breadcrumb.findByRole("link", { name: "SQL Cup đang thi" })).toHaveAttribute(
             "href",
             "/contests/sql-cup-live",
+        );
+        expect(breadcrumb.getByRole("link", { name: "Contest" })).toHaveAttribute(
+            "href",
+            "/contests",
         );
         expect(screen.queryByRole("tab", { name: /Lịch sử nộp/ })).toBeNull();
     });
@@ -81,6 +86,25 @@ describe("màn thi contest", () => {
         expect(
             submission.queryByRole("table", { name: "Dòng thiếu so với kết quả mong đợi" }),
         ).toBeNull();
+    });
+
+    it("nộp đúng thì nút về danh sách bài dẫn về sảnh chờ của contest", async () => {
+        registerForMockContest(SLUG, DEMO_SESSION_USER.id);
+        renderContestWorkspace();
+        const editor = await screen.findByRole("textbox", { name: "Mã SQL của bạn" });
+
+        fireEvent.change(editor, {
+            target: {
+                value: "SELECT * FROM employees e WHERE e.salary = (SELECT MAX(salary) FROM employees) ORDER BY 1;",
+            },
+        });
+        fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+        const submission = within(screen.getByRole("tabpanel", { name: "Nộp bài" }));
+        expect(await submission.findByRole("link", { name: "Về danh sách bài" })).toHaveAttribute(
+            "href",
+            "/contests/sql-cup-live",
+        );
     });
 
     it("chưa đăng ký thì báo cần đăng ký và chỉ đường về sảnh chờ", async () => {

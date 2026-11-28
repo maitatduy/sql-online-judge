@@ -10,6 +10,7 @@ import com.sqljudge.contest.dto.response.StandingsResponse.StandingItem;
 import com.sqljudge.contest.entity.Contest;
 import com.sqljudge.contest.entity.ContestCell;
 import com.sqljudge.contest.entity.ContestProblem;
+import com.sqljudge.contest.entity.ContestRegistration;
 import com.sqljudge.contest.repository.ContestCellRepository;
 import com.sqljudge.contest.repository.ContestRegistrationRepository;
 import com.sqljudge.contest.repository.ContestRepository;
@@ -122,7 +123,9 @@ public class StandingsService {
     private RankedPage rankedPage(Contest contest, long offset, int size) {
         UUID contestId = contest.getId();
         try {
-            if (standingsStore.size(contestId) == 0) {
+            if (standingsStore.size(contestId)
+                    != registrationRepository.countByContestId(contestId)) {
+                standingsStore.discardQuietly(contestId);
                 rebuild(contest);
             }
             return new RankedPage(
@@ -141,24 +144,37 @@ public class StandingsService {
     }
 
     private List<StandingRow> publicRowsOf(Contest contest) {
-        return cellRepository.findUserIdsByContestId(contest.getId()).stream()
-                .map(userId -> publicRowOf(contest, userId))
-                .filter(row -> row != null)
+        Map<UUID, List<ContestCell>> cellsByUser =
+                cellRepository.findByContestId(contest.getId()).stream()
+                        .collect(Collectors.groupingBy(ContestCell::getUserId));
+        return registrationRepository.findByContestId(contest.getId()).stream()
+                .map(
+                        registration ->
+                                rowOf(
+                                        contest,
+                                        registration,
+                                        cellsByUser.getOrDefault(
+                                                registration.getUserId(), List.of())))
                 .toList();
+    }
+
+    private static StandingRow rowOf(
+            Contest contest, ContestRegistration registration, List<ContestCell> cells) {
+        return contest.isFinalized()
+                ? StandingRows.actualRow(contest, registration, cells)
+                : StandingRows.publicRow(contest, registration, cells);
     }
 
     private StandingRow publicRowOf(Contest contest, UUID userId) {
         return registrationRepository
                 .findByContestIdAndUserId(contest.getId(), userId)
                 .map(
-                        registration -> {
-                            List<ContestCell> cells =
-                                    cellRepository.findByContestIdAndUserId(
-                                            contest.getId(), userId);
-                            return contest.isFinalized()
-                                    ? StandingRows.actualRow(contest, registration, cells)
-                                    : StandingRows.publicRow(contest, registration, cells);
-                        })
+                        registration ->
+                                rowOf(
+                                        contest,
+                                        registration,
+                                        cellRepository.findByContestIdAndUserId(
+                                                contest.getId(), userId)))
                 .orElse(null);
     }
 

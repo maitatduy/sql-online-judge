@@ -8,7 +8,6 @@ export const DRAFT_SAVE_DELAY_MS = 500;
 interface Draft {
     key: string;
     code: string;
-    savedAt: Date | null;
 }
 
 interface PendingSave {
@@ -25,12 +24,11 @@ function readDraft(key: string): string | null {
     }
 }
 
-function writeDraft(key: string, code: string): boolean {
+function writeDraft(key: string, code: string): void {
     try {
         localStorage.setItem(key, code);
-        return true;
     } catch {
-        return false;
+        return;
     }
 }
 
@@ -43,7 +41,7 @@ function removeDraft(key: string): void {
 }
 
 function openDraft(key: string, starterCode: string): Draft {
-    return { key, code: readDraft(key) ?? starterCode, savedAt: null };
+    return { key, code: readDraft(key) ?? starterCode };
 }
 
 export function useEditorDraft(problemId: string, dialect: Dialect, starterCode: string) {
@@ -72,11 +70,7 @@ export function useEditorDraft(problemId: string, dialect: Dialect, starterCode:
         clearTimeout(pendingSave.current?.timer);
         const timer = setTimeout(() => {
             pendingSave.current = null;
-            if (writeDraft(key, code)) {
-                setDraft((current) =>
-                    current.key === key ? { ...current, savedAt: new Date() } : current,
-                );
-            }
+            writeDraft(key, code);
         }, DRAFT_SAVE_DELAY_MS);
         pendingSave.current = { key, code, timer };
     }
@@ -85,8 +79,8 @@ export function useEditorDraft(problemId: string, dialect: Dialect, starterCode:
         clearTimeout(pendingSave.current?.timer);
         pendingSave.current = null;
         removeDraft(key);
-        setDraft({ key, code: starterCode, savedAt: null });
+        setDraft({ key, code: starterCode });
     }
 
-    return { code: draft.code, savedAt: draft.savedAt, changeCode, resetToStarter };
+    return { code: draft.code, changeCode, resetToStarter };
 }

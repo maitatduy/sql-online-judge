@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { Snowflake } from "lucide-react";
 
-import { ArrowLeft, Snowflake, Trophy } from "lucide-react";
-
-import { EmptyState } from "@/components/shared/EmptyState";
+import { Breadcrumb } from "@/components/shared/Breadcrumb";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Pagination } from "@/components/shared/Pagination";
 import { Skeleton } from "@/components/shared/Skeleton";
@@ -39,13 +37,14 @@ export function ContestStandings({ slug, page }: ContestStandingsProps) {
             id={MAIN_CONTENT_ID}
             className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pt-6 pb-16 md:px-6"
         >
-            <Link
-                href={ROUTES.contest(slug)}
-                className="inline-flex min-h-11 w-fit items-center gap-1.5 font-semibold text-muted-foreground hover:text-foreground"
-            >
-                <ArrowLeft aria-hidden="true" className="size-4" />
-                {contest?.title ?? "Contest"}
-            </Link>
+            <Breadcrumb
+                items={[
+                    { label: "Trang chủ", href: ROUTES.home },
+                    { label: "Contest", href: ROUTES.contests },
+                    { label: contest?.title ?? "Contest", href: ROUTES.contest(slug) },
+                    { label: "Bảng xếp hạng" },
+                ]}
+            />
             <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-[28px] font-extrabold tracking-tight">Bảng xếp hạng</h1>
                 {standings?.isFrozen ? (
@@ -80,10 +79,7 @@ export function ContestStandings({ slug, page }: ContestStandingsProps) {
                     onRetry={() => void refetch()}
                 />
             ) : null}
-            {standings && standings.items.length === 0 ? (
-                <EmptyState title="Chưa có ai lên bảng." icon={<Trophy />} />
-            ) : null}
-            {standings && standings.items.length > 0 ? (
+            {standings ? (
                 <>
                     <StandingsTable standings={standings} ratingDeltas={ratingDeltas} />
                     <Pagination

@@ -145,6 +145,10 @@ describe("nộp bài trong Workspace", () => {
 
         expect(await panel.findByText("3/3 testcase, 48 ms")).toBeInTheDocument();
         expect(panel.getByText("AC")).toHaveAttribute("title", "Đúng");
+        expect(panel.getByRole("link", { name: "Về danh sách bài" })).toHaveAttribute(
+            "href",
+            "/problems",
+        );
         expect(screen.getByRole("button", { name: "Submit" })).toBeEnabled();
     });
 

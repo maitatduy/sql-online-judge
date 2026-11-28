@@ -1,8 +1,10 @@
+import { CircleCheck, Clock, ListOrdered, Users } from "lucide-react";
 import Link from "next/link";
 
 import { formatMinutes } from "@/lib/contest";
-import { formatTime } from "@/lib/format";
+import { formatNumber, formatTime } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
+import { cn } from "@/lib/utils";
 
 import { formatContestDay } from "../countdown";
 import type { ContestSummary } from "../types";
@@ -17,14 +19,21 @@ export function ContestCard({ contest }: ContestCardProps) {
     return (
         <article
             aria-label={contest.title}
-            className="relative flex items-center gap-5 rounded-lg border bg-card p-4 transition-colors focus-within:border-brand hover:border-brand"
+            className={cn(
+                "relative flex items-center gap-5 rounded-lg border bg-card p-4 transition-colors focus-within:border-brand hover:border-brand",
+                contest.isRegistered && "border-brand bg-brand-soft/40",
+            )}
         >
-            <div className="flex w-[76px] flex-none flex-col items-center rounded-lg bg-brand/12 py-2 text-brand">
-                <span className="text-sm font-semibold">{day.weekday}</span>
-                <span className="text-[28px] leading-tight font-extrabold">{day.day}</span>
-                <span className="text-sm">{day.month}</span>
+            <div className="flex w-[84px] flex-none flex-col overflow-hidden rounded-lg border border-brand/30 bg-card text-center">
+                <span className="bg-brand py-1 text-[13px] font-semibold text-primary-foreground">
+                    {day.weekday}
+                </span>
+                <span className="pt-1 text-[30px] leading-tight font-extrabold">{day.day}</span>
+                <span className="pb-1.5 text-[13px] font-semibold text-muted-foreground">
+                    {day.month}
+                </span>
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-lg font-bold">
                         <Link
@@ -39,10 +48,27 @@ export function ContestCard({ contest }: ContestCardProps) {
                             Tính rating
                         </span>
                     ) : null}
+                    {contest.isRegistered ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-0.5 text-sm font-semibold text-primary-foreground">
+                            <CircleCheck aria-hidden="true" className="size-3.5" />
+                            Đã đăng ký
+                        </span>
+                    ) : null}
                 </div>
-                <p className="mt-1 text-muted-foreground">
-                    {`${formatTime(contest.startAt)} - ${formatTime(contest.endAt)}, ${formatMinutes(contest.durationMinutes)}`}
-                </p>
+                <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[14px] text-muted-foreground">
+                    <li className="inline-flex items-center gap-1.5">
+                        <Clock aria-hidden="true" className="size-4" />
+                        {`${formatTime(contest.startAt)} - ${formatTime(contest.endAt)}, ${formatMinutes(contest.durationMinutes)}`}
+                    </li>
+                    <li className="inline-flex items-center gap-1.5">
+                        <ListOrdered aria-hidden="true" className="size-4" />
+                        {`${formatNumber(contest.problemCount)} bài`}
+                    </li>
+                    <li className="inline-flex items-center gap-1.5">
+                        <Users aria-hidden="true" className="size-4" />
+                        {`${formatNumber(contest.registrantCount)} người đăng ký`}
+                    </li>
+                </ul>
             </div>
         </article>
     );

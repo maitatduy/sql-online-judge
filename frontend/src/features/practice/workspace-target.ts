@@ -17,13 +17,14 @@ export interface WorkspaceExtraTab {
     content: ReactNode;
 }
 
-export const PRACTICE_PARENT: BreadcrumbItem = { label: "Luyện tập", href: ROUTES.problems };
+export const PRACTICE_TRAIL: BreadcrumbItem[] = [{ label: "Luyện tập", href: ROUTES.problems }];
 
 export interface WorkspaceTarget {
     storageKey: string;
     heading: string;
-    parent: BreadcrumbItem;
+    trail: BreadcrumbItem[];
     loginPath: string;
+    listHref: string;
     historyProblemId: string | null;
     statementMeta?: ReactNode;
     extraTabs?: WorkspaceExtraTab[];

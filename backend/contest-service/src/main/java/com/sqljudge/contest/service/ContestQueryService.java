@@ -25,6 +25,7 @@ public class ContestQueryService {
 
     private final ContestRepository contestRepository;
     private final ContestRegistrationRepository registrationRepository;
+    private final ContestStatsReader statsReader;
     private final Clock clock;
 
     static NotFoundException contestNotFound() {
@@ -34,9 +35,9 @@ public class ContestQueryService {
     @Transactional(readOnly = true)
     public PageResponse<ContestSummaryResponse> list(ContestPhase phase, int page, int size) {
         Instant now = clock.instant();
-        return PageResponse.from(
-                findByPhase(phase, now, PageRequest.of(page - 1, size)),
-                contest -> ContestSummaryResponse.from(contest, now));
+        Page<Contest> contests = findByPhase(phase, now, PageRequest.of(page - 1, size));
+        ContestStatsReader.ContestStats stats = statsReader.statsOf(contests.getContent());
+        return PageResponse.from(contests, contest -> stats.summaryOf(contest, now));
     }
 
     @Transactional(readOnly = true)

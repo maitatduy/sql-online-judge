@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { Trophy, Users } from "lucide-react";
 
+import { Breadcrumb } from "@/components/shared/Breadcrumb";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Markdown } from "@/components/shared/Markdown";
 import { Skeleton } from "@/components/shared/Skeleton";
@@ -14,6 +15,7 @@ import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 
 import { useContest } from "../hooks/useContests";
+import { nextPhaseChangeOf, useRefreshWhenDue } from "../hooks/useRefreshWhenDue";
 import { ContestLobbyHero } from "./ContestLobbyHero";
 import { ContestProblemTable } from "./ContestProblemTable";
 import { ContestRules } from "./ContestRules";
@@ -25,12 +27,20 @@ interface ContestLobbyProps {
 
 export function ContestLobby({ slug }: ContestLobbyProps) {
     const { data: contest, error, isPending, refetch } = useContest(slug);
+    useRefreshWhenDue(contest ? nextPhaseChangeOf(contest) : undefined, () => void refetch());
 
     return (
         <main
             id={MAIN_CONTENT_ID}
             className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-6 pb-16 md:px-6"
         >
+            <Breadcrumb
+                items={[
+                    { label: "Trang chủ", href: ROUTES.home },
+                    { label: "Contest", href: ROUTES.contests },
+                    { label: contest?.title ?? "Contest" },
+                ]}
+            />
             {isPending ? (
                 <div role="status" aria-label="Đang tải contest" className="flex flex-col gap-3">
                     <Skeleton className="h-56 rounded-xl" />

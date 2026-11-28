@@ -9,6 +9,7 @@ import { SubmissionVerdict } from "./SubmissionVerdict";
 interface SubmissionContentProps {
     problem: WorkspaceProblem;
     loginPath: string;
+    listHref: string;
     submission: Submission | null;
     isJudging: boolean;
     error: Error | null;
@@ -56,6 +57,7 @@ function hasVerdict(submission: Submission): submission is Submission & { verdic
 export function SubmissionContent({
     problem,
     loginPath,
+    listHref,
     submission,
     isJudging,
     error,
@@ -76,7 +78,7 @@ export function SubmissionContent({
         return <JudgingProgress submission={submission} />;
     }
     if (submission && hasVerdict(submission)) {
-        return <SubmissionVerdict problem={problem} submission={submission} />;
+        return <SubmissionVerdict problem={problem} submission={submission} listHref={listHref} />;
     }
     return (
         <p className="text-[15px] text-muted-foreground">

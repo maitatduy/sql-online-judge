@@ -8,7 +8,6 @@ import { LazySqlEditor } from "@/components/shared/LazySqlEditor";
 import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Button } from "@/components/ui/button";
 import { DIALECT_LABELS, type Dialect } from "@/lib/dialect";
-import { formatTime } from "@/lib/format";
 import type { CompletionSchema } from "@/lib/sql-completion";
 
 import { ResetCodeDialog } from "./ResetCodeDialog";
@@ -20,7 +19,6 @@ interface EditorPanelProps {
     onDialectChange: (dialect: Dialect) => void;
     code: string;
     schema: CompletionSchema;
-    savedAt: Date | null;
     onChange: (code: string) => void;
     onReset: () => void;
 }
@@ -32,7 +30,6 @@ export function EditorPanel({
     onDialectChange,
     code,
     schema,
-    savedAt,
     onChange,
     onReset,
 }: EditorPanelProps) {
@@ -62,11 +59,6 @@ export function EditorPanel({
                     <RotateCcw aria-hidden="true" />
                     Đặt lại mã
                 </Button>
-                {savedAt ? (
-                    <span className="ml-auto text-xs text-muted-foreground">
-                        {`Đã lưu nháp lúc ${formatTime(savedAt)}`}
-                    </span>
-                ) : null}
             </div>
             <LazySqlEditor
                 value={code}

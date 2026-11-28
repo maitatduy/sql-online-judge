@@ -66,6 +66,6 @@ export function formatContestDay(date: string): ContestDay {
     return {
         weekday: WEEKDAYS[weekdayFormatter.format(moment)],
         day: dayFormatter.format(moment),
-        month: `Th${monthFormatter.format(moment)}`,
+        month: `Tháng ${monthFormatter.format(moment)}`,
     };
 }

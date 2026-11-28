@@ -36,7 +36,6 @@ describe("useEditorDraft", () => {
         const { result } = renderDraft();
 
         expect(result.current.code).toBe(STARTER_CODE);
-        expect(result.current.savedAt).toBeNull();
     });
 
     it("mở lại nháp đã lưu của đúng bài", () => {
@@ -57,7 +56,6 @@ describe("useEditorDraft", () => {
 
         act(() => vi.advanceTimersByTime(1));
         expect(localStorage.getItem(DRAFT_KEY)).toBe("SELECT name FROM employees;");
-        expect(result.current.savedAt).toEqual(new Date("2026-10-22T12:24:00.500Z"));
     });
 
     it("tách nháp theo từng bài khi chuyển bài", () => {
@@ -95,7 +93,6 @@ describe("useEditorDraft", () => {
 
         expect(result.current.code).toBe(STARTER_CODE);
         expect(localStorage.getItem(DRAFT_KEY)).toBeNull();
-        expect(result.current.savedAt).toBeNull();
     });
 
     it("vẫn soạn được khi trình duyệt chặn localStorage, chỉ là không lưu nháp", () => {
@@ -111,6 +108,5 @@ describe("useEditorDraft", () => {
         act(() => vi.advanceTimersByTime(DRAFT_SAVE_DELAY_MS));
 
         expect(result.current.code).toBe("SELECT 2;");
-        expect(result.current.savedAt).toBeNull();
     });
 });

@@ -159,6 +159,71 @@ class ContestApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName(
+            "Danh sách kèm số bài, số người đăng ký, số người đã nộp và người xem đã đăng ký chưa")
+    void publicList_includesCountsAndViewerRegistration() throws Exception {
+        UUID learner = UUID.randomUUID();
+        String contestId =
+                objectMapper
+                        .readTree(
+                                create(
+                                                ADMIN,
+                                                contest(
+                                                        "co-so-lieu",
+                                                        Instant.now().plus(Duration.ofDays(2))))
+                                        .getBody())
+                        .get("id")
+                        .asText();
+        for (int position = 1; position <= 3; position++) {
+            jdbcTemplate.update(
+                    "INSERT INTO contest_problems (id, contest_id, problem_id, position, slug,"
+                        + " title, difficulty, created_at, updated_at) VALUES (UUID_TO_BIN(UUID()),"
+                        + " UUID_TO_BIN(?), UUID_TO_BIN(UUID()), ?, ?, ?, 'EASY', NOW(6), NOW(6))",
+                    contestId,
+                    position,
+                    "bai-" + position,
+                    "Bài " + position);
+        }
+        for (UUID user : new UUID[] {learner, UUID.randomUUID()}) {
+            jdbcTemplate.update(
+                    "INSERT INTO contest_registrations (id, contest_id, user_id, username,"
+                        + " created_at, updated_at) VALUES (UUID_TO_BIN(UUID()), UUID_TO_BIN(?),"
+                        + " UUID_TO_BIN(?), ?, NOW(6), NOW(6))",
+                    contestId,
+                    user.toString(),
+                    "u" + user.toString().substring(0, 8));
+        }
+        for (int attempt = 0; attempt < 2; attempt++) {
+            jdbcTemplate.update(
+                    "INSERT INTO contest_attempts (id, contest_id, user_id, problem_id,"
+                        + " submission_id, verdict, submitted_at, created_at, updated_at) VALUES"
+                        + " (UUID_TO_BIN(UUID()), UUID_TO_BIN(?), UUID_TO_BIN(?),"
+                        + " UUID_TO_BIN(UUID()), UUID_TO_BIN(UUID()), 'WA', NOW(6), NOW(6),"
+                        + " NOW(6))",
+                    contestId,
+                    learner.toString());
+        }
+
+        JsonNode anonymous = publicList("UPCOMING").at("/items/0");
+        JsonNode signedIn =
+                objectMapper
+                        .readTree(
+                                send(
+                                                HttpMethod.GET,
+                                                "/api/contests?phase=UPCOMING",
+                                                TestJwts.token(learner, "LEARNER"),
+                                                null)
+                                        .getBody())
+                        .at("/items/0");
+
+        assertThat(anonymous.get("problemCount").asInt()).isEqualTo(3);
+        assertThat(anonymous.get("registrantCount").asInt()).isEqualTo(2);
+        assertThat(anonymous.get("participantCount").asInt()).isEqualTo(1);
+        assertThat(anonymous.get("isRegistered").asBoolean()).isFalse();
+        assertThat(signedIn.get("isRegistered").asBoolean()).isTrue();
+    }
+
+    @Test
     @DisplayName("Người chưa đăng nhập xem được chi tiết contest theo slug, slug lạ trả 404")
     void publicDetail_bySlug() throws Exception {
         create(ADMIN, contest("sql-cup-3", Instant.now().plus(Duration.ofDays(1))));

@@ -32,7 +32,7 @@ interface ProblemWorkspaceProps {
 
 export function ProblemWorkspace({ problem, target, header }: ProblemWorkspaceProps) {
     const { dialect, chooseDialect } = useDialectChoice(target.storageKey, problem.dialects);
-    const { code, savedAt, changeCode, resetToStarter } = useEditorDraft(
+    const { code, changeCode, resetToStarter } = useEditorDraft(
         target.storageKey,
         dialect,
         problem.starterCode,
@@ -83,7 +83,6 @@ export function ProblemWorkspace({ problem, target, header }: ProblemWorkspacePr
             onDialectChange={chooseDialect}
             code={code}
             schema={completionSchema}
-            savedAt={savedAt}
             onChange={changeCode}
             onReset={resetToStarter}
         />
@@ -106,6 +105,7 @@ export function ProblemWorkspace({ problem, target, header }: ProblemWorkspacePr
                 <SubmissionContent
                     problem={problem}
                     loginPath={target.loginPath}
+                    listHref={target.listHref}
                     submission={judging.submission}
                     isJudging={judging.isJudging}
                     error={judging.error}
@@ -117,7 +117,7 @@ export function ProblemWorkspace({ problem, target, header }: ProblemWorkspacePr
 
     return (
         <>
-            <WorkspaceHeader parent={target.parent} title={target.heading}>
+            <WorkspaceHeader trail={target.trail} title={target.heading}>
                 <WorkspaceActions
                     isRunning={codeRun.isRunning}
                     isJudging={judging.isJudging}

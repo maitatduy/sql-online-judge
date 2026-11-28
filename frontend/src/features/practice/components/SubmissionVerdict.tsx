@@ -3,7 +3,6 @@ import Link from "next/link";
 import { VerdictBadge } from "@/components/shared/VerdictBadge";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/format";
-import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { VERDICT_LABELS, VERDICT_TEXT_CLASSES, type Verdict } from "@/lib/verdict";
 
@@ -16,6 +15,7 @@ const MS_PER_SECOND = 1000;
 interface SubmissionVerdictProps {
     problem: WorkspaceProblem;
     submission: Submission & { verdict: Verdict };
+    listHref: string;
 }
 
 function summaryOf(problem: WorkspaceProblem, submission: Submission): string | null {
@@ -49,7 +49,7 @@ function rowCountOf(label: string, count: number): string | null {
     return `${label} ${atLeast}${formatNumber(count)} dòng`;
 }
 
-export function SubmissionVerdict({ problem, submission }: SubmissionVerdictProps) {
+export function SubmissionVerdict({ problem, submission, listHref }: SubmissionVerdictProps) {
     const { verdict, firstFailedTestcase: failed } = submission;
     const summary = summaryOf(problem, submission);
 
@@ -65,7 +65,7 @@ export function SubmissionVerdict({ problem, submission }: SubmissionVerdictProp
                 </div>
                 {verdict === "AC" ? (
                     <Button asChild size="sm" variant="outline" className="ml-auto">
-                        <Link href={ROUTES.problems}>Về danh sách bài</Link>
+                        <Link href={listHref}>Về danh sách bài</Link>
                     </Button>
                 ) : null}
             </div>

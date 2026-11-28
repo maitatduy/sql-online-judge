@@ -14,6 +14,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminContestService {
 
     private final ContestRepository contestRepository;
+    private final ContestStatsReader statsReader;
     private final Clock clock;
 
     @Transactional
@@ -45,9 +47,10 @@ public class AdminContestService {
     @Transactional(readOnly = true)
     public PageResponse<ContestSummaryResponse> list(int page, int size) {
         Instant now = clock.instant();
-        return PageResponse.from(
-                contestRepository.findAllByOrderByStartAtDesc(PageRequest.of(page - 1, size)),
-                contest -> ContestSummaryResponse.from(contest, now));
+        Page<Contest> contests =
+                contestRepository.findAllByOrderByStartAtDesc(PageRequest.of(page - 1, size));
+        ContestStatsReader.ContestStats stats = statsReader.statsOf(contests.getContent());
+        return PageResponse.from(contests, contest -> stats.summaryOf(contest, now));
     }
 
     @Transactional(readOnly = true)

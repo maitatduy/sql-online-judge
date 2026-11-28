@@ -11,6 +11,10 @@ export interface ContestSummary {
     durationMinutes: number;
     isRated: boolean;
     phase: ContestPhase;
+    problemCount: number;
+    registrantCount: number;
+    participantCount: number;
+    isRegistered: boolean;
 }
 
 export type ContestPage = Page<ContestSummary>;
