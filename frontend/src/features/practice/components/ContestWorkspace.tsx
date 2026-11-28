@@ -46,6 +46,7 @@ function contestTarget(
         heading: `${statement.letter}. ${statement.title}`,
         trail,
         loginPath: ROUTES.contestProblem(slug, statement.letter),
+        listHref: ROUTES.contest(slug),
         historyProblemId: null,
         startRun: (request) => practiceApi.startContestRun(slug, statement.letter, request),
         submit: (request, idempotencyKey) =>

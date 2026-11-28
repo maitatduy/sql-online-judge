@@ -24,6 +24,7 @@ export interface WorkspaceTarget {
     heading: string;
     trail: BreadcrumbItem[];
     loginPath: string;
+    listHref: string;
     historyProblemId: string | null;
     statementMeta?: ReactNode;
     extraTabs?: WorkspaceExtraTab[];

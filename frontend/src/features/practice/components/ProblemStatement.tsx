@@ -5,7 +5,6 @@ import { DIALECT_LABELS } from "@/lib/dialect";
 import { formatNumber } from "@/lib/format";
 
 import type { WorkspaceProblem } from "../types";
-import { StatementSchemaTable } from "./StatementSchemaTable";
 import { StatementSection } from "./StatementSection";
 
 const MS_PER_SECOND = 1000;
@@ -45,11 +44,6 @@ export function ProblemStatement({ problem, meta }: ProblemStatementProps) {
                 </h1>
                 {meta ?? <DifficultyLabel difficulty={problem.difficulty} />}
             </header>
-            <section aria-label="Cấu trúc bảng" className="flex flex-col gap-4">
-                {problem.schema.map((table) => (
-                    <StatementSchemaTable key={table.name} table={table} />
-                ))}
-            </section>
             <section aria-label="Yêu cầu">
                 <Markdown>{problem.statementMarkdown}</Markdown>
             </section>

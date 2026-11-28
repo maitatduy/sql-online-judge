@@ -79,16 +79,11 @@ describe("Workspace", () => {
         );
     });
 
-    it("trình bày đề kiểu LeetCode: bảng, yêu cầu, ví dụ và ràng buộc", async () => {
+    it("trình bày đề gồm yêu cầu, ví dụ và ràng buộc, không lặp lại schema", async () => {
         await renderWorkspace();
         const statement = within(screen.getByRole("tabpanel", { name: "Đề bài" }));
 
-        const tables = within(statement.getByRole("region", { name: "Cấu trúc bảng" }));
-        const employees = within(tables.getByRole("table", { name: "Cột của bảng employees" }));
-        expect(employees.getByRole("row", { name: "department_id INTEGER" })).toBeInTheDocument();
-        expect(
-            tables.getByText("department_id là khoá ngoại tham chiếu tới departments.id."),
-        ).toBeInTheDocument();
+        expect(statement.queryByRole("region", { name: "Cấu trúc bảng" })).not.toBeInTheDocument();
         const example = within(statement.getByRole("region", { name: "Ví dụ 1" }));
         expect(
             within(
@@ -143,10 +138,12 @@ describe("Workspace", () => {
             target: { value: "SELECT name FROM employees;" },
         });
 
-        expect(await screen.findByText(/^Đã lưu nháp lúc \d{2}:\d{2}$/)).toBeInTheDocument();
-        expect(localStorage.getItem("draft:0192f3b0-0000-7000-8000-0000000000b8:POSTGRESQL")).toBe(
-            "SELECT name FROM employees;",
+        await waitFor(() =>
+            expect(
+                localStorage.getItem("draft:0192f3b0-0000-7000-8000-0000000000b8:POSTGRESQL"),
+            ).toBe("SELECT name FROM employees;"),
         );
+        expect(screen.queryByText(/Đã lưu nháp/)).not.toBeInTheDocument();
     });
 
     it("đặt lại về mã khởi đầu sau khi xác nhận", async () => {

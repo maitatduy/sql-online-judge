@@ -39,6 +39,7 @@ function practiceTarget(
         storageKey: problem.id,
         heading: `#${problem.number}. ${problem.title}`,
         trail: PRACTICE_TRAIL,
+        listHref: ROUTES.problems,
         loginPath: ROUTES.problem(problem.slug),
         historyProblemId: problem.id,
         statementMeta: <ProblemStatementMeta problem={problem} />,

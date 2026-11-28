@@ -38,7 +38,7 @@ function RemainingTime({ endAt }: { endAt: string }) {
         <span
             role="timer"
             aria-label="Còn lại"
-            className="inline-flex items-center gap-1.5 font-bold tabular-nums"
+            className="inline-flex w-28 shrink-0 items-center gap-1.5 font-bold tabular-nums"
         >
             <Timer aria-hidden="true" className="size-4 text-muted-foreground" />
             {formatRemaining(endAt, now)}

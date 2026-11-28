@@ -88,6 +88,25 @@ describe("màn thi contest", () => {
         ).toBeNull();
     });
 
+    it("nộp đúng thì nút về danh sách bài dẫn về sảnh chờ của contest", async () => {
+        registerForMockContest(SLUG, DEMO_SESSION_USER.id);
+        renderContestWorkspace();
+        const editor = await screen.findByRole("textbox", { name: "Mã SQL của bạn" });
+
+        fireEvent.change(editor, {
+            target: {
+                value: "SELECT * FROM employees e WHERE e.salary = (SELECT MAX(salary) FROM employees) ORDER BY 1;",
+            },
+        });
+        fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+        const submission = within(screen.getByRole("tabpanel", { name: "Nộp bài" }));
+        expect(await submission.findByRole("link", { name: "Về danh sách bài" })).toHaveAttribute(
+            "href",
+            "/contests/sql-cup-live",
+        );
+    });
+
     it("chưa đăng ký thì báo cần đăng ký và chỉ đường về sảnh chờ", async () => {
         renderContestWorkspace();
 
