@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 import type { Page } from "@/lib/pagination";
 
-export const LEADERBOARD_PAGE_SIZE = 50;
+export const LEADERBOARD_PAGE_SIZE = 20;
 
 export interface LeaderboardEntry {
     rank: number;
