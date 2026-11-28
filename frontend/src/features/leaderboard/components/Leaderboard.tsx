@@ -2,23 +2,20 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Trophy } from "lucide-react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-import { Avatar } from "@/components/shared/Avatar";
+import { Breadcrumb } from "@/components/shared/Breadcrumb";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Pagination } from "@/components/shared/Pagination";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { MAIN_CONTENT_ID } from "@/components/shared/SkipLink";
 import { ApiRequestError } from "@/lib/api-client";
-import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
-import { cn } from "@/lib/utils";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 import { leaderboardApi } from "../api";
-
-const PODIUM_SIZE = 3;
+import { LeaderboardTable } from "./LeaderboardTable";
 
 function pageHref(page: number): string {
     return page > 1 ? `${ROUTES.leaderboard}?page=${page}` : ROUTES.leaderboard;
@@ -26,6 +23,7 @@ function pageHref(page: number): string {
 
 export function Leaderboard() {
     const page = Math.max(1, Number(useSearchParams().get("page")) || 1);
+    const { data: currentUser } = useCurrentUser();
     const { data, error, isPending, refetch } = useQuery({
         queryKey: ["leaderboard", page],
         queryFn: ({ signal }) => leaderboardApi.page(page, signal),
@@ -35,15 +33,22 @@ export function Leaderboard() {
     return (
         <main
             id={MAIN_CONTENT_ID}
-            className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 pt-6 pb-16 md:px-6"
+            className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 pt-6 pb-16 md:px-6"
         >
+            <Breadcrumb
+                items={[{ label: "Trang chủ", href: ROUTES.home }, { label: "Bảng xếp hạng" }]}
+            />
             <div>
-                <h1 className="text-[28px] font-extrabold">Bảng xếp hạng</h1>
+                <h1 className="text-[28px] font-extrabold tracking-tight">Bảng xếp hạng</h1>
                 <p className="mt-1 text-[15px] text-muted-foreground">
                     Rating sau các contest tính rating.
                 </p>
             </div>
-            {isPending ? <Skeleton className="h-96" /> : null}
+            {isPending ? (
+                <div role="status" aria-label="Đang tải bảng xếp hạng">
+                    <Skeleton className="h-96" />
+                </div>
+            ) : null}
             {!data && error ? (
                 <ErrorState
                     title="Chưa tải được bảng xếp hạng"
@@ -56,61 +61,14 @@ export function Leaderboard() {
                 <EmptyState title="Chưa có ai thi contest tính rating." icon={<Trophy />} />
             ) : null}
             {data && data.items.length > 0 ? (
-                <div className="overflow-x-auto rounded-lg border bg-card">
-                    <table className="w-full text-[15px]">
-                        <thead>
-                            <tr className="border-b text-left text-sm text-muted-foreground">
-                                <th className="w-20 px-4 py-3 font-semibold">Hạng</th>
-                                <th className="px-4 py-3 font-semibold">Người thi</th>
-                                <th className="px-4 py-3 text-right font-semibold">Rating</th>
-                                <th className="px-4 py-3 text-right font-semibold">Contest</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.items.map((entry) => {
-                                const name = entry.username ?? "Người dùng";
-                                return (
-                                    <tr key={entry.userId} className="border-b last:border-b-0">
-                                        <td
-                                            className={cn(
-                                                "px-4 py-3 font-bold",
-                                                entry.rank <= PODIUM_SIZE
-                                                    ? "text-lg text-brand"
-                                                    : "text-muted-foreground",
-                                            )}
-                                        >
-                                            {formatNumber(entry.rank)}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className="flex items-center gap-2.5">
-                                                <Avatar name={name} />
-                                                {entry.username ? (
-                                                    <Link
-                                                        href={ROUTES.profile(entry.username)}
-                                                        className="font-semibold hover:text-brand"
-                                                    >
-                                                        {entry.displayName ?? entry.username}
-                                                    </Link>
-                                                ) : (
-                                                    <span className="font-semibold">{name}</span>
-                                                )}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-right text-lg font-extrabold">
-                                            {formatNumber(entry.rating)}
-                                        </td>
-                                        <td className="px-4 py-3 text-right text-muted-foreground">
-                                            {formatNumber(entry.contestsPlayed)}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                <div className="rounded-lg border bg-card">
+                    <div className="overflow-x-auto">
+                        <LeaderboardTable entries={data.items} viewerId={currentUser?.id} />
+                    </div>
+                    <div className="border-t">
+                        <Pagination result={data} hrefOf={pageHref} unit="người" />
+                    </div>
                 </div>
-            ) : null}
-            {data && data.totalPages > 1 ? (
-                <Pagination result={data} hrefOf={pageHref} unit="người" />
             ) : null}
         </main>
     );
