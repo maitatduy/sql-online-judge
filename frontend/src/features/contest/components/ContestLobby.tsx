@@ -15,6 +15,7 @@ import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 
 import { useContest } from "../hooks/useContests";
+import { nextPhaseChangeOf, useRefreshWhenDue } from "../hooks/useRefreshWhenDue";
 import { ContestLobbyHero } from "./ContestLobbyHero";
 import { ContestProblemTable } from "./ContestProblemTable";
 import { ContestRules } from "./ContestRules";
@@ -26,6 +27,7 @@ interface ContestLobbyProps {
 
 export function ContestLobby({ slug }: ContestLobbyProps) {
     const { data: contest, error, isPending, refetch } = useContest(slug);
+    useRefreshWhenDue(contest ? nextPhaseChangeOf(contest) : undefined, () => void refetch());
 
     return (
         <main

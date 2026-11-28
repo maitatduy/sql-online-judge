@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { Trophy } from "lucide-react";
 
 import { Breadcrumb } from "@/components/shared/Breadcrumb";
@@ -12,7 +13,8 @@ import { ApiRequestError } from "@/lib/api-client";
 import { formatNumber } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 
-import { useContests } from "../hooks/useContests";
+import { CONTESTS_QUERY_KEY, useContests } from "../hooks/useContests";
+import { useRefreshWhenDue } from "../hooks/useRefreshWhenDue";
 import { ContestCard } from "./ContestCard";
 import { FinishedContestTable } from "./FinishedContestTable";
 import { LiveContestHero } from "./LiveContestHero";
@@ -23,6 +25,13 @@ export function ContestCatalogue() {
     const upcoming = useContests("UPCOMING");
     const finished = useContests("FINISHED");
     const failed = [running, upcoming, finished].find((query) => query.error && !query.data);
+    const queryClient = useQueryClient();
+    const nextChange = [running.data?.items[0]?.endAt, upcoming.data?.items[0]?.startAt]
+        .filter((moment): moment is string => moment !== undefined)
+        .sort()[0];
+    useRefreshWhenDue(nextChange, () => {
+        void queryClient.invalidateQueries({ queryKey: CONTESTS_QUERY_KEY });
+    });
 
     return (
         <main

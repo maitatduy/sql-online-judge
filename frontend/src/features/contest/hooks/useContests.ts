@@ -3,11 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ContestPhase } from "@/lib/contest";
 
 import { contestApi } from "../api";
+import { contestRefetchInterval } from "./useRefreshWhenDue";
 
 const CONTESTS_KEY = "contests";
 const CONTEST_KEY = "contest";
 const REGISTRATION_KEY = "contest-registration";
 const PROBLEMS_KEY = "contest-problems";
+
+export const CONTESTS_QUERY_KEY = [CONTESTS_KEY] as const;
 
 export function useContests(phase: ContestPhase) {
     return useQuery({
@@ -20,6 +23,8 @@ export function useContest(slug: string) {
     return useQuery({
         queryKey: [CONTEST_KEY, slug],
         queryFn: ({ signal }) => contestApi.get(slug, signal),
+        refetchInterval: (query) =>
+            query.state.data ? contestRefetchInterval(query.state.data, new Date()) : false,
     });
 }
 

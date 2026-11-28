@@ -1,4 +1,4 @@
-import { ArrowRight, Trophy } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -18,9 +18,6 @@ export function NoLiveContest({ next }: NoLiveContestProps) {
             className="grid items-center gap-8 rounded-xl border border-contest-hero-line bg-contest-hero p-6 text-contest-hero-text md:p-10 lg:grid-cols-[minmax(0,1fr)_auto]"
         >
             <div className="flex min-w-0 items-start gap-5">
-                <span className="flex size-16 flex-none items-center justify-center rounded-full bg-contest-hero-panel ring-1 ring-contest-hero-line">
-                    <Trophy aria-hidden="true" className="size-8 text-contest-hero-accent" />
-                </span>
                 <div className="flex min-w-0 flex-col gap-2">
                     <h2 className="text-[28px] leading-tight font-extrabold tracking-tight">
                         Chưa có contest nào đang diễn ra

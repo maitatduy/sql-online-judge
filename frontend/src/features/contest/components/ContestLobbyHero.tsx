@@ -1,10 +1,5 @@
-import Link from "next/link";
-
-import { ArrowLeft } from "lucide-react";
-
 import { formatMinutes } from "@/lib/contest";
 import { formatDate, formatTime } from "@/lib/format";
-import { ROUTES } from "@/lib/routes";
 
 import { formatContestDay } from "../countdown";
 import type { ContestDetail } from "../types";
@@ -31,13 +26,6 @@ export function ContestLobbyHero({ contest }: ContestLobbyHeroProps) {
     return (
         <section className="grid items-center gap-8 rounded-xl border border-contest-hero-line bg-contest-hero p-6 text-contest-hero-text md:p-10 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div className="flex min-w-0 flex-col gap-3">
-                <Link
-                    href={ROUTES.contests}
-                    className="inline-flex w-fit items-center gap-1.5 font-semibold text-contest-hero-accent hover:underline"
-                >
-                    <ArrowLeft aria-hidden="true" className="size-4" />
-                    Contest
-                </Link>
                 <ContestPhasePill phase={contest.phase} />
                 <h1 className="text-[40px] leading-tight font-extrabold tracking-tight">
                     {contest.title}
