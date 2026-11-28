@@ -1,9 +1,8 @@
 "use client";
 
-import { Snowflake, Trophy } from "lucide-react";
+import { Snowflake } from "lucide-react";
 
 import { Breadcrumb } from "@/components/shared/Breadcrumb";
-import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Pagination } from "@/components/shared/Pagination";
 import { Skeleton } from "@/components/shared/Skeleton";
@@ -80,10 +79,7 @@ export function ContestStandings({ slug, page }: ContestStandingsProps) {
                     onRetry={() => void refetch()}
                 />
             ) : null}
-            {standings && standings.items.length === 0 ? (
-                <EmptyState title="Chưa có ai lên bảng." icon={<Trophy />} />
-            ) : null}
-            {standings && standings.items.length > 0 ? (
+            {standings ? (
                 <>
                     <StandingsTable standings={standings} ratingDeltas={ratingDeltas} />
                     <Pagination

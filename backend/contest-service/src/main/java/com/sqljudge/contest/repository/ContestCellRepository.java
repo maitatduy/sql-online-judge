@@ -14,6 +14,8 @@ public interface ContestCellRepository extends JpaRepository<ContestCell, UUID> 
 
     List<ContestCell> findByContestIdAndUserId(UUID contestId, UUID userId);
 
+    List<ContestCell> findByContestId(UUID contestId);
+
     @Query("SELECT DISTINCT c.userId FROM ContestCell c WHERE c.contestId = :contestId")
     List<UUID> findUserIdsByContestId(UUID contestId);
 }

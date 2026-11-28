@@ -145,6 +145,27 @@ class ContestStandingsApiIntegrationTest extends ContainerSupport {
     }
 
     @Test
+    @DisplayName(
+            "Chưa ai nộp bài thì bảng vẫn có mọi người đăng ký với 0 bài, người đăng ký sau vẫn lên"
+                    + " bảng")
+    void standings_listEveryRegistrantBeforeAnySubmission() throws Exception {
+        JsonNode empty = body(restTemplate.getForEntity(STANDINGS, String.class));
+
+        assertThat(empty.get("totalItems").asInt()).isEqualTo(4);
+        for (JsonNode item : empty.get("items")) {
+            assertThat(item.get("solved").asInt()).isZero();
+            assertThat(item.get("penaltyMinutes").asInt()).isZero();
+            assertThat(item.get("rank").asInt()).isEqualTo(1);
+        }
+
+        register(UUID.randomUUID(), "frank");
+        JsonNode afterLateRegistration = body(restTemplate.getForEntity(STANDINGS, String.class));
+
+        assertThat(afterLateRegistration.get("totalItems").asInt()).isEqualTo(5);
+        assertThat(afterLateRegistration.findValuesAsText("username")).contains("frank");
+    }
+
+    @Test
     @DisplayName("Sau mốc đóng băng bảng công khai không đổi, lượt mới hiện là đang chờ")
     void standings_hideFrozenAttemptsFromThePublic() throws Exception {
         playContest();

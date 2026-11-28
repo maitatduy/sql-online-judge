@@ -1,8 +1,10 @@
 import { screen, within } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { resetAdminContests } from "@/mocks/admin-contests";
 import { registerForMockContest, resetContestRegistrations } from "@/mocks/contests";
+import { server } from "@/mocks/server";
 import { DEMO_SESSION_USER, writeMockSession } from "@/mocks/session";
 import { renderWithProviders } from "@/test/render";
 
@@ -33,6 +35,26 @@ describe("bảng xếp hạng contest", () => {
             "href",
             "/contests/sql-cup-live",
         );
+    });
+
+    it("không hiện khối trống, bảng vẫn có tiêu đề cột khi chưa có dòng nào", async () => {
+        server.use(
+            http.get("*/api/contests/:slug/standings", () =>
+                HttpResponse.json({
+                    items: [],
+                    page: 1,
+                    size: 50,
+                    totalItems: 0,
+                    totalPages: 0,
+                    problems: ["A", "B"],
+                    isFrozen: false,
+                }),
+            ),
+        );
+        renderWithProviders(<ContestStandings slug="sql-cup-live" page={1} />);
+
+        expect(await screen.findByRole("table")).toBeInTheDocument();
+        expect(screen.queryByText("Chưa có ai lên bảng.")).not.toBeInTheDocument();
     });
 
     it("contest đã áp rating thì có cột tăng giảm rating", async () => {
